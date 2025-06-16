@@ -3,6 +3,7 @@ package xraycfg
 import (
 	"testing"
 
+	"github.com/XRay-Addons/xrayman/node/internal/models"
 	"github.com/stretchr/testify/require"
 )
 
@@ -14,6 +15,7 @@ const testEmptyConfig = `
   "inbounds": [
     {
       "protocol": "vless",
+      "tag": "reality-in",
       "settings": {
         "clients": [],
         "decryption": "none"
@@ -25,6 +27,7 @@ const testEmptyConfig = `
     },
     {
       "protocol": "vless",
+      "tag": "xhttp-in",
       "settings": {
         "clients": [],
         "decryption": "none"
@@ -46,6 +49,7 @@ const testFilledConfig = `
   "inbounds": [
     {
       "protocol": "vless",
+      "tag": "reality-in",
       "settings": {
         "clients": [
           {
@@ -68,6 +72,7 @@ const testFilledConfig = `
     },
     {
       "protocol": "vless",
+      "tag": "xhttp-in",
       "settings": {
         "clients": [
           {
@@ -78,7 +83,7 @@ const testFilledConfig = `
             "email": "user2",
             "id": "userid2"
           }		
-		],
+		    ],
         "decryption": "none"
       },
       "streamSettings": {
@@ -90,7 +95,7 @@ const testFilledConfig = `
 }
 `
 
-var testUsers = []User{
+var testUsers = []models.User{
 	{
 		Name: "user1",
 		UUID: "userid1",
@@ -101,8 +106,10 @@ var testUsers = []User{
 	},
 }
 
-func TestCreateServerConfig(t *testing.T) {
-	filledConfig, err := CreateServerConfig(testEmptyConfig, testUsers)
+func TestAddUsers(t *testing.T) {
+	inbounds, err := GetInbounds(testEmptyConfig)
+	require.NoError(t, err)
+	filledConfig, err := AddUsers(testEmptyConfig, inbounds, testUsers)
 	require.NoError(t, err)
 	require.JSONEq(t, testFilledConfig, filledConfig)
 }
