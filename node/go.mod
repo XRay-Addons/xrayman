@@ -2,7 +2,10 @@ module github.com/XRay-Addons/xrayman/node
 
 go 1.24.1
 
-require github.com/tidwall/gjson v1.18.0
+require (
+	github.com/tidwall/gjson v1.18.0
+	google.golang.org/grpc v1.73.0
+)
 
 require (
 	github.com/andybalholm/brotli v1.1.0 // indirect
@@ -23,7 +26,6 @@ require (
 	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/text v0.26.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250324211829-b45e905df463 // indirect
-	google.golang.org/grpc v1.73.0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
@@ -31,10 +33,8 @@ require (
 require (
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/coreos/go-systemd/v22 v22.5.0
-	github.com/go-chi/chi v1.5.5
 	github.com/go-chi/chi/v5 v5.2.1
 	github.com/stretchr/testify v1.10.0
-	github.com/taigrr/systemctl v1.0.10
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/tidwall/sjson v1.2.5

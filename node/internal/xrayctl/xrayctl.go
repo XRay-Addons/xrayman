@@ -33,6 +33,9 @@ func New(execPath, cfgPath string, log *zap.Logger) (*XRayCtl, error) {
 	}
 
 	serviceCfg, err := createServiceConfig(execPath, cfgPath)
+	log.Info("server config path: ", zap.String("p", serviceCfg))
+
+
 	if err != nil {
 		return nil, fmt.Errorf("create service config: %w", err)
 	}
@@ -140,7 +143,7 @@ type ServiceCfg struct {
 	ServiceSection struct {
 		Type      string `ini:"Type"`
 		ExecStart string `ini:"ExecStart"`
-	} `ini:"Service`
+	} `ini:"Service"`
 }
 
 func createServiceConfig(execPath, cfgPath string) (string, error) {
@@ -150,7 +153,7 @@ func createServiceConfig(execPath, cfgPath string) (string, error) {
 	serviceCfg.UnitSection.Description = "xray service"
 	serviceCfg.UnitSection.After = "network.target"
 	serviceCfg.ServiceSection.Type = "simple"
-	serviceCfg.ServiceSection.ExecStart = fmt.Sprintf("%s %s", execPath, cfgPath)
+	serviceCfg.ServiceSection.ExecStart = fmt.Sprintf("%s  run -config %s", execPath, cfgPath)
 
 	if err := cfg.ReflectFrom(&serviceCfg); err != nil {
 		return "", fmt.Errorf("%w: create config: %v", errdefs.ErrIPE, err)
@@ -166,6 +169,10 @@ func createServiceConfig(execPath, cfgPath string) (string, error) {
 
 func (ctl *XRayCtl) initServiceLoop(ctx context.Context, serviceCfg string, log *zap.Logger) {
 	defer ctl.wg.Done()
+
+	if ctl.initService(ctx, serviceCfg) == nil {
+		return
+	}
 
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()

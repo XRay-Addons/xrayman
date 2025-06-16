@@ -15,7 +15,7 @@ var expectedCfg = `[Unit]
 Description = xray service
 After       = network.target
 
-[ServiceSection]
+[Service]
 Type      = simple
 ExecStart = xray /var/etc/xray/conf.json
 `

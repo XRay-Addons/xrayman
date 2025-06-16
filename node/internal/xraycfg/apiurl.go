@@ -16,7 +16,7 @@ func GetApiURL(serverConfig string) (string, error) {
 		return "", fmt.Errorf("%w: invalid server config json", errdefs.ErrConfig)
 	}
 
-	apiURL := gjson.Get(apiUrlPath, inboundsPath).String()
+	apiURL := gjson.Get(serverConfig, apiUrlPath).String()
 	if apiURL == "" {
 		return "", fmt.Errorf("%w: empty api url", errdefs.ErrConfig)
 	}
