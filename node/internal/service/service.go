@@ -108,13 +108,16 @@ func (s *Service) DelUsers(ctx context.Context, users []models.User) error {
 func (s *Service) ping(ctx context.Context, retries int) error {
 	var err error
 	for range retries {
-		tryTimeout := 1 * time.Second
-		tryCtx, cancel := context.WithTimeout(ctx, tryTimeout)
-		err = s.api.Ping(tryCtx)
-		cancel()
+		delay := 1 * time.Second
+		timer := time.NewTimer(delay)
 
-		if err == nil {
-			return nil
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("%w: ping attempts cancelled", errdefs.ErrCancelled)
+		case <-timer.C:
+			if err = s.api.Ping(ctx); err == nil {
+				return nil
+			}
 		}
 	}
 

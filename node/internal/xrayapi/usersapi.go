@@ -77,6 +77,9 @@ func addUser(
 		return serial.ToTypedMessage(&handlerService.AddUserOperation{User: u})
 	}
 	err := alterUser(ctx, hs, in, u, addUserOp)
+	if err == nil {
+		return nil
+	}
 
 	// already exists is not an error for us
 	alreadyExistsErrPattern := fmt.Sprintf("User %s already exists", u.Name)
@@ -98,7 +101,10 @@ func delUser(
 	}
 
 	err := alterUser(ctx, hs, in, u, delUserOp)
-
+	if err == nil {
+		return nil
+	}
+	
 	// not exists is not an error for us
 	notFoundErrPattern := fmt.Sprintf("User %s not found", u.Name)
 	if err != nil && strings.Contains(err.Error(), notFoundErrPattern) {
