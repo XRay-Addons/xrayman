@@ -7,7 +7,7 @@ import (
 )
 
 type XRayCtl interface {
-	Start(ctx context.Context) error
+	Start(ctx context.Context, config string) error
 	Stop(ctx context.Context) error
 	Status(ctx context.Context) (models.Status, error)
 }

@@ -9,33 +9,37 @@ import (
 )
 
 type XRayCfg struct {
-	cfgPath    string
-	cfgContent string
-	inbounds   []models.Inbound
-	apiURL     string
+	serverCfg string
+	clientCfg string
+	inbounds  []models.Inbound
+	apiURL    string
 }
 
-func New(cfgPath string) (*XRayCfg, error) {
-	cfgContentBytes, err := os.ReadFile(cfgPath)
+func New(serverCfgPath, clientCfgPath string) (*XRayCfg, error) {
+	serverCfg, err := readFile(serverCfgPath)
 	if err != nil {
-		return nil, fmt.Errorf("%w: config file reading: %v", errdefs.ErrConfig, err)
+		return nil, fmt.Errorf("%w: server config file reading: %v", errdefs.ErrConfig, err)
 	}
-	cfgContent := string(cfgContentBytes)
 
-	inbounds, err := GetInbounds(cfgContent)
+	clientCfg, err := readFile(clientCfgPath)
+	if err != nil {
+		return nil, fmt.Errorf("%w: user config file reading: %v", errdefs.ErrConfig, err)
+	}
+
+	inbounds, err := GetInbounds(serverCfg)
 	if err != nil {
 		return nil, fmt.Errorf("get cfg inbounds: %w", err)
 	}
-	apiURL, err := GetApiURL(cfgContent)
+	apiURL, err := GetApiURL(serverCfg)
 	if err != nil {
 		return nil, fmt.Errorf("get api url: %w", err)
 	}
 
 	return &XRayCfg{
-		cfgPath:    cfgPath,
-		cfgContent: cfgContent,
-		inbounds:   inbounds,
-		apiURL:     apiURL,
+		serverCfg: serverCfg,
+		clientCfg: clientCfg,
+		inbounds:  inbounds,
+		apiURL:    apiURL,
 	}, nil
 }
 
@@ -53,17 +57,29 @@ func (cfg *XRayCfg) GetApiURL() string {
 	return cfg.apiURL
 }
 
-func (cfg *XRayCfg) SetUsers(users []models.User) error {
+func (cfg *XRayCfg) GetServerConfig(users []models.User) (string, error) {
 	if cfg == nil {
-		return fmt.Errorf("%w: xray cfg not exists", errdefs.ErrIPE)
+		return "", fmt.Errorf("%w: xray cfg not exists", errdefs.ErrIPE)
 	}
 
-	editedCfg, err := AddUsers(cfg.cfgContent, cfg.inbounds, users)
+	usersConfig, err := AddUsers(cfg.serverCfg, cfg.inbounds, users)
 	if err != nil {
-		return fmt.Errorf("add config users: %w", err)
+		return "", fmt.Errorf("add config users: %w", err)
 	}
-	if err := os.WriteFile(cfg.cfgPath, []byte(editedCfg), 0o644); err != nil {
-		return fmt.Errorf("%w: config file write: %v", errdefs.ErrAccess, err)
+	return usersConfig, nil
+}
+
+func (cfg *XRayCfg) GetClientConfig() string {
+	if cfg == nil {
+		return ""
 	}
-	return nil
+	return cfg.clientCfg
+}
+
+func readFile(filePath string) (string, error) {
+	contentBytes, err := os.ReadFile(filePath)
+	if err != nil {
+		return "", fmt.Errorf("read file %s: %w", filePath, err)
+	}
+	return string(contentBytes), nil
 }

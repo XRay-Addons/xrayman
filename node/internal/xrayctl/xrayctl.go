@@ -17,8 +17,9 @@ import (
 )
 
 type XRayCtl struct {
-	cancel context.CancelFunc
-	wg     sync.WaitGroup
+	cancel  context.CancelFunc
+	wg      sync.WaitGroup
+	cfgPath string
 
 	mu sync.Mutex
 }
@@ -33,8 +34,6 @@ func New(execPath, cfgPath string, log *zap.Logger) (*XRayCtl, error) {
 	}
 
 	serviceCfg, err := createServiceConfig(execPath, cfgPath)
-	log.Info("server config path: ", zap.String("p", serviceCfg))
-
 
 	if err != nil {
 		return nil, fmt.Errorf("create service config: %w", err)
@@ -42,7 +41,8 @@ func New(execPath, cfgPath string, log *zap.Logger) (*XRayCtl, error) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	xrayCtl := &XRayCtl{
-		cancel: cancel,
+		cancel:  cancel,
+		cfgPath: cfgPath,
 	}
 
 	// run connection loop
@@ -62,10 +62,14 @@ func (ctl *XRayCtl) Close(ctx context.Context) error {
 	return nil
 }
 
-func (ctl *XRayCtl) Start(ctx context.Context) error {
-	err := ctl.runCtlFn(ctx, func(conn *dbus.Conn) error {
+func (ctl *XRayCtl) Start(ctx context.Context, config string) error {
+	err := ctl.runCtlFn(ctx, func(conn *dbus.Conn) (err error) {
+		if err := os.WriteFile(ctl.cfgPath, []byte(config), 0o644); err != nil {
+			return fmt.Errorf("%w: write xray config: %v", errdefs.ErrAccess, err)
+		}
+
 		systemdCh := make(chan string)
-		_, err := conn.RestartUnitContext(ctx, xrayService, "replace", systemdCh)
+		_, err = conn.RestartUnitContext(ctx, xrayService, "replace", systemdCh)
 		if err != nil {
 			return fmt.Errorf("%w: start service: %v", errdefs.ErrService, err)
 		}

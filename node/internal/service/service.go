@@ -37,27 +37,29 @@ func New(cfg XRayCfg, api XRayApi, ctl XRayCtl) (*Service, error) {
 	}, nil
 }
 
-func (s *Service) Start(ctx context.Context, users []models.User) error {
+func (s *Service) Start(ctx context.Context, users []models.User) (*models.Node, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	// update config
-	if err := s.cfg.SetUsers(users); err != nil {
-		return fmt.Errorf("add config users: %w", err)
+	serverCfg, err := s.cfg.GetServerConfig(users)
+	if err != nil {
+		return nil, fmt.Errorf("get users config: %w", err)
 	}
 
 	// start service
-	if err := s.ctl.Start(ctx); err != nil {
-		return fmt.Errorf("restart service: %w", err)
+	if err := s.ctl.Start(ctx, serverCfg); err != nil {
+		return nil, fmt.Errorf("restart service: %w", err)
 	}
 
 	// ping service after restart, several attempt required
 	restartPingRetries := 5
 	if err := s.ping(ctx, restartPingRetries); err != nil {
-		return fmt.Errorf("ping service: %w", err)
+		return nil, fmt.Errorf("ping service: %w", err)
 	}
-
-	return nil
+	return &models.Node{
+		ClientConfig: s.cfg.GetClientConfig(),
+	}, nil
 }
 
 func (s *Service) Stop(ctx context.Context) error {

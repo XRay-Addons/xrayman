@@ -125,7 +125,10 @@ func (app *App) init(initers []Initer) error {
 }
 
 func (app *App) initXRayCfg(ctx context.Context) (Closer, error) {
-	xrayCfg, err := xraycfg.New(app.cfg.XRayServerConfigPath)
+	xrayCfg, err := xraycfg.New(
+		app.cfg.XRayServerConfigPath,
+		app.cfg.XRayClientConfigPath,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("init xray cfg: %w", err)
 	}

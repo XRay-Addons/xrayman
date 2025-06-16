@@ -37,11 +37,19 @@ func (h *StatusHandler) StartHandler() http.HandlerFunc {
 			h.WriteError(w, errors.ErrInvalidRequestJSON, err.Error())
 			return
 		}
-		if err := h.service.Start(r.Context(), request.Users); err != nil {
+		node, err := h.service.Start(r.Context(), request.Users)
+		if err != nil {
 			h.WriteError(w, errors.ErrInternalServerError, err.Error())
 			return
 		}
-		w.WriteHeader(http.StatusOK)
+		response := models.StartNodeResponse{
+			NodeProperties: *node,
+		}
+		w.Header().Set(constants.ContentType, constants.ContentTypeJSON)
+		if err = json.NewEncoder(w).Encode(response); err != nil {
+			h.WriteError(w, errors.ErrInternalServerError, err.Error())
+			return
+		}
 	}
 }
 
