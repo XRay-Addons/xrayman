@@ -14,26 +14,34 @@ type Service struct {
 	cfg XRayCfg
 	api XRayApi
 	ctl XRayCtl
+	perfCtl PerfCtl
 
-	running bool
 	mu      sync.Mutex
 }
 
-func New(cfg XRayCfg, api XRayApi, ctl XRayCtl) (*Service, error) {
+func New(
+	cfg XRayCfg,
+	ctl XRayCtl,
+	api XRayApi,
+	perfCtl PerfCtl,
+) (*Service, error) {
 	if cfg == nil {
 		return nil, fmt.Errorf("%w: cfg not exists", errdefs.ErrIPE)
+	}
+	if ctl == nil {
+		return nil, fmt.Errorf("%w: ctl not exists", errdefs.ErrIPE)
 	}
 	if api == nil {
 		return nil, fmt.Errorf("%w: api not exists", errdefs.ErrIPE)
 	}
-	if ctl == nil {
-		return nil, fmt.Errorf("%w: ctl not exists", errdefs.ErrIPE)
+	if perfCtl == nil {
+		return nil, fmt.Errorf("%w: perfctl not exists", errdefs.ErrIPE)
 	}
 	return &Service{
 		cfg:     cfg,
 		api:     api,
 		ctl:     ctl,
-		running: false,
+		perfCtl: perfCtl,
 	}, nil
 }
 
@@ -73,16 +81,28 @@ func (s *Service) Stop(ctx context.Context) error {
 	return nil
 }
 
-func (s *Service) Status(ctx context.Context) (models.Status, error) {
+func (s *Service) Status(ctx context.Context) (*models.NodeStatus, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	status, err := s.ctl.Status(ctx)
 	if err != nil {
-		return models.NotRunning, fmt.Errorf("get xray status: %w", err)
+		return nil, fmt.Errorf("get xray status: %w", err)
+	}
+	cpuLoad, err := s.perfCtl.GetCPUUsage()
+	if err != nil {
+		return nil, fmt.Errorf("get cpu usage: %w", err)
+	}
+	ramLoad, err := s.perfCtl.GetRAMUsage()
+	if err != nil {
+		return nil, fmt.Errorf("get ram usage: %w", err)
 	}
 
-	return status, nil
+	return &models.NodeStatus{
+		Status: status,
+		CPULoad: cpuLoad,
+		RAMLoad: ramLoad,
+	}, nil
 }
 
 func (s *Service) AddUsers(ctx context.Context, users []models.User) error {

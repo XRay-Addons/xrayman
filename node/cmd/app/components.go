@@ -22,6 +22,10 @@ type XRayApi interface {
 	Close() error
 }
 
+type PerfCtl interface {
+	service.PerfCtl
+}
+
 type Service interface {
 	handlers.Service
 }

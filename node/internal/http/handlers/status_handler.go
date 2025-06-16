@@ -71,7 +71,12 @@ func (h *StatusHandler) StatusHandler() http.HandlerFunc {
 			return
 		}
 
-		if _, err := w.Write([]byte(status)); err != nil {
+		response := models.NodeStatusResponse{
+			NodeStatus: *status,
+		}
+
+		w.Header().Set(constants.ContentType, constants.ContentTypeJSON)
+		if err = json.NewEncoder(w).Encode(response); err != nil {
 			h.WriteError(w, errors.ErrInternalServerError, err.Error())
 			return
 		}

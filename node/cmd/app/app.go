@@ -15,6 +15,7 @@ import (
 	"github.com/XRay-Addons/xrayman/node/internal/xrayapi"
 	"github.com/XRay-Addons/xrayman/node/internal/xraycfg"
 	"github.com/XRay-Addons/xrayman/node/internal/xrayctl"
+	"github.com/XRay-Addons/xrayman/node/internal/perfctl"
 
 	"go.uber.org/zap"
 )
@@ -31,6 +32,8 @@ type App struct {
 	xrayCfg XRayCfg
 	xrayCtl XRayCtl
 	xrayAPI XRayApi
+
+	perfCtl PerfCtl
 
 	service handlers.Service
 
@@ -53,6 +56,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		app.initXRayCfg,
 		app.initXRayCtl,
 		app.initXRayAPI,
+		app.initPerfCtl,
 		app.initService,
 		app.initHandlers,
 		app.initServer,
@@ -175,8 +179,13 @@ func (app *App) closeXRayAPI(ctx context.Context) error {
 	return nil
 }
 
+func (app *App) initPerfCtl(ctx context.Context) (Closer, error) {
+	app.perfCtl = &perfctl.PerfCtl{}
+	return nil, nil
+}
+
 func (app *App) initService(ctx context.Context) (Closer, error) {
-	service, err := service.New(app.xrayCfg, app.xrayAPI, app.xrayCtl)
+	service, err := service.New(app.xrayCfg, app.xrayCtl, app.xrayAPI, app.perfCtl)
 	if err != nil {
 		return nil, fmt.Errorf("init service: %w", err)
 	}
