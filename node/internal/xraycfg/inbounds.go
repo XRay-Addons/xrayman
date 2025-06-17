@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/node/internal/models"
+	"github.com/XRay-Addons/xrayman/shared/models"
 	"github.com/tidwall/gjson"
 )
 

@@ -7,7 +7,7 @@ import (
 
 	"github.com/XRay-Addons/xrayman/node/internal/http/constants"
 	"github.com/XRay-Addons/xrayman/node/internal/http/errors"
-	"github.com/XRay-Addons/xrayman/node/internal/models"
+	"github.com/XRay-Addons/xrayman/shared/models"
 	"go.uber.org/zap"
 )
 

@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/node/internal/models"
+	"github.com/XRay-Addons/xrayman/shared/models"
 	handlerService "github.com/xtls/xray-core/app/proxyman/command"
 	statsService "github.com/xtls/xray-core/app/stats/command"
 	"google.golang.org/grpc"

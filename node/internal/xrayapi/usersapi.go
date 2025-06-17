@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/node/internal/models"
+	"github.com/XRay-Addons/xrayman/shared/models"
 	handlerService "github.com/xtls/xray-core/app/proxyman/command"
 	"github.com/xtls/xray-core/common/protocol"
 	"github.com/xtls/xray-core/common/serial"
@@ -104,7 +104,7 @@ func delUser(
 	if err == nil {
 		return nil
 	}
-	
+
 	// not exists is not an error for us
 	notFoundErrPattern := fmt.Sprintf("User %s not found", u.Name)
 	if err != nil && strings.Contains(err.Error(), notFoundErrPattern) {

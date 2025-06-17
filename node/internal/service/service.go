@@ -7,16 +7,16 @@ import (
 	"time"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/node/internal/models"
+	"github.com/XRay-Addons/xrayman/shared/models"
 )
 
 type Service struct {
-	cfg XRayCfg
-	api XRayApi
-	ctl XRayCtl
+	cfg     XRayCfg
+	api     XRayApi
+	ctl     XRayCtl
 	perfCtl PerfCtl
 
-	mu      sync.Mutex
+	mu sync.Mutex
 }
 
 func New(
@@ -99,7 +99,7 @@ func (s *Service) Status(ctx context.Context) (*models.NodeStatus, error) {
 	}
 
 	return &models.NodeStatus{
-		Status: status,
+		Status:  status,
 		CPULoad: cpuLoad,
 		RAMLoad: ramLoad,
 	}, nil

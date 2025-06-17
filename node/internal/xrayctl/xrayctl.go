@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/node/internal/models"
+	"github.com/XRay-Addons/xrayman/shared/models"
 	"github.com/coreos/go-systemd/v22/dbus"
 	"go.uber.org/zap"
 	"gopkg.in/ini.v1"

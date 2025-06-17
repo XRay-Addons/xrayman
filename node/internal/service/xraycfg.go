@@ -1,6 +1,6 @@
 package service
 
-import "github.com/XRay-Addons/xrayman/node/internal/models"
+import "github.com/XRay-Addons/xrayman/shared/models"
 
 type XRayCfg interface {
 	GetInbounds() []models.Inbound

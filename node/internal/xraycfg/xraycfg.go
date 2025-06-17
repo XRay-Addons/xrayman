@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/node/internal/models"
+	"github.com/XRay-Addons/xrayman/shared/models"
 )
 
 type XRayCfg struct {

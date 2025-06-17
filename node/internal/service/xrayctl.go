@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	"github.com/XRay-Addons/xrayman/node/internal/models"
+	"github.com/XRay-Addons/xrayman/shared/models"
 )
 
 type XRayCtl interface {
