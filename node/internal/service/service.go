@@ -45,7 +45,7 @@ func New(
 	}, nil
 }
 
-func (s *Service) Start(ctx context.Context, users []models.User) (*models.Node, error) {
+func (s *Service) Start(ctx context.Context, users []models.User) (*models.NodeProperties, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -65,7 +65,7 @@ func (s *Service) Start(ctx context.Context, users []models.User) (*models.Node,
 	if err := s.ping(ctx, restartPingRetries); err != nil {
 		return nil, fmt.Errorf("ping service: %w", err)
 	}
-	return &models.Node{
+	return &models.NodeProperties{
 		ClientConfig: s.cfg.GetClientConfig(),
 	}, nil
 }

@@ -1,5 +1,5 @@
 package models
 
-type Node struct {
+type NodeProperties struct {
 	ClientConfig string `json:"client_config"`
 }

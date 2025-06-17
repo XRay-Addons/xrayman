@@ -7,7 +7,7 @@ import (
 )
 
 type Service interface {
-	Start(ctx context.Context, users []models.User) (*models.Node, error)
+	Start(ctx context.Context, users []models.User) (*models.NodeProperties, error)
 	Stop(ctx context.Context) error
 	Status(ctx context.Context) (*models.NodeStatus, error)
 	AddUsers(ctx context.Context, users []models.User) error

@@ -5,11 +5,11 @@ type StartNodeRequest struct {
 }
 
 type StartNodeResponse struct {
-	NodeProperties Node `json:"node_properties"`
+	NodeProperties NodeProperties `json:"node_properties"`
 }
 
 type NodeStatusResponse struct {
-	NodeStatus NodeStatus `json:"node_status`
+	NodeStatus NodeStatus `json:"node_status"`
 }
 
 type AddUsersRequest struct {
