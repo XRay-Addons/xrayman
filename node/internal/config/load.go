@@ -20,7 +20,7 @@ func LoadConfig() (*Config, error) {
 
 func defaultConfig() *Config {
 	return &Config{
-		XRayExecPath:         "/var/etc/xray/xray",
+		XRayExecPath:         "/usr/local/bin/xrayman/xray",
 		XRayServerConfigPath: "/var/etc/xray/server.yaml",
 		XRayClientConfigPath: "/var/etc/xray/client.yaml",
 		Endpoint:             "localhost:8080",
