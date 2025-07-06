@@ -3,11 +3,12 @@ package service
 import (
 	"context"
 
-	"github.com/XRay-Addons/xrayman/shared/models"
+	"github.com/XRay-Addons/xrayman/node/pkg/api/models"
 )
 
 type XRayApi interface {
-	AddUsers(ctx context.Context, ins []models.Inbound, users []models.User) error
-	DelUsers(ctx context.Context, ins []models.Inbound, users []models.User) error
+	EditUsers(ctx context.Context, ins []models.Inbound,
+		add, remove []models.User) error
+
 	Ping(ctx context.Context) error
 }

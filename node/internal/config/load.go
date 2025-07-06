@@ -23,7 +23,6 @@ func defaultConfig() *Config {
 		XRayExecPath:         "/usr/local/bin/xrayman/xray",
 		XRayServerConfigPath: "/var/etc/xray/server.yaml",
 		XRayClientConfigPath: "/var/etc/xray/client.yaml",
-		Endpoint:             "localhost:8080",
 	}
 }
 
@@ -38,9 +37,6 @@ func readCLIParams(c *Config) error {
 
 	fs.StringVar(&c.XRayClientConfigPath, "c", c.XRayClientConfigPath,
 		"xray client config path")
-
-	fs.StringVar(&c.Endpoint, "a", c.Endpoint,
-		"server endpoint tcp address, like :8080, 127.0.0.1:80, localhost:22")
 
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		return err

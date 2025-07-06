@@ -6,18 +6,18 @@ import (
 	"strings"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/shared/models"
+	"github.com/XRay-Addons/xrayman/node/internal/models"
 	handlerService "github.com/xtls/xray-core/app/proxyman/command"
 	"github.com/xtls/xray-core/common/protocol"
 	"github.com/xtls/xray-core/common/serial"
 	"github.com/xtls/xray-core/proxy/vless"
 )
 
-func AddUsers(
+func EditUsers(
 	ctx context.Context,
 	hs handlerService.HandlerServiceClient,
 	ins []models.Inbound,
-	users []models.User,
+	add, remove []models.User,
 ) error {
 	if hs == nil {
 		return fmt.Errorf("%w: api not exists", errdefs.ErrIPE)
@@ -26,34 +26,13 @@ func AddUsers(
 	// execute in tx
 	var tx ApiTx
 	for _, in := range ins {
-		for _, u := range users {
+		for _, u := range add {
 			tx.AddFn(TxFn{
 				Fn: func() error { return addUser(ctx, hs, in, u) },
 				Rb: func() error { return delUser(ctx, hs, in, u) },
 			})
 		}
-	}
-	if err := tx.Execute(); err != nil {
-		return fmt.Errorf("%w: add users: %v", errdefs.ErrXRay, err)
-	}
-
-	return nil
-}
-
-func DelUsers(
-	ctx context.Context,
-	hs handlerService.HandlerServiceClient,
-	ins []models.Inbound,
-	users []models.User,
-) error {
-	if hs == nil {
-		return fmt.Errorf("%w: api not exists", errdefs.ErrIPE)
-	}
-
-	// execute in tx
-	var tx ApiTx
-	for _, in := range ins {
-		for _, u := range users {
+		for _, u := range remove {
 			tx.AddFn(TxFn{
 				Fn: func() error { return delUser(ctx, hs, in, u) },
 				Rb: func() error { return addUser(ctx, hs, in, u) },
@@ -61,7 +40,7 @@ func DelUsers(
 		}
 	}
 	if err := tx.Execute(); err != nil {
-		return fmt.Errorf("%w: del users: %v", errdefs.ErrXRay, err)
+		return fmt.Errorf("%w: add users: %v", errdefs.ErrXRay, err)
 	}
 
 	return nil

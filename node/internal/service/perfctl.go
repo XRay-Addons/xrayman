@@ -1,7 +1,7 @@
 package service
 
+import "github.com/XRay-Addons/xrayman/node/pkg/api/models"
 
 type PerfCtl interface {
-	GetCPUUsage() (int, error)
-	GetRAMUsage() (int, error)
+	GetSystemUsage() (*models.SystemUsage, error)
 }

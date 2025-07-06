@@ -1,4 +1,4 @@
-package xrayctl
+package systemctl
 
 import (
 	"bytes"

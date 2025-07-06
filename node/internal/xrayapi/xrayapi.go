@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/shared/models"
+	"github.com/XRay-Addons/xrayman/node/internal/models"
 	handlerService "github.com/xtls/xray-core/app/proxyman/command"
 	statsService "github.com/xtls/xray-core/app/stats/command"
 	"google.golang.org/grpc"
@@ -62,10 +62,10 @@ func (api *XRayApi) Close() error {
 	return nil
 }
 
-func (api *XRayApi) AddUsers(
+func (api *XRayApi) EditUsers(
 	ctx context.Context,
 	ins []models.Inbound,
-	users []models.User,
+	add, remove []models.User,
 ) error {
 	if api == nil {
 		return fmt.Errorf("%w: api not exists", errdefs.ErrIPE)

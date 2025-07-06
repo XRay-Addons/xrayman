@@ -10,10 +10,9 @@ type Server struct {
 	srv *http.Server
 }
 
-func New(addr string, handler http.Handler) *Server {
+func New(handler http.Handler) *Server {
 	return &Server{
 		srv: &http.Server{
-			Addr:    addr,
 			Handler: handler,
 		},
 	}
