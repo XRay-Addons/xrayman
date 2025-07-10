@@ -4,5 +4,5 @@ type ServiceStatus string
 
 const (
 	ServiceRunning ServiceStatus = "Running"
-	ServiceStopped               = "Stopped"
+	ServiceStopped ServiceStatus = "Stopped"
 )

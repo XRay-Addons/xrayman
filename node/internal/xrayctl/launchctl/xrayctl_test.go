@@ -1,39 +1,92 @@
 package launchctl
 
 import (
+	"context"
+	"os"
+	"path/filepath"
 	"testing"
+	"time"
 
+	"github.com/XRay-Addons/xrayman/node/internal/models"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 )
 
 const (
 	testExecPath = "/usr/local/bin/xrayman/xray"
-	testCfgPath  = "/usr/local/bin/xrayman/server.yaml"
-	testPlist    = `<?xml version="1.0" encoding="UTF-8"?>
-<plist version="1.0">
-  <dict>
-    <key>Label</key>
-    <string>xray</string>
-    <key>ProgramArguments</key>
-    <array>
-      <string>/usr/local/bin/xrayman/xray</string>
-      <string>-config</string>
-      <string>/usr/local/bin/xrayman/server.yaml</string>
-    </array>
-    <key>RunAtLoad</key>
-    <false/>
-    
-    <key>ProcessType</key>
-    <string>Background</string>
-  </dict>
-</plist>`
 )
 
-func TestMakePlist(t *testing.T) {
-	plist, err := makePlist(testExecPath, testCfgPath)
-	require.NoError(t, err)
-	require.Equal(t, testPlist, string(plist))
-}
+const testXRayCfg = `{
+  "log": { "loglevel": "warning" },
+  "inbounds": [],
+  "outbounds": [{ "protocol": "freedom", "settings": {} }]
+}`
 
-// test service ctl?
-// create and install mock service?
+// test service ctl
+func TestXrayctl(t *testing.T) {
+	ctx := context.TODO()
+
+	testCfgPath := filepath.Join(t.TempDir(), "config.json")
+
+	// write xray config to file,
+	// remove it after execution
+	err := os.WriteFile(testCfgPath, []byte(testXRayCfg), 0o644)
+	require.NoError(t, err)
+	defer func() {
+		err := os.Remove(testCfgPath)
+		assert.NoError(t, err)
+	}()
+
+	// create xray service
+	log := zap.NewNop()
+	xrayctl, err := New(testExecPath, testCfgPath, log)
+	require.NoError(t, err)
+	defer func() {
+		err := xrayctl.Close(ctx)
+		assert.NoError(t, err)
+		// check service path is deleted
+		_, err = os.Stat(xrayctl.plistLocation)
+		assert.True(t, os.IsNotExist(err))
+	}()
+
+	// wait 1 second till service initialization
+	time.Sleep(1 * time.Second)
+
+	// check status is stopped now
+	status, err := xrayctl.Status(ctx)
+	assert.NoError(t, err)
+	assert.Equal(t, models.ServiceStopped, status)
+
+	// check scenario: [[start, status] x 2, [stop, status] x 2] x 2
+	for range 2 {
+		for range 2 {
+			// start node
+			err = xrayctl.Start(ctx)
+			assert.NoError(t, err)
+
+			// wait 1 second till service started
+			time.Sleep(1 * time.Second)
+
+			// check status is running
+			status, err = xrayctl.Status(ctx)
+			assert.NoError(t, err)
+			assert.Equal(t, models.ServiceRunning, status)
+		}
+
+		// check stop two times
+		for range 2 {
+			// stop node
+			err = xrayctl.Stop(ctx)
+			assert.NoError(t, err)
+
+			// wait 1 second till service stopped
+			time.Sleep(1 * time.Second)
+
+			// check status is running
+			status, err = xrayctl.Status(ctx)
+			assert.NoError(t, err)
+			assert.Equal(t, models.ServiceStopped, status)
+		}
+	}
+}

@@ -46,9 +46,8 @@ const plistLocation = "/Library/LaunchAgents/xray.plist"
 const statusRegex = `(?m)^[ \t]*state = (.+?)$`
 
 type XRayCtl struct {
-	userDomain      string // gui/501
-	domainedService string // gui/501/<serviceName>
-	plistLocation   string // /Users/user/<plistLocation>
+	userDomain    string // gui/501
+	plistLocation string // /Users/user/<plistLocation>
 
 	// for initialization loop
 	initialized atomic.Bool
@@ -72,10 +71,9 @@ func New(execPath, cfgPath string, log *zap.Logger) (*XRayCtl, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	xrayCtl := &XRayCtl{
-		userDomain:      userDomain,
-		domainedService: filepath.Join(userDomain, serviceName),
-		plistLocation:   filepath.Join(userHome, plistLocation),
-		cancel:          cancel,
+		userDomain:    userDomain,
+		plistLocation: filepath.Join(userHome, plistLocation),
+		cancel:        cancel,
 	}
 
 	// init plist
@@ -165,9 +163,8 @@ func (ctl *XRayCtl) createServiceLoop(ctx context.Context, log *zap.Logger) {
 	defer ctl.wg.Done()
 
 	initFn := func(ctx context.Context) error {
-		// remove existed service, continue on error
+		// remove existed service
 		err := removeService(ctl.userDomain, serviceName)
-		createService(ctl.domainedService, ctl.plistLocation)
 		if err != nil {
 			err = fmt.Errorf("init service: %w", err)
 			log.Warn(err.Error())
@@ -185,9 +182,6 @@ func (ctl *XRayCtl) createServiceLoop(ctx context.Context, log *zap.Logger) {
 		// mark as initialized
 		ctl.initialized.Store(true)
 
-		// log something
-		log.Info("service initialized")
-
 		return nil
 	}
 
@@ -195,11 +189,8 @@ func (ctl *XRayCtl) createServiceLoop(ctx context.Context, log *zap.Logger) {
 }
 
 func (ctl *XRayCtl) Start(ctx context.Context) error {
-	if ctl == nil {
-		return fmt.Errorf("%w: xrayctl", errdefs.ErrNilObjectCall)
-	}
-	if !ctl.initialized.Load() {
-		return fmt.Errorf("%w: start: not initialized", errdefs.ErrService)
+	if err := ctl.checkServiceReady(); err != nil {
+		return fmt.Errorf("xray start: %w", err)
 	}
 
 	// send start signal to service
@@ -207,27 +198,29 @@ func (ctl *XRayCtl) Start(ctx context.Context) error {
 }
 
 func (ctl *XRayCtl) Stop(ctx context.Context) error {
-	if ctl == nil {
-		return fmt.Errorf("%w: xrayctl", errdefs.ErrNilObjectCall)
-	}
-	if !ctl.initialized.Load() {
-		return fmt.Errorf("%w: start: not initialized", errdefs.ErrService)
+	if err := ctl.checkServiceReady(); err != nil {
+		return fmt.Errorf("xray stop: %w", err)
 	}
 
 	return stopService(ctl.userDomain, serviceName)
 }
 
 func (ctl *XRayCtl) Status(ctx context.Context) (models.ServiceStatus, error) {
-	if ctl == nil {
-		return models.ServiceStopped, fmt.Errorf(
-			"%w: xrayctl", errdefs.ErrNilObjectCall)
-	}
-	if !ctl.initialized.Load() {
-		return models.ServiceStopped, fmt.Errorf(
-			"%w: start: not initialized", errdefs.ErrService)
+	if err := ctl.checkServiceReady(); err != nil {
+		return models.ServiceStopped, fmt.Errorf("xray status: %w", err)
 	}
 
 	return getServiceStatus(ctl.userDomain, serviceName)
+}
+
+func (ctl *XRayCtl) checkServiceReady() error {
+	if ctl == nil {
+		return fmt.Errorf("%w: xrayctl", errdefs.ErrNilObjectCall)
+	}
+	if !ctl.initialized.Load() {
+		return errdefs.ErrServiceNotReady
+	}
+	return nil
 }
 
 func userDomain() (string, error) {
