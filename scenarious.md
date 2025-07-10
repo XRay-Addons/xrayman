@@ -80,6 +80,7 @@ GET /user/{user_id}-{user_name}/nodes
 - Key
 - ActualStatus
 - RequiredStatus
+- UserConfigTemplate
 
 **users** - пользователи
 - UserID
@@ -206,5 +207,299 @@ manager сгенерирует ключ, добавит его и endpoint в б
 
 Чтобы сделать базу данных надёжнее, можно использовать какой-нибудь существующий сервис, и хостить её там, с бэкапами, репликами и всем таким.
 
+---
+---
+---
+
+# Структуры данных, коды ошибок, etc...
+
+## XRay-Node
+
+### Общие положения
+
+- Все вызовы - идемпотентные, например, `/start` после `/start` не приведёт к ошибке, просто потому, что это удобно для вызывающего кода
+
+- Все вызовы - требуют, чтобы содержимое запроса было зашифровано JWE-ключом, если это не так - возвращается `401 Unauthorized`
+
+- Все вызовы, которые требуют данные, принимают их в JSON, при несовпадении (пришел не JSON, пришел JSON, но с не теми полями) - `400 Bad Request`
+
+- Все ошибки возвращаются в JSON вот в таком формате:
+  ```
+  Content-Type: application/json
+  {
+    "error": "error", // string, required
+    "message": "error details", // string, required
+  }
+  ```
+- Все неожиданные ошибки с неясной причиной (например, json-encoder не смог записать ответ, gzip не смог ответ сархивировать, и прочее) - вот такой, ничего не говорящий ответ, детали только в логе:
+  ```
+  500 Internal Server Error
+  {
+    "error": "internal server error",
+  }
+  ```
+
+  Ниже описаны ответы-ошибки, соответствующие специальным, документированным ситуациям:
+
+### `POST /start { users }`
+
+Запустить сервис с указанным списком пользователей
+
+- `systemd/launchctl xray` сервис ещё не инициализирован:
+  ```
+  503 Service Unavailable
+  {
+    "error": "xray service initializing",
+    "message": "Service is initializing, please try again later"
+  }
+  ```
+- `systemd/systemctl start xray` вернул ошибку
+  ```
+  500 Internal Server Error
+  {
+    "error": "xray service error",
+  }
+  ```
+- успешно завершилось - вернём характеристики ноды:
+  ```
+  200 OK
+  {
+    "userConfigTemplate": "NodeName config for server user {{.UserName}}"
+  }
+  ```
+
+### `POST /stop`
+
+Остановить сервис
+
+- `systemd/launchctl xray` сервис ещё не инициализирован:
+  ```
+  503 Service Unavailable
+  {
+    "error": "xray service initializing",
+    "message": "Service is initializing, please try again later"
+  }
+  ```
+- `systemd/systemctl stop xray` вернул ошибку
+  ```
+  500 Internal Server Error
+  {
+    "error": "xray service error",
+  }
+  ```
+- успешно завершилось - `200 OK, empty body`
 
 
+### `GET /status`
+
+Запросить статус сервиса (Running/Stopped)
+
+- `systemd/launchctl xray` сервис ещё не инициализирован:
+  ```
+  503 Service Unavailable
+  {
+    "error": "xray service initializing",
+    "message": "Service is initializing, please try again later"
+  }
+  ```
+- `systemd/systemctl status xray` вернул ошибку
+  ```
+  500 Internal Server Error
+  {
+    "error": "xray service status error",
+  }
+  ```
+- успешно завершилось - вернём статус ноды:
+  ```
+  200 OK
+  {
+    "nodeStatus": "Running"/"Stopped"
+  }
+  ```
+
+### `POST /users/edit {add_users, del_users}`
+
+Изменить список пользователей
+
+- gRPC-API xray-сервиса не отвечает
+  ```
+  500 Internal Server Error
+  {
+    "error": "xray service unavailable",
+  }
+  ```
+
+- gRPC-API xray-сервиса не отвечает (возможно, сервис упал или вообще не был запущен)
+  ```
+  500 Internal Server Error
+  {
+    "error": "xray service unavailable",
+  }
+  ```
+- gRPC-API xray-сервиса отвечает ошибкой
+  ```
+  500 Internal Server Error
+  {
+    "error": "xray service error",
+  }
+  ```
+- успешно завершилось - `200 OK`
+
+## XRay-Manager
+
+### Общие положения
+
+те же, что и у XRay-Node выше +
+
+все ошибки, связанные с недоступностью базы данных:
+
+  ```
+  500 Internal Server Error
+  {
+    "error": "database unavailable"
+  }
+  ```
+
+### `POST /node/new {endpoint}`
+
+Создать новую ноду, записать ее в базу данных,
+присвоить ей id, создать JWE-ключ, вернуть их
+
+- `endpoint` не является валидным адресом:
+  ```
+  400 Bad Request
+  {
+    "error": "invalid endpoint"
+  }
+  ```
+- отработали ок (нода с таким endpoint либо уже существует, либо успешно добавлена в базу данных, сгенерирован JWE-ключ и тп):
+  ```
+  200 OK
+  {
+    "nodeID": "123",
+    "nodeKey": "JWE Node Key"
+  }
+  ```
+
+### `POST /node/start {nodeID}`
+
+запустить ноду
+
+- Ноды с таким ID не существует
+  ```
+  400 Bad Request
+  {
+    "error": "node not exists"
+  }
+  ```
+- запрос к ноде вернул ошибку - вернем такой же ответ (см. метод `xray node POST /start`)
+
+- вызов завершился успешно - `200 OK`
+
+### `POST /node/stop {nodeID}`
+
+Остановить ноду
+
+- Ноды с таким ID не существует
+  ```
+  400 Bad Request
+  {
+    "error": "node not exists"
+  }
+  ```
+- запрос к ноде вернул ошибку - вернем такой же ответ (см. метод `xray node POST /stop`)
+
+- вызов завершился успешно - `200 OK`
+
+### `GET /nodes`
+получить список нод c их статусами
+
+- вызов завершился успешно - вернем список нод с их текущими статусами 
+  ```
+  200 OK
+  {
+    "nodes" : [
+        { 
+            "id": "nodeID",
+            "endpoint": "endpoint"
+            "actualStatus": "Running"/"Stopped"/"Error"
+            "requiredStatus": "Running"/"Stopped"
+        }
+    ],
+  }
+  ```
+
+### `POST /user/new {user_name}`
+создать пользователя, записать его в базу
+данных, присвоить ему id, вернуть его
+(имена не уникальны, вот этот запрос не идемпотентен,
+будет создан новый пользователь с уникальным ID)
+
+  ```
+  200 OK
+  {
+    "user": { 
+        "id": "userID",
+        "name": "userName"
+    }
+  }
+  ```
+
+### `POST /user/enable {user_id}`
+добавить пользователя на все ноды,
+добавить информацию об этом в базу данных
+
+- Пользователя с таким ID не существует
+  ```
+  400 Bad Request
+  {
+    "error": "user not exists"
+  }
+  ```
+- Всё ок, пользователь добавился в базу, на какие-то ноды он уже добавлен, на какие-то будет добавляться фоново (они перезапустятся, если упали, база данных будет отражать это состояние) `200 OK`
+
+### `POST /user/disable {user_id}`
+удалить пользователя их всех нод,
+добавить информацию об этом в базу данных
+
+- Пользователя с таким ID не существует
+  ```
+  400 Bad Request
+  {
+    "error": "user not exists"
+  }
+  ```
+- Всё ок, требуемое состояние пользователя записано в базу, с каких-то нод он уже добавлен, с какие-то будет удаляться фоново (они перезапустятся, если упали, база данных будет отражать это состояние) `200 OK`
+
+### `GET /users`
+
+- База данных доступна, всё ок
+  ```
+  200 OK
+  {
+    "users": [
+      { 
+        "id": "userID",
+        "name": "userName"
+        "status": "Enabled"/"Disabled"
+      }
+    ],
+  }
+  ```
+
+### ```GET /user/{userID}-{userName}/nodes```
+
+получить список нод, на которых добавлен данный пользователь
+
+- `userID` не соответствует `userName`: вернём `422 Unprocessable Content` 
+
+- всё ок, вспоминаем, что упоминали `UserConfigTempalte`, который каждая нода возвращает в ответ на /start, выбираем из базы данных список нод, на которые добавлен пользователь, берем их `UserConfigTempalte`, заполняем их с помощью `userID`, возвращаем список заполненных template-ов (в таком виде их принимают клиенты)
+
+  ```
+  200 OK
+  [
+    "NodeA specific config for server user userID",
+    "NodeB specific config for server user userID",
+    "NodeF specific config for server user userID"
+  ]
+  ```
