@@ -3,7 +3,8 @@ package models
 type InboundType int
 
 const (
-	VlessTcpReality = iota
+	UnsupportedInbound = iota
+	VlessTcpReality
 	VlessXHTTP
 )
 

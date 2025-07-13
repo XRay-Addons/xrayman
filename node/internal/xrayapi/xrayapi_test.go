@@ -18,69 +18,6 @@ const (
 	testExecPath = "/usr/local/bin/xrayman/xray"
 )
 
-/*const testXRayCfg = `{
-  "log": {
-    "loglevel": "warning",
-    "dnsLog": false
-  },
-  "api": {
-    "tag": "api",
-    "listen": "127.0.0.1:32999",
-    "services": [
-      "HandlerService",
-      "LoggerService",
-      "StatsService",
-      "ReflectionService"
-    ]
-  },
-  "stats" : {},
-  "policy": {
-    "levels": {
-      "0": {
-        "statsUserUplink": true,
-        "statsUserDownlink": true,
-        "statsUserOnline": true
-      }
-    },
-    "system": {
-      "statsInboundUplink": true,
-      "statsInboundDownlink": true,
-      "statsOutboundUplink": true,
-      "statsOutboundDownlink": true
-    }
-  },
-
-  "inbounds": [
-    {
-      "tag": "reality-in",
-      "listen": "0.0.0.0",
-      "port": 443,
-      "protocol": "vless",
-      "settings": {
-        "clients": [],
-        "decryption": "none"
-      },
-      "streamSettings": {
-        "network": "tcp",
-        "security": "reality",
-        "realitySettings": {
-          "xver": 1,
-          "dest": "microsoft.com",
-          "serverNames": ["microsoft.com", "www.microsoft.com"],
-          "privateKey": "sMA5S1yWO424KI6cEhQJMn4-izaK073VF8zWisYTT2A",
-          "shortIds": [""]
-        }
-      },
-    }
-  ],
-  "outbounds": [
-    {
-      "tag": "direct",
-      "protocol": "freedom"
-    }
-  ],
-}`*/
-
 const testXRayCfg = `{
   "log": { "loglevel": "warning" },
 
