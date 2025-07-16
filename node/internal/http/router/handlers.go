@@ -6,7 +6,6 @@ import (
 	"go.uber.org/zap"
 )
 
-//go:generate mockgen -destination=./mocks/handlers_mock.go -package=mocks . Handlers
 type Handlers interface {
 	Start(log *zap.Logger) http.HandlerFunc
 	Stop(log *zap.Logger) http.HandlerFunc
