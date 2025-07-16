@@ -1,0 +1,64 @@
+package servercfg
+
+import (
+	"fmt"
+
+	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/cfgread"
+	"github.com/XRay-Addons/xrayman/node/internal/models"
+)
+
+type ServerCfg struct {
+	srvCfg   string
+	inbounds []models.Inbound
+	apiURL   string
+}
+
+func New(srvCfgPath string) (*ServerCfg, error) {
+	srvCfg, err := cfgread.ReadJSON(srvCfgPath)
+	if err != nil {
+		return nil, fmt.Errorf("init srv config: %w", err)
+	}
+
+	inbounds := parseServerInbounds(srvCfg)
+	if len(inbounds) == 0 {
+		return nil, fmt.Errorf("%w: no supported inbounds in server cfg", errdefs.ErrConfig)
+	}
+
+	apiURL := parseServerApiURL(srvCfg)
+	if apiURL == "" {
+		return nil, fmt.Errorf("%w: no api url in server cfg", errdefs.ErrConfig)
+	}
+
+	return &ServerCfg{
+		srvCfg:   srvCfg,
+		inbounds: inbounds,
+		apiURL:   apiURL,
+	}, nil
+}
+
+func (cfg *ServerCfg) GetInbounds() ([]models.Inbound, error) {
+	if cfg == nil {
+		return nil, fmt.Errorf("%w: srv cfg: get inbounds", errdefs.ErrNilObjectCall)
+	}
+	return cfg.inbounds, nil
+}
+
+func (cfg *ServerCfg) GetApiURL() (string, error) {
+	if cfg == nil {
+		return "", fmt.Errorf("%w: srv cfg: get api url", errdefs.ErrNilObjectCall)
+	}
+	return cfg.apiURL, nil
+}
+
+func (cfg *ServerCfg) GetUsersCfg(users []models.User) (string, error) {
+	if cfg == nil {
+		return "", fmt.Errorf("%w: srv cfg: get users cfg", errdefs.ErrNilObjectCall)
+	}
+
+	usersCfg, err := addServerConfigUsers(cfg.srvCfg, cfg.inbounds, users)
+	if err != nil {
+		return "", fmt.Errorf("srv cfg: %w", err)
+	}
+	return usersCfg, nil
+}

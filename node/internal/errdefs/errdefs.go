@@ -15,5 +15,8 @@ var (
 	ErrAccess        = errors.New("access error")
 	ErrCancelled     = errors.New("operation cancelled")
 	ErrNilObjectCall = errors.New("nil object call")
+	ErrNilArgPassed  = errors.New("nil argument passed")
 	ErrCmd           = errors.New("command exec error")
+
+	ErrUnsupportedPlatform = errors.New("unsupported platform")
 )

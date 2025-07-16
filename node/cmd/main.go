@@ -23,6 +23,8 @@ func main() {
 	}
 	defer logger.Sync()
 
+	stdlog.Fatal().Fatal()
+
 	app := app.New(logger)
 	defer func() {
 		logger.Info("close app")
