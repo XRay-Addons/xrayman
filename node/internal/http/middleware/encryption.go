@@ -50,6 +50,11 @@ func withDecryption(r *http.Request, key []byte) (*http.Request, error) {
 		return nil, fmt.Errorf("request body decryption: %w", err)
 	}
 
+	if len(body) == 0 {
+		// nothing to read, nothing to decode
+		return r, nil
+	}
+
 	decryptedBody, err := jwe.Decrypt(body,
 		jwe.WithKey(jwa.A256GCMKW(), key))
 
@@ -86,6 +91,10 @@ func (w *encodedWriter) Write(data []byte) (int, error) {
 }
 
 func (w *encodedWriter) FlushToClient() error {
+	if w.buf.Len() == 0 {
+		return nil
+	}
+
 	// encode content
 	encodedContent, err := jwe.Encrypt(
 		w.buf.Bytes(),
@@ -99,7 +108,6 @@ func (w *encodedWriter) FlushToClient() error {
 	if _, err = w.ResponseWriter.Write(encodedContent); err != nil {
 		return fmt.Errorf("write encoded content: %w", err)
 	}
-
 	w.buf.Reset()
 
 	return nil

@@ -7,37 +7,57 @@ import (
 	"testing"
 	"time"
 
+	"github.com/XRay-Addons/xrayman/node/internal/logging"
 	"github.com/lestrrat-go/jwx/v3/jwa"
 	"github.com/lestrrat-go/jwx/v3/jwt"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
 )
 
-func signJWT(t *testing.T, key []byte) string {
-	t.Helper()
-	token, err := jwt.NewBuilder().
-		Issuer("test").
-		IssuedAt(time.Now()).
-		Build()
+const testAuthHeader = "Authorization"
+
+func signAuthJWT(t *testing.T, header http.Header, key []byte) {
+	if len(key) == 0 {
+		return
+	}
+	token, err := jwt.NewBuilder().Issuer("test").IssuedAt(time.Now()).Build()
 	require.NoError(t, err)
 
 	signed, err := jwt.Sign(token, jwt.WithKey(jwa.HS256(), []byte(key)))
 	require.NoError(t, err)
-	return string(signed)
+	header.Set(testAuthHeader, string(signed))
 }
 
-// test handler - do nothing
-func testAuthHandler(t *testing.T) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		_, err := io.ReadAll(r.Body)
-		require.NoError(t, err)
-		w.WriteHeader(http.StatusOK)
+func testAuthSendRequest(
+	t *testing.T,
+	handler http.Handler,
+	key string, correctKey bool,
+	rec *httptest.ResponseRecorder,
+) {
+	// create request
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+
+	// sigh request header
+	signAuthJWT(t, req.Header, []byte(key))
+
+	// handle request
+	handler.ServeHTTP(rec, req)
+
+	if !correctKey {
+		return
 	}
+
+	// if key is correct - check auth header and decode body
+	validationToken, err := jwt.ParseHeader(rec.Result().Header, testAuthHeader,
+		jwt.WithKey(jwa.HS256(), []byte(key)))
+	_ = validationToken
+	require.NoError(t, err)
 }
 
+// test auth
 func TestAuth(t *testing.T) {
-	const testKey = "0123456789abcdef0123456789f"
-	const testFakeKey = "0123456789abcdef01234567890"
+	const testKey = "0123456789abcdef0123456789abcdef"
+	const testFakeKey = "0123456789abcdef0123456789abcde0"
 
 	type testItem struct {
 		name           string
@@ -46,46 +66,43 @@ func TestAuth(t *testing.T) {
 	}
 
 	testItems := []testItem{
-		{"true key", testKey, http.StatusOK},
-		{"fake key", testFakeKey, http.StatusUnauthorized},
-		{"no key", "", http.StatusUnauthorized},
+		{
+			"true key POST",
+			testKey,
+			http.StatusOK,
+		},
+		{
+			"fake key POST",
+			testFakeKey,
+			http.StatusUnauthorized,
+		},
+		{
+			"no key POST",
+			"",
+			http.StatusUnauthorized,
+		},
 	}
 
-	log, err := zap.NewDevelopment()
+	testHandler := func(w http.ResponseWriter, r *http.Request) {
+		_, err := io.ReadAll(r.Body)
+		assert.NoError(t, err, "Failed to read request body")
+		w.WriteHeader(http.StatusOK)
+	}
+
+	log, err := logging.New()
 	require.NoError(t, err)
 
-	for _, testItem := range testItems {
-		t.Run(testItem.name, func(t *testing.T) {
-			// request with encrypted body and signed header
-			req := httptest.NewRequest(http.MethodPost, "/", nil)
-			if len(testItem.key) > 0 {
-				signedJWT := signJWT(t, []byte(testItem.key))
-				req.Header.Set("Authorization", signedJWT)
-			}
+	for _, tt := range testItems {
+		t.Run(tt.name, func(t *testing.T) {
+			handler := Auth([]byte(testKey), log)(http.HandlerFunc(testHandler))
 
-			// test handler with middleware
-			handler := Auth([]byte(testKey), log)(testAuthHandler(t))
-
-			// handle request
+			// send request, record response
 			rec := httptest.NewRecorder()
-			handler.ServeHTTP(rec, req)
+			testAuthSendRequest(t, handler,
+				tt.key, tt.key == testKey, rec)
 
 			// check response status
-			require.Equal(t, testItem.expectedStatus, rec.Result().StatusCode)
-
-			// check response header for success requests
-			if testItem.expectedStatus != http.StatusOK {
-				return
-			}
-
-			// check response header
-			require.NotEmpty(t, rec.Result().Header.Get("Authorization"))
-
-			validationToken, err := jwt.ParseHeader(rec.Result().Header,
-				authHeader,
-				jwt.WithKey(jwa.HS256(), []byte(testItem.key)))
-			_ = validationToken
-			require.NoError(t, err)
+			require.Equal(t, tt.expectedStatus, rec.Code)
 		})
 	}
 }

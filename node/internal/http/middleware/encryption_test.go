@@ -2,24 +2,24 @@ package middleware
 
 import (
 	"bytes"
-	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/XRay-Addons/xrayman/node/internal/logging"
 	"github.com/lestrrat-go/jwx/v3/jwa"
 	"github.com/lestrrat-go/jwx/v3/jwe"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
 )
 
-func encryptRequestBody(t *testing.T, body bytes.Buffer, key []byte) io.Reader {
-	if len(key) == 0 {
-		return &body
+func encryptRequestBody(t *testing.T, body []byte, key []byte) io.Reader {
+	if len(key) == 0 || len(body) == 0 {
+		return bytes.NewReader(body)
 	}
 	encrypted, err := jwe.Encrypt(
-		body.Bytes(),
+		body,
 		jwe.WithKey(jwa.A256GCMKW(), key),
 		jwe.WithContentEncryption(jwa.A256GCM()),
 	)
@@ -27,78 +27,111 @@ func encryptRequestBody(t *testing.T, body bytes.Buffer, key []byte) io.Reader {
 	return bytes.NewReader(encrypted)
 }
 
-// test handler - unmarshall json body and return status ok
-func testEncryptionHandler(t *testing.T) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		body, err := io.ReadAll(r.Body)
-		require.NoError(t, err, "Failed to read request body")
+func testEncryptionSendRequest(
+	t *testing.T,
+	handler http.Handler,
+	key string, correctKey bool,
+	body []byte,
+	rec *httptest.ResponseRecorder,
+) {
+	// create request with encrypted body
+	encBody := encryptRequestBody(t, body, []byte(key))
+	req := httptest.NewRequest(http.MethodPost, "/", encBody)
 
-		var decoded map[string]string
-		err = json.Unmarshal(body, &decoded)
-		require.NoError(t, err, "Failed to unmarshal decrypted body")
+	// handle request
+	handler.ServeHTTP(rec, req)
 
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+	if !correctKey || rec.Body.Len() == 0 {
+		return
 	}
+
+	// if key is correct - decode response body
+	decryptedBody, err := jwe.Decrypt(
+		rec.Body.Bytes(),
+		jwe.WithKey(jwa.A256GCMKW(), []byte(key)),
+	)
+	require.NoError(t, err, "Failed to decrypt response")
+	rec.Body = bytes.NewBuffer(decryptedBody)
 }
 
-func TestEncryptionMiddleware(t *testing.T) {
+// test encryption and auth
+func TestEncryption(t *testing.T) {
 	const testKey = "0123456789abcdef0123456789abcdef"
 	const testFakeKey = "0123456789abcdef0123456789abcde0"
-	var testBodyContent = map[string]string{"key": "value"}
 
 	type testItem struct {
 		name           string
 		key            string
-		bodyContent    map[string]string
+		reqBody        []byte
+		respBody       []byte
 		expectedStatus int
 	}
 
 	testItems := []testItem{
-		{"true key", testKey, testBodyContent, http.StatusOK},
-		{"fake key", testFakeKey, testBodyContent, http.StatusUnauthorized},
-		{"no key", "", testBodyContent, http.StatusUnauthorized},
+		{
+			"true key",
+			testKey,
+			[]byte("request body"),
+			[]byte("response body"),
+			http.StatusOK,
+		},
+		{
+			"fake key",
+			testFakeKey,
+			[]byte("request body"),
+			[]byte("response body"),
+			http.StatusUnauthorized,
+		},
+		{
+			"no key",
+			"",
+			[]byte("request body"),
+			[]byte("response body"),
+			http.StatusUnauthorized,
+		},
+		{
+			"empty request",
+			testKey,
+			[]byte(""),
+			[]byte("response body"),
+			http.StatusOK,
+		},
+		{
+			"empty response",
+			testKey,
+			[]byte("request body"),
+			nil,
+			http.StatusOK,
+		},
 	}
 
-	log, err := zap.NewDevelopment()
+	log, err := logging.New()
 	require.NoError(t, err)
 
-	for _, testItem := range testItems {
-		t.Run(testItem.name, func(t *testing.T) {
-			// create encryption middleware
-			middleware := Encryption([]byte(testKey), log)(testEncryptionHandler(t))
-
-			// create request body
-			var body bytes.Buffer
-			json.NewEncoder(&body).Encode(testItem.bodyContent)
-			require.NoError(t, err, "Failed to encode request body")
-
-			// encrypt request body
-			var encBody = encryptRequestBody(t, body, []byte(testItem.key))
-
-			// create request
-			req := httptest.NewRequest(http.MethodPost, "/", encBody)
-
-			// handle request
-			rec := httptest.NewRecorder()
-			middleware.ServeHTTP(rec, req)
-
-			// check status
-			require.Equal(t, testItem.expectedStatus, rec.Code)
-
-			// check response
-			if testItem.expectedStatus != http.StatusOK {
-				return
+	for _, tt := range testItems {
+		t.Run(tt.name, func(t *testing.T) {
+			// handler for test request and response
+			testHandler := func(w http.ResponseWriter, r *http.Request) {
+				body, err := io.ReadAll(r.Body)
+				require.NoError(t, err, "Failed to read request body")
+				assert.Equal(t, tt.reqBody, body)
+				w.WriteHeader(http.StatusOK)
+				w.Write([]byte(tt.respBody))
 			}
 
-			// check response body
-			encryptedRes := rec.Body.Bytes()
-			_, err := jwe.Decrypt(
-				encryptedRes,
-				jwe.WithKey(jwa.A256GCMKW(), []byte(testItem.key)),
-			)
-			require.NoError(t, err, "Failed to decrypt response")
+			handler := Encryption([]byte(testKey), log)(http.HandlerFunc(testHandler))
+
+			// send request, record response
+			rec := httptest.NewRecorder()
+			testEncryptionSendRequest(t, handler,
+				tt.key, tt.key == testKey,
+				tt.reqBody, rec)
+
+			// check response status
+			require.Equal(t, tt.expectedStatus, rec.Code)
+			if tt.expectedStatus == http.StatusOK {
+				require.Equal(t, []byte(tt.respBody), rec.Body.Bytes())
+			}
 		})
 	}
 }
