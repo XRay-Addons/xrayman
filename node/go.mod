@@ -16,10 +16,13 @@ require (
 	github.com/ebitengine/purego v0.8.4 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
+	github.com/go-playground/locales v0.14.1 // indirect
+	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/godbus/dbus/v5 v5.0.4 // indirect
 	github.com/juju/ratelimit v1.0.2 // indirect
 	github.com/klauspost/compress v1.17.8 // indirect
+	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/lestrrat-go/backoff/v2 v2.0.8 // indirect
 	github.com/lestrrat-go/blackmagic v1.0.4 // indirect
 	github.com/lestrrat-go/httpcc v1.0.1 // indirect
@@ -59,6 +62,7 @@ require (
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/go-chi/chi/v5 v5.2.1
+	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/lestrrat-go/jwx v1.2.31
 	github.com/stretchr/testify v1.10.0
 	github.com/tidwall/match v1.1.1 // indirect

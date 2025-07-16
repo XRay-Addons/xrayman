@@ -1,13 +1,68 @@
 package handlers
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
 
-// if request is ok - [INFO] log time, id, method, uri, status code, duration
-// on internal error - [ERROR] log time, id, method, uri, status code, duration, error
+	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/node/internal/http/errors"
+	"github.com/XRay-Addons/xrayman/node/internal/http/router"
+	apirequests "github.com/XRay-Addons/xrayman/node/pkg/api/requests"
+	"go.uber.org/zap"
+)
 
+type Handlers struct {
+	service Service
+}
 
-// custom handlers which allows logging errors
-type Handler = func(w http.ResponseWriter, r *http.Request) error
+var _ router.Handlers = (*Handlers)(nil)
 
-func WithError = 
+func New(service Service) (*Handlers, error) {
+	if service == nil {
+		return nil, fmt.Errorf("%w: handlers init: service", errdefs.ErrNilArgPassed)
+	}
+	return &Handlers{
+		service: service,
+	}, nil
+}
 
+func (h *Handlers) Start(log *zap.Logger) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// convert from request
+		var request apirequests.StartRequest
+		if !decode(w, r, request) {
+			return
+		}
+		users := fromStartRequest(request)
+
+		// process
+		nodeProps, err := h.service.Start(r.Context(), users)
+		if err != nil {
+			errors.LogRequestError(log, r, err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		// convert to response
+		response := toStartResponse(*nodeProps)
+		encode(w, r, response, log)
+	}
+}
+
+func (h *Handlers) Stop(log *zap.Logger) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+	}
+}
+
+func (h *Handlers) Status(log *zap.Logger) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+	}
+}
+
+func (h *Handlers) EditUsers(log *zap.Logger) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+	}
+}

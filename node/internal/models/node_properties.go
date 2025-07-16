@@ -1,5 +1,5 @@
 package models
 
 type NodeProperties struct {
-	ClientCfgTemplate ClientCfgTemplate
+	ClientCfgTemplate ClientCfgTemplate `json:"clientCfgTemplate" validate:"required"`
 }

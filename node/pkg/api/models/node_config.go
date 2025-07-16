@@ -1,12 +1,11 @@
 package models
 
-type UserConfigTemplate struct {
-	Template      string
-	UserIDField   string
-	UserNameField string
-	UserKeyField  string
+type ClientCfgTemplate struct {
+	Template       string `json:"template" validate:"required"`
+	UserNameField  string `json:"userNameField" validate:"required"`
+	VlessUUIDField string `json:"vlessUuidField" validate:"required"`
 }
 
 type NodeConfig struct {
-	UserConfigTemplate UserConfigTemplate
+	UserConfigTemplate ClientCfgTemplate `json:"userConfigTemplate" validate:"required"`
 }

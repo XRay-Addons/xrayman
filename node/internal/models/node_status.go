@@ -1,5 +1,6 @@
 package models
 
 type NodeStatus struct {
-	ServiceStatus ServiceStatus
+	Status ServiceStatus `json:"clientCfgTemplate" validate:"required"`
 }
+g

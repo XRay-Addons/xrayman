@@ -3,10 +3,8 @@ package app
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/node/internal/xrayctl/launchctl"
 
 	"go.uber.org/zap"
 )
@@ -31,7 +29,7 @@ func (a *App) Run(ctx context.Context) error {
 		return fmt.Errorf("%w: app", errdefs.ErrNilObjectCall)
 	}
 
-	testExecPath := "/usr/local/bin/xrayman/xray"
+	/*testExecPath := "/usr/local/bin/xrayman/xray"
 	testCfgPath := "/usr/local/bin/xrayman/server.json"
 
 	// init service
@@ -95,6 +93,6 @@ func (a *App) Run(ctx context.Context) error {
 		time.Sleep(1 * time.Second)
 	}
 
-	<-ctx.Done()
+	<-ctx.Done()*/
 	return nil
 }

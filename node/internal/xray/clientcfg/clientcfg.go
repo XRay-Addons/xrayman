@@ -12,7 +12,7 @@ import (
 )
 
 type ClientCfg struct {
-	clientCfgTemplate models.ClientConfigTemplate
+	clientCfgTemplate models.ClientCfgTemplate
 }
 
 func New(
@@ -29,7 +29,7 @@ func New(
 		return nil, fmt.Errorf("%w: invalid client config template", errdefs.ErrConfig)
 	}
 
-	cfgTemplate := models.ClientConfigTemplate{
+	cfgTemplate := models.ClientCfgTemplate{
 		ConfigTemplate: clientCfg,
 		UserNameField:  userNameField,
 		VlessUUIDField: vlessUUIDField,
@@ -45,14 +45,14 @@ func New(
 
 }
 
-func (cfg *ClientCfg) GetClientConfigTemplate() (*models.ClientConfigTemplate, error) {
+func (cfg *ClientCfg) GetClientConfigTemplate() (*models.ClientCfgTemplate, error) {
 	if cfg == nil {
 		return nil, fmt.Errorf("%w: client cfg: get client template", errdefs.ErrNilObjectCall)
 	}
 	return &cfg.clientCfgTemplate, nil
 }
 
-func validateClientConfig(cfg *models.ClientConfigTemplate) error {
+func validateClientConfig(cfg *models.ClientCfgTemplate) error {
 	t, err := template.New("json").Parse(cfg.ConfigTemplate)
 	if err != nil {
 		return fmt.Errorf("%w: template syntax: %v", errdefs.ErrConfig, err)
