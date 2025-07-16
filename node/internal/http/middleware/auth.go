@@ -4,13 +4,13 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/XRay-Addons/xrayman/node/internal/http/constants"
 	"github.com/XRay-Addons/xrayman/node/internal/http/errors"
 	"github.com/lestrrat-go/jwx/v3/jwa"
 	"github.com/lestrrat-go/jwx/v3/jwt"
 	"go.uber.org/zap"
 )
 
-const authHeader = "Authorization"
 const authIssuer = "xray-node"
 
 func Auth(jwtkey []byte, log *zap.Logger) Middleware {
@@ -19,11 +19,12 @@ func Auth(jwtkey []byte, log *zap.Logger) Middleware {
 			// check request authorization header
 			verifiedToken, err := jwt.ParseRequest(r,
 				jwt.WithKey(jwa.HS256(), jwtkey),
-				jwt.WithHeaderKey(authHeader))
+				jwt.WithHeaderKey(constants.AuthHeader))
 			if err != nil {
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
+			// don't check token, but maybe later...
 			_ = verifiedToken
 
 			// set response authorization header
@@ -41,7 +42,7 @@ func Auth(jwtkey []byte, log *zap.Logger) Middleware {
 				return
 			}
 			// add this header
-			w.Header().Set(authHeader, string(sign))
+			w.Header().Set(constants.AuthHeader, string(sign))
 
 			// process request
 			next.ServeHTTP(w, r)

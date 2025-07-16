@@ -6,30 +6,31 @@ import (
 	"sync"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/grpcconn"
 	"github.com/XRay-Addons/xrayman/node/internal/infra/tx"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 	handlerService "github.com/xtls/xray-core/app/proxyman/command"
 	statsService "github.com/xtls/xray-core/app/stats/command"
 	"github.com/xtls/xray-core/common/protocol"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"go.uber.org/zap"
 )
 
 type XRayApi struct {
 	inbounds []models.Inbound
-	apiConn  *grpc.ClientConn
+	apiConn  *grpcconn.GRPCConn
 	hsClient handlerService.HandlerServiceClient
 	ssClient statsService.StatsServiceClient
 
 	mu sync.Mutex
 }
 
-func New(apiURL string, inbounds []models.Inbound) (*XRayApi, error) {
-	apiConn, err := grpc.NewClient(apiURL,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	)
+func New(apiURL string, inbounds []models.Inbound, log *zap.Logger) (*XRayApi, error) {
+	if log == nil {
+		return nil, fmt.Errorf("%w: xray api init: log", errdefs.ErrNilArgPassed)
+	}
+	apiConn, err := grpcconn.New(apiURL, log)
 	if err != nil {
-		return nil, fmt.Errorf("%w: connect xray api: %v", errdefs.ErrXRay, err)
+		return nil, fmt.Errorf("connect xray api: %w", err)
 	}
 
 	hsClient := handlerService.NewHandlerServiceClient(apiConn)
@@ -59,7 +60,7 @@ func (api *XRayApi) Close() error {
 	api.ssClient = nil
 
 	if err := api.apiConn.Close(); err != nil {
-		return fmt.Errorf("%w: api connection closing: %v", errdefs.ErrXRay, err)
+		return fmt.Errorf("api connection closing: %w", err)
 	}
 	api.apiConn = nil
 

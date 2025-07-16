@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/XRay-Addons/xrayman/node/internal/logging"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
 )
 
 const (
@@ -39,8 +39,10 @@ func TestXrayctl(t *testing.T) {
 		assert.NoError(t, err)
 	}()
 
+	log, err := logging.New()
+	require.NoError(t, err)
+
 	// create xray service
-	log := zap.NewNop()
 	command := []string{testExecPath, "-config", testCfgPath}
 	xrayctl, err := New(testServiceName, command, log)
 	require.NoError(t, err)

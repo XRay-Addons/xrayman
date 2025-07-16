@@ -3,22 +3,21 @@ package api
 import (
 	"context"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/XRay-Addons/xrayman/node/internal/logging"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
-	"github.com/XRay-Addons/xrayman/node/internal/xrayctl/launchctl"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
 )
 
 const (
 	testExecPath = "/usr/local/bin/xrayman/xray"
-)
 
-const testXRayCfg = `{
+	testXRayCfg = `{
   "log": { "loglevel": "warning" },
 
   "api": {
@@ -53,7 +52,8 @@ const testXRayCfg = `{
   "outbounds": [{ "protocol": "freedom", "settings": {} }]
 }`
 
-const testApiURL = "127.0.0.1:32999"
+	testApiURL = "127.0.0.1:32999"
+)
 
 var testXRayUser = models.User{
 	Name:      "username",
@@ -68,50 +68,51 @@ var testXRayInbounds = []models.Inbound{
 func TestXRayAPI(t *testing.T) {
 	ctx := context.TODO()
 
-	testCfgPath := filepath.Join(t.TempDir(), "config.json")
+	log, err := logging.New()
+	require.NoError(t, err)
+
+	// create xray api
+	xrayapi, err := New(testApiURL, testXRayInbounds, log)
+	assert.NoError(t, err)
+
+	// ping stopped service
+	err = xrayapi.Ping(ctx)
+	assert.Error(t, err)
 
 	// write xray config to file,
 	// remove it after execution
-	err := os.WriteFile(testCfgPath, []byte(testXRayCfg), 0o644)
+	testCfgPath := filepath.Join(t.TempDir(), "config.json")
+	err = os.WriteFile(testCfgPath, []byte(testXRayCfg), 0o644)
 	require.NoError(t, err)
 	defer func() {
 		err := os.Remove(testCfgPath)
 		assert.NoError(t, err)
 	}()
 
-	// create xray service
-	log := zap.NewNop()
-	xrayctl, err := launchctl.New(testExecPath, testCfgPath, log)
+	// run xray
+	xrayCmd := exec.Command(testExecPath, "-config", testCfgPath)
+	err = xrayCmd.Start()
 	require.NoError(t, err)
 	defer func() {
-		err := xrayctl.Close(ctx)
-		assert.NoError(t, err)
+		err := xrayCmd.Process.Kill()
+		require.NoError(t, err, "xray kill error")
 	}()
 
-	// wait 1 second till service initialization
-	time.Sleep(1 * time.Second)
-
-	// start node
-	err = xrayctl.Start(ctx)
-	assert.NoError(t, err)
-
-	// wait 1 second till service started
-	time.Sleep(1 * time.Second)
-
-	// check status is running now
-	status, err := xrayctl.Status(ctx)
-	assert.NoError(t, err)
-	assert.Equal(t, models.ServiceRunning, status)
-
-	// create xray api
-	xrayapi, err := New(testApiURL, testXRayInbounds)
-	assert.NoError(t, err)
+	// wait 2 second till node started
+	time.Sleep(2 * time.Second)
 
 	// ping xray service
 	err = xrayapi.Ping(ctx)
 	assert.NoError(t, err)
 
 	// edit users
+	err = xrayapi.EditUsers(ctx,
+		[]models.User{testXRayUser},
+		[]models.User{},
+	)
+	assert.NoError(t, err)
+
+	// edit users again (expecting no error)
 	err = xrayapi.EditUsers(ctx,
 		[]models.User{testXRayUser},
 		[]models.User{},

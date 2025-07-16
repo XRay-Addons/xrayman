@@ -9,6 +9,8 @@ const (
 	ContentTypeJSON  = "application/json"
 	ContentTypeJSONU = "application/json; charset=utf-8"
 
+	AuthHeader = "Authorization"
+
 	ContentEncoding = "Content-Encoding"
 	AcceptEncoding  = "Accept-Encoding"
 	GZipEncoding    = "gzip"
