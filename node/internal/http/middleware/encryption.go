@@ -50,13 +50,10 @@ func withDecryption(r *http.Request, key []byte) (*http.Request, error) {
 		return nil, fmt.Errorf("request body decryption: %w", err)
 	}
 
-	fmt.Printf("body: %s\n", body)
-
 	decryptedBody, err := jwe.Decrypt(body,
 		jwe.WithKey(jwa.A256GCMKW(), key))
 
 	if err != nil {
-		fmt.Printf("body decryption: %v\n", err)
 		return nil, fmt.Errorf("request body decryption: %w", err)
 	}
 

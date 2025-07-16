@@ -8,6 +8,7 @@ import (
 	"github.com/XRay-Addons/xrayman/node/internal/http/errors"
 	"github.com/go-chi/chi/v5/middleware"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // create middleware for requests and responses logging
@@ -22,11 +23,11 @@ func Logger(log *zap.Logger) Middleware {
 
 			duration := time.Since(start)
 
-			if responseInfo.underlyingWriterErr == nil {
+			if responseInfo.underlyingWriterErr != nil {
 				errors.LogRequestError(log, r, responseInfo.underlyingWriterErr)
 			}
 
-			log.Info("request",
+			log.Log(getLogLevel(responseInfo.status), "request",
 				zap.String("id", requestID),
 				zap.String("uri", r.RequestURI),
 				zap.String("method", r.Method),
@@ -36,6 +37,17 @@ func Logger(log *zap.Logger) Middleware {
 		}
 
 		return http.HandlerFunc(logFn)
+	}
+}
+
+func getLogLevel(status int) zapcore.Level {
+	switch status {
+	case http.StatusOK:
+		return zapcore.InfoLevel
+	case http.StatusInternalServerError:
+		return zapcore.ErrorLevel
+	default:
+		return zapcore.WarnLevel
 	}
 }
 
