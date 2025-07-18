@@ -39,23 +39,12 @@ func (h *Handlers) Start(log *zap.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		// check content type
-		if err := h.ensureJSONContentType(r); err != nil {
-			errproc.ResponseErr(w, http.StatusUnsupportedMediaType, err.Error())
-			errproc.LogRequestErr(r.Context(), log, err)
-			return
-		}
+		var err error
+		defer func() { errproc.Write(r.Context(), err, w, log) }()
 
-		var requestContent api.StartRequest
-		if err := json.NewDecoder(r.Body).Decode(&requestContent); err != nil {
-			errproc.ResponseErr(w, http.StatusBadRequest, err.Error())
-			errproc.LogRequestErr(r.Context(), log, err)
-			return
-		}
-
-		if err := h.validator.Struct(requestContent); err != nil {
-			errproc.ResponseErr(w, http.StatusBadRequest, err.Error())
-			errproc.LogRequestErr(r.Context(), log, err)
+		// parse request content
+		requestContent, err := parseJSONRequest[api.StartRequest](r, h.validator)
+		if err != nil {
 			return
 		}
 
@@ -65,13 +54,11 @@ func (h *Handlers) Start(log *zap.Logger) http.HandlerFunc {
 		// process
 		result, err := h.service.Start(r.Context(), params)
 		if err != nil {
-			errproc.ResponseErr(w, http.StatusInternalServerError, "")
-			errproc.LogResponseErr(r.Context(), log, err)
 			return
 		}
 
 		// convert to response
-		response := converters.StartResultToAPI(*result)
+		response := converters.StartResultToAPI(result)
 
 		// write result, don't log results
 		w.Header().Set(constants.ContentType, constants.ContentTypeJSON)
@@ -79,55 +66,118 @@ func (h *Handlers) Start(log *zap.Logger) http.HandlerFunc {
 	}
 }
 
-func (h *Handler) parseJSONRequest[T any](
-	w http.ResponseWriter,
-	r *http.Request,
-	log *zap.Logger,
-) (*T, error) {
-    // 1. Проверка Content-Type
-    if err := h.ensureJSONContentType(r); err != nil {
-        return nil, fmt.Errorf("content type validation failed: %w", err)
-    }
-
-    // 2. Декодирование JSON
-    var requestContent T
-    if err := json.NewDecoder(r.Body).Decode(&requestContent); err != nil {
-        return nil, fmt.Errorf("json decoding failed: %w", err)
-    }
-
-    // 3. Валидация структуры (если валидатор доступен)
-    if h.validator != nil {
-        if err := h.validator.Struct(requestContent); err != nil {
-            return nil, fmt.Errorf("request validation failed: %w", err)
-        }
-    }
-
-    return &requestContent, nil
-}
-
-func (h *Handlers) ensureJSONContentType(r *http.Request) error {
-	ct := r.Header.Get(constants.ContentType)
-	mt, _, err := mime.ParseMediaType(ct)
-	if err != nil || mt != constants.ContentTypeJSON {
-		return errdefs.ErrJSONContentType
-	}
-	return nil
-}
-
 func (h *Handlers) Stop(log *zap.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
 
+		var err error
+		defer func() { errproc.Write(r.Context(), err, w, log) }()
+
+		// request has no content
+		requestContent := &api.StopRequest{}
+
+		// convert to service params
+		params := converters.StopParamsFromAPI(requestContent)
+
+		// process
+		result, err := h.service.Stop(r.Context(), params)
+		if err != nil {
+			return
+		}
+
+		// convert to response
+		response := converters.StopResultToAPI(result)
+
+		// write result, don't log results
+		w.Header().Set(constants.ContentType, constants.ContentTypeJSON)
+		json.NewEncoder(w).Encode(response)
 	}
 }
 
 func (h *Handlers) Status(log *zap.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
 
+		var err error
+		defer func() { errproc.Write(r.Context(), err, w, log) }()
+
+		// request has no content
+		requestContent := &api.StatusRequest{}
+
+		// convert to service params
+		params := converters.StatusParamsFromAPI(requestContent)
+
+		// process
+		result, err := h.service.Status(r.Context(), params)
+		if err != nil {
+			return
+		}
+
+		// convert to response
+		response := converters.StatusResultToAPI(result)
+
+		// write result, don't log results
+		w.Header().Set(constants.ContentType, constants.ContentTypeJSON)
+		json.NewEncoder(w).Encode(response)
 	}
 }
 
 func (h *Handlers) EditUsers(log *zap.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
 
+		var err error
+		defer func() { errproc.Write(r.Context(), err, w, log) }()
+
+		// parse request content
+		requestContent, err := parseJSONRequest[api.EditUsersRequest](r, h.validator)
+		if err != nil {
+			return
+		}
+
+		// convert to service params
+		params := converters.EditUsersParamsFromAPI(requestContent)
+
+		// process
+		result, err := h.service.EditUsers(r.Context(), params)
+		if err != nil {
+			return
+		}
+
+		// convert to response
+		response := converters.EditUsersResultToAPI(result)
+
+		// write result, don't log results
+		w.Header().Set(constants.ContentType, constants.ContentTypeJSON)
+		json.NewEncoder(w).Encode(response)
 	}
+}
+
+func parseJSONRequest[T any](r *http.Request, v validator.Validate) (*T, error) {
+	// check content type
+	mt, _, err := mime.ParseMediaType(r.Header.Get(constants.ContentType))
+	if err != nil {
+		err = fmt.Errorf("parse json request: media type: %w", err)
+		return nil, errproc.NewError(errproc.ErrContentType, err)
+	}
+	if mt != constants.ContentTypeJSON {
+		err = fmt.Errorf("parse json request: media type: %s", mt)
+		return nil, errproc.NewError(errproc.ErrContentType, err)
+	}
+
+	// parse request
+	var requestContent T
+	if err := json.NewDecoder(r.Body).Decode(&requestContent); err != nil {
+		err = fmt.Errorf("parse json request: %w", err)
+		return nil, errproc.NewError(errproc.ErrContentParsing, err)
+	}
+
+	// validate
+	if err := v.Struct(requestContent); err != nil {
+		err = fmt.Errorf("validate json request: %w", err)
+		return nil, errproc.NewError(errproc.ErrContentValidation, err)
+	}
+
+	// finally, return something
+	return &requestContent, nil
 }

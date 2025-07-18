@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
+	"go.uber.org/zap"
 )
 
 func TestStart(t *testing.T) {
@@ -73,7 +74,7 @@ func TestStart(t *testing.T) {
 	handler, err := New(mockService)
 	require.NoError(t, err)
 
-	log, err := logging.New()
+	log, err := zap.NewDevelopment()
 	require.NoError(t, err)
 
 	requestBody, err := json.Marshal(testRequest)
