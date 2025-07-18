@@ -12,7 +12,13 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// write error and its reason to log and http.Response.
+// nil errors allowed
 func Write(ctx context.Context, err error, w http.ResponseWriter, log *zap.Logger) {
+	if err == nil {
+		return
+	}
+
 	// if error contains http error - write it to response,
 	// if not - write as Unknown error
 	respErr := ErrUnknownError

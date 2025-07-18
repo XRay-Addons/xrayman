@@ -17,15 +17,17 @@ const authIssuer = "xray-node"
 func Auth(jwtkey []byte, log *zap.Logger) Middleware {
 	return func(next http.Handler) http.Handler {
 		jwtauth := func(w http.ResponseWriter, r *http.Request) {
+			var err error
+			defer func() { errproc.Write(r.Context(), err, w, log) }()
+
 			// check auth header
-			if err := checkAuth(r, jwtkey); err != nil {
-				errproc.Write(r.Context(), err, w, log)
+			if err = checkAuth(r, jwtkey); err != nil {
+				err = errproc.NewError(errproc.ErrAuth, err)
 				return
 			}
 
 			// sign auth header
-			if err := signAuth(w, jwtkey); err != nil {
-				errproc.Write(r.Context(), err, w, log)
+			if err = signAuth(w, jwtkey); err != nil {
 				return
 			}
 
@@ -43,7 +45,7 @@ func checkAuth(r *http.Request, key []byte) error {
 		jwt.WithKey(jwa.HS256(), key),
 		jwt.WithHeaderKey(constants.AuthHeader))
 	if err != nil {
-		return errproc.NewError(errproc.ErrAuth, fmt.Errorf("check auth: %w", err))
+		return fmt.Errorf("check auth: %w", err)
 	}
 	// don't check token, but maybe later...
 	_ = verifiedToken
