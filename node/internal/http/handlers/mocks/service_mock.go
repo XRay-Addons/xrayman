@@ -42,59 +42,61 @@ func (m *MockService) EXPECT() *MockServiceMockRecorder {
 }
 
 // EditUsers mocks base method.
-func (m *MockService) EditUsers(ctx context.Context, add, remove []models.User) error {
+func (m *MockService) EditUsers(ctx context.Context, params models.EditUsersParams) (*models.EditUsersResult, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EditUsers", ctx, add, remove)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "EditUsers", ctx, params)
+	ret0, _ := ret[0].(*models.EditUsersResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // EditUsers indicates an expected call of EditUsers.
-func (mr *MockServiceMockRecorder) EditUsers(ctx, add, remove any) *gomock.Call {
+func (mr *MockServiceMockRecorder) EditUsers(ctx, params any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EditUsers", reflect.TypeOf((*MockService)(nil).EditUsers), ctx, add, remove)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EditUsers", reflect.TypeOf((*MockService)(nil).EditUsers), ctx, params)
 }
 
 // Start mocks base method.
-func (m *MockService) Start(ctx context.Context, users []models.User) (*models.NodeProperties, error) {
+func (m *MockService) Start(ctx context.Context, params models.StartParams) (*models.StartResult, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Start", ctx, users)
-	ret0, _ := ret[0].(*models.NodeProperties)
+	ret := m.ctrl.Call(m, "Start", ctx, params)
+	ret0, _ := ret[0].(*models.StartResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Start indicates an expected call of Start.
-func (mr *MockServiceMockRecorder) Start(ctx, users any) *gomock.Call {
+func (mr *MockServiceMockRecorder) Start(ctx, params any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockService)(nil).Start), ctx, users)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockService)(nil).Start), ctx, params)
 }
 
 // Status mocks base method.
-func (m *MockService) Status(ctx context.Context) (*models.NodeStatus, error) {
+func (m *MockService) Status(ctx context.Context, params models.StatusParams) (*models.StatusResult, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Status", ctx)
-	ret0, _ := ret[0].(*models.NodeStatus)
+	ret := m.ctrl.Call(m, "Status", ctx, params)
+	ret0, _ := ret[0].(*models.StatusResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Status indicates an expected call of Status.
-func (mr *MockServiceMockRecorder) Status(ctx any) *gomock.Call {
+func (mr *MockServiceMockRecorder) Status(ctx, params any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Status", reflect.TypeOf((*MockService)(nil).Status), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Status", reflect.TypeOf((*MockService)(nil).Status), ctx, params)
 }
 
 // Stop mocks base method.
-func (m *MockService) Stop(ctx context.Context) error {
+func (m *MockService) Stop(ctx context.Context, params models.StopParams) (*models.StopResult, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Stop", ctx)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "Stop", ctx, params)
+	ret0, _ := ret[0].(*models.StopResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Stop indicates an expected call of Stop.
-func (mr *MockServiceMockRecorder) Stop(ctx any) *gomock.Call {
+func (mr *MockServiceMockRecorder) Stop(ctx, params any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stop", reflect.TypeOf((*MockService)(nil).Stop), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stop", reflect.TypeOf((*MockService)(nil).Stop), ctx, params)
 }

@@ -42,15 +42,12 @@ func New(
 	}, nil
 }
 
-func (s *Service) Start(
-	ctx context.Context,
-	users []models.User,
-) (*models.NodeProperties, error) {
+func (s *Service) Start(ctx context.Context, params models.StartParams) (*models.StartResult, error) {
 	if s == nil {
 		return nil, fmt.Errorf("%w: service: start", errdefs.ErrNilObjectCall)
 	}
 	// get server config
-	cfg, err := s.serverCfg.GetUsersCfg(users)
+	cfg, err := s.serverCfg.GetUsersCfg(params.Users)
 	if err != nil {
 		return nil, fmt.Errorf("service start: %w", err)
 	}
@@ -59,31 +56,25 @@ func (s *Service) Start(
 		return nil, fmt.Errorf("service start: %w", err)
 	}
 	// get server properties
-	clientTemplate, err := s.clientCfg.GetClientCfgTemplate()
+	clientCfg, err := s.clientCfg.Get()
 	if err != nil {
 		return nil, fmt.Errorf("service start: %w", err)
 	}
 	// return node properties
-	return &models.NodeProperties{
-		ClientCfgTemplate: *clientTemplate,
-	}, nil
+	return &models.StartResult{ClientCfg: *clientCfg}, nil
 }
 
-func (s *Service) Stop(
-	ctx context.Context,
-) error {
+func (s *Service) Stop(ctx context.Context, params models.StopParams) (*models.StopResult, error) {
 	if s == nil {
-		return fmt.Errorf("%w: service: start", errdefs.ErrNilObjectCall)
+		return nil, fmt.Errorf("%w: service: start", errdefs.ErrNilObjectCall)
 	}
 	if err := s.xrayServiceCtl.Stop(ctx); err != nil {
-		return fmt.Errorf("service stop: %w", err)
+		return nil, fmt.Errorf("service stop: %w", err)
 	}
-	return nil
+	return &models.StopResult{}, nil
 }
 
-func (s *Service) Status(
-	ctx context.Context,
-) (*models.NodeStatus, error) {
+func (s *Service) Status(ctx context.Context, params models.StatusParams) (*models.StatusResult, error) {
 	if s == nil {
 		return nil, fmt.Errorf("%w: service: start", errdefs.ErrNilObjectCall)
 	}
@@ -91,20 +82,15 @@ func (s *Service) Status(
 	if err != nil {
 		return nil, fmt.Errorf("service status: %w", err)
 	}
-	return &models.NodeStatus{
-		ServiceStatus: status,
-	}, nil
+	return &models.StatusResult{ServiceStatus: status}, nil
 }
 
-func (s *Service) EditUsers(
-	ctx context.Context,
-	add, remove []models.User,
-) error {
+func (s *Service) EditUsers(ctx context.Context, params models.EditUsersParams) (*models.EditUsersResult, error) {
 	if s == nil {
-		return fmt.Errorf("%w: service: start", errdefs.ErrNilObjectCall)
+		return nil, fmt.Errorf("%w: service: start", errdefs.ErrNilObjectCall)
 	}
-	if err := s.xrayAPI.EditUsers(ctx, add, remove); err != nil {
-		return fmt.Errorf("service: edit users: %w", err)
+	if err := s.xrayAPI.EditUsers(ctx, params.Add, params.Remove); err != nil {
+		return nil, fmt.Errorf("service: edit users: %w", err)
 	}
-	return nil
+	return &models.EditUsersResult{}, nil
 }

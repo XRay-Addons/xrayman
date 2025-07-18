@@ -30,7 +30,7 @@ func New(apiURL string, inbounds []models.Inbound, log *zap.Logger) (*XRayApi, e
 	}
 	apiConn, err := grpcconn.New(apiURL, log)
 	if err != nil {
-		return nil, fmt.Errorf("connect xray api: %w", err)
+		return nil, fmt.Errorf("xray api: connect: %w", err)
 	}
 
 	hsClient := handlerService.NewHandlerServiceClient(apiConn)
@@ -60,7 +60,7 @@ func (api *XRayApi) Close() error {
 	api.ssClient = nil
 
 	if err := api.apiConn.Close(); err != nil {
-		return fmt.Errorf("api connection closing: %w", err)
+		return fmt.Errorf("xray api: connection closing: %w", err)
 	}
 	api.apiConn = nil
 
@@ -80,7 +80,7 @@ func (api *XRayApi) EditUsers(
 		for _, u := range add {
 			inUser, err := getInboundUser(u, in.Type)
 			if err != nil {
-				return fmt.Errorf("edit users: %w", err)
+				return fmt.Errorf("xray api: edit users: %w", err)
 			}
 			editUsersTx.AddItem(
 				api.addFn(in.Tag, inUser),
@@ -90,7 +90,7 @@ func (api *XRayApi) EditUsers(
 		for _, u := range remove {
 			inUser, err := getInboundUser(u, in.Type)
 			if err != nil {
-				return fmt.Errorf("edit users: %w", err)
+				return fmt.Errorf("xray api: edit users: %w", err)
 			}
 			editUsersTx.AddItem(
 				api.removeFn(in.Tag, inUser.Email),
@@ -100,7 +100,7 @@ func (api *XRayApi) EditUsers(
 	}
 
 	if err := editUsersTx.Run(ctx); err != nil {
-		return fmt.Errorf("edit users: %w", err)
+		return fmt.Errorf("xray api: edit users: %w", err)
 	}
 
 	return nil

@@ -40,8 +40,6 @@ func TestClientCfg(t *testing.T) {
 	err := os.WriteFile(filePath, []byte(testClientCfg), 0644)
 	require.NoError(t, err)
 
-	clientCfg, err := New(filePath, testNameField, testVlessUUIDField)
-	require.NoError(t, err)
-	_, err = clientCfg.GetClientConfigTemplate()
+	_, err = New(filePath, testNameField, testVlessUUIDField)
 	require.NoError(t, err)
 }

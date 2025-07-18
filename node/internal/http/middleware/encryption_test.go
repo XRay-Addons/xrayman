@@ -44,6 +44,9 @@ func testEncryptionSendRequest(
 	if !correctKey || rec.Body.Len() == 0 {
 		return
 	}
+	if rec.Code != http.StatusOK {
+		return
+	}
 
 	// if key is correct - decode response body
 	decryptedBody, err := jwe.Decrypt(
@@ -65,6 +68,7 @@ func TestEncryption(t *testing.T) {
 		reqBody        []byte
 		respBody       []byte
 		expectedStatus int
+		expectedBody   []byte
 	}
 
 	testItems := []testItem{
@@ -74,6 +78,7 @@ func TestEncryption(t *testing.T) {
 			[]byte("request body"),
 			[]byte("response body"),
 			http.StatusOK,
+			[]byte("response body"),
 		},
 		{
 			"fake key",
@@ -81,6 +86,7 @@ func TestEncryption(t *testing.T) {
 			[]byte("request body"),
 			[]byte("response body"),
 			http.StatusUnauthorized,
+			[]byte(`{"error":"Unauthorized","details":"invalid jwe"}`),
 		},
 		{
 			"no key",
@@ -88,6 +94,7 @@ func TestEncryption(t *testing.T) {
 			[]byte("request body"),
 			[]byte("response body"),
 			http.StatusUnauthorized,
+			[]byte(`{"error":"Unauthorized","details":"invalid jwe"}`),
 		},
 		{
 			"empty request",
@@ -95,6 +102,7 @@ func TestEncryption(t *testing.T) {
 			[]byte(""),
 			[]byte("response body"),
 			http.StatusOK,
+			[]byte("response body"),
 		},
 		{
 			"empty response",
@@ -102,6 +110,7 @@ func TestEncryption(t *testing.T) {
 			[]byte("request body"),
 			nil,
 			http.StatusOK,
+			nil,
 		},
 	}
 
@@ -130,8 +139,62 @@ func TestEncryption(t *testing.T) {
 			// check response status
 			require.Equal(t, tt.expectedStatus, rec.Code)
 			if tt.expectedStatus == http.StatusOK {
+				// check response body
 				require.Equal(t, []byte(tt.respBody), rec.Body.Bytes())
+			} else {
+				// check response error body
+				require.JSONEq(t, string(tt.expectedBody), rec.Body.String())
 			}
+		})
+	}
+}
+
+// test errors not encrypted
+func TestEncryptionError(t *testing.T) {
+	const testKey = "0123456789abcdef0123456789abcdef"
+
+	type testItem struct {
+		name       string
+		reqBody    []byte
+		respBody   []byte
+		respStatus int
+	}
+
+	testItems := []testItem{
+		{
+			"err 451",
+			[]byte("request body"),
+			[]byte(`{"error":"451 error","details":"no details"}`),
+			451,
+		},
+	}
+
+	log, err := logging.New()
+	require.NoError(t, err)
+
+	for _, tt := range testItems {
+		t.Run(tt.name, func(t *testing.T) {
+			// handler for test request and response
+			testHandler := func(w http.ResponseWriter, r *http.Request) {
+				body, err := io.ReadAll(r.Body)
+				require.NoError(t, err, "Failed to read request body")
+				assert.Equal(t, tt.reqBody, body)
+				w.WriteHeader(tt.respStatus)
+				w.Write([]byte(tt.respBody))
+			}
+
+			handler := Encryption([]byte(testKey), log)(http.HandlerFunc(testHandler))
+
+			// send request, record response
+			rec := httptest.NewRecorder()
+			testEncryptionSendRequest(t, handler,
+				testKey, true, tt.reqBody, rec)
+
+			// check response status
+			require.Equal(t, tt.respStatus, rec.Code)
+
+			// check response error body
+			require.JSONEq(t, string(tt.respBody), rec.Body.String())
 		})
 	}
 }

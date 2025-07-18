@@ -12,7 +12,7 @@ import (
 )
 
 type ClientCfg struct {
-	clientCfgTemplate models.ClientCfgTemplate
+	cfg models.ClientCfg
 }
 
 func New(
@@ -20,40 +20,30 @@ func New(
 	userNameField string,
 	vlessUUIDField string,
 ) (*ClientCfg, error) {
-	clientCfg, err := cfgread.ReadJSON(clientCfgPath)
+	cfgTemplate, err := cfgread.ReadJSON(clientCfgPath)
 	if err != nil {
 		return nil, fmt.Errorf("%w: client config file reading: %v", errdefs.ErrConfig, err)
 	}
-	_, err = template.New("validate").Parse(clientCfg)
+	_, err = template.New("validate").Parse(cfgTemplate)
 	if err != nil {
 		return nil, fmt.Errorf("%w: invalid client config template", errdefs.ErrConfig)
 	}
 
-	cfgTemplate := models.ClientCfgTemplate{
-		ConfigTemplate: clientCfg,
+	clientCfg := models.ClientCfg{
+		Template:       cfgTemplate,
 		UserNameField:  userNameField,
 		VlessUUIDField: vlessUUIDField,
 	}
 
-	if err = validateClientConfig(&cfgTemplate); err != nil {
+	if err = validateClientConfig(&clientCfg); err != nil {
 		return nil, fmt.Errorf("validate client config template: %w", err)
 	}
 
-	return &ClientCfg{
-		clientCfgTemplate: cfgTemplate,
-	}, nil
-
+	return &ClientCfg{cfg: clientCfg}, nil
 }
 
-func (cfg *ClientCfg) GetClientConfigTemplate() (*models.ClientCfgTemplate, error) {
-	if cfg == nil {
-		return nil, fmt.Errorf("%w: client cfg: get client template", errdefs.ErrNilObjectCall)
-	}
-	return &cfg.clientCfgTemplate, nil
-}
-
-func validateClientConfig(cfg *models.ClientCfgTemplate) error {
-	t, err := template.New("json").Parse(cfg.ConfigTemplate)
+func validateClientConfig(cfg *models.ClientCfg) error {
+	t, err := template.New("json").Parse(cfg.Template)
 	if err != nil {
 		return fmt.Errorf("%w: template syntax: %v", errdefs.ErrConfig, err)
 	}
@@ -72,4 +62,11 @@ func validateClientConfig(cfg *models.ClientCfgTemplate) error {
 	}
 
 	return nil
+}
+
+func (cfg *ClientCfg) Get() (*models.ClientCfg, error) {
+	if cfg == nil {
+		return nil, fmt.Errorf("%w: client cfg: get", errdefs.ErrNilObjectCall)
+	}
+	return &cfg.cfg, nil
 }

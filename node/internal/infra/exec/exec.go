@@ -19,7 +19,7 @@ func Run(name string, args []string) (stdout, stderr string, err error) {
 	err = cmd.Run()
 
 	if err != nil {
-		err = fmt.Errorf("%w: %v", errdefs.ErrCmd, err)
+		err = fmt.Errorf("%w: %v", errdefs.ErrExec, err)
 	}
 	stdout = stdoutBuf.String()
 	stderr = stderrBuf.String()

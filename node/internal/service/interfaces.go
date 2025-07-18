@@ -13,7 +13,7 @@ type ServerCfg interface {
 }
 
 type ClientCfg interface {
-	GetClientCfgTemplate() (*models.ClientCfgTemplate, error)
+	Get() (*models.ClientCfg, error)
 }
 
 type XRayServiceCtl interface {
@@ -23,8 +23,5 @@ type XRayServiceCtl interface {
 }
 
 type XRayAPI interface {
-	EditUsers(
-		ctx context.Context,
-		add, remove []models.User,
-	) error
+	EditUsers(ctx context.Context, add, remove []models.User) error
 }

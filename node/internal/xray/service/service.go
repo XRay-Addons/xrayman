@@ -38,31 +38,31 @@ func (s *XRayService) Close(ctx context.Context) error {
 		return nil
 	}
 	if err := s.supervisor.Close(ctx); err != nil {
-		return fmt.Errorf("xray service close: %w", err)
+		return fmt.Errorf("xray service: close: %w", err)
 	}
 	return nil
 }
 
 func (s *XRayService) Start(ctx context.Context, config string) error {
 	if s == nil || s.supervisor == nil {
-		return fmt.Errorf("%w: xray service start", errdefs.ErrNilObjectCall)
+		return fmt.Errorf("%w: xray service: start", errdefs.ErrNilObjectCall)
 	}
 	err := os.WriteFile(s.configPath, []byte(config), 0644)
 	if err != nil {
-		return fmt.Errorf("%w: write xray config: %v", errdefs.ErrAccess, err)
+		return fmt.Errorf("%w: xray service: start: write config: %v", errdefs.ErrAccess, err)
 	}
 	if err := s.supervisor.Start(ctx); err != nil {
-		return fmt.Errorf("xray service start: %w", err)
+		return fmt.Errorf("xray service: start: %w", err)
 	}
 	return nil
 }
 
 func (s *XRayService) Stop(ctx context.Context) error {
 	if s == nil || s.supervisor == nil {
-		return fmt.Errorf("%w: xray service stop", errdefs.ErrNilObjectCall)
+		return fmt.Errorf("%w: xray service: stop", errdefs.ErrNilObjectCall)
 	}
 	if err := s.supervisor.Stop(ctx); err != nil {
-		return fmt.Errorf("xray service stop: %w", err)
+		return fmt.Errorf("xray service: stop: %w", err)
 	}
 	return nil
 }

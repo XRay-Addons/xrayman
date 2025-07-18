@@ -9,8 +9,8 @@ import (
 //go:generate mockgen -destination=./mocks/service_mock.go -package=mocks . Service
 
 type Service interface {
-	Start(ctx context.Context, users []models.User) (*models.NodeProperties, error)
-	Stop(ctx context.Context) error
-	Status(ctx context.Context) (*models.NodeStatus, error)
-	EditUsers(ctx context.Context, add, remove []models.User) error
+	Start(ctx context.Context, params models.StartParams) (*models.StartResult, error)
+	Stop(ctx context.Context, params models.StopParams) (*models.StopResult, error)
+	Status(ctx context.Context, params models.StatusParams) (*models.StatusResult, error)
+	EditUsers(ctx context.Context, params models.EditUsersParams) (*models.EditUsersResult, error)
 }

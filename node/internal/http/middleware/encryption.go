@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/XRay-Addons/xrayman/node/internal/http/errors"
+	"github.com/XRay-Addons/xrayman/node/internal/http/errproc"
 	"github.com/lestrrat-go/jwx/v3/jwa"
 	"github.com/lestrrat-go/jwx/v3/jwe"
 	"go.uber.org/zap"
@@ -14,55 +14,60 @@ import (
 
 func Encryption(jwekey []byte, log *zap.Logger) Middleware {
 	return func(next http.Handler) http.Handler {
-		jwtauth := func(w http.ResponseWriter, r *http.Request) {
-			// reader with decryption
-			dr, err := withDecryption(r, jwekey)
+		jweenc := func(w http.ResponseWriter, r *http.Request) {
+			// dectypt req
+			decR, err := decodeReq(r, jwekey)
 			if err != nil {
-				w.WriteHeader(http.StatusUnauthorized)
+				errproc.ResponseErr(w, http.StatusUnauthorized, "invalid jwe")
+				errproc.LogRequestErr(r.Context(), log, err)
 				return
 			}
 
-			// writer with encryption
-			ew, err := withEncryption(w, jwekey)
-			if err != nil {
-				errors.LogRequestError(log, r, err)
-				w.WriteHeader(http.StatusInternalServerError)
+			// write result to writer with allowed encoding
+			encW := newEncodableWriter(w)
+			next.ServeHTTP(encW, decR)
+
+			// don't encode failed requests, flush as is
+			if encW.StatusCode() != http.StatusOK {
+				encW.Flush()
 				return
 			}
 
-			// process request
-			next.ServeHTTP(ew, dr)
-
-			// write responce
-			if err := ew.FlushToClient(); err != nil {
-				errors.LogRequestError(log, r, err)
+			// encode request
+			if err := encW.Encode(jwekey); err != nil {
+				// write error to original response writer, forget about encW
+				errproc.ResponseErr(w, http.StatusInternalServerError, "")
+				errproc.LogResponseErr(r.Context(), log, err)
+				return
 			}
+
+			encW.Flush()
 		}
 
-		return http.HandlerFunc(jwtauth)
+		return http.HandlerFunc(jweenc)
 	}
 }
 
-func withDecryption(r *http.Request, key []byte) (*http.Request, error) {
-	// decrypt request body
+func decodeReq(r *http.Request, key []byte) (*http.Request, error) {
+	// read request body
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		return nil, fmt.Errorf("request body decryption: %w", err)
 	}
-
 	if len(body) == 0 {
 		// nothing to read, nothing to decode
 		return r, nil
 	}
+	defer r.Body.Close()
 
+	// decode request body
 	decryptedBody, err := jwe.Decrypt(body,
 		jwe.WithKey(jwa.A256GCMKW(), key))
-
 	if err != nil {
 		return nil, fmt.Errorf("request body decryption: %w", err)
 	}
 
-	// replace body to decoded
+	// create request clone with decoded body
 	decodedReq := r.Clone(r.Context())
 	decodedReq.Body = io.NopCloser(bytes.NewReader(decryptedBody))
 	decodedReq.ContentLength = int64(len(decryptedBody))
@@ -71,44 +76,57 @@ func withDecryption(r *http.Request, key []byte) (*http.Request, error) {
 	return decodedReq, nil
 }
 
-type encodedWriter struct {
-	http.ResponseWriter
-	key []byte
-	buf bytes.Buffer
+type encodableWriter struct {
+	baseWriter http.ResponseWriter
+	buf        bytes.Buffer
+	statusCode int
 }
 
-var _ http.ResponseWriter = (*encodedWriter)(nil)
-
-func withEncryption(baseWriter http.ResponseWriter, key []byte) (*encodedWriter, error) {
-	return &encodedWriter{
-		ResponseWriter: baseWriter,
-		key:            key,
-	}, nil
+func newEncodableWriter(baseWriter http.ResponseWriter) *encodableWriter {
+	return &encodableWriter{
+		baseWriter: baseWriter,
+		statusCode: http.StatusOK,
+	}
 }
 
-func (w *encodedWriter) Write(data []byte) (int, error) {
-	return w.buf.Write(data)
+func (e *encodableWriter) Header() http.Header {
+	return e.baseWriter.Header()
 }
 
-func (w *encodedWriter) FlushToClient() error {
-	if w.buf.Len() == 0 {
+func (e *encodableWriter) Write(p []byte) (int, error) {
+	return e.buf.Write(p)
+}
+
+func (e *encodableWriter) WriteHeader(statusCode int) {
+	e.statusCode = statusCode
+}
+
+func (e *encodableWriter) StatusCode() int {
+	return e.statusCode
+}
+
+// encode buffer
+func (e *encodableWriter) Encode(key []byte) error {
+	if e.buf.Len() == 0 {
 		return nil
 	}
-
-	// encode content
+	// try to encode buffer
 	encodedContent, err := jwe.Encrypt(
-		w.buf.Bytes(),
-		jwe.WithKey(jwa.A256GCMKW(), w.key),
+		e.buf.Bytes(),
+		jwe.WithKey(jwa.A256GCMKW(), key),
 		jwe.WithContentEncryption(jwa.A256GCM()))
 	if err != nil {
-		return fmt.Errorf("encoding content: %w", err)
+		return err
 	}
-
-	// write encoded content
-	if _, err = w.ResponseWriter.Write(encodedContent); err != nil {
-		return fmt.Errorf("write encoded content: %w", err)
-	}
-	w.buf.Reset()
-
+	e.buf = *bytes.NewBuffer(encodedContent)
 	return nil
 }
+
+// flush to base writer
+func (e *encodableWriter) Flush() {
+	// ignore flushing errors, we can't do anything with it
+	e.baseWriter.WriteHeader(e.statusCode)
+	_, _ = e.baseWriter.Write(e.buf.Bytes())
+}
+
+var _ http.ResponseWriter = (*encodableWriter)(nil)

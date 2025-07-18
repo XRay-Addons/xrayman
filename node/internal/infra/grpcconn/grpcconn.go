@@ -65,7 +65,7 @@ func (conn *GRPCConn) Close() error {
 		return nil
 	}
 
-	return fmt.Errorf("%w: close grpc conn: %v", errdefs.ErrXRay, err)
+	return fmt.Errorf("%w: close grpc conn: %v", errdefs.ErrGRPC, err)
 }
 
 func (conn *GRPCConn) createConnLoop(ctx context.Context, target string, log *zap.Logger) {
