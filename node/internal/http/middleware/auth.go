@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -18,16 +19,13 @@ func Auth(jwtkey []byte, log *zap.Logger) Middleware {
 		jwtauth := func(w http.ResponseWriter, r *http.Request) {
 			// check auth header
 			if err := checkAuth(r, jwtkey); err != nil {
-				errproc.ResponseErr(w, http.StatusUnauthorized, "invalid jwt")
-				errproc.LogRequestErr(r.Context(), log, err)
+				errproc.Write(r.Context(), err, w, log)
 				return
 			}
 
 			// sign auth header
-			err := signAuth(w, jwtkey)
-			if err != nil {
-				errproc.ResponseErr(w, http.StatusInternalServerError, "")
-				errproc.LogResponseErr(r.Context(), log, err)
+			if err := signAuth(w, jwtkey); err != nil {
+				errproc.Write(r.Context(), err, w, log)
 				return
 			}
 
@@ -45,7 +43,7 @@ func checkAuth(r *http.Request, key []byte) error {
 		jwt.WithKey(jwa.HS256(), key),
 		jwt.WithHeaderKey(constants.AuthHeader))
 	if err != nil {
-		return err
+		return errproc.NewError(errproc.ErrAuth, fmt.Errorf("check auth: %w", err))
 	}
 	// don't check token, but maybe later...
 	_ = verifiedToken
@@ -57,12 +55,12 @@ func signAuth(w http.ResponseWriter, key []byte) error {
 	// set response authorization header
 	tok, err := jwt.NewBuilder().Issuer(authIssuer).IssuedAt(time.Now()).Build()
 	if err != nil {
-		return err
+		return fmt.Errorf("sign auth: %w", err)
 	}
 	// sign it
 	sign, err := jwt.Sign(tok, jwt.WithKey(jwa.HS256(), key))
 	if err != nil {
-		return err
+		return fmt.Errorf("sign auth: %w", err)
 	}
 	// add this header
 	w.Header().Set(constants.AuthHeader, string(sign))

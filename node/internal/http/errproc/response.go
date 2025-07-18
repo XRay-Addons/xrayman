@@ -1,23 +1,19 @@
 package errproc
 
-import (
-	"encoding/json"
-	"net/http"
+// error to write to http response
+type Response struct {
+	code    int
+	details string
+}
 
-	"github.com/XRay-Addons/xrayman/node/internal/http/constants"
-)
+func NewResponse(code int, details string) *Response {
+	return &Response{code: code, details: details}
+}
 
-func ResponseErr(w http.ResponseWriter, httpStatus int, details string) {
-	w.Header().Set(constants.ContentType, constants.ContentTypeJSON)
-	w.WriteHeader(httpStatus)
+func (e *Response) Error() string {
+	return e.details
+}
 
-	errDetails := struct {
-		Err     string `json:"error"`
-		Details string `json:"details"`
-	}{
-		Err:     http.StatusText(httpStatus),
-		Details: details,
-	}
-
-	_ = json.NewEncoder(w).Encode(errDetails)
+func (e *Response) Code() int {
+	return e.code
 }

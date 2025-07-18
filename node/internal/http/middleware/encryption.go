@@ -15,11 +15,12 @@ import (
 func Encryption(jwekey []byte, log *zap.Logger) Middleware {
 	return func(next http.Handler) http.Handler {
 		jweenc := func(w http.ResponseWriter, r *http.Request) {
+			defer r.Body.Close()
+
 			// dectypt req
 			decR, err := decodeReq(r, jwekey)
 			if err != nil {
-				errproc.ResponseErr(w, http.StatusUnauthorized, "invalid jwe")
-				errproc.LogRequestErr(r.Context(), log, err)
+				errproc.Write(r.Context(), err, w, log)
 				return
 			}
 
@@ -36,8 +37,7 @@ func Encryption(jwekey []byte, log *zap.Logger) Middleware {
 			// encode request
 			if err := encW.Encode(jwekey); err != nil {
 				// write error to original response writer, forget about encW
-				errproc.ResponseErr(w, http.StatusInternalServerError, "")
-				errproc.LogResponseErr(r.Context(), log, err)
+				errproc.Write(r.Context(), err, w, log)
 				return
 			}
 
@@ -52,7 +52,8 @@ func decodeReq(r *http.Request, key []byte) (*http.Request, error) {
 	// read request body
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		return nil, fmt.Errorf("request body decryption: %w", err)
+		return nil, errproc.NewError(errproc.ErrContentEncryption,
+			fmt.Errorf("request body read: %w", err))
 	}
 	if len(body) == 0 {
 		// nothing to read, nothing to decode
@@ -64,7 +65,8 @@ func decodeReq(r *http.Request, key []byte) (*http.Request, error) {
 	decryptedBody, err := jwe.Decrypt(body,
 		jwe.WithKey(jwa.A256GCMKW(), key))
 	if err != nil {
-		return nil, fmt.Errorf("request body decryption: %w", err)
+		return nil, errproc.NewError(errproc.ErrContentEncryption,
+			fmt.Errorf("request body decryption: %w", err))
 	}
 
 	// create request clone with decoded body

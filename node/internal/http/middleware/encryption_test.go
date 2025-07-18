@@ -86,7 +86,7 @@ func TestEncryption(t *testing.T) {
 			[]byte("request body"),
 			[]byte("response body"),
 			http.StatusUnauthorized,
-			[]byte(`{"error":"Unauthorized","details":"invalid jwe"}`),
+			[]byte(`{"error":"Unauthorized","details":"invalid content JWE"}`),
 		},
 		{
 			"no key",
@@ -94,7 +94,7 @@ func TestEncryption(t *testing.T) {
 			[]byte("request body"),
 			[]byte("response body"),
 			http.StatusUnauthorized,
-			[]byte(`{"error":"Unauthorized","details":"invalid jwe"}`),
+			[]byte(`{"error":"Unauthorized","details":"invalid content JWE"}`),
 		},
 		{
 			"empty request",

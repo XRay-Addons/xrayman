@@ -9,12 +9,11 @@ import (
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/node/internal/http/constants"
 	"github.com/XRay-Addons/xrayman/node/internal/http/converters"
-	"github.com/XRay-Addons/xrayman/node/internal/http/errwriter"
+	"github.com/XRay-Addons/xrayman/node/internal/http/errproc"
 	"github.com/XRay-Addons/xrayman/node/internal/http/router"
 	"github.com/XRay-Addons/xrayman/node/pkg/api"
 	"github.com/go-playground/validator"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 type Handlers struct {
@@ -39,22 +38,24 @@ func New(service Service) (*Handlers, error) {
 func (h *Handlers) Start(log *zap.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
-		errWriter := errwriter.New(w, r, log)
 
 		// check content type
 		if err := h.ensureJSONContentType(r); err != nil {
-			errWriter(err, http.StatusUnsupportedMediaType)
+			errproc.ResponseErr(w, http.StatusUnsupportedMediaType, err.Error())
+			errproc.LogRequestErr(r.Context(), log, err)
 			return
 		}
 
 		var requestContent api.StartRequest
 		if err := json.NewDecoder(r.Body).Decode(&requestContent); err != nil {
-			errWriter(err, http.StatusBadRequest)
+			errproc.ResponseErr(w, http.StatusBadRequest, err.Error())
+			errproc.LogRequestErr(r.Context(), log, err)
 			return
 		}
 
 		if err := h.validator.Struct(requestContent); err != nil {
-			errWriter(err, http.StatusBadRequest)
+			errproc.ResponseErr(w, http.StatusBadRequest, err.Error())
+			errproc.LogRequestErr(r.Context(), log, err)
 			return
 		}
 
@@ -64,20 +65,44 @@ func (h *Handlers) Start(log *zap.Logger) http.HandlerFunc {
 		// process
 		result, err := h.service.Start(r.Context(), params)
 		if err != nil {
-			errWriter(err, http.StatusInternalServerError)
+			errproc.ResponseErr(w, http.StatusInternalServerError, "")
+			errproc.LogResponseErr(r.Context(), log, err)
 			return
 		}
 
 		// convert to response
 		response := converters.StartResultToAPI(*result)
 
-		// write result
+		// write result, don't log results
 		w.Header().Set(constants.ContentType, constants.ContentTypeJSON)
-		if err := json.NewEncoder(w).Encode(response); err != nil {
-			errwriter.LogRequestErr(r.Context(), zapcore.WarnLevel, err, log)
-			return
-		}
+		json.NewEncoder(w).Encode(response)
 	}
+}
+
+func (h *Handler) parseJSONRequest[T any](
+	w http.ResponseWriter,
+	r *http.Request,
+	log *zap.Logger,
+) (*T, error) {
+    // 1. Проверка Content-Type
+    if err := h.ensureJSONContentType(r); err != nil {
+        return nil, fmt.Errorf("content type validation failed: %w", err)
+    }
+
+    // 2. Декодирование JSON
+    var requestContent T
+    if err := json.NewDecoder(r.Body).Decode(&requestContent); err != nil {
+        return nil, fmt.Errorf("json decoding failed: %w", err)
+    }
+
+    // 3. Валидация структуры (если валидатор доступен)
+    if h.validator != nil {
+        if err := h.validator.Struct(requestContent); err != nil {
+            return nil, fmt.Errorf("request validation failed: %w", err)
+        }
+    }
+
+    return &requestContent, nil
 }
 
 func (h *Handlers) ensureJSONContentType(r *http.Request) error {
