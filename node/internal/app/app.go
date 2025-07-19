@@ -36,7 +36,7 @@ func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 		if err == nil {
 			return
 		}
-		if closerErr := execClosers(closers); closerErr != nil {
+		if closerErr := execClosers(context.TODO(), closers); closerErr != nil {
 			err = fmt.Errorf("%w; close error: %w", err, closerErr)
 		}
 	}()
@@ -102,12 +102,12 @@ func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 	}, nil
 }
 
-func (app *App) Close() error {
+func (app *App) Close(ctx context.Context) error {
 	if app == nil {
 		return nil
 	}
-	if err := execClosers(app.closers); err != nil {
-		fmt.Errorf("app close: %w", err)
+	if err := execClosers(ctx, app.closers); err != nil {
+		return fmt.Errorf("app close: %w", err)
 	}
 	return nil
 }
@@ -119,11 +119,10 @@ func (a *App) Run() error {
 	return a.server.Start()
 }
 
-func execClosers(closers []Closer) error {
-	closeCtx := context.TODO()
+func execClosers(ctx context.Context, closers []Closer) error {
 	var closeErrs []error
 	for i := len(closers) - 1; i >= 0; i-- {
-		if err := closers[i](closeCtx); err != nil {
+		if err := closers[i](ctx); err != nil {
 			closeErrs = append(closeErrs, fmt.Errorf("closer: %w", err))
 		}
 	}

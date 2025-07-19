@@ -56,10 +56,10 @@ func main() {
 	<-ctx.Done()
 
 	// 5. Graceful shutdown с таймаутом
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	if err := app.Close(); err != nil {
+	if err := app.Close(ctx); err != nil {
 		log.Error("close app", zap.Error(err))
 	}
 }
