@@ -28,7 +28,7 @@ func addUser(
 		return nil
 	}
 
-	return fmt.Errorf("%w: add user: %v", errdefs.ErrXRay, err)
+	return fmt.Errorf("%w: add user: %v", errdefs.ErrGRPC, err)
 }
 
 func removeUser(
@@ -46,7 +46,7 @@ func removeUser(
 	if err != nil && strings.Contains(err.Error(), notFoundErrPattern) {
 		return nil
 	}
-	return fmt.Errorf("%w: remove user: %v", errdefs.ErrXRay, err)
+	return fmt.Errorf("%w: remove user: %v", errdefs.ErrGRPC, err)
 }
 
 func ping(
