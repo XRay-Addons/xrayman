@@ -37,18 +37,19 @@ func NewServerCfg(path string) (*ServerCfg, error) {
 	}, nil
 }
 
-func (cfg *ServerCfg) GetInbounds() ([]models.Inbound, error) {
+func (cfg *ServerCfg) GetInbounds() []models.Inbound {
 	if cfg == nil {
-		return nil, fmt.Errorf("%w: srv cfg: get inbounds", errdefs.ErrNilObjectCall)
+		return []models.Inbound{}
 	}
-	return cfg.inbounds, nil
+	return cfg.inbounds
 }
 
-func (cfg *ServerCfg) GetApiURL() (string, error) {
+func (cfg *ServerCfg) GetApiURL() string {
 	if cfg == nil {
-		return "", fmt.Errorf("%w: srv cfg: get api url", errdefs.ErrNilObjectCall)
+		//
+		return ""
 	}
-	return cfg.apiURL, nil
+	return cfg.apiURL
 }
 
 func (cfg *ServerCfg) GetUsersCfg(users []models.User) (string, error) {

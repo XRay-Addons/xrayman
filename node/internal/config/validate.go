@@ -12,8 +12,9 @@ func Validate(c Config) error {
 	if _, err := net.ResolveTCPAddr("tcp", c.Endpoint); err != nil {
 		return fmt.Errorf("%w: invalid endpoint: %v", errdefs.ErrConfig, err)
 	}
-	if len(c.AccessKey) == 0 {
-		return fmt.Errorf("%w: invalid access key: %v", errdefs.ErrConfig, c.AccessKey)
+	if len(c.AccessKey) != 0 && len(c.AccessKey) != 32 {
+		return fmt.Errorf("%w: invalid access key length %v, required 32",
+			errdefs.ErrConfig, c.AccessKey)
 	}
 	if err := checkExecutable(c.XRayExec()); err != nil {
 		return fmt.Errorf("%w: xray exec: %v", errdefs.ErrConfig, err)
@@ -36,10 +37,11 @@ func checkExecutable(path string) error {
 	if !info.Mode().IsRegular() {
 		return fmt.Errorf("%s not a regular file", path)
 	}
-	if info.Mode().Perm()&0111 != 0 {
-		return fmt.Errorf("%s file not executable for current user", path)
+	perm := info.Mode().Perm()
+	if perm&0111 != 0 {
+		return nil
 	}
-	return nil
+	return fmt.Errorf("%s file not executable for current user: %v", path, perm)
 }
 
 func checkFile(path string) error {

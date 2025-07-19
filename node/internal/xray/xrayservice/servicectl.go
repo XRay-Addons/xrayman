@@ -1,4 +1,4 @@
-package servicectl
+package xrayservice
 
 import (
 	"context"
@@ -11,14 +11,14 @@ import (
 	"go.uber.org/zap"
 )
 
-type XRayServiceCtl struct {
+type XRayService struct {
 	configPath string
 	supervisor supervisor.Supervisor
 }
 
 const serviceName = "xray"
 
-func New(execPath, configPath string, log *zap.Logger) (*XRayServiceCtl, error) {
+func New(execPath, configPath string, log *zap.Logger) (*XRayService, error) {
 	if log == nil {
 		return nil, fmt.Errorf("%w: xray service init: logger", errdefs.ErrNilArgPassed)
 	}
@@ -27,13 +27,13 @@ func New(execPath, configPath string, log *zap.Logger) (*XRayServiceCtl, error) 
 	if err != nil {
 		return nil, fmt.Errorf("xray service init: %w", err)
 	}
-	return &XRayServiceCtl{
+	return &XRayService{
 		configPath: configPath,
 		supervisor: supervisor,
 	}, nil
 }
 
-func (s *XRayServiceCtl) Close(ctx context.Context) error {
+func (s *XRayService) Close(ctx context.Context) error {
 	if s == nil || s.supervisor == nil {
 		return nil
 	}
@@ -43,7 +43,7 @@ func (s *XRayServiceCtl) Close(ctx context.Context) error {
 	return nil
 }
 
-func (s *XRayServiceCtl) Start(ctx context.Context, config string) error {
+func (s *XRayService) Start(ctx context.Context, config string) error {
 	if s == nil || s.supervisor == nil {
 		return fmt.Errorf("%w: xray service: start", errdefs.ErrNilObjectCall)
 	}
@@ -57,7 +57,7 @@ func (s *XRayServiceCtl) Start(ctx context.Context, config string) error {
 	return nil
 }
 
-func (s *XRayServiceCtl) Stop(ctx context.Context) error {
+func (s *XRayService) Stop(ctx context.Context) error {
 	if s == nil || s.supervisor == nil {
 		return fmt.Errorf("%w: xray service: stop", errdefs.ErrNilObjectCall)
 	}
@@ -67,7 +67,7 @@ func (s *XRayServiceCtl) Stop(ctx context.Context) error {
 	return nil
 }
 
-func (s *XRayServiceCtl) Status(ctx context.Context) (models.ServiceStatus, error) {
+func (s *XRayService) Status(ctx context.Context) (models.ServiceStatus, error) {
 	if s == nil || s.supervisor == nil {
 		return models.ServiceStopped, fmt.Errorf(
 			"%w: xray service stop", errdefs.ErrNilObjectCall)

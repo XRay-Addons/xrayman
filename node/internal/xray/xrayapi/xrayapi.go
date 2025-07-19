@@ -44,13 +44,10 @@ func New(apiURL string, inbounds []models.Inbound, log *zap.Logger) (*XRayApi, e
 	}, nil
 }
 
-func (api *XRayApi) Close() error {
+func (api *XRayApi) Close(ctx context.Context) error {
 	if api == nil {
 		return nil
 	}
-
-	api.mu.Lock()
-	defer api.mu.Unlock()
 
 	if api.apiConn == nil {
 		return nil
@@ -59,11 +56,31 @@ func (api *XRayApi) Close() error {
 	api.hsClient = nil
 	api.ssClient = nil
 
-	if err := api.apiConn.Close(); err != nil {
+	if err := api.apiConn.Close(ctx); err != nil {
 		return fmt.Errorf("xray api: connection closing: %w", err)
 	}
 	api.apiConn = nil
 
+	return nil
+}
+
+func (api *XRayApi) Connect(ctx context.Context) error {
+	if api == nil {
+		return fmt.Errorf("%w: xray api: connect", errdefs.ErrNilObjectCall)
+	}
+	if err := api.apiConn.Connect(ctx); err != nil {
+		return fmt.Errorf("xray api: connect: %w", err)
+	}
+	return nil
+}
+
+func (api *XRayApi) Disconnect(ctx context.Context) error {
+	if api == nil {
+		return fmt.Errorf("%w: xray api: disconnect", errdefs.ErrNilObjectCall)
+	}
+	if err := api.apiConn.Disconnect(ctx); err != nil {
+		return fmt.Errorf("xray api: disconnect: %w", err)
+	}
 	return nil
 }
 

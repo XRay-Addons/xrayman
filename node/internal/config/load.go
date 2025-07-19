@@ -3,7 +3,6 @@ package config
 import (
 	"flag"
 	"os"
-	"path"
 	"runtime"
 
 	"github.com/caarlos0/env/v6"
@@ -22,15 +21,13 @@ func LoadConfig() (*Config, error) {
 
 func defaultConfig() *Config {
 	return &Config{
-		Endpoint:             "localhost:8080",
-		AccessKey:            "",
-		XRayExecPath:         path.Join(defaultXRayManPath(), "xray"),
-		XRayServerConfigPath: path.Join(defaultXRayManPath(), "server_config.json"),
-		XRayClientConfigPath: path.Join(defaultXRayManPath(), "client_config.json"),
+		Endpoint:  "localhost:8080",
+		AccessKey: "",
+		XRayDir:   defaultXRayManDir(),
 	}
 }
 
-func defaultXRayManPath() string {
+func defaultXRayManDir() string {
 	switch runtime.GOOS {
 	case "darwin", "linux":
 		return "/usr/local/bin/xrayman"

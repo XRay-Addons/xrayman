@@ -80,12 +80,10 @@ func TestServiceCfg(t *testing.T) {
 	serviceCfg, err := NewServerCfg(filePath)
 	require.NoError(t, err)
 
-	apiURL, err := serviceCfg.GetApiURL()
-	require.NoError(t, err)
+	apiURL := serviceCfg.GetApiURL()
 	require.Equal(t, testApiURL, apiURL)
 
-	inbounds, err := serviceCfg.GetInbounds()
-	require.NoError(t, err)
+	inbounds := serviceCfg.GetInbounds()
 	require.Equal(t, testInbounds, inbounds)
 
 	_, err = serviceCfg.GetUsersCfg([]models.User{testUser})

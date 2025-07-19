@@ -3,6 +3,7 @@ package router
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 	mw "github.com/XRay-Addons/xrayman/node/internal/http/middleware"
@@ -20,10 +21,15 @@ func New(key string, handlers Handlers, log *zap.Logger) (http.Handler, error) {
 	r := chi.NewRouter()
 	r.Use(chimw.RequestID)
 	r.Use(mw.Logger(log))
+	r.Use(chimw.Timeout(10 * time.Second))
 	r.Use(chimw.Recoverer)
-	r.Use(mw.Auth([]byte(key), log))
 	r.Use(chimw.NewCompressor(2).Handler)
-	r.Use(mw.Encryption([]byte(key), log))
+	if len(key) != 0 {
+		r.Use(mw.Auth([]byte(key), log))
+		r.Use(mw.Encryption([]byte(key), log))
+	} else {
+		log.Warn("auth and requests encrypyion are disabled, do not use it in production")
+	}
 
 	r.Post("/start", func(w http.ResponseWriter, r *http.Request) {
 		handlers.Start(log)(w, r)

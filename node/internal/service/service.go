@@ -9,16 +9,16 @@ import (
 )
 
 type Service struct {
-	serverCfg      ServerCfg
-	clientCfg      ClientCfg
-	xrayServiceCtl XRayServiceCtl
-	xrayAPI        XRayAPI
+	serverCfg   ServerCfg
+	clientCfg   ClientCfg
+	xrayService XRayService
+	xrayAPI     XRayAPI
 }
 
 func New(
 	serverCfg ServerCfg,
 	clientCfg ClientCfg,
-	xrayServiceCtl XRayServiceCtl,
+	xrayService XRayService,
 	xrayAPI XRayAPI,
 ) (*Service, error) {
 	if serverCfg == nil {
@@ -27,18 +27,18 @@ func New(
 	if clientCfg == nil {
 		return nil, fmt.Errorf("%w: service init: clientCfg", errdefs.ErrNilArgPassed)
 	}
-	if xrayServiceCtl == nil {
-		return nil, fmt.Errorf("%w: service init: xrayServiceCtl", errdefs.ErrNilArgPassed)
+	if xrayService == nil {
+		return nil, fmt.Errorf("%w: service init: xrayService", errdefs.ErrNilArgPassed)
 	}
 	if xrayAPI == nil {
 		return nil, fmt.Errorf("%w: service init: xrayAPI", errdefs.ErrNilArgPassed)
 	}
 
 	return &Service{
-		serverCfg:      serverCfg,
-		clientCfg:      clientCfg,
-		xrayServiceCtl: xrayServiceCtl,
-		xrayAPI:        xrayAPI,
+		serverCfg:   serverCfg,
+		clientCfg:   clientCfg,
+		xrayService: xrayService,
+		xrayAPI:     xrayAPI,
 	}, nil
 }
 
@@ -52,8 +52,12 @@ func (s *Service) Start(ctx context.Context, params models.StartParams) (*models
 		return nil, fmt.Errorf("service start: %w", err)
 	}
 	// start server
-	if err = s.xrayServiceCtl.Start(ctx, cfg); err != nil {
+	if err = s.xrayService.Start(ctx, cfg); err != nil {
 		return nil, fmt.Errorf("service start: %w", err)
+	}
+	// connect to server api
+	if err = s.xrayAPI.Connect(ctx); err != nil {
+		return nil, fmt.Errorf("service api connect: %w", err)
 	}
 	// get server properties
 	clientCfg, err := s.clientCfg.Get()
@@ -68,7 +72,11 @@ func (s *Service) Stop(ctx context.Context, params models.StopParams) (*models.S
 	if s == nil {
 		return nil, fmt.Errorf("%w: service: start", errdefs.ErrNilObjectCall)
 	}
-	if err := s.xrayServiceCtl.Stop(ctx); err != nil {
+	// disconnect from server api
+	if err := s.xrayAPI.Disconnect(ctx); err != nil {
+		return nil, fmt.Errorf("service api disconnect: %w", err)
+	}
+	if err := s.xrayService.Stop(ctx); err != nil {
 		return nil, fmt.Errorf("service stop: %w", err)
 	}
 	return &models.StopResult{}, nil
@@ -78,7 +86,7 @@ func (s *Service) Status(ctx context.Context, params models.StatusParams) (*mode
 	if s == nil {
 		return nil, fmt.Errorf("%w: service: start", errdefs.ErrNilObjectCall)
 	}
-	status, err := s.xrayServiceCtl.Status(ctx)
+	status, err := s.xrayService.Status(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("service status: %w", err)
 	}

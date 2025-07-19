@@ -2,119 +2,133 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/XRay-Addons/xrayman/node/internal/config"
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/node/internal/xray/api"
-	"github.com/XRay-Addons/xrayman/node/internal/xray/clientcfg"
-	"github.com/XRay-Addons/xrayman/node/internal/xray/servercfg"
-	"github.com/XRay-Addons/xrayman/node/internal/xray/servicectl"
+	"github.com/XRay-Addons/xrayman/node/internal/http/handlers"
+	"github.com/XRay-Addons/xrayman/node/internal/http/router"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/httpserver"
+	"github.com/XRay-Addons/xrayman/node/internal/service"
+	"github.com/XRay-Addons/xrayman/node/internal/xray/xrayapi"
+	"github.com/XRay-Addons/xrayman/node/internal/xray/xraycfg"
+	"github.com/XRay-Addons/xrayman/node/internal/xray/xrayservice"
+
 	"go.uber.org/zap"
 )
 
+type Closer = func(ctx context.Context) error
+
 type App struct {
-	log *zap.Logger
+	server  *httpserver.Server
+	log     *zap.Logger
+	closers []Closer
 }
 
-func New(cfg config.Config, log *zap.Logger) (*App, error) {
+func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 	if log == nil {
 		return nil, fmt.Errorf("%w: app init: logger", errdefs.ErrNilArgPassed)
 	}
 
-	srvCfg, err := servercfg.New(cfg.XRayServer())
-	if err != nil {
-		return nil, fmt.Errorf("init app: %w", err)
-	}
-	clientCfg, err := clientcfg.New(cfg.XRayClient(), "", "")
-	if err != nil {
-		return nil, fmt.Errorf("init app: %w", err)
-	}
-	xrayService, err := servicectl.New(cfg.XRayExec(), cfg.XRayServer(), log)
-	if err != nil {
-		return nil, fmt.Errorf("init app: %w", err)
-	}
-	xrayAPI, err := api.New(srvCfg.GetApiURL(), srvCfg.GetInbounds(), log)
+	var closers []Closer
+	defer func() {
+		if err == nil {
+			return
+		}
+		if closerErr := execClosers(closers); closerErr != nil {
+			err = fmt.Errorf("%w; close error: %w", err, closerErr)
+		}
+	}()
+
+	// init srv config
+	serverCfg, err := xraycfg.NewServerCfg(cfg.XRayServer())
 	if err != nil {
 		return nil, fmt.Errorf("init app: %w", err)
 	}
 
-	return &App{log: log}
+	// init client config
+	clientCfg, err := xraycfg.NewClientCfg(cfg.XRayClient())
+	if err != nil {
+		return nil, fmt.Errorf("init app: %w", err)
+	}
+
+	// init service and add service closer
+	xrayService, err := xrayservice.New(cfg.XRayExec(), cfg.XRayServer(), log)
+	if err != nil {
+		return nil, fmt.Errorf("init app: %w", err)
+	}
+	closers = append(closers, func(ctx context.Context) error {
+		return xrayService.Close(ctx)
+	})
+
+	// init api and add api closer
+	xrayAPI, err := xrayapi.New(serverCfg.GetApiURL(), serverCfg.GetInbounds(), log)
+	if err != nil {
+		return nil, fmt.Errorf("init app: %w", err)
+	}
+	closers = append(closers, func(ctx context.Context) error {
+		return xrayAPI.Close(ctx)
+	})
+
+	// init service
+	service, err := service.New(serverCfg, clientCfg, xrayService, xrayAPI)
+	if err != nil {
+		return nil, fmt.Errorf("init app: %w", err)
+	}
+
+	// init handlers
+	handlers, err := handlers.New(service)
+	if err != nil {
+		return nil, fmt.Errorf("init app: %w", err)
+	}
+
+	// init router
+	router, err := router.New(cfg.AccessKey, handlers, log)
+	if err != nil {
+		return nil, fmt.Errorf("init app: %w", err)
+	}
+
+	// init server
+	server := httpserver.New(cfg.Endpoint, router)
+	closers = append(closers, func(ctx context.Context) error {
+		return server.Shutdown(ctx)
+	})
+
+	return &App{
+		server:  server,
+		closers: closers,
+		log:     log,
+	}, nil
 }
 
 func (app *App) Close() error {
+	if app == nil {
+		return nil
+	}
+	if err := execClosers(app.closers); err != nil {
+		fmt.Errorf("app close: %w", err)
+	}
 	return nil
 }
 
-func (a *App) Run(ctx context.Context) error {
+func (a *App) Run() error {
 	if a == nil {
 		return fmt.Errorf("%w: app", errdefs.ErrNilObjectCall)
 	}
+	return a.server.Start()
+}
 
-	/*testExecPath := "/usr/local/bin/xrayman/xray"
-	testCfgPath := "/usr/local/bin/xrayman/server.json"
-
-	// init service
-	xrayCtl, err := launchctl.New(testExecPath, testCfgPath, a.log)
-	if err != nil {
-		return fmt.Errorf("run app: %w", err)
-	}
-	defer xrayCtl.Close(ctx)
-
-	// status 5 times
-	for range 2 {
-		status, err := xrayCtl.Status(ctx)
-		if err != nil {
-			a.log.Warn("status attempt", zap.Error(err))
-		} else {
-			a.log.Info(fmt.Sprintf("status request: %s", status))
+func execClosers(closers []Closer) error {
+	closeCtx := context.TODO()
+	var closeErrs []error
+	for i := len(closers) - 1; i >= 0; i-- {
+		if err := closers[i](closeCtx); err != nil {
+			closeErrs = append(closeErrs, fmt.Errorf("closer: %w", err))
 		}
-		time.Sleep(1 * time.Second)
 	}
-
-	// start 5 times
-	for range 2 {
-		if err := xrayCtl.Start(ctx); err != nil {
-			a.log.Warn("start attempt", zap.Error(err))
-		} else {
-			a.log.Info("service started")
-		}
-		time.Sleep(1 * time.Second)
+	if len(closeErrs) > 0 {
+		return errors.Join(closeErrs...)
 	}
-
-	// status 5 times
-	for range 2 {
-		status, err := xrayCtl.Status(ctx)
-		if err != nil {
-			a.log.Warn("status attempt", zap.Error(err))
-		} else {
-			a.log.Info(fmt.Sprintf("status request: %s", status))
-		}
-		time.Sleep(1 * time.Second)
-	}
-
-	// stop 5 times
-	for range 2 {
-		err := xrayCtl.Stop(ctx)
-		if err != nil {
-			a.log.Warn("stop attempt", zap.Error(err))
-		} else {
-			a.log.Info("service stopped")
-		}
-		time.Sleep(1 * time.Second)
-	}
-
-	// status 5 times
-	for range 2 {
-		status, err := xrayCtl.Status(ctx)
-		if err != nil {
-			a.log.Warn("status attempt", zap.Error(err))
-		} else {
-			a.log.Info(fmt.Sprintf("status request: %s", status))
-		}
-		time.Sleep(1 * time.Second)
-	}
-
-	<-ctx.Done()*/
 	return nil
 }

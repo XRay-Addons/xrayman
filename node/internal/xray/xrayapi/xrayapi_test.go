@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/XRay-Addons/xrayman/node/internal/logging"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
@@ -74,6 +73,9 @@ func TestXRayAPI(t *testing.T) {
 	// create xray api
 	xrayapi, err := New(testApiURL, testXRayInbounds, log)
 	assert.NoError(t, err)
+	defer func() {
+		xrayapi.Close(ctx)
+	}()
 
 	// ping stopped service
 	err = xrayapi.Ping(ctx)
@@ -98,8 +100,9 @@ func TestXRayAPI(t *testing.T) {
 		require.NoError(t, err, "xray kill error")
 	}()
 
-	// wait 2 second till node started
-	time.Sleep(2 * time.Second)
+	// connect to xray api
+	err = xrayapi.Connect(ctx)
+	require.NoError(t, err)
 
 	// ping xray service
 	err = xrayapi.Ping(ctx)

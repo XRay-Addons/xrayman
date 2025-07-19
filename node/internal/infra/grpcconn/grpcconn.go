@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
@@ -19,12 +18,12 @@ import (
 
 // grpc connection with retry
 type GRPCConn struct {
-	conn *grpc.ClientConn
+	target string
 
-	// for initialization loop
-	initialized atomic.Bool
-	wg          sync.WaitGroup
-	cancel      context.CancelFunc
+	conn *grpc.ClientConn
+	mu   sync.RWMutex
+
+	log *zap.Logger
 }
 
 var _ grpc.ClientConnInterface = (*GRPCConn)(nil)
@@ -33,51 +32,62 @@ func New(target string, log *zap.Logger) (*GRPCConn, error) {
 	if log == nil {
 		return nil, fmt.Errorf("%w: init grpc client: logger", errdefs.ErrNilObjectCall)
 	}
-	ctx, cancel := context.WithCancel(context.Background())
 
-	grpcConn := &GRPCConn{
-		cancel: cancel,
-	}
-
-	// run installing service loop
-	grpcConn.wg.Add(1)
-	go grpcConn.createConnLoop(ctx, target, log)
-
-	return grpcConn, nil
+	return &GRPCConn{
+		target: target,
+		log:    log,
+	}, nil
 }
 
-func (conn *GRPCConn) Close() error {
+func (conn *GRPCConn) Connect(ctx context.Context) error {
 	if conn == nil {
-		return nil
+		return fmt.Errorf("%w: grpconn", errdefs.ErrNilObjectCall)
 	}
 
-	conn.cancel()
-	conn.wg.Wait()
+	conn.mu.Lock()
+	defer conn.mu.Unlock()
 
-	if !conn.initialized.Load() {
+	// run installing service loop
+	return conn.tryConnect(ctx, conn.target, conn.log)
+}
+
+func (conn *GRPCConn) Disconnect(ctx context.Context) error {
+	if conn == nil {
+		return fmt.Errorf("%w: grpconn", errdefs.ErrNilObjectCall)
+	}
+
+	conn.mu.Lock()
+	defer conn.mu.Unlock()
+
+	if conn.conn == nil {
 		return nil
 	}
 
 	err := conn.conn.Close()
-	conn.initialized.Store(false)
+	conn.conn = nil
 
 	if err == nil {
 		return nil
 	}
 
-	return fmt.Errorf("%w: close grpc conn: %v", errdefs.ErrGRPC, err)
+	return fmt.Errorf("%w: disconnect grpc conn: %v", errdefs.ErrGRPC, err)
 }
 
-func (conn *GRPCConn) createConnLoop(ctx context.Context, target string, log *zap.Logger) {
-	defer conn.wg.Done()
+func (conn *GRPCConn) Close(ctx context.Context) error {
+	if conn == nil {
+		return nil
+	}
+	return conn.Disconnect(ctx)
+}
 
+func (conn *GRPCConn) tryConnect(ctx context.Context, target string, log *zap.Logger) error {
 	initFn := func(ctx context.Context) error {
 		c, err := grpc.NewClient(target,
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 		)
 		if err != nil {
-			err = fmt.Errorf("%w: create grpc client: %v", errdefs.ErrGRPC, err)
-			log.Warn(err.Error())
+			err = fmt.Errorf("%w: %v", errdefs.ErrGRPC, err)
+			log.Warn("retry: connect grpc", zap.Error(err))
 			return err
 		}
 
@@ -88,20 +98,23 @@ func (conn *GRPCConn) createConnLoop(ctx context.Context, target string, log *za
 			// healthchech Unimplemented means server is available
 			st, ok := healthst.FromError(err)
 			if !ok || st.Code() != codes.Unimplemented {
-				err = fmt.Errorf("%w: healthcheck grpc client: %v", errdefs.ErrGRPC, err)
-				log.Warn(err.Error())
+				err = fmt.Errorf("%w: %v", errdefs.ErrGRPC, err)
+				log.Warn("retry: connect grpc", zap.Error(err))
 				return err
 			}
 		}
 
 		// mark as initialized
 		conn.conn = c
-		conn.initialized.Store(true)
 
 		return nil
 	}
 
-	retry.RetryInfinite(ctx, initFn, 1*time.Second)
+	if err := retry.RetryInfinite(ctx, initFn, 250*time.Millisecond); err != nil {
+		return fmt.Errorf("GRPC conn: try connect: %w", err)
+	}
+
+	return nil
 }
 
 func (conn *GRPCConn) Invoke(
@@ -133,7 +146,10 @@ func (conn *GRPCConn) checkConnReady() error {
 	if conn == nil {
 		return fmt.Errorf("%w: grpc connection", errdefs.ErrNilObjectCall)
 	}
-	if !conn.initialized.Load() {
+
+	conn.mu.RLock()
+	defer conn.mu.RUnlock()
+	if conn.conn == nil {
 		return errdefs.ErrGRPCNotReady
 	}
 	return nil

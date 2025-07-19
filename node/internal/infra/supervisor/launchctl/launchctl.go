@@ -161,16 +161,14 @@ func (ctl *XRayCtl) createServiceLoop(ctx context.Context, log *zap.Logger) {
 		// remove existed service
 		err := removeService(ctl.userDomain, ctl.serviceName)
 		if err != nil {
-			err = fmt.Errorf("init service: %w", err)
-			log.Warn(err.Error())
+			log.Warn("retry: init service", zap.Error(err))
 			return err
 		}
 
 		// create new service
 		err = createService(ctl.userDomain, ctl.plistLocation)
 		if err != nil {
-			err = fmt.Errorf("init service: %w", err)
-			log.Warn(err.Error())
+			log.Warn("retry: init service", zap.Error(err))
 			return err
 		}
 
@@ -180,7 +178,7 @@ func (ctl *XRayCtl) createServiceLoop(ctx context.Context, log *zap.Logger) {
 		return nil
 	}
 
-	retry.RetryInfinite(ctx, initFn, 1*time.Second)
+	retry.RetryInfinite(ctx, initFn, 250*time.Millisecond)
 }
 
 func (ctl *XRayCtl) Start(ctx context.Context) error {
@@ -189,7 +187,24 @@ func (ctl *XRayCtl) Start(ctx context.Context) error {
 	}
 
 	// send start signal to service
-	return startService(ctl.userDomain, ctl.serviceName)
+	if err := startService(ctl.userDomain, ctl.serviceName); err != nil {
+		return err
+	}
+
+	// wait till service status will be Stopped or Started
+	var status models.ServiceStatus
+	checkStatus := func(ctx context.Context) error {
+		var err error
+		status, err = ctl.Status(ctx)
+		return err
+	}
+	if err := retry.RetryInfinite(ctx, checkStatus, 250*time.Millisecond); err != nil {
+		return fmt.Errorf("service starting: %w", err)
+	}
+	if status != models.ServiceRunning {
+		return fmt.Errorf("%w: failed to start service", errdefs.ErrService)
+	}
+	return nil
 }
 
 func (ctl *XRayCtl) Stop(ctx context.Context) error {

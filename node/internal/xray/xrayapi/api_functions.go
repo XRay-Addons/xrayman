@@ -55,7 +55,7 @@ func ping(
 ) error {
 	_, err := ssClient.GetSysStats(ctx, &statsService.SysStatsRequest{})
 	if err != nil {
-		return fmt.Errorf("%w: ping call: %v", errdefs.ErrXRay, err)
+		return fmt.Errorf("%w: ping call: %v", errdefs.ErrGRPC, err)
 	}
 
 	return nil

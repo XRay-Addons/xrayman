@@ -1,4 +1,4 @@
-package xrayapi
+package api
 
 type StartResponse struct {
 	ClientCfg ClientCfg `json:"clientCfg" validate:"required"`
