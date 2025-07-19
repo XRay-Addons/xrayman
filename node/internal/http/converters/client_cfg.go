@@ -5,7 +5,7 @@ import (
 	"github.com/XRay-Addons/xrayman/node/pkg/api"
 )
 
-func ClientCfgFromAPI(cfg *api.ClientCfg) models.ClientCfg {
+func ClientCfgFromAPI(cfg api.ClientCfg) models.ClientCfg {
 	return models.ClientCfg{
 		Template:       cfg.Template,
 		UserNameField:  cfg.UserNameField,
@@ -13,7 +13,7 @@ func ClientCfgFromAPI(cfg *api.ClientCfg) models.ClientCfg {
 	}
 }
 
-func ClientCfgToAPI(cfg *models.ClientCfg) api.ClientCfg {
+func ClientCfgToAPI(cfg models.ClientCfg) api.ClientCfg {
 	return api.ClientCfg{
 		Template:       cfg.Template,
 		UserNameField:  cfg.UserNameField,
