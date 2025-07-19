@@ -1,4 +1,4 @@
-package errproc
+package httperr
 
 import (
 	"errors"
@@ -19,7 +19,7 @@ func TestResponseError(t *testing.T) {
 
 	// create Error with reason
 	reason := errors.New("test error reason")
-	reasoned := NewError(resp, reason)
+	reasoned := New(resp, reason)
 
 	// test response extraction from reasoned error
 	require.True(t, errors.As(reasoned, new(*Response)))

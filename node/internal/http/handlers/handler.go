@@ -9,7 +9,7 @@ import (
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/node/internal/http/constants"
 	"github.com/XRay-Addons/xrayman/node/internal/http/converters"
-	"github.com/XRay-Addons/xrayman/node/internal/http/errproc"
+	"github.com/XRay-Addons/xrayman/node/internal/http/httperr"
 	"github.com/XRay-Addons/xrayman/node/internal/http/router"
 	"github.com/XRay-Addons/xrayman/node/pkg/api"
 	"github.com/go-playground/validator"
@@ -40,7 +40,7 @@ func (h *Handlers) Start(log *zap.Logger) http.HandlerFunc {
 		defer r.Body.Close()
 
 		var err error
-		defer func() { errproc.Write(r.Context(), err, w, log) }()
+		defer func() { httperr.Write(r.Context(), err, w, log) }()
 
 		var requestContent api.StartRequest
 		if err = parseJSONRequest(r, h.validator, &requestContent); err != nil {
@@ -63,7 +63,7 @@ func (h *Handlers) Stop(log *zap.Logger) http.HandlerFunc {
 		defer r.Body.Close()
 
 		var err error
-		defer func() { errproc.Write(r.Context(), err, w, log) }()
+		defer func() { httperr.Write(r.Context(), err, w, log) }()
 
 		requestContent := api.StopRequest{}
 		if err := checkEmptyRequest(r); err != nil {
@@ -86,7 +86,7 @@ func (h *Handlers) Status(log *zap.Logger) http.HandlerFunc {
 		defer r.Body.Close()
 
 		var err error
-		defer func() { errproc.Write(r.Context(), err, w, log) }()
+		defer func() { httperr.Write(r.Context(), err, w, log) }()
 
 		requestContent := api.StatusRequest{}
 		if err := checkEmptyRequest(r); err != nil {
@@ -109,7 +109,7 @@ func (h *Handlers) EditUsers(log *zap.Logger) http.HandlerFunc {
 		defer r.Body.Close()
 
 		var err error
-		defer func() { errproc.Write(r.Context(), err, w, log) }()
+		defer func() { httperr.Write(r.Context(), err, w, log) }()
 
 		var requestContent api.EditUsersRequest
 		if err = parseJSONRequest(r, h.validator, &requestContent); err != nil {
@@ -130,12 +130,12 @@ func (h *Handlers) EditUsers(log *zap.Logger) http.HandlerFunc {
 func checkEmptyRequest(r *http.Request) error {
 	if r.ContentLength > 0 {
 		err := fmt.Errorf("non-empty request content length")
-		return errproc.NewError(errproc.ErrNonZeroContentLen, err)
+		return httperr.New(httperr.ErrNonZeroContentLen, err)
 	}
 	buf := make([]byte, 1)
 	if n, _ := r.Body.Read(buf); n > 0 {
 		err := fmt.Errorf("non-empty request content length")
-		return errproc.NewError(errproc.ErrNonZeroContentLen, err)
+		return httperr.New(httperr.ErrNonZeroContentLen, err)
 	}
 	return nil
 }
@@ -145,23 +145,23 @@ func parseJSONRequest[T any](r *http.Request, v validator.Validate, content *T) 
 	mt, _, err := mime.ParseMediaType(r.Header.Get(constants.ContentType))
 	if err != nil {
 		err = fmt.Errorf("parse json request: media type: %w", err)
-		return errproc.NewError(errproc.ErrContentType, err)
+		return httperr.New(httperr.ErrContentType, err)
 	}
 	if mt != constants.ContentTypeJSON {
 		err = fmt.Errorf("parse json request: media type: %s", mt)
-		return errproc.NewError(errproc.ErrContentType, err)
+		return httperr.New(httperr.ErrContentType, err)
 	}
 
 	// parse request
 	if err := json.NewDecoder(r.Body).Decode(content); err != nil {
 		err = fmt.Errorf("parse json request: %w", err)
-		return errproc.NewError(errproc.ErrContentParsing, err)
+		return httperr.New(httperr.ErrContentParsing, err)
 	}
 
 	// validate
 	if err := v.Struct(*content); err != nil {
 		err = fmt.Errorf("validate json request: %w", err)
-		return errproc.NewError(errproc.ErrContentValidation, err)
+		return httperr.New(httperr.ErrContentValidation, err)
 	}
 
 	return nil

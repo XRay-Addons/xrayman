@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/XRay-Addons/xrayman/node/internal/http/errproc"
+	"github.com/XRay-Addons/xrayman/node/internal/http/httperr"
 	"github.com/lestrrat-go/jwx/v3/jwa"
 	"github.com/lestrrat-go/jwx/v3/jwe"
 	"go.uber.org/zap"
@@ -18,12 +18,12 @@ func Encryption(jwekey []byte, log *zap.Logger) Middleware {
 			defer r.Body.Close()
 
 			var err error
-			defer func() { errproc.Write(r.Context(), err, w, log) }()
+			defer func() { httperr.Write(r.Context(), err, w, log) }()
 
 			// dectypt req
 			decR, err := decodeReq(r, jwekey)
 			if err != nil {
-				err = errproc.NewError(errproc.ErrContentEncryption, err)
+				err = httperr.New(httperr.ErrContentEncryption, err)
 				return
 			}
 

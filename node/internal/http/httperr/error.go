@@ -1,4 +1,4 @@
-package errproc
+package httperr
 
 import (
 	"errors"
@@ -11,7 +11,7 @@ type Error struct {
 	reason   error
 }
 
-func NewError(response *Response, reason error) *Error {
+func New(response *Response, reason error) *Error {
 	return &Error{response: response, reason: reason}
 }
 

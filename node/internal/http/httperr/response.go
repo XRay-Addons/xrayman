@@ -1,4 +1,4 @@
-package errproc
+package httperr
 
 // error to write to http response
 type Response struct {

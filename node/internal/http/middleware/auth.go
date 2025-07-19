@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/XRay-Addons/xrayman/node/internal/http/constants"
-	"github.com/XRay-Addons/xrayman/node/internal/http/errproc"
+	"github.com/XRay-Addons/xrayman/node/internal/http/httperr"
 	"github.com/lestrrat-go/jwx/v3/jwa"
 	"github.com/lestrrat-go/jwx/v3/jwt"
 	"go.uber.org/zap"
@@ -18,11 +18,11 @@ func Auth(jwtkey []byte, log *zap.Logger) Middleware {
 	return func(next http.Handler) http.Handler {
 		jwtauth := func(w http.ResponseWriter, r *http.Request) {
 			var err error
-			defer func() { errproc.Write(r.Context(), err, w, log) }()
+			defer func() { httperr.Write(r.Context(), err, w, log) }()
 
 			// check auth header
 			if err = checkAuth(r, jwtkey); err != nil {
-				err = errproc.NewError(errproc.ErrAuth, err)
+				err = httperr.New(httperr.ErrAuth, err)
 				return
 			}
 

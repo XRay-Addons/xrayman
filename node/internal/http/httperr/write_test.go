@@ -1,4 +1,4 @@
-package errproc
+package httperr
 
 import (
 	"context"
@@ -37,12 +37,12 @@ func TestWrite(t *testing.T) {
 			expectedDetails: ErrContentValidation.Error(),
 		},
 		{
-			err:             NewError(ErrContentValidation, errors.New("reason")),
+			err:             New(ErrContentValidation, errors.New("reason")),
 			expectedCode:    ErrContentValidation.Code(),
 			expectedDetails: ErrContentValidation.Error(),
 		},
 		{
-			err:             fmt.Errorf("wrap: %w", NewError(ErrContentValidation, errors.New("reason"))),
+			err:             fmt.Errorf("wrap: %w", New(ErrContentValidation, errors.New("reason"))),
 			expectedCode:    ErrContentValidation.Code(),
 			expectedDetails: ErrContentValidation.Error(),
 		},

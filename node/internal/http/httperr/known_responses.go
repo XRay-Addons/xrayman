@@ -1,4 +1,4 @@
-package errproc
+package httperr
 
 import "net/http"
 
