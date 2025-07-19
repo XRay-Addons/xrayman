@@ -47,14 +47,14 @@ func (s *Service) Start(ctx context.Context, params models.StartParams) (*models
 		return nil, fmt.Errorf("%w: service: start", errdefs.ErrNilObjectCall)
 	}
 	// get server config
-	cfg, err := s.serverCfg.GetUsersCfg(params.Users)
+	_, err := s.serverCfg.GetUsersCfg(params.Users)
 	if err != nil {
 		return nil, fmt.Errorf("service start: %w", err)
 	}
 	// start server
-	if err = s.xrayService.Start(ctx, cfg); err != nil {
-		return nil, fmt.Errorf("service start: %w", err)
-	}
+	//if err = s.xrayService.Start(ctx, cfg); err != nil {
+	//	return nil, fmt.Errorf("service start: %w", err)
+	//}
 	// connect to server api
 	if err = s.xrayAPI.Connect(ctx); err != nil {
 		return nil, fmt.Errorf("service api connect: %w", err)
