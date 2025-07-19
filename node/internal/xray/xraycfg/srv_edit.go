@@ -1,4 +1,4 @@
-package servercfg
+package xraycfg
 
 import (
 	"fmt"
@@ -8,14 +8,10 @@ import (
 	"github.com/tidwall/sjson"
 )
 
-func addServerConfigUsers(
-	serverCfg string,
-	inbounds []models.Inbound,
-	users []models.User,
-) (string, error) {
-	usersCfg := serverCfg
-	for _, inbound := range inbounds {
-		sectionUsers, err := makeSectionUsers(inbound.Type, users)
+func addSrvUsers(cfg string, ins []models.Inbound, us []models.User) (string, error) {
+	usersCfg := cfg
+	for _, inbound := range ins {
+		sectionUsers, err := makeSectionUsers(inbound.Type, us)
 		if err != nil {
 			return "", fmt.Errorf("make section user: %w", err)
 		}
@@ -30,9 +26,9 @@ func addServerConfigUsers(
 	return usersCfg, nil
 }
 
-func makeSectionUsers(it models.InboundType, users []models.User) ([]map[string]string, error) {
-	sectionUsers := make([]map[string]string, 0, len(users))
-	for _, u := range users {
+func makeSectionUsers(it models.InboundType, us []models.User) ([]map[string]string, error) {
+	sectionUsers := make([]map[string]string, 0, len(us))
+	for _, u := range us {
 		su, err := makeSectionUser(it, u)
 		if err != nil {
 			return nil, fmt.Errorf("make section user: %w", err)

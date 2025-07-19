@@ -1,4 +1,4 @@
-package servercfg
+package xraycfg
 
 import (
 	"fmt"
@@ -14,18 +14,18 @@ type ServerCfg struct {
 	apiURL   string
 }
 
-func New(srvCfgPath string) (*ServerCfg, error) {
-	srvCfg, err := cfgread.ReadJSON(srvCfgPath)
+func NewServerCfg(path string) (*ServerCfg, error) {
+	srvCfg, err := cfgread.ReadJSON(path)
 	if err != nil {
 		return nil, fmt.Errorf("init srv config: %w", err)
 	}
 
-	inbounds := parseServerInbounds(srvCfg)
+	inbounds := parseSrvInbounds(srvCfg)
 	if len(inbounds) == 0 {
 		return nil, fmt.Errorf("%w: no supported inbounds in server cfg", errdefs.ErrConfig)
 	}
 
-	apiURL := parseServerApiURL(srvCfg)
+	apiURL := parseSrvApiURL(srvCfg)
 	if apiURL == "" {
 		return nil, fmt.Errorf("%w: no api url in server cfg", errdefs.ErrConfig)
 	}
@@ -56,7 +56,7 @@ func (cfg *ServerCfg) GetUsersCfg(users []models.User) (string, error) {
 		return "", fmt.Errorf("%w: srv cfg: get users cfg", errdefs.ErrNilObjectCall)
 	}
 
-	usersCfg, err := addServerConfigUsers(cfg.srvCfg, cfg.inbounds, users)
+	usersCfg, err := addSrvUsers(cfg.srvCfg, cfg.inbounds, users)
 	if err != nil {
 		return "", fmt.Errorf("srv cfg: %w", err)
 	}

@@ -1,4 +1,4 @@
-package clientcfg
+package xraycfg
 
 import (
 	"bytes"
@@ -15,12 +15,8 @@ type ClientCfg struct {
 	cfg models.ClientCfg
 }
 
-func New(
-	clientCfgPath string,
-	userNameField string,
-	vlessUUIDField string,
-) (*ClientCfg, error) {
-	cfgTemplate, err := cfgread.ReadJSON(clientCfgPath)
+func NewClientCfg(path string) (*ClientCfg, error) {
+	cfgTemplate, err := cfgread.ReadJSON(path)
 	if err != nil {
 		return nil, fmt.Errorf("%w: client config file reading: %v", errdefs.ErrConfig, err)
 	}
@@ -29,10 +25,19 @@ func New(
 		return nil, fmt.Errorf("%w: invalid client config template", errdefs.ErrConfig)
 	}
 
+	nameField, err := extractNameField(cfgTemplate)
+	if err != nil {
+		return nil, fmt.Errorf("client cfg init: %w: %v", errdefs.ErrConfig, err)
+	}
+	vlessUUIdField, err := extractVlessUUIDField(cfgTemplate)
+	if err != nil {
+		return nil, fmt.Errorf("client cfg init: %w: %v", errdefs.ErrConfig, err)
+	}
+
 	clientCfg := models.ClientCfg{
 		Template:       cfgTemplate,
-		UserNameField:  userNameField,
-		VlessUUIDField: vlessUUIDField,
+		UserNameField:  nameField,
+		VlessUUIDField: vlessUUIdField,
 	}
 
 	if err = validateClientConfig(&clientCfg); err != nil {

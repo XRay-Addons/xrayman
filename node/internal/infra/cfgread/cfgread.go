@@ -14,7 +14,7 @@ func ReadJSON(cfgPath string) (string, error) {
 		return "", fmt.Errorf("%w: read config file %v", errdefs.ErrConfig, err)
 	}
 	if !gjson.ValidBytes(cfg) {
-		return "", fmt.Errorf("%w: invalid server config json", errdefs.ErrConfig)
+		return "", fmt.Errorf("%w: invalid config json", errdefs.ErrConfig)
 	}
 	return string(cfg), nil
 }

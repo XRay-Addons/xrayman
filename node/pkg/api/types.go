@@ -1,4 +1,4 @@
-package api
+package xrayapi
 
 type User struct {
 	Name      string `json:"name" validate:"required"`

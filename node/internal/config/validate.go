@@ -15,25 +15,29 @@ func Validate(c Config) error {
 	if len(c.AccessKey) == 0 {
 		return fmt.Errorf("%w: invalid access key: %v", errdefs.ErrConfig, c.AccessKey)
 	}
-	if err := checkExecutable(c.XRayExecPath); err != nil {
-		return err
+	if err := checkExecutable(c.XRayExec()); err != nil {
+		return fmt.Errorf("%w: xray exec: %v", errdefs.ErrConfig, err)
 	}
-	if err := checkFile(c.XRayConfigPath); err != nil {
-		return err
+	if err := checkFile(c.XRayServer()); err != nil {
+		return fmt.Errorf("%w: xray server cfg: %v", errdefs.ErrConfig, err)
 	}
+	if err := checkFile(c.XRayClient()); err != nil {
+		return fmt.Errorf("%w: xray client cfg: %v", errdefs.ErrConfig, err)
+	}
+
 	return nil
 }
 
 func checkExecutable(path string) error {
 	info, err := os.Stat(path)
 	if err != nil {
-		return fmt.Errorf("%w: xray exec file not exists", errdefs.ErrConfig)
+		return fmt.Errorf("%s file not exists", path)
 	}
 	if !info.Mode().IsRegular() {
-		return fmt.Errorf("%w: xray exec is not regular file", errdefs.ErrConfig)
+		return fmt.Errorf("%s not a regular file", path)
 	}
 	if info.Mode().Perm()&0111 != 0 {
-		return fmt.Errorf("%w: xray exec is not executable for current user", errdefs.ErrConfig)
+		return fmt.Errorf("%s file not executable for current user", path)
 	}
 	return nil
 }
@@ -41,10 +45,10 @@ func checkExecutable(path string) error {
 func checkFile(path string) error {
 	info, err := os.Stat(path)
 	if err != nil {
-		return fmt.Errorf("%w: xray exec file not exists", errdefs.ErrConfig)
+		return fmt.Errorf("%s file not exists", path)
 	}
 	if !info.Mode().IsRegular() {
-		return fmt.Errorf("%w: xray exec is not regular file", errdefs.ErrConfig)
+		return fmt.Errorf("%s is not a regular file", path)
 	}
 	return nil
 }

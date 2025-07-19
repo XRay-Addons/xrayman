@@ -22,10 +22,11 @@ func LoadConfig() (*Config, error) {
 
 func defaultConfig() *Config {
 	return &Config{
-		Endpoint:       "localhost:8080",
-		AccessKey:      "",
-		XRayExecPath:   path.Join(defaultXRayManPath(), "xray"),
-		XRayConfigPath: path.Join(defaultXRayManPath(), "server_config.json"),
+		Endpoint:             "localhost:8080",
+		AccessKey:            "",
+		XRayExecPath:         path.Join(defaultXRayManPath(), "xray"),
+		XRayServerConfigPath: path.Join(defaultXRayManPath(), "server_config.json"),
+		XRayClientConfigPath: path.Join(defaultXRayManPath(), "client_config.json"),
 	}
 }
 
@@ -43,15 +44,11 @@ func readCLIParams(c *Config) error {
 
 	fs.StringVar(&c.Endpoint, "a", c.Endpoint,
 		"server endpoint tcp address, like :8080, 127.0.0.1:80, localhost:22")
-
 	fs.StringVar(&c.AccessKey, "k", c.AccessKey,
 		"key to access to this node")
-
-	fs.StringVar(&c.XRayExecPath, "x", c.XRayExecPath,
-		"path to xray binary file")
-
-	fs.StringVar(&c.XRayConfigPath, "c", c.XRayConfigPath,
-		"path to xray config file")
+	fs.StringVar(&c.XRayDir, "x", c.XRayDir,
+		`xray binaries and configs dir. must contains
+	xray, xray_server.json, xray_client.json`)
 
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		return err

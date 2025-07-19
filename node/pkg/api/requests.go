@@ -1,4 +1,4 @@
-package api
+package xrayapi
 
 const StartURLPath = "/start"
 

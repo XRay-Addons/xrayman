@@ -4,8 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/XRay-Addons/xrayman/node/internal/config"
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
-
+	"github.com/XRay-Addons/xrayman/node/internal/xray/api"
+	"github.com/XRay-Addons/xrayman/node/internal/xray/clientcfg"
+	"github.com/XRay-Addons/xrayman/node/internal/xray/servercfg"
+	"github.com/XRay-Addons/xrayman/node/internal/xray/servicectl"
 	"go.uber.org/zap"
 )
 
@@ -13,10 +17,28 @@ type App struct {
 	log *zap.Logger
 }
 
-func New(log *zap.Logger) *App {
+func New(cfg config.Config, log *zap.Logger) (*App, error) {
 	if log == nil {
-		log = zap.NewNop()
+		return nil, fmt.Errorf("%w: app init: logger", errdefs.ErrNilArgPassed)
 	}
+
+	srvCfg, err := servercfg.New(cfg.XRayServer())
+	if err != nil {
+		return nil, fmt.Errorf("init app: %w", err)
+	}
+	clientCfg, err := clientcfg.New(cfg.XRayClient(), "", "")
+	if err != nil {
+		return nil, fmt.Errorf("init app: %w", err)
+	}
+	xrayService, err := servicectl.New(cfg.XRayExec(), cfg.XRayServer(), log)
+	if err != nil {
+		return nil, fmt.Errorf("init app: %w", err)
+	}
+	xrayAPI, err := api.New(srvCfg.GetApiURL(), srvCfg.GetInbounds(), log)
+	if err != nil {
+		return nil, fmt.Errorf("init app: %w", err)
+	}
+
 	return &App{log: log}
 }
 

@@ -1,4 +1,4 @@
-package servercfg
+package xraycfg
 
 import (
 	"github.com/XRay-Addons/xrayman/node/internal/models"
@@ -14,8 +14,8 @@ const (
 	apiUrlPath     = "api.listen"
 )
 
-func parseServerInbounds(serverCfg string) []models.Inbound {
-	inboundSections := gjson.Get(serverCfg, inboundsPath).Array()
+func parseSrvInbounds(cfg string) []models.Inbound {
+	inboundSections := gjson.Get(cfg, inboundsPath).Array()
 
 	inbounds := make([]models.Inbound, 0, len(inboundSections))
 	for _, inbound := range inboundSections {
@@ -50,7 +50,7 @@ func getInboundType(protocol, network, security string) models.InboundType {
 	return models.UnsupportedInbound
 }
 
-func parseServerApiURL(serverCfg string) string {
-	apiURL := gjson.Get(serverCfg, apiUrlPath).String()
+func parseSrvApiURL(srvCfg string) string {
+	apiURL := gjson.Get(srvCfg, apiUrlPath).String()
 	return apiURL
 }
