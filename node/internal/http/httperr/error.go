@@ -6,20 +6,20 @@ import (
 
 // error containing http response error
 // and real reason for it
-type Error struct {
+type httpError struct {
 	response *Response
 	reason   error
 }
 
-func New(response *Response, reason error) *Error {
-	return &Error{response: response, reason: reason}
+func New(response *Response, reason error) *httpError {
+	return &httpError{response: response, reason: reason}
 }
 
-func (e *Error) Error() string {
+func (e *httpError) Error() string {
 	return e.reason.Error()
 }
 
-func (e *Error) Is(target error) bool {
+func (e *httpError) Is(target error) bool {
 	// in C++ we call it fffuuu-pattern
 	if r, ok := target.(*Response); ok {
 		return e.response == r
@@ -27,7 +27,7 @@ func (e *Error) Is(target error) bool {
 	return errors.Is(e.reason, target)
 }
 
-func (e *Error) As(target any) bool {
+func (e *httpError) As(target any) bool {
 	if t, ok := target.(**Response); ok {
 		*t = e.response
 		return true
@@ -35,6 +35,6 @@ func (e *Error) As(target any) bool {
 	return errors.As(e.reason, target)
 }
 
-func (e *Error) Unwrap() error {
+func (e *httpError) Unwrap() error {
 	return e.reason
 }
