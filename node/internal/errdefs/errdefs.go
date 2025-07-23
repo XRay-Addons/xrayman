@@ -23,4 +23,7 @@ var (
 
 	// errors about grpc commands
 	ErrGRPC = errors.New("grpc connection error")
+
+	// errors from generated code
+	ErrGenerated = errors.New("generated code error")
 )

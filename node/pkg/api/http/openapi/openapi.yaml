@@ -1,0 +1,222 @@
+openapi: 3.0.3
+info:
+  title: XRay node API
+  version: 1.0.0
+
+paths:
+  /start:
+    post:
+      summary: Start node with user list
+      operationId: StartPost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartRequest'
+      responses:
+        '200':
+          description: Successful start
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StartResponse'
+        'default':
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /stop:
+    post:
+      summary: Stop node 
+      operationId: StopPost
+
+      responses:
+        '200':
+          description: Successful start
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+        'default':
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /status:
+    get:
+      operationId: GetStatus
+      summary: Get current service status
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponse'
+        'default':
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/edit:
+    post:
+      operationId: EditUsers
+      summary: Edit node users list
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditUsersRequest'
+
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+        'default':
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+
+    User:
+      type: object
+      required:
+        - name
+        - vlessUUID
+      properties:
+        name:
+          type: string
+        vlessUUID:
+          type: string
+
+    ClientCfg:
+      type: object
+      required:
+        - template
+        - userNameField
+        - vlessUUIDField
+      properties:
+        template:
+          type: string
+        userNameField:
+          type: string
+        vlessUUIDField:
+          type: string
+
+    ServiceStatus:
+      type: string
+      description: Status of the service
+      enum: [
+        "stopped",
+        "running"
+      ]
+
+    StartRequest:
+      type: object
+      required:
+        - users
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+
+    StartResponse:
+      type: object
+      required:
+        - clientCfg
+      properties:
+        clientCfg:
+          $ref: '#/components/schemas/ClientCfg'
+
+    StatusResponse:
+      type: object
+      required:
+        - serviceStatus
+      properties:
+        serviceStatus:
+          $ref: '#/components/schemas/ServiceStatus'
+
+    EditUsersRequest:
+      type: object
+      required:
+        - add
+        - remove
+      properties:
+        add:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        remove:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+
+    EmptyResponse:
+      type: object
+      description: Empty response body
+      properties: {}
+      additionalProperties: false
+      
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+        details:
+          type: string
+          nullable: true
+
+    ErrorUnauthorized:
+      allOf:
+        - $ref: '#/components/schemas/Error'
+        - type: object
+          x-go-name: ErrorUnauthorized
+          example:
+            message: Unauthorized
+          description: Request is not authenticated.
+
+    ErrorBadRequest:
+      allOf:
+        - $ref: '#/components/schemas/Error'
+        - type: object
+          x-go-name: ErrorBadRequest
+          example:
+            message: Invalid request
+          description: Request is syntactically or semantically invalid.
+
+    InternalServerError:
+      allOf:
+        - $ref: '#/components/schemas/Error'
+        - type: object
+          x-go-name: ErrorInternalServerError
+          example:
+            message: Internal server error
+          description: Unexpected server-side error.
+
+    UnknownStartError:
+       allOf:
+        - $ref: '#/components/schemas/Error'
+        - type: object
+          x-go-name: UnknownStartError
+          example:
+            message: Unknown error
+          description: No idea.
