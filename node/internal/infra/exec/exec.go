@@ -11,7 +11,6 @@ import (
 
 func Run(name string, args []string) (stdout, stderr string, err error) {
 	cmd := exec.Command(name, args...)
-
 	var stdoutBuf, stderrBuf bytes.Buffer
 	cmd.Stdout = &stdoutBuf
 	cmd.Stderr = &stderrBuf
