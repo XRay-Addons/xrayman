@@ -24,7 +24,7 @@ func Logger(log *zap.Logger) Middleware {
 			defer func() {
 				log.Log(getLogLevel(ww.Status()), "request",
 					zap.String(constants.RequestIDLogTag, chimw.GetReqID(r.Context())),
-					zap.String("uri", r.RequestURI),
+					zap.String("uri", r.URL.Path),
 					zap.String("method", r.Method),
 					zap.Int("status", ww.Status()),
 					zap.Duration("duration", time.Since(start)),
