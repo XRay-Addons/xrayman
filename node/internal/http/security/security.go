@@ -9,17 +9,17 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-type SecurityHandler struct {
+type Handler struct {
 	secret []byte
 }
 
-var _ api.SecurityHandler = (*SecurityHandler)(nil)
+var _ api.SecurityHandler = (*Handler)(nil)
 
-func New(secret []byte) *SecurityHandler {
-	return &SecurityHandler{secret: secret}
+func New(secret []byte) *Handler {
+	return &Handler{secret: secret}
 }
 
-func (s *SecurityHandler) HandleBearerAuth(ctx context.Context,
+func (s *Handler) HandleBearerAuth(ctx context.Context,
 	operationName api.OperationName, t api.BearerAuth,
 ) (context.Context, error) {
 	parsedToken, err := jwt.Parse(
