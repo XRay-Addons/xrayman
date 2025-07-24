@@ -12,16 +12,14 @@ type Tx struct {
 	rollbackTimeout time.Duration
 }
 
-type Option interface {
-	apply(*Tx)
-}
+type Option func(*Tx)
 
 func New(opts ...Option) Tx {
 	tx := Tx{
 		rollbackTimeout: defaultRollbackTimeout,
 	}
 	for _, o := range opts {
-		o.apply(&tx)
+		o(&tx)
 	}
 	return tx
 }
@@ -29,9 +27,9 @@ func New(opts ...Option) Tx {
 const defaultRollbackTimeout = 5 * time.Second
 
 func WithRollbackTimeout(timeout time.Duration) Option {
-	return optionFn(func(tx *Tx) {
+	return func(tx *Tx) {
 		tx.rollbackTimeout = timeout
-	})
+	}
 }
 
 type Fn = func(ctx context.Context) error
@@ -58,12 +56,6 @@ func (tx *Tx) Run(ctx context.Context) error {
 	}
 
 	return fmt.Errorf("tx run: %w", err)
-}
-
-type optionFn func(*Tx)
-
-func (f optionFn) apply(tx *Tx) {
-	f(tx)
 }
 
 type txItem struct {
