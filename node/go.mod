@@ -54,6 +54,7 @@ require (
 	github.com/go-chi/chi v1.5.5
 	github.com/go-chi/chi/v5 v5.2.2
 	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/oklog/run v1.2.0
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/tidwall/sjson v1.2.5
