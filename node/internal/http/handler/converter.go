@@ -5,8 +5,6 @@ import (
 
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
-	//gen "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
-	//gen "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
 )
 
 // goverter:converter
@@ -14,9 +12,7 @@ import (
 // goverter:output:file ./converter_generated.go
 type Converter interface {
 	ConvertStartRequest(source *api.StartRequest) *models.StartParams
-
 	ConvertStartResult(source *models.StartResult) *api.StartResponse
-
 	ConvertEditUsersRequest(source *api.EditUsersRequest) *models.EditUsersParams
 }
 

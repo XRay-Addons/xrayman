@@ -12,15 +12,14 @@ var (
 	ErrInternalServerError = new(http.StatusInternalServerError,
 		"Internal server error")
 	ErrAuthToken = new(http.StatusUnauthorized,
-		"Invalid auth token")
-	ErrEncryptionToken = new(http.StatusUnauthorized,
-		"Invalid encryption token")
+		"Invalid auth token", "try another one")
 	ErrUnknown = new(http.StatusInternalServerError,
-		"unknown error", "we don't know")
+		"unknown error", "we really don't know")
 )
 
 // error impl containing api.ErrorStatusCode
-// to return it as error from middleware and process in handler
+// to return it as error from middleware or handlers
+// and later process in handler.NewError
 type HttpErr api.ErrorStatusCode
 
 func new(statusCode int, message string, details ...string) *HttpErr {

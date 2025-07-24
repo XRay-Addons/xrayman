@@ -8,6 +8,8 @@ paths:
     post:
       summary: Start node with user list
       operationId: StartPost
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -32,7 +34,8 @@ paths:
     post:
       summary: Stop node 
       operationId: StopPost
-
+      security:
+        - BearerAuth: []
       responses:
         '200':
           description: Successful start
@@ -49,8 +52,10 @@ paths:
 
   /status:
     get:
-      operationId: GetStatus
       summary: Get current service status
+      operationId: GetStatus
+      security:
+        - BearerAuth: []
       responses:
         '200':
           description: Successful response
@@ -69,7 +74,8 @@ paths:
     post:
       operationId: EditUsers
       summary: Edit node users list
-
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -220,3 +226,9 @@ components:
           example:
             message: Unknown error
           description: No idea.
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
