@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net/http"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/XRay-Addons/xrayman/node/internal/http/router"
 	"github.com/XRay-Addons/xrayman/node/internal/http/security"
 	"github.com/XRay-Addons/xrayman/node/internal/http/server"
+	"github.com/XRay-Addons/xrayman/node/internal/http/tlscfg"
 	a "github.com/XRay-Addons/xrayman/node/internal/infra/app"
 	"github.com/XRay-Addons/xrayman/node/internal/service"
 	"github.com/XRay-Addons/xrayman/node/internal/xray/xrayapi"
@@ -32,6 +34,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 
 	var srvCfg *xraycfg.ServerCfg
 	var clientCfg *xraycfg.ClientCfg
+	var tlsCfg *tls.Config
 	var xrayService *xrayservice.XRayService
 	var xrayAPI *xrayapi.XRayApi
 
@@ -54,6 +57,17 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		a.WithComponent("client cfg",
 			func() (err error) {
 				clientCfg, err = xraycfg.NewClientCfg(cfg.XRayClient())
+				return
+			}, nil,
+		),
+		// TLS config
+		a.WithComponent("tls cfg",
+			func() (err error) {
+				if !cfg.HasCerts() {
+					log.Warn("xray dir contains NO certs, encryption disabled. use it only for testing!!!")
+					return
+				}
+				tlsCfg, err = tlscfg.Load(cfg.NodeCrt(), cfg.NodeKey(), cfg.RootCrt())
 				return
 			}, nil,
 		),
@@ -114,7 +128,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// http server
 		a.WithComponent("http server",
 			func() (err error) {
-				httpServer, err = server.New(cfg.Endpoint, r)
+				httpServer, err = server.New(cfg.Endpoint, r, tlsCfg)
 				return
 			}, nil,
 		),
