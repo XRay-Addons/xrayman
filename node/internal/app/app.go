@@ -21,8 +21,6 @@ import (
 	"go.uber.org/zap"
 )
 
-type Closer = func(ctx context.Context) error
-
 type App struct {
 	app *a.App
 }
@@ -94,7 +92,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 			}, nil,
 		),
 		// security
-		a.WithComponent("handler",
+		a.WithComponent("security",
 			func() (err error) {
 				if len(cfg.AccessKey) == 0 {
 					log.Warn("access key is empty, authentification disabled. use it only for testing!!!")
@@ -108,7 +106,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// router
 		a.WithComponent("router",
 			func() (err error) {
-				r, err = router.New(h, sec)
+				r, err = router.New(h, sec, router.WithLogger(log))
 				return
 			}, nil,
 		),
