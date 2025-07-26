@@ -42,7 +42,7 @@ func TestNode(t *testing.T) {
 	node, err := New(api, storage, log)
 	require.NoError(t, err)
 
-	for range 1000 {
+	for range 10000 {
 		// enable storage external modifications and faults
 		api.unstable = true
 		storage.unstable = true
@@ -50,12 +50,9 @@ func TestNode(t *testing.T) {
 		// 100 times apply external modification and sync after that
 		// sync also contains modifications, so theoretically node state
 		// and storage state are unsynced after that
-		for range 2 {
+		for range 100 {
 
 			log.Info("new iteration:")
-			log.Sugar().Infof("storage: actual: %v required %v pending %d; node: %v",
-				storage.actualState, storage.requiredState, len(storage.pendingUsers),
-				api.status)
 
 			storage.applyExternalModifications()
 			if err := node.SyncNodeStatus(context.TODO()); err != nil {
@@ -87,10 +84,7 @@ func checkNodeState(t *testing.T,
 	log.Sugar().Infof("actual: %v, required: %v",
 		storage.actualState, storage.requiredState)
 	for _, u := range storage.users {
-		logStr := fmt.Sprintf("user %d: %v", u.User.ID, u.Status)
-		if p, exists := storage.pendingUsers[u.User]; exists {
-			logStr += fmt.Sprintf(" pending: %v", p)
-		}
+		logStr := fmt.Sprintf("user %d: actual: %v, required: %v", u.user.ID, u.actualState, u.requiredStatus)
 		log.Info(logStr)
 	}
 	log.Info("\n")
@@ -104,7 +98,17 @@ func checkNodeState(t *testing.T,
 	log.Info("\n")
 	defer func() { log.Info("---- end of test check ----\n") }()
 
-	if storage.requiredState == NodeStopped {
+	require.Equal(t, storage.actualState, storage.requiredState)
+	if storage.requiredState == NodeRunning {
+		require.Equal(t, NodeRunning, node.status)
+		for _, u := range storage.users {
+			require.Equal(t, u.actualState, u.requiredStatus)
+			_, onNode := node.users[u.user.ID]
+			require.Equal(t, u.actualState == UserEnabled, onNode)
+		}
+	}
+
+	/*if storage.requiredState == NodeStopped {
 		// node is required to be stopped. it't ok if its
 		// check storage
 		require.NotEqual(t, NodeRunning, storage.actualState, "actual storage state")
@@ -129,5 +133,5 @@ func checkNodeState(t *testing.T,
 			}
 		}
 		require.Equal(t, storageUsers, len(node.users), "node users count")
-	}
+	}*/
 }

@@ -10,7 +10,7 @@ import (
 
 // implement node emulator for tests
 type NodeAPIEmulator struct {
-	status NodeState
+	status NodeStatus
 	users  map[UserID]struct{}
 
 	rand            *rand.Rand
@@ -81,9 +81,9 @@ func (n *NodeAPIEmulator) Start(ctx context.Context, users []User) (*NodeConfig,
 	return &NodeConfig{}, nil
 }
 
-func (n *NodeAPIEmulator) Status(ctx context.Context) (NodeState, error) {
+func (n *NodeAPIEmulator) Status(ctx context.Context) (NodeStatus, error) {
 	if err := n.unavaliableIncident(); err != nil {
-		return NodeUnavailable, nil
+		return NodeStatusUnknown, err
 	}
 	n.turnOffIncident()
 	return n.status, nil

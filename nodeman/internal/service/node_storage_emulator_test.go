@@ -8,12 +8,17 @@ import (
 	"go.uber.org/zap"
 )
 
-type NodeStorageEmulator struct {
-	actualState   NodeState
-	requiredState NodeState
+type storageUser struct {
+	user           User
+	actualState    UserStatus
+	requiredStatus UserStatus
+}
 
-	users        []UserState
-	pendingUsers map[User]UserStatus
+type NodeStorageEmulator struct {
+	actualState   NodeStatus
+	requiredState NodeStatus
+
+	users []storageUser
 
 	rand                     *rand.Rand
 	unavailableProb          float32
@@ -25,20 +30,23 @@ type NodeStorageEmulator struct {
 }
 
 func NewNodeStorageEmulator(nUsers int, log *zap.Logger) *NodeStorageEmulator {
-	users := make([]UserState, 0)
+	users := make([]storageUser, 0)
 	for i := range nUsers {
 		state := UserEnabled
 		if i%2 == 0 {
 			state = UserDisabled
 		}
-		users = append(users, UserState{User{ID: UserID(i)}, UserStatus(state)})
+		users = append(users, storageUser{
+			User{ID: UserID(i)},
+			UserStatusUnknown,
+			state,
+		})
 	}
 
 	return &NodeStorageEmulator{
-		actualState:              NodeUnavailable,
+		actualState:              NodeStatusUnknown,
 		requiredState:            NodeStopped,
 		users:                    users,
-		pendingUsers:             make(map[User]UserStatus, 0),
 		rand:                     rand.New(rand.NewPCG(0, 0)),
 		unavailableProb:          0.25,
 		externalModificationProb: 0.25,
@@ -53,15 +61,20 @@ func (n *NodeStorageEmulator) GetAllUsers(ctx context.Context) ([]UserState, err
 	}
 	n.applyExternalModifications()
 
-	newSlice := make([]UserState, len(n.users))
-	copy(newSlice, n.users)
+	newSlice := make([]UserState, 0, len(n.users))
+	for _, u := range n.users {
+		newSlice = append(newSlice, UserState{
+			u.user,
+			u.requiredStatus,
+		})
+	}
 
 	return newSlice, nil
 }
 
-func (n *NodeStorageEmulator) GetNodeState(ctx context.Context) (actual, required NodeState, err error) {
+func (n *NodeStorageEmulator) GetNodeState(ctx context.Context) (actual, required NodeStatus, err error) {
 	if err := n.unavaliableIncident(); err != nil {
-		return NodeUnavailable, NodeUnavailable, fmt.Errorf("get all users: %w", err)
+		return NodeStatusUnknown, NodeStatusUnknown, fmt.Errorf("get all users: %w", err)
 	}
 	n.applyExternalModifications()
 
@@ -69,15 +82,20 @@ func (n *NodeStorageEmulator) GetNodeState(ctx context.Context) (actual, require
 }
 
 // GetPendingUsers implements NodeStorage.
-func (n *NodeStorageEmulator) GetPendingUsers(ctx context.Context) ([]UserState, error) {
+func (n *NodeStorageEmulator) GetOutOfSyncUsers(ctx context.Context) ([]UserState, error) {
 	if err := n.unavaliableIncident(); err != nil {
 		return nil, fmt.Errorf("get pending users: %w", err)
 	}
 	n.applyExternalModifications()
 
-	pendingUsers := make([]UserState, 0, len(n.pendingUsers))
-	for u, s := range n.pendingUsers {
-		pendingUsers = append(pendingUsers, UserState{u, s})
+	pendingUsers := make([]UserState, 0, len(n.users))
+	for _, u := range n.users {
+		if u.actualState != u.requiredStatus {
+			pendingUsers = append(pendingUsers, UserState{
+				u.user,
+				u.requiredStatus,
+			})
+		}
 	}
 	return pendingUsers, nil
 }
@@ -85,7 +103,7 @@ func (n *NodeStorageEmulator) GetPendingUsers(ctx context.Context) ([]UserState,
 type Updater struct {
 	parent *NodeStorageEmulator
 	cfg    *NodeConfig
-	state  NodeState
+	state  NodeStatus
 	users  []UserState
 }
 
@@ -97,7 +115,7 @@ func (u *Updater) SetConfig(cfg *NodeConfig) {
 	u.cfg = cfg
 }
 
-func (u *Updater) SetState(state NodeState) {
+func (u *Updater) SetStatus(state NodeStatus) {
 	u.state = state
 }
 
@@ -125,8 +143,12 @@ func (n *NodeStorageEmulator) apply(upd *Updater) error {
 	}
 
 	for _, u := range upd.users {
-		if s, exists := n.pendingUsers[u.User]; exists && s == u.Status {
-			delete(n.pendingUsers, u.User)
+		for i, uu := range n.users {
+			if uu.user == u.User {
+				updatedU := n.users[i]
+				updatedU.actualState = u.Status
+				n.users[i] = updatedU
+			}
 		}
 	}
 
@@ -159,24 +181,13 @@ func (n *NodeStorageEmulator) applyExternalModifications() {
 		n.log.Sugar().Warn("node storage: external state switch: ", n.requiredState)
 	}
 
-	/*if n.requiredState != NodeRunning {
-		for u := range n.pendingUsers {
-			delete(n.pendingUsers, u)
-		}
-		return
-	}*/
-
 	editIdx := n.rand.IntN(len(n.users))
-	editState := n.users[editIdx].Status
+	editState := n.users[editIdx].requiredStatus
 	if n.rand.IntN(2) == 1 {
 		editState = (UserDisabled + UserEnabled) - editState
 		n.log.Sugar().Warnf("node storage: external state switch: user %d -> %v",
-			n.users[editIdx].User.ID, editState)
-		n.users[editIdx].Status = editState
-
-		if n.requiredState == NodeRunning {
-			n.pendingUsers[n.users[editIdx].User] = editState
-		}
+			n.users[editIdx].user.ID, editState)
+		n.users[editIdx].requiredStatus = editState
 	}
 }
 
