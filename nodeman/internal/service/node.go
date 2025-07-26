@@ -1,15 +1,7 @@
 package service
 
-import (
-	"context"
-	"fmt"
-
-	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
-	"go.uber.org/zap"
-)
-
 // user description
-type UserID int
+/*type UserID int
 
 type User struct {
 	ID        UserID
@@ -325,4 +317,4 @@ func (c *NodeController) unlockNodeUsersState(ctx context.Context, users []UserS
 		return fmt.Errorf("unlock node users state: %w", err)
 	}
 	return nil
-}
+}*/
