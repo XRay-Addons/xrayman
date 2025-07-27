@@ -16,6 +16,7 @@ const (
 	UserStatusActive
 )
 
+// Rename it!
 type UserTargetState struct {
 	User   UserProfile
 	Target UserStatus

@@ -14,8 +14,17 @@ type ClientTemplate struct {
 	VlessUUIDField string
 }
 
+type NodeConnectionInfo struct {
+	Endpoint  string
+	AccessKey string
+}
+
+type NodeID int
+
 type NodeConfig struct {
+	ID             NodeID
 	ClientTemplate ClientTemplate
+	ConnectionInfo NodeConnectionInfo
 }
 
 func (s NodeStatus) String() string {
@@ -29,9 +38,7 @@ func (s NodeStatus) String() string {
 	}
 }
 
-/*type NodeID = int
-
-type NodeClientCfg struct {
+/*type NodeClientCfg struct {
 	Template       string
 	UserNameField  string
 	VlessUUIDField string

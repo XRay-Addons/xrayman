@@ -43,33 +43,6 @@ func NewStorageMock(nUsers int) *StorageMock {
 	}
 }
 
-func (s *StorageMock) FetchNodeStatus(ctx context.Context) (
-	target models.NodeStatus, current models.NodeStatus, err error,
-) {
-	return s.TargetState, s.CurrentState, nil
-}
-
-func (s *StorageMock) FindPendingSyncs(ctx context.Context) ([]models.UserSyncStatus, error) {
-	pending := make([]models.UserSyncStatus, 0, len(s.Users))
-	for _, u := range s.Users {
-		if u.CurrentStatus != u.TargetStatus {
-			pending = append(pending, u)
-		}
-	}
-	return pending, nil
-}
-
-func (s *StorageMock) ListManagedUsers(ctx context.Context) ([]models.UserTargetState, error) {
-	users := make([]models.UserTargetState, 0, len(s.Users))
-	for _, u := range s.Users {
-		users = append(users, models.UserTargetState{
-			User:   u.User,
-			Target: u.TargetStatus,
-		})
-	}
-	return users, nil
-}
-
 // random external operation to turn node on or off, enable or disable user
 func (s *StorageMock) RandomExternalOperation() {
 	if s.rand.IntN(2) == 0 {
@@ -84,46 +57,141 @@ func (s *StorageMock) RandomExternalOperation() {
 	}
 }
 
-func (s *StorageMock) BeginTx() node.StorageTx {
-	return &MockStorageTx{parent: s}
+func (s *StorageMock) fetchNodeStatus() (
+	target models.NodeStatus, current models.NodeStatus, err error,
+) {
+	return s.TargetState, s.CurrentState, nil
 }
 
-type MockStorageTx struct {
-	parent *StorageMock
-	c      *models.NodeConfig
-	s      *models.NodeStatus
-	u      []models.UserStatusPatch
-}
-
-func (tx *MockStorageTx) UpdateNodeConfig(c models.NodeConfig) {
-	tx.c = &c
-}
-
-// UpdateNodeStatus implements StorageTx.
-func (tx *MockStorageTx) UpdateNodeStatus(s models.NodeStatus) {
-	tx.s = &s
-}
-
-// UpdateNodeUsers implements StorageTx.
-func (tx *MockStorageTx) UpdateNodeUsers(u []models.UserStatusPatch) {
-	tx.u = append(tx.u, u...)
-}
-
-func (m *MockStorageTx) Commit(ctx context.Context) error {
-	if m.s != nil {
-		m.parent.CurrentState = *m.s
+func (s *StorageMock) findPendingSyncs() (
+	[]models.UserSyncStatus, error,
+) {
+	pending := make([]models.UserSyncStatus, 0, len(s.Users))
+	for _, u := range s.Users {
+		if u.CurrentStatus != u.TargetStatus {
+			pending = append(pending, u)
+		}
 	}
-	if m.u != nil {
-		for _, u := range m.u {
-			for i, pu := range m.parent.Users {
+	return pending, nil
+}
+
+func (s *StorageMock) listUsers() (
+	[]models.UserTargetState, error,
+) {
+	users := make([]models.UserTargetState, 0, len(s.Users))
+	for _, u := range s.Users {
+		users = append(users, models.UserTargetState{
+			User:   u.User,
+			Target: u.TargetStatus,
+		})
+	}
+	return users, nil
+}
+
+func (s *StorageMock) apply(patch *StorageMockPatch) error {
+	if patch.statePatch != nil {
+		s.CurrentState = *patch.statePatch
+	}
+	if patch.usersPatch != nil {
+		for _, u := range patch.usersPatch {
+			for i, pu := range s.Users {
 				if u.UserID == pu.User.ID {
 					pu.CurrentStatus = u.Status
-					m.parent.Users[i] = pu
+					s.Users[i] = pu
 				}
 			}
 		}
 	}
 	return nil
+}
+
+var _ node.Storage = (*StorageMock)(nil)
+
+// DoUoW implements node.Storage.
+func (s *StorageMock) DoUoW(ctx context.Context, fn node.UoWFn) error {
+	uow, err := s.NewUoW()
+	if err != nil {
+		return fmt.Errorf("init uow: %w", err)
+	}
+	if err = uow.Do(ctx, fn); err != nil {
+		return fmt.Errorf("do uow: %w", err)
+	}
+	return nil
+}
+
+func (s *StorageMock) NewUoW() (node.UoW, error) {
+	return &StorageMockPatch{
+		parent: s,
+	}, nil
+}
+
+type StorageMockPatch struct {
+	parent     *StorageMock
+	statePatch *models.NodeStatus
+	usersPatch []models.UserStatusPatch
+}
+
+var _ node.NodeConfigStorage = (*StorageMockPatch)(nil)
+var _ node.NodeStatusStorage = (*StorageMockPatch)(nil)
+var _ node.UsersStorage = (*StorageMockPatch)(nil)
+var _ node.PendingSyncsStorage = (*StorageMockPatch)(nil)
+var _ node.UoWContext = (*StorageMockPatch)(nil)
+var _ node.UoW = (*StorageMockPatch)(nil)
+
+// node.UoWContext impl
+func (s *StorageMockPatch) NodeConfigStorage() node.NodeConfigStorage {
+	return s
+}
+func (s *StorageMockPatch) NodeStatusStorage() node.NodeStatusStorage {
+	return s
+}
+
+func (s *StorageMockPatch) PendingSyncsStorage() node.PendingSyncsStorage {
+	return s
+}
+
+func (s *StorageMockPatch) UsersStorage() node.UsersStorage {
+	return s
+}
+
+// node.NodeStatusStorage impl
+func (s *StorageMockPatch) FetchNodeStatus(ctx context.Context) (
+	target models.NodeStatus, current models.NodeStatus, err error,
+) {
+	return s.parent.fetchNodeStatus()
+}
+
+func (s *StorageMockPatch) UpdateCurrentStatus(ctx context.Context, su models.NodeStatus) error {
+	s.statePatch = &su
+	return nil
+}
+
+// node.PendingSyncsStorage impl
+func (s *StorageMockPatch) FindPendingSyncs(ctx context.Context) ([]models.UserSyncStatus, error) {
+	return s.parent.findPendingSyncs()
+}
+
+func (s *StorageMockPatch) PatchPendingSyncs(ctx context.Context, patch []models.UserStatusPatch) error {
+	s.usersPatch = append(s.usersPatch, patch...)
+	return nil
+}
+
+// node.UsersStorage impl
+func (s *StorageMockPatch) ListUsers(ctx context.Context) ([]models.UserTargetState, error) {
+	return s.parent.listUsers()
+}
+
+// node.NodeConfigStorage impl
+func (s *StorageMockPatch) UpdateClientTemplate(ctx context.Context, tmpl *models.ClientTemplate) error {
+	return nil
+}
+
+// Do implements node.UoW.
+func (s *StorageMockPatch) Do(ctx context.Context, fn node.UoWFn) error {
+	if err := fn(s); err != nil {
+		return fmt.Errorf("patch cfg error: %w", err)
+	}
+	return s.parent.apply(s)
 }
 
 // storage mock with external faults or edit state modifications
@@ -138,263 +206,33 @@ func NewUnstableStorageMock(nUsers int) *UnstableStorageMock {
 	}
 }
 
-func (s *UnstableStorageMock) FetchNodeStatus(ctx context.Context) (
-	target models.NodeStatus, current models.NodeStatus, err error,
-) {
+// DoUoW implements node.Storage.
+func (s *UnstableStorageMock) DoUoW(ctx context.Context, fn node.UoWFn) error {
+	// some times this method returns error
+	if s.BaseStorage.rand.Float32() < s.Instability {
+		return fmt.Errorf("unstable storage")
+	}
+	// some times states changes from external
 	if s.BaseStorage.rand.Float32() < s.Instability {
 		s.RandomExternalOperation()
 	}
-	if s.BaseStorage.rand.Float32() < s.Instability {
-		return models.NodeStatusUnknown, models.NodeStatusUnknown, fmt.Errorf("random storage fault")
+
+	uow, err := s.BaseStorage.NewUoW()
+	if err != nil {
+		return fmt.Errorf("init uow: %w", err)
 	}
-	return s.BaseStorage.FetchNodeStatus(ctx)
+	if err = uow.Do(ctx, fn); err != nil {
+		return fmt.Errorf("do uow: %w", err)
+	}
+	return nil
 }
 
-func (s *UnstableStorageMock) FindPendingSyncs(ctx context.Context) ([]models.UserSyncStatus, error) {
-	if s.BaseStorage.rand.Float32() < s.Instability {
-		s.RandomExternalOperation()
-	}
-	if s.BaseStorage.rand.Float32() < s.Instability {
-		return nil, fmt.Errorf("random storage fault")
-	}
-	return s.BaseStorage.FindPendingSyncs(ctx)
-}
-
-func (s *UnstableStorageMock) ListManagedUsers(ctx context.Context) ([]models.UserTargetState, error) {
-	if s.BaseStorage.rand.Float32() < s.Instability {
-		s.RandomExternalOperation()
-	}
-	if s.BaseStorage.rand.Float32() < s.Instability {
-		return nil, fmt.Errorf("random storage fault")
-	}
-	return s.BaseStorage.ListManagedUsers(ctx)
+func (s *UnstableStorageMock) NewUoW() (node.UoW, error) {
+	return &StorageMockPatch{
+		parent: s.BaseStorage,
+	}, nil
 }
 
 func (s *UnstableStorageMock) RandomExternalOperation() {
 	s.BaseStorage.RandomExternalOperation()
 }
-
-func (s *UnstableStorageMock) BeginTx() node.StorageTx {
-	return &UnstableMockStorageTx{
-		MockStorageTx: MockStorageTx{parent: s.BaseStorage},
-		rand:          s.BaseStorage.rand,
-		Instability:   s.Instability,
-	}
-}
-
-type UnstableMockStorageTx struct {
-	MockStorageTx
-	rand        *rand.Rand
-	Instability float32
-}
-
-func (m *UnstableMockStorageTx) Commit(ctx context.Context) error {
-	if m.MockStorageTx.parent.rand.Float32() < m.Instability {
-		m.MockStorageTx.parent.RandomExternalOperation()
-	}
-	if m.parent.rand.Float32() < m.Instability {
-		return fmt.Errorf("random storage fault")
-	}
-	return m.MockStorageTx.Commit(ctx)
-}
-
-/*type StorageMock struct {
-	actualState   models.NodeStatus
-	requiredState models.NodeStatus
-
-	users []models.UserSyncStatus
-
-	rand                     *rand.Rand
-	failProb                 float32
-	externalModificationProb float32
-
-	Unstable bool
-}
-
-// BeginTx implements NodeStorage.
-func (s *StorageMock) BeginTx() StorageTx {
-	panic("unimplemented")
-}
-
-// FetchNodeStatus implements NodeStorage.
-func (s *StorageMock) FetchNodeStatus(ctx context.Context) (target models.NodeStatus, current models.NodeStatus, err error) {
-	panic("unimplemented")
-}
-
-// FindPendingSyncs implements NodeStorage.
-func (s *StorageMock) FindPendingSyncs(ctx context.Context) ([]models.UserSyncStatus, error) {
-	panic("unimplemented")
-}
-
-// ListManagedUsers implements NodeStorage.
-func (s *StorageMock) ListManagedUsers(ctx context.Context) ([]models.UserTargetState, error) {
-	panic("unimplemented")
-}
-
-func NewStorageMock(nUsers int, log *zap.Logger) *StorageMock {
-	users := make([]UserStateIntent, 0, nUsers)
-
-	for i := range nUsers {
-		state := models.UserEnabled
-		if i%2 == 0 {
-			state = models.UserDisabled
-		}
-		users = append(users, UserStateIntent{
-			User:     models.User{ID: models.UserID(i)},
-			Required: state,
-			Actual:   models.UserStatusUnknown,
-		})
-	}
-
-	return &StorageMock{
-		actualState:              models.NodeStatusUnknown,
-		requiredState:            models.NodeOn,
-		users:                    users,
-		rand:                     rand.New(rand.NewPCG(0, 0)),
-		failProb:                 0.25,
-		externalModificationProb: 0.25,
-		Unstable:                 true,
-	}
-}
-
-var _ NodeStorage = (*StorageMock)(nil)
-
-func (s *StorageMock) GetNodeState(ctx context.Context) (
-	required models.NodeStatus, actual models.NodeStatus, err error,
-) {
-	if err := s.applyUnstability(); err != nil {
-		return models.NodeStatusUnknown, models.NodeStatusUnknown, fmt.Errorf("get node state: %w", err)
-	}
-	return s.requiredState, s.actualState, nil
-}
-
-// ListOutOfSyncUsers implements node.Storage.
-func (s *StorageMock) ListOutOfSyncUsers(ctx context.Context) ([]UserStateIntent, error) {
-	if err := s.applyUnstability(); err != nil {
-		return nil, fmt.Errorf("get node state: %w", err)
-	}
-
-	oosUsers := make([]UserStateIntent, 0)
-	for _, u := range s.Users {
-		if u.Actual != u.Required {
-			oosUsers = append(oosUsers, u)
-		}
-	}
-	return oosUsers, nil
-}
-
-func (s *StorageMock) ListUsers(ctx context.Context) ([]UserState, error) {
-	if err := s.applyUnstability(); err != nil {
-		return nil, fmt.Errorf("get node state: %w", err)
-	}
-
-	l := make([]UserState, 0, len(s.Users))
-	for _, u := range s.Users {
-		l = append(l, UserState{
-			User:   u.User,
-			Status: u.Required,
-		})
-	}
-
-	return l, nil
-}
-
-type UOW struct {
-	parent *StorageMock
-	s      models.NodeStatus
-	p      *models.NodeProperties
-	u      []UserStatusUpdate
-}
-
-var _ StorageWriteUOW = (*UOW)(nil)
-
-func (uow *UOW) SetActualStatus(s models.NodeStatus) {
-	uow.s = s
-}
-
-func (uow *UOW) SetActualUserStates(us []UserStatusUpdate) {
-	for _, u := range us {
-		uow.u = append(uow.u, u)
-	}
-}
-
-// SetNodeProperties implements StorageWriteUOW.
-func (s *UOW) SetNodeProperties(p models.NodeProperties) {
-	s.p = &p
-}
-
-func (uow *UOW) Do(ctx context.Context) error {
-	if err := uow.parent.applyUnstability(); err != nil {
-		return fmt.Errorf("do uow: %w", err)
-	}
-	if uow.s > 0 {
-		uow.parent.actualState = uow.s
-	}
-	for _, u := range uow.u {
-		for i, su := range uow.parent.users {
-			if su.User.ID == u.ID {
-				su.Actual = u.Actual
-				uow.parent.users[i] = su
-			}
-		}
-	}
-	return nil
-}
-
-func (s *StorageMock) GetWriteUOW() StorageWriteUOW {
-	return &UOW{parent: s}
-}
-
-func (s *StorageMock) ApplyExternalModifications() {
-	// external modifications
-	if s.rand.Float32() < s.externalModificationProb {
-		s.enableRandomUser()
-	}
-	if s.rand.Float32() < s.externalModificationProb {
-		s.disableRandomUser()
-	}
-	if s.rand.Float32() < s.externalModificationProb {
-		s.turnOn()
-	}
-	if s.rand.Float32() < s.externalModificationProb {
-		s.turnOff()
-	}
-}
-
-func (s *StorageMock) applyUnstability() error {
-	if !s.Unstable {
-		return nil
-	}
-	if s.rand.Float32() < s.failProb {
-		return fmt.Errorf("storage mock fail")
-	}
-	s.ApplyExternalModifications()
-
-	return nil
-}
-
-func (s *StorageMock) enableRandomUser() {
-	idx := s.rand.IntN(len(s.Users))
-	u := s.Users[idx]
-	u.Required = models.UserEnabled
-	s.Users[idx] = u
-}
-
-func (s *StorageMock) disableRandomUser() {
-	idx := s.rand.IntN(len(s.Users))
-	u := s.Users[idx]
-	u.Required = models.UserDisabled
-	s.Users[idx] = u
-}
-
-func (s *StorageMock) turnOn() {
-	s.requiredState = models.NodeOn
-}
-
-func (s *StorageMock) turnOff() {
-	s.requiredState = models.NodeOff
-	for i, u := range s.Users {
-		u.Actual = models.UserDisabled
-		s.Users[i] = u
-	}
-}*/

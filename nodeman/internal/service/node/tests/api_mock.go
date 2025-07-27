@@ -28,7 +28,7 @@ func (api *APIMock) CheckStatus(ctx context.Context) (models.NodeStatus, error) 
 	return api.Status, nil
 }
 
-func (api *APIMock) Start(ctx context.Context, users []models.UserProfile) (*models.NodeConfig, error) {
+func (api *APIMock) Start(ctx context.Context, users []models.UserProfile) (*models.ClientTemplate, error) {
 	for u := range api.Users {
 		delete(api.Users, u)
 	}
@@ -36,7 +36,7 @@ func (api *APIMock) Start(ctx context.Context, users []models.UserProfile) (*mod
 		api.Users[u.ID] = struct{}{}
 	}
 	api.Status = models.NodeStatusRunning
-	return &models.NodeConfig{}, nil
+	return &models.ClientTemplate{}, nil
 }
 
 func (api *APIMock) Stop(ctx context.Context) error {
@@ -85,7 +85,7 @@ func (api *UnstableAPIMock) CheckStatus(ctx context.Context) (models.NodeStatus,
 	return api.BaseAPI.CheckStatus(ctx)
 }
 
-func (api *UnstableAPIMock) Start(ctx context.Context, users []models.UserProfile) (*models.NodeConfig, error) {
+func (api *UnstableAPIMock) Start(ctx context.Context, users []models.UserProfile) (*models.ClientTemplate, error) {
 	if api.rand.Float32() < api.Instability {
 		return nil, fmt.Errorf("random api fail")
 	}
