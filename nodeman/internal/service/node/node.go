@@ -6,15 +6,15 @@ import (
 	"fmt"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service/models"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
 type Node struct {
-	storage Storage
-	api     API
+	storage NodeStorage
+	api     NodeAPI
 }
 
-func New(storage Storage, api API) (*Node, error) {
+func New(storage NodeStorage, api NodeAPI) (*Node, error) {
 	if storage == nil {
 		return nil, fmt.Errorf("node init: storage: %w", errdefs.ErrNilArgPassed)
 	}
@@ -54,12 +54,9 @@ func (n *Node) SyncState(ctx context.Context) error {
 		return fmt.Errorf("node: sync state: %w", errdefs.ErrNilObjectCall)
 	}
 
-	required, previous, err := n.storage.GetNodeState(ctx)
+	target, previous, err := n.storage.FetchNodeStatus(ctx)
 	if err != nil {
 		return fmt.Errorf("node: sync state: %w", err)
-	}
-	if required != models.NodeOn && required != models.NodeOff {
-		return fmt.Errorf("invalid required state %v", required)
 	}
 
 	// if node should be running and currently it's not surely stopped, let's
@@ -67,8 +64,8 @@ func (n *Node) SyncState(ctx context.Context) error {
 	// from any state to stop or disconnected or off due to its internal faults
 	// or connection errors)
 	current := previous
-	if required == models.NodeOn && previous != models.NodeOff {
-		if current, err = n.api.GetStatus(ctx); err != nil {
+	if target == models.NodeStatusRunning && previous != models.NodeStatusStopped {
+		if current, err = n.api.CheckStatus(ctx); err != nil {
 			return fmt.Errorf("node: sync state: %w", err)
 		}
 	}
@@ -78,11 +75,11 @@ func (n *Node) SyncState(ctx context.Context) error {
 	// when sync node users, change node state if it differs
 	// from current stored state
 	switch {
-	case required == models.NodeOn && current == models.NodeOff:
+	case target == models.NodeStatusRunning && current == models.NodeStatusStopped:
 		err = n.startNode(ctx)
-	case required == models.NodeOff && current == models.NodeOn:
+	case target == models.NodeStatusStopped && current == models.NodeStatusRunning:
 		err = n.stopNode(ctx)
-	case required == models.NodeOn && current == models.NodeOn:
+	case target == models.NodeStatusRunning && current == models.NodeStatusRunning:
 		err = n.syncNodeUsers(ctx, current != previous)
 	}
 
@@ -100,32 +97,32 @@ func (n *Node) startNode(ctx context.Context) (err error) {
 	}
 	defer func() {
 		if err != nil {
-			if syncErr := n.updateStoredStatus(ctx, models.NodeOff); syncErr != nil {
+			if syncErr := n.updateStoredStatus(ctx, models.NodeStatusStopped); syncErr != nil {
 				err = errors.Join(err, fmt.Errorf("sync after start node: %w", err))
 			}
 		}
 	}()
 
-	allUsers, err := n.storage.ListUsers(ctx)
+	users, err := n.storage.ListManagedUsers(ctx)
 	if err != nil {
 		return fmt.Errorf("start node: %w", err)
 	}
 
 	// select only enabled users to start node
-	enabledUsers := getEnabledUsers(allUsers)
+	activeUsers := selectActiveUsers(users)
 
 	// start node
-	nodeProperties, err := n.api.Start(ctx, enabledUsers)
+	nodeConfig, err := n.api.Start(ctx, activeUsers)
 	if err != nil {
 		return fmt.Errorf("start node: %w", err)
 	}
 
-	// write updated state
-	writeUoW := n.storage.GetWriteUOW()
-	writeUoW.SetActualStatus(models.NodeOn)
-	writeUoW.SetActualUserStates(getUserStatusUpdates(allUsers))
-	writeUoW.SetNodeProperties(*nodeProperties)
-	if err = writeUoW.Do(ctx); err != nil {
+	// store updated state
+	tx := n.storage.BeginTx()
+	tx.UpdateNodeStatus(models.NodeStatusRunning)
+	tx.UpdateNodeUsers(getUsersPatch(users))
+	tx.UpdateNodeConfig(*nodeConfig)
+	if err = tx.Commit(ctx); err != nil {
 		return fmt.Errorf("start node: %w", err)
 	}
 
@@ -133,13 +130,14 @@ func (n *Node) startNode(ctx context.Context) (err error) {
 }
 
 func (n *Node) stopNode(ctx context.Context) (err error) {
-	// safe state-changing stuff
+	// safe state-changing stuff. change state to unknown before
+	// stopping, to stopped on success or back to running on fail
 	if err = n.updateStoredStatus(ctx, models.NodeStatusUnknown); err != nil {
 		return fmt.Errorf("start node: %w", err)
 	}
 	defer func() {
 		if err != nil {
-			if syncErr := n.updateStoredStatus(ctx, models.NodeOn); syncErr != nil {
+			if syncErr := n.updateStoredStatus(ctx, models.NodeStatusRunning); syncErr != nil {
 				err = errors.Join(err, fmt.Errorf("sync after start node: %w", err))
 			}
 		}
@@ -151,88 +149,94 @@ func (n *Node) stopNode(ctx context.Context) (err error) {
 
 	// dont update actual status of users on disabled nodes because it has no matter.
 	// it updates when node started again.
-	if err = n.updateStoredStatus(ctx, models.NodeOff); err != nil {
+	if err = n.updateStoredStatus(ctx, models.NodeStatusStopped); err != nil {
 		return fmt.Errorf("stop node: %w", err)
 	}
 	return nil
 }
 
 func (n *Node) updateStoredStatus(ctx context.Context, s models.NodeStatus) error {
-	writeUOW := n.storage.GetWriteUOW()
-	writeUOW.SetActualStatus(s)
-	if err := writeUOW.Do(ctx); err != nil {
+	tx := n.storage.BeginTx()
+	tx.UpdateNodeStatus(s)
+	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("update stored status: %w", err)
 	}
 	return nil
 }
 
-func getEnabledUsers(users []UserState) []models.User {
-	enabled := make([]models.User, 0, len(users))
+func selectActiveUsers(users []models.UserTargetState) []models.UserProfile {
+	active := make([]models.UserProfile, 0, len(users))
 	for _, u := range users {
-		if u.Status == models.UserEnabled {
-			enabled = append(enabled, u.User)
+		if u.Target == models.UserStatusActive {
+			active = append(active, u.User)
 		}
 	}
-	return enabled
+	return active
 }
 
-func getUserStatusUpdates(users []UserState) []UserStatusUpdate {
-	userStates := make([]UserStatusUpdate, 0, len(users))
+func getUsersPatch(users []models.UserTargetState) []models.UserStatusPatch {
+	patch := make([]models.UserStatusPatch, 0, len(users))
 	for _, u := range users {
-		userStates = append(userStates, UserStatusUpdate{
-			u.User.ID, u.Status,
+		patch = append(patch, models.UserStatusPatch{
+			UserID: u.User.ID,
+			Status: u.Target,
 		})
 	}
-	return userStates
+	return patch
 }
 
-func (n *Node) syncNodeUsers(ctx context.Context, updateState bool) (err error) {
+func (n *Node) syncNodeUsers(ctx context.Context, updateNodeState bool) (err error) {
 	// get users to update
-	oosUsers, err := n.storage.ListOutOfSyncUsers(ctx)
+	pendingSyncs, err := n.storage.FindPendingSyncs(ctx)
 	if err != nil {
-		return fmt.Errorf("edit node users: %w", err)
+		return fmt.Errorf("sync node users: %w", err)
+	}
+
+	// if nothing to update, return
+	if len(pendingSyncs) == 0 && !updateNodeState {
+		return nil
 	}
 
 	// create user state updates to `lock` and `unlock` them safe
-	usersUpdate := make([]UserState, 0, len(oosUsers))
-	intentUpdate := make([]UserStatusUpdate, 0, len(oosUsers))
-	applyUpdate := make([]UserStatusUpdate, 0, len(oosUsers))
-	for _, u := range oosUsers {
-		usersUpdate = append(usersUpdate, UserState{
+	usersUpdate := make([]models.UserTargetState, 0, len(pendingSyncs))
+	preUpdatePatch := make([]models.UserStatusPatch, 0, len(pendingSyncs))
+	postUpdatePatch := make([]models.UserStatusPatch, 0, len(pendingSyncs))
+	for _, u := range pendingSyncs {
+		usersUpdate = append(usersUpdate, models.UserTargetState{
 			User:   u.User,
-			Status: u.Required,
+			Target: u.TargetStatus,
 		})
-		intentUpdate = append(intentUpdate, UserStatusUpdate{
-			ID:     u.User.ID,
-			Actual: models.UserStatusUnknown,
+		preUpdatePatch = append(preUpdatePatch, models.UserStatusPatch{
+			UserID: u.User.ID,
+			Status: models.UserStatusUnknown,
 		})
-		applyUpdate = append(applyUpdate, UserStatusUpdate{
-			ID:     u.User.ID,
-			Actual: u.Required,
+		postUpdatePatch = append(postUpdatePatch, models.UserStatusPatch{
+			UserID: u.User.ID,
+			Status: u.TargetStatus,
 		})
 	}
 
-	if err := n.updateStoredUsers(ctx, intentUpdate, updateState); err != nil {
-		return fmt.Errorf("sync node users: %w", err)
+	// prepare to update. if 'update state' flag passed,
+	// change state to actual 'Running' on pre-update.
+	// (and don't touch after update)
+	preUpdateTx := n.storage.BeginTx()
+	preUpdateTx.UpdateNodeUsers(preUpdatePatch)
+	if updateNodeState {
+		preUpdateTx.UpdateNodeStatus(models.NodeStatusRunning)
 	}
-	if err := n.api.EditUsers(ctx, usersUpdate); err != nil {
+	if err := preUpdateTx.Commit(ctx); err != nil {
+		return fmt.Errorf("sync node users: pre update patch: %w", err)
+	}
+
+	if err := n.api.UpdateUserStates(ctx, usersUpdate); err != nil {
 		return fmt.Errorf("edit node users: %w", err)
 	}
-	if err := n.updateStoredUsers(ctx, applyUpdate, false); err != nil {
-		return fmt.Errorf("sync node users: %w", err)
-	}
-	return nil
-}
 
-func (n *Node) updateStoredUsers(ctx context.Context,
-	u []UserStatusUpdate, updateStatus bool) error {
-	uow := n.storage.GetWriteUOW()
-	uow.SetActualUserStates(u)
-	if updateStatus {
-		uow.SetActualStatus(models.NodeOn)
+	postUpdateTx := n.storage.BeginTx()
+	postUpdateTx.UpdateNodeUsers(postUpdatePatch)
+	if err := postUpdateTx.Commit(ctx); err != nil {
+		return fmt.Errorf("sync node users: pre update patch: %w", err)
 	}
-	if err := uow.Do(ctx); err != nil {
-		return fmt.Errorf("update stored users: %w", err)
-	}
+
 	return nil
 }

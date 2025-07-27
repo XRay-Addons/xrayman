@@ -1,6 +1,35 @@
 package models
 
-type NodeID = int
+type NodeStatus int
+
+const (
+	NodeStatusUnknown NodeStatus = iota + 1
+	NodeStatusStopped
+	NodeStatusRunning
+)
+
+type ClientTemplate struct {
+	Config         string
+	UsernameField  string
+	VlessUUIDField string
+}
+
+type NodeConfig struct {
+	ClientTemplate ClientTemplate
+}
+
+func (s NodeStatus) String() string {
+	switch s {
+	case NodeStatusStopped:
+		return "Stopped"
+	case NodeStatusRunning:
+		return "Running"
+	default:
+		return "Unknown"
+	}
+}
+
+/*type NodeID = int
 
 type NodeClientCfg struct {
 	Template       string
@@ -35,4 +64,4 @@ func (s NodeStatus) String() string {
 	default:
 		return "Unknown"
 	}
-}
+}*/
