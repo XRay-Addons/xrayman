@@ -61,7 +61,7 @@ type PendingSyncsStorage interface {
 type UoWContext interface {
 	NodeConfigStorage() NodeConfigStorage
 	NodeStatusStorage() NodeStatusStorage
-
+	UsersStorage() UsersStorage
 	UserStatusStorage() UserStatusStorage
 	PendingSyncsStorage() PendingSyncsStorage
 }
