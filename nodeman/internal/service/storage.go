@@ -66,10 +66,13 @@ type UoWContext interface {
 	PendingSyncsStorage() PendingSyncsStorage
 }
 
-type UnitOfWork interface {
-	Do(ctx context.Context, fn func(UoWContext) error) error
+type UoWFn func(UoWContext) error
+
+type UoW interface {
+	Do(ctx context.Context, fn UoWFn) error
 }
 
 type Storage interface {
-	NewUnitOfWork() (UnitOfWork, error)
+	NewUoW() (UoW, error)
+	DoUoW(ctx context.Context, fn UoWFn) error
 }
