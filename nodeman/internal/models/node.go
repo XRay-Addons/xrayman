@@ -8,9 +8,9 @@ const (
 	NodeStatusRunning
 )
 
-type ClientTemplate struct {
-	Config         string
-	UsernameField  string
+type ClientConfig struct {
+	Template       string
+	UserNameField  string
 	VlessUUIDField string
 }
 
@@ -23,7 +23,7 @@ type NodeID int
 
 type NodeConfig struct {
 	ID             NodeID
-	ClientTemplate ClientTemplate
+	ClientConfig   ClientConfig
 	ConnectionInfo NodeConnectionInfo
 }
 

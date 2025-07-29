@@ -9,20 +9,18 @@ import (
 type NodeConfigStorage interface {
 	AddNode(ctx context.Context,
 		node *models.NodeConfig) error
-	RemoveNode(ctx context.Context,
-		id models.NodeID) error
 	ListNodes(ctx context.Context) (
 		[]models.NodeConfig, error)
 
 	UpdateConnectionInfo(ctx context.Context, id models.NodeID,
-		connInfo *models.NodeConnectionInfo)
+		connInfo *models.NodeConnectionInfo) error
 	GetConnectionInfo(ctx context.Context, id models.NodeID) (
 		*models.NodeConnectionInfo, error)
 
-	UpdateClientTemplate(ctx context.Context, id models.NodeID,
-		tmpl *models.ClientTemplate) error
-	GetClientTemplate(ctx context.Context,
-		id models.NodeID) error
+	UpdateClientConfig(ctx context.Context, id models.NodeID,
+		cfg *models.ClientConfig) error
+	GetClientConfig(ctx context.Context, id models.NodeID) (
+		*models.ClientConfig, error)
 }
 
 type NodeStatusStorage interface {
@@ -37,9 +35,7 @@ type NodeStatusStorage interface {
 
 type UsersStorage interface {
 	AddUser(ctx context.Context,
-		user *models.UserTargetState) error
-	RemoveUser(ctx context.Context,
-		id models.UserID) error
+		user *models.UserProfile) error
 	ListUsers(ctx context.Context) (
 		[]models.UserTargetState, error)
 }

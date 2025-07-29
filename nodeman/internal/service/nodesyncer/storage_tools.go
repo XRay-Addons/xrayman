@@ -1,4 +1,4 @@
-package node
+package nodesyncer
 
 import (
 	"context"
@@ -113,7 +113,7 @@ func patchAndUpdateStatus(ctx context.Context,
 func nodeFullUpdate(ctx context.Context, storage Storage,
 	patch []models.UserStatusPatch,
 	status models.NodeStatus,
-	cfg *models.ClientTemplate,
+	cfg *models.ClientConfig,
 ) (err error) {
 	err = storage.DoUoW(ctx, func(uowctx UoWContext) error {
 		if e := uowctx.NodeStatusStorage().UpdateCurrentStatus(ctx, status); e != nil {
@@ -122,7 +122,7 @@ func nodeFullUpdate(ctx context.Context, storage Storage,
 		if e := uowctx.PendingSyncsStorage().PatchPendingSyncs(ctx, patch); e != nil {
 			return e
 		}
-		if e := uowctx.NodeConfigStorage().UpdateClientTemplate(ctx, cfg); e != nil {
+		if e := uowctx.NodeConfigStorage().UpdateClientConfig(ctx, cfg); e != nil {
 			return e
 		}
 		return nil

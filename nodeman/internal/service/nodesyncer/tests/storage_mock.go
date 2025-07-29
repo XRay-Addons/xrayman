@@ -6,7 +6,7 @@ import (
 	"math/rand/v2"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service/node"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodesyncer"
 )
 
 // simple storage mock with random extrnal operations emulation
@@ -45,15 +45,22 @@ func NewStorageMock(nUsers int) *StorageMock {
 
 // random external operation to turn node on or off, enable or disable user
 func (s *StorageMock) RandomExternalOperation() {
-	if s.rand.IntN(2) == 0 {
+	if s.rand.IntN(3) == 0 {
 		// switch node state
 		s.TargetState = (models.NodeStatusRunning + models.NodeStatusStopped) - s.TargetState
-	} else {
+	} else if s.rand.IntN(2) == 0 {
 		// switch user state
 		userIdx := s.rand.IntN(len(s.Users))
 		u := s.Users[userIdx]
 		u.TargetStatus = (models.UserStatusActive + models.UserStatusInactive) - u.TargetStatus
 		s.Users[userIdx] = u
+	} else {
+		// add new user
+		s.Users = append(s.Users, models.UserSyncStatus{
+			User:          models.UserProfile{ID: models.UserID(len(s.Users))},
+			CurrentStatus: models.UserStatusUnknown,
+			TargetStatus:  models.UserStatusActive,
+		})
 	}
 }
 
@@ -94,21 +101,16 @@ func (s *StorageMock) apply(patch *StorageMockPatch) error {
 	}
 	if patch.usersPatch != nil {
 		for _, u := range patch.usersPatch {
-			for i, pu := range s.Users {
-				if u.UserID == pu.User.ID {
-					pu.CurrentStatus = u.Status
-					s.Users[i] = pu
-				}
-			}
+			s.Users[u.UserID].CurrentStatus = u.Status
 		}
 	}
 	return nil
 }
 
-var _ node.Storage = (*StorageMock)(nil)
+var _ nodesyncer.Storage = (*StorageMock)(nil)
 
-// DoUoW implements node.Storage.
-func (s *StorageMock) DoUoW(ctx context.Context, fn node.UoWFn) error {
+// DoUoW implements nodesyncer.Storage.
+func (s *StorageMock) DoUoW(ctx context.Context, fn nodesyncer.UoWFn) error {
 	uow, err := s.NewUoW()
 	if err != nil {
 		return fmt.Errorf("init uow: %w", err)
@@ -119,7 +121,7 @@ func (s *StorageMock) DoUoW(ctx context.Context, fn node.UoWFn) error {
 	return nil
 }
 
-func (s *StorageMock) NewUoW() (node.UoW, error) {
+func (s *StorageMock) NewUoW() (nodesyncer.UoW, error) {
 	return &StorageMockPatch{
 		parent: s,
 	}, nil
@@ -131,30 +133,30 @@ type StorageMockPatch struct {
 	usersPatch []models.UserStatusPatch
 }
 
-var _ node.NodeConfigStorage = (*StorageMockPatch)(nil)
-var _ node.NodeStatusStorage = (*StorageMockPatch)(nil)
-var _ node.UsersStorage = (*StorageMockPatch)(nil)
-var _ node.PendingSyncsStorage = (*StorageMockPatch)(nil)
-var _ node.UoWContext = (*StorageMockPatch)(nil)
-var _ node.UoW = (*StorageMockPatch)(nil)
+var _ nodesyncer.NodeConfigStorage = (*StorageMockPatch)(nil)
+var _ nodesyncer.NodeStatusStorage = (*StorageMockPatch)(nil)
+var _ nodesyncer.UsersStorage = (*StorageMockPatch)(nil)
+var _ nodesyncer.PendingSyncsStorage = (*StorageMockPatch)(nil)
+var _ nodesyncer.UoWContext = (*StorageMockPatch)(nil)
+var _ nodesyncer.UoW = (*StorageMockPatch)(nil)
 
-// node.UoWContext impl
-func (s *StorageMockPatch) NodeConfigStorage() node.NodeConfigStorage {
+// nodesyncer.UoWContext impl
+func (s *StorageMockPatch) NodeConfigStorage() nodesyncer.NodeConfigStorage {
 	return s
 }
-func (s *StorageMockPatch) NodeStatusStorage() node.NodeStatusStorage {
-	return s
-}
-
-func (s *StorageMockPatch) PendingSyncsStorage() node.PendingSyncsStorage {
+func (s *StorageMockPatch) NodeStatusStorage() nodesyncer.NodeStatusStorage {
 	return s
 }
 
-func (s *StorageMockPatch) UsersStorage() node.UsersStorage {
+func (s *StorageMockPatch) PendingSyncsStorage() nodesyncer.PendingSyncsStorage {
 	return s
 }
 
-// node.NodeStatusStorage impl
+func (s *StorageMockPatch) UsersStorage() nodesyncer.UsersStorage {
+	return s
+}
+
+// nodesyncer.NodeStatusStorage impl
 func (s *StorageMockPatch) FetchNodeStatus(ctx context.Context) (
 	target models.NodeStatus, current models.NodeStatus, err error,
 ) {
@@ -166,7 +168,7 @@ func (s *StorageMockPatch) UpdateCurrentStatus(ctx context.Context, su models.No
 	return nil
 }
 
-// node.PendingSyncsStorage impl
+// nodesyncer.PendingSyncsStorage impl
 func (s *StorageMockPatch) FindPendingSyncs(ctx context.Context) ([]models.UserSyncStatus, error) {
 	return s.parent.findPendingSyncs()
 }
@@ -176,18 +178,18 @@ func (s *StorageMockPatch) PatchPendingSyncs(ctx context.Context, patch []models
 	return nil
 }
 
-// node.UsersStorage impl
+// nodesyncer.UsersStorage impl
 func (s *StorageMockPatch) ListUsers(ctx context.Context) ([]models.UserTargetState, error) {
 	return s.parent.listUsers()
 }
 
-// node.NodeConfigStorage impl
-func (s *StorageMockPatch) UpdateClientTemplate(ctx context.Context, tmpl *models.ClientTemplate) error {
+// nodesyncer.NodeConfigStorage impl
+func (s *StorageMockPatch) UpdateClientConfig(ctx context.Context, cfg *models.ClientConfig) error {
 	return nil
 }
 
-// Do implements node.UoW.
-func (s *StorageMockPatch) Do(ctx context.Context, fn node.UoWFn) error {
+// Do implements nodesyncer.UoW.
+func (s *StorageMockPatch) Do(ctx context.Context, fn nodesyncer.UoWFn) error {
 	if err := fn(s); err != nil {
 		return fmt.Errorf("patch cfg error: %w", err)
 	}
@@ -206,8 +208,8 @@ func NewUnstableStorageMock(nUsers int) *UnstableStorageMock {
 	}
 }
 
-// DoUoW implements node.Storage.
-func (s *UnstableStorageMock) DoUoW(ctx context.Context, fn node.UoWFn) error {
+// DoUoW implements nodesyncer.Storage.
+func (s *UnstableStorageMock) DoUoW(ctx context.Context, fn nodesyncer.UoWFn) error {
 	// some times this method returns error
 	if s.BaseStorage.rand.Float32() < s.Instability {
 		return fmt.Errorf("unstable storage")
@@ -227,7 +229,7 @@ func (s *UnstableStorageMock) DoUoW(ctx context.Context, fn node.UoWFn) error {
 	return nil
 }
 
-func (s *UnstableStorageMock) NewUoW() (node.UoW, error) {
+func (s *UnstableStorageMock) NewUoW() (nodesyncer.UoW, error) {
 	return &StorageMockPatch{
 		parent: s.BaseStorage,
 	}, nil

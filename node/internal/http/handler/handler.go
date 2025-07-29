@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
@@ -87,9 +88,7 @@ func (h *Handler) EditUsers(ctx context.Context, req *api.EditUsersRequest) erro
 func (h *Handler) NewError(ctx context.Context, err error) *api.ErrorStatusCode {
 	// use passed HttpErr or default unknown
 	httpErr := httperr.ErrUnknown
-	if e, ok := err.(*httperr.HttpErr); ok {
-		httpErr = e
-	} else {
+	if ok := errors.As(err, &httpErr); !ok {
 		// all errors pass to this handler, many of them are consequences
 		// of errors processed and logged before, others come here
 		h.logError(ctx, err)

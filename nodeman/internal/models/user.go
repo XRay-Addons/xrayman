@@ -22,6 +22,11 @@ type UserTargetState struct {
 	Target UserStatus
 }
 
+type NodeUsersUpdate struct {
+	Add    []UserProfile
+	Remove []UserProfile
+}
+
 type UserSyncStatus struct {
 	User          UserProfile
 	TargetStatus  UserStatus

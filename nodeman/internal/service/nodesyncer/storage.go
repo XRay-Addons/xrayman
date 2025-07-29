@@ -1,4 +1,4 @@
-package node
+package nodesyncer
 
 import (
 	"context"
@@ -7,8 +7,8 @@ import (
 )
 
 type NodeConfigStorage interface {
-	UpdateClientTemplate(ctx context.Context,
-		tmpl *models.ClientTemplate) error
+	UpdateClientConfig(ctx context.Context,
+		cfg *models.ClientConfig) error
 }
 
 type NodeStatusStorage interface {

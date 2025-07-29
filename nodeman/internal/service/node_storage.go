@@ -26,7 +26,7 @@ func (n *NodeStorage) DoUoW(ctx context.Context, fn node.UoWFn) error {
 }
 
 func (n *NodeStorage) NewUoW() (node.UoW, error) {
-	baseUoW, err := n.base.NewUnitOfWork()
+	baseUoW, err := n.base.NewUoW()
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func (n *NodeStorage) NewUoW() (node.UoW, error) {
 
 type NodeUoW struct {
 	nodeID models.NodeID
-	base   UnitOfWork
+	base   UoW
 }
 
 var _ node.UoW = (*NodeUoW)(nil)
@@ -78,10 +78,10 @@ func (c *NodeUoWContext) UsersStorage() node.UsersStorage {
 
 var _ node.NodeConfigStorage = (*NodeUoWContext)(nil)
 
-func (c *NodeUoWContext) UpdateClientTemplate(ctx context.Context,
-	tmpl *models.ClientTemplate,
+func (c *NodeUoWContext) UpdateClientConfig(ctx context.Context,
+	tmpl *models.ClientConfig,
 ) error {
-	return c.base.NodeConfigStorage().UpdateClientTemplate(ctx, c.nodeID, tmpl)
+	return c.base.NodeConfigStorage().UpdateClientConfig(ctx, c.nodeID, tmpl)
 }
 
 var _ node.UsersStorage = (*NodeUoWContext)(nil)

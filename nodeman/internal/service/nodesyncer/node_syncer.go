@@ -1,4 +1,4 @@
-package node
+package nodesyncer
 
 import (
 	"context"
@@ -9,38 +9,38 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
-type Node struct {
+type NodeSyncer struct {
 	storage Storage
-	api     NodeAPI
+	client  Client
 }
 
-func New(storage Storage, api NodeAPI) (*Node, error) {
+func New(storage Storage, client Client) (*NodeSyncer, error) {
 	if storage == nil {
 		return nil, fmt.Errorf("node init: storage: %w", errdefs.ErrNilArgPassed)
 	}
-	if api == nil {
-		return nil, fmt.Errorf("node init: api: %w", errdefs.ErrNilArgPassed)
+	if client == nil {
+		return nil, fmt.Errorf("node init: client: %w", errdefs.ErrNilArgPassed)
 	}
-	return &Node{
+	return &NodeSyncer{
 		storage: storage,
-		api:     api,
+		client:  client,
 	}, nil
 }
 
-// sync node state between node (available via api) and storage.
+// sync node state between node (available via client) and storage.
 // required node and user states are described in storage.
-// we want to try put node to this state via api,
+// we want to try put node to this state via client,
 // and after successful or unsuccessful attempt
 // update actual node state according to changes we made or not.
 // the situation I hate and try to avoid is
-// - i update node via api (for example, remove user)
+// - i update node via client (for example, remove user)
 // - then trying to write it to storage, and all attempts failed
 //   due to database connection lost or db host limitations or whatever
 // - after i fix it, user marked in database as active,
 //   but it's actually not. and i have no clue what is going wrong
 //   and what items in database are now incorrect. moreover, and the worst,
 //   user tries to made something, some parts of service use database as
-//   source of data, other - communicates with node api, and inconsistency
+//   source of data, other - communicates with node client, and inconsistency
 //   between them leads to not-so-interesting errors. hate it.
 //
 //   to avoid it, let's mark items we are going to modify as 'Unknown value'
@@ -49,8 +49,8 @@ func New(storage Storage, api NodeAPI) (*Node, error) {
 //   but now invalid values are explicitly marked as 'Unknown' in storage,
 //   so it is possible to detect and handle it.
 
-func (n *Node) SyncState(ctx context.Context) error {
-	if n == nil || n.storage == nil || n.api == nil {
+func (n *NodeSyncer) SyncState(ctx context.Context) error {
+	if n == nil || n.storage == nil || n.client == nil {
 		return fmt.Errorf("node: sync state: %w", errdefs.ErrNilObjectCall)
 	}
 
@@ -65,7 +65,7 @@ func (n *Node) SyncState(ctx context.Context) error {
 	// or connection errors)
 	current := previous
 	if target == models.NodeStatusRunning && previous != models.NodeStatusStopped {
-		if current, err = n.api.CheckStatus(ctx); err != nil {
+		if current, err = n.client.CheckStatus(ctx); err != nil {
 			return fmt.Errorf("node: sync state: %w", err)
 		}
 	}
@@ -90,7 +90,7 @@ func (n *Node) SyncState(ctx context.Context) error {
 	return nil
 }
 
-func (n *Node) startNode(ctx context.Context) (err error) {
+func (n *NodeSyncer) startNode(ctx context.Context) (err error) {
 	// safe state-changing stuff
 	if err = updateStatus(ctx, n.storage, models.NodeStatusUnknown); err != nil {
 		return fmt.Errorf("start node: %w", err)
@@ -113,7 +113,7 @@ func (n *Node) startNode(ctx context.Context) (err error) {
 	activeUsers := selectActiveUsers(users)
 
 	// start node
-	nodeConfig, err := n.api.Start(ctx, activeUsers)
+	nodeConfig, err := n.client.Start(ctx, activeUsers)
 	if err != nil {
 		return fmt.Errorf("start node: %w", err)
 	}
@@ -130,7 +130,7 @@ func (n *Node) startNode(ctx context.Context) (err error) {
 	return nil
 }
 
-func (n *Node) stopNode(ctx context.Context) (err error) {
+func (n *NodeSyncer) stopNode(ctx context.Context) (err error) {
 	// safe state-changing stuff. change state to unknown before
 	// stopping, to stopped on success or back to running on fail
 	if err = updateStatus(ctx, n.storage, models.NodeStatusUnknown); err != nil {
@@ -145,7 +145,7 @@ func (n *Node) stopNode(ctx context.Context) (err error) {
 		}
 	}()
 
-	if err = n.api.Stop(ctx); err != nil {
+	if err = n.client.Stop(ctx); err != nil {
 		return fmt.Errorf("stop node: %w", err)
 	}
 
@@ -178,7 +178,7 @@ func getUsersPatch(users []models.UserTargetState) []models.UserStatusPatch {
 	return patch
 }
 
-func (n *Node) syncNodeUsers(ctx context.Context, updateNodeState bool) (err error) {
+func (n *NodeSyncer) syncNodeUsers(ctx context.Context, updateNodeState bool) (err error) {
 	// get users to update
 	pendingSyncs, err := findPendingSyncs(ctx, n.storage)
 	if err != nil {
@@ -191,14 +191,16 @@ func (n *Node) syncNodeUsers(ctx context.Context, updateNodeState bool) (err err
 	}
 
 	// create user state updates to `lock` and `unlock` them safe
-	usersUpdate := make([]models.UserTargetState, 0, len(pendingSyncs))
+	usersUpdate := models.NodeUsersUpdate{}
 	preUpdatePatch := make([]models.UserStatusPatch, 0, len(pendingSyncs))
 	postUpdatePatch := make([]models.UserStatusPatch, 0, len(pendingSyncs))
 	for _, u := range pendingSyncs {
-		usersUpdate = append(usersUpdate, models.UserTargetState{
-			User:   u.User,
-			Target: u.TargetStatus,
-		})
+		switch u.TargetStatus {
+		case models.UserStatusActive:
+			usersUpdate.Add = append(usersUpdate.Add, u.User)
+		case models.UserStatusInactive:
+			usersUpdate.Remove = append(usersUpdate.Remove, u.User)
+		}
 		preUpdatePatch = append(preUpdatePatch, models.UserStatusPatch{
 			UserID: u.User.ID,
 			Status: models.UserStatusUnknown,
@@ -221,7 +223,7 @@ func (n *Node) syncNodeUsers(ctx context.Context, updateNodeState bool) (err err
 		return fmt.Errorf("sync node users: pre update patch: %w", err)
 	}
 
-	if err := n.api.UpdateUserStates(ctx, usersUpdate); err != nil {
+	if err := n.client.UpdateUserStates(ctx, usersUpdate); err != nil {
 		return fmt.Errorf("edit node users: %w", err)
 	}
 
