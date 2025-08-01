@@ -10,16 +10,16 @@ import (
 )
 
 type NodeSyncer struct {
-	storage Storage
-	client  Client
+	storage NodeStorage
+	client  NodeClient
 }
 
-func New(storage Storage, client Client) (*NodeSyncer, error) {
+func NewNodeSyncer(storage NodeStorage, client NodeClient) (*NodeSyncer, error) {
 	if storage == nil {
-		return nil, fmt.Errorf("node init: storage: %w", errdefs.ErrNilArgPassed)
+		return nil, fmt.Errorf("node syncer: init: storage: %w", errdefs.ErrNilArgPassed)
 	}
 	if client == nil {
-		return nil, fmt.Errorf("node init: client: %w", errdefs.ErrNilArgPassed)
+		return nil, fmt.Errorf("node syncer: init: client: %w", errdefs.ErrNilArgPassed)
 	}
 	return &NodeSyncer{
 		storage: storage,
@@ -49,12 +49,12 @@ func New(storage Storage, client Client) (*NodeSyncer, error) {
 //   but now invalid values are explicitly marked as 'Unknown' in storage,
 //   so it is possible to detect and handle it.
 
-func (n *NodeSyncer) SyncState(ctx context.Context) error {
-	if n == nil || n.storage == nil || n.client == nil {
+func (s *NodeSyncer) SyncState(ctx context.Context) error {
+	if s == nil || s.storage == nil || s.client == nil {
 		return fmt.Errorf("node: sync state: %w", errdefs.ErrNilObjectCall)
 	}
 
-	target, previous, err := fetchStatus(ctx, n.storage)
+	target, previous, err := fetchStatus(ctx, s.storage)
 	if err != nil {
 		return fmt.Errorf("node: sync state: %w", err)
 	}
@@ -65,7 +65,7 @@ func (n *NodeSyncer) SyncState(ctx context.Context) error {
 	// or connection errors)
 	current := previous
 	if target == models.NodeStatusRunning && previous != models.NodeStatusStopped {
-		if current, err = n.client.CheckStatus(ctx); err != nil {
+		if current, err = s.client.CheckStatus(ctx); err != nil {
 			return fmt.Errorf("node: sync state: %w", err)
 		}
 	}
@@ -76,11 +76,11 @@ func (n *NodeSyncer) SyncState(ctx context.Context) error {
 	// from current stored state
 	switch {
 	case target == models.NodeStatusRunning && current == models.NodeStatusStopped:
-		err = n.startNode(ctx)
+		err = s.startNode(ctx)
 	case target == models.NodeStatusStopped && current == models.NodeStatusRunning:
-		err = n.stopNode(ctx)
+		err = s.stopNode(ctx)
 	case target == models.NodeStatusRunning && current == models.NodeStatusRunning:
-		err = n.syncNodeUsers(ctx, current != previous)
+		err = s.syncNodeUsers(ctx, current != previous)
 	}
 
 	if err != nil {
@@ -90,21 +90,21 @@ func (n *NodeSyncer) SyncState(ctx context.Context) error {
 	return nil
 }
 
-func (n *NodeSyncer) startNode(ctx context.Context) (err error) {
+func (s *NodeSyncer) startNode(ctx context.Context) (err error) {
 	// safe state-changing stuff
-	if err = updateStatus(ctx, n.storage, models.NodeStatusUnknown); err != nil {
+	if err = updateCurrentStatus(ctx, s.storage, models.NodeStatusUnknown); err != nil {
 		return fmt.Errorf("start node: %w", err)
 	}
 	defer func() {
 		if err == nil {
 			return
 		}
-		if syncErr := updateStatus(ctx, n.storage, models.NodeStatusStopped); syncErr != nil {
+		if syncErr := updateCurrentStatus(ctx, s.storage, models.NodeStatusStopped); syncErr != nil {
 			err = errors.Join(err, fmt.Errorf("sync after start node: %w", err))
 		}
 	}()
 
-	users, err := listUsers(ctx, n.storage)
+	users, err := listUsers(ctx, s.storage)
 	if err != nil {
 		return fmt.Errorf("start node: %w", err)
 	}
@@ -113,13 +113,13 @@ func (n *NodeSyncer) startNode(ctx context.Context) (err error) {
 	activeUsers := selectActiveUsers(users)
 
 	// start node
-	nodeConfig, err := n.client.Start(ctx, activeUsers)
+	nodeConfig, err := s.client.Start(ctx, activeUsers)
 	if err != nil {
 		return fmt.Errorf("start node: %w", err)
 	}
 
 	// update stored node state
-	err = nodeFullUpdate(ctx, n.storage,
+	err = updateNode(ctx, s.storage,
 		getUsersPatch(users),
 		models.NodeStatusRunning,
 		nodeConfig)
@@ -130,57 +130,57 @@ func (n *NodeSyncer) startNode(ctx context.Context) (err error) {
 	return nil
 }
 
-func (n *NodeSyncer) stopNode(ctx context.Context) (err error) {
+func (s *NodeSyncer) stopNode(ctx context.Context) (err error) {
 	// safe state-changing stuff. change state to unknown before
 	// stopping, to stopped on success or back to running on fail
-	if err = updateStatus(ctx, n.storage, models.NodeStatusUnknown); err != nil {
+	if err = updateCurrentStatus(ctx, s.storage, models.NodeStatusUnknown); err != nil {
 		return fmt.Errorf("start node: %w", err)
 	}
 	defer func() {
 		if err == nil {
 			return
 		}
-		if syncErr := updateStatus(ctx, n.storage, models.NodeStatusRunning); syncErr != nil {
+		if syncErr := updateCurrentStatus(ctx, s.storage, models.NodeStatusRunning); syncErr != nil {
 			err = errors.Join(err, fmt.Errorf("sync after start node: %w", err))
 		}
 	}()
 
-	if err = n.client.Stop(ctx); err != nil {
+	if err = s.client.Stop(ctx); err != nil {
 		return fmt.Errorf("stop node: %w", err)
 	}
 
 	// dont update actual status of users on disabled nodes because it has no matter.
 	// it updates when node started again.
-	if err = updateStatus(ctx, n.storage, models.NodeStatusStopped); err != nil {
+	if err = updateCurrentStatus(ctx, s.storage, models.NodeStatusStopped); err != nil {
 		return fmt.Errorf("stop node: %w", err)
 	}
 	return nil
 }
 
-func selectActiveUsers(users []models.UserTargetState) []models.UserProfile {
+func selectActiveUsers(users []models.User) []models.UserProfile {
 	active := make([]models.UserProfile, 0, len(users))
 	for _, u := range users {
-		if u.Target == models.UserStatusActive {
-			active = append(active, u.User)
+		if u.TargetStatus == models.UserStatusActive {
+			active = append(active, u.Profile)
 		}
 	}
 	return active
 }
 
-func getUsersPatch(users []models.UserTargetState) []models.UserStatusPatch {
+func getUsersPatch(users []models.User) []models.UserStatusPatch {
 	patch := make([]models.UserStatusPatch, 0, len(users))
 	for _, u := range users {
 		patch = append(patch, models.UserStatusPatch{
-			UserID: u.User.ID,
-			Status: u.Target,
+			UserID: u.Profile.ID,
+			Status: u.TargetStatus,
 		})
 	}
 	return patch
 }
 
-func (n *NodeSyncer) syncNodeUsers(ctx context.Context, updateNodeState bool) (err error) {
+func (s *NodeSyncer) syncNodeUsers(ctx context.Context, updateNodeState bool) (err error) {
 	// get users to update
-	pendingSyncs, err := findPendingSyncs(ctx, n.storage)
+	pendingSyncs, err := findPendingSyncs(ctx, s.storage)
 	if err != nil {
 		return fmt.Errorf("sync node users: %w", err)
 	}
@@ -195,19 +195,19 @@ func (n *NodeSyncer) syncNodeUsers(ctx context.Context, updateNodeState bool) (e
 	preUpdatePatch := make([]models.UserStatusPatch, 0, len(pendingSyncs))
 	postUpdatePatch := make([]models.UserStatusPatch, 0, len(pendingSyncs))
 	for _, u := range pendingSyncs {
-		switch u.TargetStatus {
+		switch u.User.TargetStatus {
 		case models.UserStatusActive:
-			usersUpdate.Add = append(usersUpdate.Add, u.User)
+			usersUpdate.Add = append(usersUpdate.Add, u.User.Profile)
 		case models.UserStatusInactive:
-			usersUpdate.Remove = append(usersUpdate.Remove, u.User)
+			usersUpdate.Remove = append(usersUpdate.Remove, u.User.Profile)
 		}
 		preUpdatePatch = append(preUpdatePatch, models.UserStatusPatch{
-			UserID: u.User.ID,
+			UserID: u.User.Profile.ID,
 			Status: models.UserStatusUnknown,
 		})
 		postUpdatePatch = append(postUpdatePatch, models.UserStatusPatch{
-			UserID: u.User.ID,
-			Status: u.TargetStatus,
+			UserID: u.User.Profile.ID,
+			Status: u.User.TargetStatus,
 		})
 	}
 
@@ -215,19 +215,19 @@ func (n *NodeSyncer) syncNodeUsers(ctx context.Context, updateNodeState bool) (e
 	// change state to actual 'Running' on pre-update.
 	// (and don't touch after update)
 	if updateNodeState {
-		err = patchAndUpdateStatus(ctx, n.storage, preUpdatePatch, models.NodeStatusRunning)
+		err = updateNode(ctx, s.storage, preUpdatePatch, models.NodeStatusRunning, nil)
 	} else {
-		err = patchPendingSyncs(ctx, n.storage, preUpdatePatch)
+		err = patchPendingSyncs(ctx, s.storage, preUpdatePatch)
 	}
 	if err != nil {
 		return fmt.Errorf("sync node users: pre update patch: %w", err)
 	}
 
-	if err := n.client.UpdateUserStates(ctx, usersUpdate); err != nil {
+	if err := s.client.UpdateUsers(ctx, usersUpdate); err != nil {
 		return fmt.Errorf("edit node users: %w", err)
 	}
 
-	if err := patchPendingSyncs(ctx, n.storage, postUpdatePatch); err != nil {
+	if err := patchPendingSyncs(ctx, s.storage, postUpdatePatch); err != nil {
 		return fmt.Errorf("sync node users: pre update patch: %w", err)
 	}
 

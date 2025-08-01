@@ -96,15 +96,15 @@ func (s *Storage) GetConnectionInfo(ctx context.Context, id models.NodeID) (
 }
 
 func (s *Storage) GetClientConfig(ctx context.Context, id models.NodeID) (
-	*models.ClientCfg, error,
+	*models.ClientConfig, error,
 ) {
-	return &s.nodes[id].ClientCfg, nil
+	return &s.nodes[id].ClientConfig, nil
 }
 
 func (s *Storage) UpdateClientConfig(ctx context.Context,
-	id models.NodeID, cfg *models.ClientCfg,
+	id models.NodeID, cfg *models.ClientConfig,
 ) error {
-	s.nodes[id].ClientCfg = *cfg
+	s.nodes[id].ClientConfig = *cfg
 	return nil
 }
 

@@ -6,9 +6,9 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
-type Client interface {
+type NodeClient interface {
 	Start(ctx context.Context, users []models.UserProfile) (*models.ClientConfig, error)
 	Stop(ctx context.Context) error
 	CheckStatus(ctx context.Context) (models.NodeStatus, error)
-	UpdateUserStates(ctx context.Context, update models.NodeUsersUpdate) error
+	UpdateUsers(ctx context.Context, upd models.NodeUsersUpdate) error
 }

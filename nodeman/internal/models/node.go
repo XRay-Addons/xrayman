@@ -16,7 +16,7 @@ type ClientConfig struct {
 
 type NodeConnectionInfo struct {
 	Endpoint  string
-	AccessKey string
+	AccessKey []byte
 }
 
 type NodeID int
@@ -25,6 +25,12 @@ type NodeConfig struct {
 	ID             NodeID
 	ClientConfig   ClientConfig
 	ConnectionInfo NodeConnectionInfo
+}
+
+type Node struct {
+	Config        NodeConfig
+	CurrentStatus NodeStatus
+	TargetStatus  NodeStatus
 }
 
 func (s NodeStatus) String() string {

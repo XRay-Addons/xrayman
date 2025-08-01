@@ -12,7 +12,7 @@ import (
 func TestWaveExec(t *testing.T) {
 	fnCallsCount := 0
 
-	fn := func(ctx context.Context) (interface{}, error) {
+	fn := func(ctx context.Context) (any, error) {
 		time.Sleep(1 * time.Second)
 		fnCallsCount++
 		return nil, nil
@@ -41,7 +41,7 @@ func TestWaveExec(t *testing.T) {
 func TestWaveExec_Cancels(t *testing.T) {
 	fnCallsCount := 0
 
-	fn := func(ctx context.Context) (interface{}, error) {
+	fn := func(ctx context.Context) (any, error) {
 		time.Sleep(1 * time.Second)
 		fnCallsCount++
 		return nil, nil
@@ -78,7 +78,7 @@ func TestWaveExec_Cancels(t *testing.T) {
 func TestWaveExec_EarlyClose(t *testing.T) {
 	fnCallsCount := 0
 
-	fn := func(ctx context.Context) (interface{}, error) {
+	fn := func(ctx context.Context) (any, error) {
 		time.Sleep(1 * time.Second)
 		fnCallsCount++
 		return nil, nil
@@ -108,7 +108,7 @@ func TestWaveExec_EarlyClose(t *testing.T) {
 
 func TestWaveExec_Cancel(t *testing.T) {
 	fnCallsCount := 0
-	fn := func(ctx context.Context) (interface{}, error) {
+	fn := func(ctx context.Context) (any, error) {
 		select {
 		case <-ctx.Done():
 			return nil, ctx.Err()

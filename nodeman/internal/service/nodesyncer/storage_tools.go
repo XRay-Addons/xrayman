@@ -7,80 +7,59 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
-func fetchStatus(ctx context.Context, storage Storage) (
+func fetchStatus(ctx context.Context, storage NodeStorage) (
 	target, current models.NodeStatus, err error,
 ) {
-	err = storage.DoUoW(ctx, func(uowctx UoWContext) error {
-		var innerErr error
-		target, current, innerErr = uowctx.NodeStatusStorage().FetchNodeStatus(ctx)
-		return innerErr
-	})
-
-	if err != nil {
+	if err = storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
+		target, current, err = uowctx.FetchNodeStatus(ctx)
+		return
+	}); err != nil {
 		err = fmt.Errorf("fetch node status: %w", err)
-		return
 	}
-
 	return
 }
 
-func listUsers(ctx context.Context, storage Storage) (
-	users []models.UserTargetState, err error,
+func listUsers(ctx context.Context, storage NodeStorage) (
+	users []models.User, err error,
 ) {
-	err = storage.DoUoW(ctx, func(uowctx UoWContext) error {
-		var innerErr error
-		users, innerErr = uowctx.UsersStorage().ListUsers(ctx)
-		return innerErr
-	})
-
-	if err != nil {
-		err = fmt.Errorf("list managed users: %w", err)
+	if err = storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
+		users, err = uowctx.ListUsers(ctx)
 		return
+	}); err != nil {
+		err = fmt.Errorf("list managed users: %w", err)
 	}
-
 	return
 }
 
-func updateStatus(ctx context.Context, storage Storage,
+func updateCurrentStatus(ctx context.Context, storage NodeStorage,
 	status models.NodeStatus) (err error,
 ) {
-	err = storage.DoUoW(ctx, func(uowctx UoWContext) error {
-		return uowctx.NodeStatusStorage().UpdateCurrentStatus(ctx, status)
-	})
-
-	if err != nil {
+	if err = storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
+		return uowctx.UpdateCurrentStatus(ctx, status)
+	}); err != nil {
 		err = fmt.Errorf("update current node status: %w", err)
-		return
 	}
-
 	return
 }
 
 func findPendingSyncs(ctx context.Context,
-	storage Storage,
+	storage NodeStorage,
 ) (syncs []models.UserSyncStatus, err error) {
-	err = storage.DoUoW(ctx, func(uowctx UoWContext) error {
-		var innerErr error
-		syncs, innerErr = uowctx.PendingSyncsStorage().FindPendingSyncs(ctx)
-		return innerErr
-	})
-
-	if err != nil {
-		err = fmt.Errorf("find pending syncs: %w", err)
+	if err = storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
+		syncs, err = uowctx.FindPendingSyncs(ctx)
 		return
+	}); err != nil {
+		err = fmt.Errorf("find pending syncs: %w", err)
 	}
-
 	return
 }
 
 func patchPendingSyncs(ctx context.Context,
-	storage Storage, patch []models.UserStatusPatch,
+	storage NodeStorage, patch []models.UserStatusPatch,
 ) (err error) {
-	err = storage.DoUoW(ctx, func(uowctx UoWContext) error {
-		return uowctx.PendingSyncsStorage().PatchPendingSyncs(ctx, patch)
-	})
-
-	if err != nil {
+	if err = storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
+		return uowctx.PatchPendingSyncs(ctx, patch)
+	}); err != nil {
 		err = fmt.Errorf("patch pending syncs: %w", err)
 		return
 	}
@@ -88,50 +67,30 @@ func patchPendingSyncs(ctx context.Context,
 	return
 }
 
-func patchAndUpdateStatus(ctx context.Context,
-	storage Storage, patch []models.UserStatusPatch,
-	status models.NodeStatus,
-) (err error) {
-	err = storage.DoUoW(ctx, func(uowctx UoWContext) error {
-		if e := uowctx.NodeStatusStorage().UpdateCurrentStatus(ctx, status); e != nil {
-			return e
-		}
-		if e := uowctx.PendingSyncsStorage().PatchPendingSyncs(ctx, patch); e != nil {
-			return e
-		}
-		return nil
-	})
-
-	if err != nil {
-		err = fmt.Errorf("patch and update status: %w", err)
-		return
-	}
-
-	return
-}
-
-func nodeFullUpdate(ctx context.Context, storage Storage,
+func updateNode(ctx context.Context, storage NodeStorage,
 	patch []models.UserStatusPatch,
 	status models.NodeStatus,
 	cfg *models.ClientConfig,
 ) (err error) {
-	err = storage.DoUoW(ctx, func(uowctx UoWContext) error {
-		if e := uowctx.NodeStatusStorage().UpdateCurrentStatus(ctx, status); e != nil {
-			return e
+	if err = storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
+		if status > 0 { // TODO: invalid status?
+			if err = uowctx.UpdateCurrentStatus(ctx, status); err != nil {
+				return
+			}
 		}
-		if e := uowctx.PendingSyncsStorage().PatchPendingSyncs(ctx, patch); e != nil {
-			return e
+		if patch != nil {
+			if err = uowctx.PatchPendingSyncs(ctx, patch); err != nil {
+				return
+			}
 		}
-		if e := uowctx.NodeConfigStorage().UpdateClientConfig(ctx, cfg); e != nil {
-			return e
+		if cfg != nil {
+			if err = uowctx.UpdateClientConfig(ctx, *cfg); err != nil {
+				return
+			}
 		}
-		return nil
-	})
-
-	if err != nil {
-		err = fmt.Errorf("node full update: %w", err)
 		return
+	}); err != nil {
+		err = fmt.Errorf("node update: %w", err)
 	}
-
 	return
 }

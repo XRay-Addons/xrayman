@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNodeSyncer(t *testing.T) {
+func TestNodeReconciler(t *testing.T) {
 	nUsers := 10
 	nRuns := 100
 	nRunOps := 100
@@ -18,7 +18,7 @@ func TestNodeSyncer(t *testing.T) {
 	// create node based on mocks
 	client := NewClientMock()
 	storage := NewStorageMock(nUsers)
-	node, err := nodesyncer.New(storage, client)
+	node, err := nodesyncer.NewNodeSyncer(storage, client)
 	require.NoError(t, err)
 
 	for range nRuns {
@@ -29,20 +29,21 @@ func TestNodeSyncer(t *testing.T) {
 		}
 
 		// check state is ok. only node required to be running matters
-		if storage.TargetState != models.NodeStatusRunning {
+		if storage.TargetStatus != models.NodeStatusRunning {
 			continue
 		}
 
-		require.Equal(t, storage.CurrentState, storage.TargetState, "stored node state check")
-		require.Equal(t, storage.CurrentState, client.Status, "node state check")
+		require.Equal(t, storage.CurrentStatus, storage.TargetStatus, "stored node state check")
+		require.Equal(t, storage.CurrentStatus, client.Status, "node state check")
 
-		for _, u := range storage.Users {
-			require.Equal(t, u.TargetStatus, u.CurrentStatus, fmt.Sprintf("user %d check", u.User.ID))
+		for i, u := range storage.Users {
+			require.Equal(t, u.TargetStatus, storage.CurrentUserStatus[i],
+				fmt.Sprintf("user %d check", u.Profile.ID))
 		}
 	}
 }
 
-func TestNode_UnstableStorage(t *testing.T) {
+func TestNodeReconciler_UnstableStorage(t *testing.T) {
 	nUsers := 10
 	nRuns := 100
 	nRunOps := 100
@@ -51,7 +52,7 @@ func TestNode_UnstableStorage(t *testing.T) {
 	// create node based on mocks
 	client := NewClientMock()
 	storage := NewUnstableStorageMock(nUsers)
-	node, err := nodesyncer.New(storage, client)
+	node, err := nodesyncer.NewNodeSyncer(storage, client)
 	require.NoError(t, err)
 
 	for range nRuns {
@@ -69,20 +70,23 @@ func TestNode_UnstableStorage(t *testing.T) {
 
 		baseStorage := storage.BaseStorage
 		// check state is ok. only node required to be running matters
-		if baseStorage.TargetState != models.NodeStatusRunning {
+		if baseStorage.TargetStatus != models.NodeStatusRunning {
 			continue
 		}
 
-		require.Equal(t, baseStorage.CurrentState, baseStorage.TargetState, "stored node state check")
-		require.Equal(t, baseStorage.CurrentState, client.Status, "node state check")
+		require.Equal(t, baseStorage.CurrentStatus, baseStorage.TargetStatus,
+			"stored node state check")
+		require.Equal(t, baseStorage.CurrentStatus, client.Status,
+			"node state check")
 
-		for _, u := range baseStorage.Users {
-			require.Equal(t, u.TargetStatus, u.CurrentStatus, fmt.Sprintf("user %d check", u.User.ID))
+		for i, u := range baseStorage.Users {
+			require.Equal(t, u.TargetStatus, baseStorage.CurrentUserStatus[i],
+				fmt.Sprintf("user %d check", u.Profile.ID))
 		}
 	}
 }
 
-func TestNode_UnstableStorage_UnstableNode(t *testing.T) {
+func TestNodeReconciler_UnstableStorage_UnstableNode(t *testing.T) {
 	nUsers := 10
 	nRuns := 100
 	nRunOps := 100
@@ -91,7 +95,7 @@ func TestNode_UnstableStorage_UnstableNode(t *testing.T) {
 	// create node based on mocks
 	client := NewUnstableClientMock()
 	storage := NewUnstableStorageMock(nUsers)
-	node, err := nodesyncer.New(storage, client)
+	node, err := nodesyncer.NewNodeSyncer(storage, client)
 	require.NoError(t, err)
 
 	for range nRuns {
@@ -110,17 +114,20 @@ func TestNode_UnstableStorage_UnstableNode(t *testing.T) {
 		node.SyncState(context.TODO())
 
 		baseStorage := storage.BaseStorage
-		baseAPI := client.BaseAPI
+		baseClient := client.BaseClient
 		// check state is ok. only node required to be running matters
-		if baseStorage.TargetState != models.NodeStatusRunning {
+		if baseStorage.TargetStatus != models.NodeStatusRunning {
 			continue
 		}
 
-		require.Equal(t, baseStorage.CurrentState, baseStorage.TargetState, "stored node state check")
-		require.Equal(t, baseStorage.CurrentState, baseAPI.Status, "node state check")
+		require.Equal(t, baseStorage.CurrentStatus, baseStorage.TargetStatus,
+			"stored node state check")
+		require.Equal(t, baseStorage.CurrentStatus, baseClient.Status,
+			"node state check")
 
-		for _, u := range baseStorage.Users {
-			require.Equal(t, u.TargetStatus, u.CurrentStatus, fmt.Sprintf("user %d check", u.User.ID))
+		for i, u := range baseStorage.Users {
+			require.Equal(t, u.TargetStatus, baseStorage.CurrentUserStatus[i],
+				fmt.Sprintf("user %d check", u.Profile.ID))
 		}
 	}
 }

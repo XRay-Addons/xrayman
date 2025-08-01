@@ -23,7 +23,7 @@ import (
 // Notes:
 // - Context passed to Invoke uses only as canceller
 
-type Fn = func(ctx context.Context) (interface{}, error)
+type Fn = func(ctx context.Context) (any, error)
 
 type WaveExecutor struct {
 	fn       execFn
@@ -36,7 +36,7 @@ type WaveExecutor struct {
 type execFn = func(context.Context) execResult
 
 type execResult struct {
-	result interface{}
+	result any
 	err    error
 }
 
@@ -63,7 +63,7 @@ func (we *WaveExecutor) Close() {
 	<-we.done
 }
 
-func (we *WaveExecutor) Invoke(ctx context.Context) (interface{}, error) {
+func (we *WaveExecutor) Invoke(ctx context.Context) (any, error) {
 	waveItem := execWaveItem{
 		ctx:    ctx,
 		result: make(chan execResult, 1),

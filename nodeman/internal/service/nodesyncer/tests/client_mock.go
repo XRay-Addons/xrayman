@@ -22,13 +22,15 @@ func NewClientMock() *ClientMock {
 	}
 }
 
-var _ nodesyncer.Client = (*ClientMock)(nil)
+var _ nodesyncer.NodeClient = (*ClientMock)(nil)
 
 func (c *ClientMock) CheckStatus(ctx context.Context) (models.NodeStatus, error) {
 	return c.Status, nil
 }
 
-func (c *ClientMock) Start(ctx context.Context, users []models.UserProfile) (*models.ClientConfig, error) {
+func (c *ClientMock) Start(ctx context.Context, users []models.UserProfile) (
+	*models.ClientConfig, error,
+) {
 	for u := range c.Users {
 		delete(c.Users, u)
 	}
@@ -47,15 +49,16 @@ func (c *ClientMock) Stop(ctx context.Context) error {
 	return nil
 }
 
-// UpdateUserStates implements nodesyncer.NodeClient.
-func (c *ClientMock) UpdateUserStates(ctx context.Context, update models.NodeUsersUpdate) error {
+func (c *ClientMock) UpdateUsers(ctx context.Context,
+	upd models.NodeUsersUpdate,
+) error {
 	if c.Status != models.NodeStatusRunning {
 		return fmt.Errorf("node not running")
 	}
-	for _, u := range update.Add {
+	for _, u := range upd.Add {
 		c.Users[u.ID] = struct{}{}
 	}
-	for _, u := range update.Remove {
+	for _, u := range upd.Remove {
 		delete(c.Users, u.ID)
 	}
 	return nil
@@ -63,15 +66,15 @@ func (c *ClientMock) UpdateUserStates(ctx context.Context, update models.NodeUse
 
 // storage mock with external faults or edit state modifications
 type UnstableClientMock struct {
-	BaseAPI     *ClientMock
+	BaseClient  *ClientMock
 	Instability float32
 	rand        *rand.Rand
 }
 
 func NewUnstableClientMock() *UnstableClientMock {
 	return &UnstableClientMock{
-		BaseAPI: NewClientMock(),
-		rand:    rand.New(rand.NewPCG(0, 0)),
+		BaseClient: NewClientMock(),
+		rand:       rand.New(rand.NewPCG(0, 0)),
 	}
 }
 
@@ -82,26 +85,30 @@ func (c *UnstableClientMock) CheckStatus(ctx context.Context) (models.NodeStatus
 	if c.rand.Float32() < c.Instability {
 		return models.NodeStatusUnknown, nil
 	}
-	return c.BaseAPI.CheckStatus(ctx)
+	return c.BaseClient.CheckStatus(ctx)
 }
 
-func (c *UnstableClientMock) Start(ctx context.Context, users []models.UserProfile) (*models.ClientConfig, error) {
+func (c *UnstableClientMock) Start(ctx context.Context, users []models.UserProfile) (
+	*models.ClientConfig, error,
+) {
 	if c.rand.Float32() < c.Instability {
 		return nil, fmt.Errorf("random c fail")
 	}
-	return c.BaseAPI.Start(ctx, users)
+	return c.BaseClient.Start(ctx, users)
 }
 
 func (c *UnstableClientMock) Stop(ctx context.Context) error {
 	if c.rand.Float32() < c.Instability {
 		return fmt.Errorf("random c fail")
 	}
-	return c.BaseAPI.Stop(ctx)
+	return c.BaseClient.Stop(ctx)
 }
 
-func (c *UnstableClientMock) UpdateUserStates(ctx context.Context, update models.NodeUsersUpdate) error {
+func (c *UnstableClientMock) UpdateUsers(ctx context.Context,
+	upd models.NodeUsersUpdate,
+) error {
 	if c.rand.Float32() < c.Instability {
 		return fmt.Errorf("random c fail")
 	}
-	return c.BaseAPI.UpdateUserStates(ctx, update)
+	return c.BaseClient.UpdateUsers(ctx, upd)
 }
