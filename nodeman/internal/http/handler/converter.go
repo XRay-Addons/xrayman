@@ -8,11 +8,17 @@ import (
 // goverter:converter
 // goverter:output:format function
 // goverter:output:file ./converter_generated.go
-type Converter interface {
-	ConvertNewNodeRequest(source *api.NewNodeParams) *models.NewNodeParams
-	ConvertNewNodeResult(source *models.NewNodeResult) *api.NewNodeResult
+// goverter:typedef-to-base:true
 
-	ConvertStartNodeRequest(source *api.StopNodeParams) *models.StartNodeParams
-	ConvertStopNodeRequest(source *api.StopNodeParams) *models.StartNodeParams
-	ConvertListNodesResult(source *api.ListNodeResult) *models.ListNodeResult
+//go:generate goverter gen .
+type Converter interface {
+	ConvertNewNodeRequest(source *api.NewNodeRequest) *models.NewNodeParams
+	ConvertNewNodeResult(source *models.NewNodeResult) *api.NewNodeResponse
+
+	ConvertStartNodeRequest(source *api.StartNodeRequest) *models.StartNodeParams
+	ConvertStopNodeRequest(source *api.StopNodeRequest) *models.StartNodeParams
+	ConvertListNodesResult(source *api.ListNodeResponse) *models.ListNodeResult
+
+	//ConvertNodeID(models.NodeID) int
+	//RConvertNodeID(int) models.NodeID
 }

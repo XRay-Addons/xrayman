@@ -15,7 +15,7 @@ import (
 )
 
 func (s *Server) decodeNewNodeRequest(r *http.Request) (
-	req *NewNodeParams,
+	req *NewNodeRequest,
 	close func() error,
 	rerr error,
 ) {
@@ -54,7 +54,7 @@ func (s *Server) decodeNewNodeRequest(r *http.Request) (
 
 		d := jx.DecodeBytes(buf)
 
-		var request NewNodeParams
+		var request NewNodeRequest
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err
@@ -78,7 +78,7 @@ func (s *Server) decodeNewNodeRequest(r *http.Request) (
 }
 
 func (s *Server) decodeStartNodeRequest(r *http.Request) (
-	req *StartNodeParams,
+	req *StartNodeRequest,
 	close func() error,
 	rerr error,
 ) {
@@ -117,7 +117,7 @@ func (s *Server) decodeStartNodeRequest(r *http.Request) (
 
 		d := jx.DecodeBytes(buf)
 
-		var request StartNodeParams
+		var request StartNodeRequest
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err
@@ -141,7 +141,7 @@ func (s *Server) decodeStartNodeRequest(r *http.Request) (
 }
 
 func (s *Server) decodeStopNodeRequest(r *http.Request) (
-	req *StopNodeParams,
+	req *StopNodeRequest,
 	close func() error,
 	rerr error,
 ) {
@@ -180,7 +180,7 @@ func (s *Server) decodeStopNodeRequest(r *http.Request) (
 
 		d := jx.DecodeBytes(buf)
 
-		var request StopNodeParams
+		var request StopNodeRequest
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err

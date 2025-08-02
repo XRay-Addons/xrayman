@@ -126,70 +126,70 @@ func (s *ErrorStatusCode) SetResponse(val Error) {
 	s.Response = val
 }
 
-// Ref: #/components/schemas/ListNodeResult
-type ListNodeResult struct {
+// Ref: #/components/schemas/ListNodeResponse
+type ListNodeResponse struct {
 	Nodes []Node `json:"Nodes"`
 }
 
 // GetNodes returns the value of Nodes.
-func (s *ListNodeResult) GetNodes() []Node {
+func (s *ListNodeResponse) GetNodes() []Node {
 	return s.Nodes
 }
 
 // SetNodes sets the value of Nodes.
-func (s *ListNodeResult) SetNodes(val []Node) {
+func (s *ListNodeResponse) SetNodes(val []Node) {
 	s.Nodes = val
 }
 
-// Ref: #/components/schemas/NewNodeParams
-type NewNodeParams struct {
+// Ref: #/components/schemas/NewNodeRequest
+type NewNodeRequest struct {
 	Endpoint string `json:"Endpoint"`
 }
 
 // GetEndpoint returns the value of Endpoint.
-func (s *NewNodeParams) GetEndpoint() string {
+func (s *NewNodeRequest) GetEndpoint() string {
 	return s.Endpoint
 }
 
 // SetEndpoint sets the value of Endpoint.
-func (s *NewNodeParams) SetEndpoint(val string) {
+func (s *NewNodeRequest) SetEndpoint(val string) {
 	s.Endpoint = val
 }
 
-// Ref: #/components/schemas/NewNodeResult
-type NewNodeResult struct {
+// Ref: #/components/schemas/NewNodeResponse
+type NewNodeResponse struct {
 	ID           NodeID `json:"ID"`
 	Endpoint     string `json:"Endpoint"`
 	AccessSecret string `json:"AccessSecret"`
 }
 
 // GetID returns the value of ID.
-func (s *NewNodeResult) GetID() NodeID {
+func (s *NewNodeResponse) GetID() NodeID {
 	return s.ID
 }
 
 // GetEndpoint returns the value of Endpoint.
-func (s *NewNodeResult) GetEndpoint() string {
+func (s *NewNodeResponse) GetEndpoint() string {
 	return s.Endpoint
 }
 
 // GetAccessSecret returns the value of AccessSecret.
-func (s *NewNodeResult) GetAccessSecret() string {
+func (s *NewNodeResponse) GetAccessSecret() string {
 	return s.AccessSecret
 }
 
 // SetID sets the value of ID.
-func (s *NewNodeResult) SetID(val NodeID) {
+func (s *NewNodeResponse) SetID(val NodeID) {
 	s.ID = val
 }
 
 // SetEndpoint sets the value of Endpoint.
-func (s *NewNodeResult) SetEndpoint(val string) {
+func (s *NewNodeResponse) SetEndpoint(val string) {
 	s.Endpoint = val
 }
 
 // SetAccessSecret sets the value of AccessSecret.
-func (s *NewNodeResult) SetAccessSecret(val string) {
+func (s *NewNodeResponse) SetAccessSecret(val string) {
 	s.AccessSecret = val
 }
 
@@ -407,38 +407,38 @@ func (o OptNilString) Or(d string) string {
 	return d
 }
 
-// Ref: #/components/schemas/StartNodeParams
-type StartNodeParams struct {
+// Ref: #/components/schemas/StartNodeRequest
+type StartNodeRequest struct {
 	ID NodeID `json:"ID"`
 }
 
 // GetID returns the value of ID.
-func (s *StartNodeParams) GetID() NodeID {
+func (s *StartNodeRequest) GetID() NodeID {
 	return s.ID
 }
 
 // SetID sets the value of ID.
-func (s *StartNodeParams) SetID(val NodeID) {
+func (s *StartNodeRequest) SetID(val NodeID) {
 	s.ID = val
 }
 
-// Ref: #/components/schemas/StartNodeResult
-type StartNodeResult struct{}
+// Ref: #/components/schemas/StartNodeResponse
+type StartNodeResponse struct{}
 
-// Ref: #/components/schemas/StopNodeParams
-type StopNodeParams struct {
+// Ref: #/components/schemas/StopNodeRequest
+type StopNodeRequest struct {
 	ID NodeID `json:"ID"`
 }
 
 // GetID returns the value of ID.
-func (s *StopNodeParams) GetID() NodeID {
+func (s *StopNodeRequest) GetID() NodeID {
 	return s.ID
 }
 
 // SetID sets the value of ID.
-func (s *StopNodeParams) SetID(val NodeID) {
+func (s *StopNodeRequest) SetID(val NodeID) {
 	s.ID = val
 }
 
-// Ref: #/components/schemas/StopNodeResult
-type StopNodeResult struct{}
+// Ref: #/components/schemas/StopNodeResponse
+type StopNodeResponse struct{}

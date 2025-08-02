@@ -15,14 +15,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NewNodeParams'
+              $ref: '#/components/schemas/NewNodeRequest'
       responses:
         '200':
           description: Created node
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NewNodeResult'
+                $ref: '#/components/schemas/NewNodeResponse'
         'default':
           description: General Error
           content:
@@ -41,14 +41,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StartNodeParams'
+              $ref: '#/components/schemas/StartNodeRequest'
       responses:
         '200':
           description: Start result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StartNodeResult'
+                $ref: '#/components/schemas/StartNodeResponse'
         'default':
           description: General Error
           content:
@@ -67,14 +67,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StopNodeParams'
+              $ref: '#/components/schemas/StopNodeRequest'
       responses:
         '200':
           description: Stop result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StopNodeResult'
+                $ref: '#/components/schemas/StopNodeResponse'
         'default':
           description: General Error
           content:
@@ -95,7 +95,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ListNodeResult'
+                $ref: '#/components/schemas/ListNodeResponse'
         'default':
           description: General Error
           content:
@@ -167,7 +167,7 @@ components:
         - CurrentStatus
         - TargetStatus
 
-    NewNodeParams:
+    NewNodeRequest:
       type: object
       properties:
         Endpoint:
@@ -175,7 +175,7 @@ components:
       required:
         - Endpoint
 
-    NewNodeResult:
+    NewNodeResponse:
       type: object
       properties:
         ID:
@@ -189,7 +189,7 @@ components:
         - Endpoint
         - AccessSecret
 
-    StartNodeParams:
+    StartNodeRequest:
       type: object
       properties:
         ID:
@@ -197,11 +197,11 @@ components:
       required:
         - ID
 
-    StartNodeResult:
+    StartNodeResponse:
       type: object
       properties: {}
 
-    StopNodeParams:
+    StopNodeRequest:
       type: object
       properties:
         ID:
@@ -209,15 +209,15 @@ components:
       required:
         - ID
 
-    StopNodeResult:
+    StopNodeResponse:
       type: object
       properties: {}
 
-    ListNodeParams:
+    ListNodeRequest:
       type: object
       properties: {}
 
-    ListNodeResult:
+    ListNodeResponse:
       type: object
       properties:
         Nodes:

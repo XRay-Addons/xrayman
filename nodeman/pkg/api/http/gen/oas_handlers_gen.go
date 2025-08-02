@@ -151,7 +151,7 @@ func (s *Server) handleListNodesRequest(args [0]string, argsEscaped bool, w http
 		}
 	}
 
-	var response *ListNodeResult
+	var response *ListNodeResponse
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
 			Context:          ctx,
@@ -166,7 +166,7 @@ func (s *Server) handleListNodesRequest(args [0]string, argsEscaped bool, w http
 		type (
 			Request  = struct{}
 			Params   = struct{}
-			Response = *ListNodeResult
+			Response = *ListNodeResponse
 		)
 		response, err = middleware.HookMiddleware[
 			Request,
@@ -346,7 +346,7 @@ func (s *Server) handleNewNodeRequest(args [0]string, argsEscaped bool, w http.R
 		}
 	}()
 
-	var response *NewNodeResult
+	var response *NewNodeResponse
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
 			Context:          ctx,
@@ -359,9 +359,9 @@ func (s *Server) handleNewNodeRequest(args [0]string, argsEscaped bool, w http.R
 		}
 
 		type (
-			Request  = *NewNodeParams
+			Request  = *NewNodeRequest
 			Params   = struct{}
-			Response = *NewNodeResult
+			Response = *NewNodeResponse
 		)
 		response, err = middleware.HookMiddleware[
 			Request,
@@ -541,7 +541,7 @@ func (s *Server) handleStartNodeRequest(args [0]string, argsEscaped bool, w http
 		}
 	}()
 
-	var response *StartNodeResult
+	var response *StartNodeResponse
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
 			Context:          ctx,
@@ -554,9 +554,9 @@ func (s *Server) handleStartNodeRequest(args [0]string, argsEscaped bool, w http
 		}
 
 		type (
-			Request  = *StartNodeParams
+			Request  = *StartNodeRequest
 			Params   = struct{}
-			Response = *StartNodeResult
+			Response = *StartNodeResponse
 		)
 		response, err = middleware.HookMiddleware[
 			Request,
@@ -736,7 +736,7 @@ func (s *Server) handleStopNodeRequest(args [0]string, argsEscaped bool, w http.
 		}
 	}()
 
-	var response *StopNodeResult
+	var response *StopNodeResponse
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
 			Context:          ctx,
@@ -749,9 +749,9 @@ func (s *Server) handleStopNodeRequest(args [0]string, argsEscaped bool, w http.
 		}
 
 		type (
-			Request  = *StopNodeParams
+			Request  = *StopNodeRequest
 			Params   = struct{}
-			Response = *StopNodeResult
+			Response = *StopNodeResponse
 		)
 		response, err = middleware.HookMiddleware[
 			Request,

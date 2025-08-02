@@ -12,7 +12,7 @@ import (
 )
 
 func encodeNewNodeRequest(
-	req *NewNodeParams,
+	req *NewNodeRequest,
 	r *http.Request,
 ) error {
 	const contentType = "application/json"
@@ -26,7 +26,7 @@ func encodeNewNodeRequest(
 }
 
 func encodeStartNodeRequest(
-	req *StartNodeParams,
+	req *StartNodeRequest,
 	r *http.Request,
 ) error {
 	const contentType = "application/json"
@@ -40,7 +40,7 @@ func encodeStartNodeRequest(
 }
 
 func encodeStopNodeRequest(
-	req *StopNodeParams,
+	req *StopNodeRequest,
 	r *http.Request,
 ) error {
 	const contentType = "application/json"

@@ -33,32 +33,28 @@ func New(s Service, log *zap.Logger) (*Handler, error) {
 	}, nil
 }
 
-// NewNode implements api.Handler.
-func (h *Handler) NewNode(ctx context.Context, req *api.NewNodeParams) (*api.NewNodeResult, error) {
+func (h *Handler) NewNode(ctx context.Context, req *api.NewNodeRequest) (*api.NewNodeResponse, error) {
 	if h == nil || h.service == nil {
 		return nil, fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
 	}
 	panic("unimplemented")
 }
 
-// StartNode implements api.Handler.
-func (h *Handler) StartNode(ctx context.Context, req *api.StartNodeParams) error {
+func (h *Handler) StartNode(ctx context.Context, req *api.StartNodeRequest) error {
 	if h == nil || h.service == nil {
 		return fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
 	}
 	panic("unimplemented")
 }
 
-// StopNode implements api.Handler.
-func (h *Handler) StopNode(ctx context.Context, req *api.StopNodeParams) error {
+func (h *Handler) StopNode(ctx context.Context, req *api.StopNodeRequest) error {
 	if h == nil || h.service == nil {
 		return fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
 	}
 	panic("unimplemented")
 }
 
-// ListNodes implements api.Handler.
-func (h *Handler) ListNodes(ctx context.Context) (*api.ListNodeResult, error) {
+func (h *Handler) ListNodes(ctx context.Context) (*api.ListNodeResponse, error) {
 	if h == nil || h.service == nil {
 		return nil, fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
 	}

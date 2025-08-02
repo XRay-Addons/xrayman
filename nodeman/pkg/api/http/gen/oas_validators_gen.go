@@ -10,7 +10,7 @@ import (
 	"github.com/ogen-go/ogen/validate"
 )
 
-func (s *ListNodeResult) Validate() error {
+func (s *ListNodeResponse) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
 	}

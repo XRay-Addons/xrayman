@@ -13,7 +13,7 @@ import (
 	ht "github.com/ogen-go/ogen/http"
 )
 
-func encodeListNodesResponse(response *ListNodeResult, w http.ResponseWriter, span trace.Span) error {
+func encodeListNodesResponse(response *ListNodeResponse, w http.ResponseWriter, span trace.Span) error {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(200)
 	span.SetStatus(codes.Ok, http.StatusText(200))
@@ -27,7 +27,7 @@ func encodeListNodesResponse(response *ListNodeResult, w http.ResponseWriter, sp
 	return nil
 }
 
-func encodeNewNodeResponse(response *NewNodeResult, w http.ResponseWriter, span trace.Span) error {
+func encodeNewNodeResponse(response *NewNodeResponse, w http.ResponseWriter, span trace.Span) error {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(200)
 	span.SetStatus(codes.Ok, http.StatusText(200))
@@ -41,7 +41,7 @@ func encodeNewNodeResponse(response *NewNodeResult, w http.ResponseWriter, span 
 	return nil
 }
 
-func encodeStartNodeResponse(response *StartNodeResult, w http.ResponseWriter, span trace.Span) error {
+func encodeStartNodeResponse(response *StartNodeResponse, w http.ResponseWriter, span trace.Span) error {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(200)
 	span.SetStatus(codes.Ok, http.StatusText(200))
@@ -55,7 +55,7 @@ func encodeStartNodeResponse(response *StartNodeResult, w http.ResponseWriter, s
 	return nil
 }
 
-func encodeStopNodeResponse(response *StopNodeResult, w http.ResponseWriter, span trace.Span) error {
+func encodeStopNodeResponse(response *StopNodeResponse, w http.ResponseWriter, span trace.Span) error {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(200)
 	span.SetStatus(codes.Ok, http.StatusText(200))

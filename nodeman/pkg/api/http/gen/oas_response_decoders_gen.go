@@ -14,7 +14,7 @@ import (
 	"github.com/ogen-go/ogen/validate"
 )
 
-func decodeListNodesResponse(resp *http.Response) (res *ListNodeResult, _ error) {
+func decodeListNodesResponse(resp *http.Response) (res *ListNodeResponse, _ error) {
 	switch resp.StatusCode {
 	case 200:
 		// Code 200.
@@ -30,7 +30,7 @@ func decodeListNodesResponse(resp *http.Response) (res *ListNodeResult, _ error)
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response ListNodeResult
+			var response ListNodeResponse
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -106,7 +106,7 @@ func decodeListNodesResponse(resp *http.Response) (res *ListNodeResult, _ error)
 	return res, errors.Wrap(defRes, "error")
 }
 
-func decodeNewNodeResponse(resp *http.Response) (res *NewNodeResult, _ error) {
+func decodeNewNodeResponse(resp *http.Response) (res *NewNodeResponse, _ error) {
 	switch resp.StatusCode {
 	case 200:
 		// Code 200.
@@ -122,7 +122,7 @@ func decodeNewNodeResponse(resp *http.Response) (res *NewNodeResult, _ error) {
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response NewNodeResult
+			var response NewNodeResponse
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -189,7 +189,7 @@ func decodeNewNodeResponse(resp *http.Response) (res *NewNodeResult, _ error) {
 	return res, errors.Wrap(defRes, "error")
 }
 
-func decodeStartNodeResponse(resp *http.Response) (res *StartNodeResult, _ error) {
+func decodeStartNodeResponse(resp *http.Response) (res *StartNodeResponse, _ error) {
 	switch resp.StatusCode {
 	case 200:
 		// Code 200.
@@ -205,7 +205,7 @@ func decodeStartNodeResponse(resp *http.Response) (res *StartNodeResult, _ error
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response StartNodeResult
+			var response StartNodeResponse
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -272,7 +272,7 @@ func decodeStartNodeResponse(resp *http.Response) (res *StartNodeResult, _ error
 	return res, errors.Wrap(defRes, "error")
 }
 
-func decodeStopNodeResponse(resp *http.Response) (res *StopNodeResult, _ error) {
+func decodeStopNodeResponse(resp *http.Response) (res *StopNodeResponse, _ error) {
 	switch resp.StatusCode {
 	case 200:
 		// Code 200.
@@ -288,7 +288,7 @@ func decodeStopNodeResponse(resp *http.Response) (res *StopNodeResult, _ error) 
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response StopNodeResult
+			var response StopNodeResponse
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err

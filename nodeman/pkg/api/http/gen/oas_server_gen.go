@@ -13,25 +13,25 @@ type Handler interface {
 	// List all nodes.
 	//
 	// GET /nodes
-	ListNodes(ctx context.Context) (*ListNodeResult, error)
+	ListNodes(ctx context.Context) (*ListNodeResponse, error)
 	// NewNode implements NewNode operation.
 	//
 	// Create a new node.
 	//
 	// POST /nodes/new
-	NewNode(ctx context.Context, req *NewNodeParams) (*NewNodeResult, error)
+	NewNode(ctx context.Context, req *NewNodeRequest) (*NewNodeResponse, error)
 	// StartNode implements StartNode operation.
 	//
 	// Start a node.
 	//
 	// POST /nodes/start
-	StartNode(ctx context.Context, req *StartNodeParams) error
+	StartNode(ctx context.Context, req *StartNodeRequest) error
 	// StopNode implements StopNode operation.
 	//
 	// Stop a node.
 	//
 	// POST /nodes/stop
-	StopNode(ctx context.Context, req *StopNodeParams) error
+	StopNode(ctx context.Context, req *StopNodeRequest) error
 	// NewError creates *ErrorStatusCode from error returned by handler.
 	//
 	// Used for common default response.

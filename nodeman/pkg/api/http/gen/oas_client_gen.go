@@ -33,25 +33,25 @@ type Invoker interface {
 	// List all nodes.
 	//
 	// GET /nodes
-	ListNodes(ctx context.Context) (*ListNodeResult, error)
+	ListNodes(ctx context.Context) (*ListNodeResponse, error)
 	// NewNode invokes NewNode operation.
 	//
 	// Create a new node.
 	//
 	// POST /nodes/new
-	NewNode(ctx context.Context, request *NewNodeParams) (*NewNodeResult, error)
+	NewNode(ctx context.Context, request *NewNodeRequest) (*NewNodeResponse, error)
 	// StartNode invokes StartNode operation.
 	//
 	// Start a node.
 	//
 	// POST /nodes/start
-	StartNode(ctx context.Context, request *StartNodeParams) error
+	StartNode(ctx context.Context, request *StartNodeRequest) error
 	// StopNode invokes StopNode operation.
 	//
 	// Stop a node.
 	//
 	// POST /nodes/stop
-	StopNode(ctx context.Context, request *StopNodeParams) error
+	StopNode(ctx context.Context, request *StopNodeRequest) error
 }
 
 // Client implements OAS client.
@@ -108,12 +108,12 @@ func (c *Client) requestURL(ctx context.Context) *url.URL {
 // List all nodes.
 //
 // GET /nodes
-func (c *Client) ListNodes(ctx context.Context) (*ListNodeResult, error) {
+func (c *Client) ListNodes(ctx context.Context) (*ListNodeResponse, error) {
 	res, err := c.sendListNodes(ctx)
 	return res, err
 }
 
-func (c *Client) sendListNodes(ctx context.Context) (res *ListNodeResult, err error) {
+func (c *Client) sendListNodes(ctx context.Context) (res *ListNodeResponse, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("ListNodes"),
 		semconv.HTTPRequestMethodKey.String("GET"),
@@ -213,12 +213,12 @@ func (c *Client) sendListNodes(ctx context.Context) (res *ListNodeResult, err er
 // Create a new node.
 //
 // POST /nodes/new
-func (c *Client) NewNode(ctx context.Context, request *NewNodeParams) (*NewNodeResult, error) {
+func (c *Client) NewNode(ctx context.Context, request *NewNodeRequest) (*NewNodeResponse, error) {
 	res, err := c.sendNewNode(ctx, request)
 	return res, err
 }
 
-func (c *Client) sendNewNode(ctx context.Context, request *NewNodeParams) (res *NewNodeResult, err error) {
+func (c *Client) sendNewNode(ctx context.Context, request *NewNodeRequest) (res *NewNodeResponse, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("NewNode"),
 		semconv.HTTPRequestMethodKey.String("POST"),
@@ -321,12 +321,12 @@ func (c *Client) sendNewNode(ctx context.Context, request *NewNodeParams) (res *
 // Start a node.
 //
 // POST /nodes/start
-func (c *Client) StartNode(ctx context.Context, request *StartNodeParams) error {
+func (c *Client) StartNode(ctx context.Context, request *StartNodeRequest) error {
 	_, err := c.sendStartNode(ctx, request)
 	return err
 }
 
-func (c *Client) sendStartNode(ctx context.Context, request *StartNodeParams) (res *StartNodeResult, err error) {
+func (c *Client) sendStartNode(ctx context.Context, request *StartNodeRequest) (res *StartNodeResponse, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("StartNode"),
 		semconv.HTTPRequestMethodKey.String("POST"),
@@ -429,12 +429,12 @@ func (c *Client) sendStartNode(ctx context.Context, request *StartNodeParams) (r
 // Stop a node.
 //
 // POST /nodes/stop
-func (c *Client) StopNode(ctx context.Context, request *StopNodeParams) error {
+func (c *Client) StopNode(ctx context.Context, request *StopNodeRequest) error {
 	_, err := c.sendStopNode(ctx, request)
 	return err
 }
 
-func (c *Client) sendStopNode(ctx context.Context, request *StopNodeParams) (res *StopNodeResult, err error) {
+func (c *Client) sendStopNode(ctx context.Context, request *StopNodeRequest) (res *StopNodeResponse, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("StopNode"),
 		semconv.HTTPRequestMethodKey.String("POST"),

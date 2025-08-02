@@ -18,7 +18,7 @@ var _ Handler = UnimplementedHandler{}
 // List all nodes.
 //
 // GET /nodes
-func (UnimplementedHandler) ListNodes(ctx context.Context) (r *ListNodeResult, _ error) {
+func (UnimplementedHandler) ListNodes(ctx context.Context) (r *ListNodeResponse, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
@@ -27,7 +27,7 @@ func (UnimplementedHandler) ListNodes(ctx context.Context) (r *ListNodeResult, _
 // Create a new node.
 //
 // POST /nodes/new
-func (UnimplementedHandler) NewNode(ctx context.Context, req *NewNodeParams) (r *NewNodeResult, _ error) {
+func (UnimplementedHandler) NewNode(ctx context.Context, req *NewNodeRequest) (r *NewNodeResponse, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
@@ -36,7 +36,7 @@ func (UnimplementedHandler) NewNode(ctx context.Context, req *NewNodeParams) (r 
 // Start a node.
 //
 // POST /nodes/start
-func (UnimplementedHandler) StartNode(ctx context.Context, req *StartNodeParams) error {
+func (UnimplementedHandler) StartNode(ctx context.Context, req *StartNodeRequest) error {
 	return ht.ErrNotImplemented
 }
 
@@ -45,7 +45,7 @@ func (UnimplementedHandler) StartNode(ctx context.Context, req *StartNodeParams)
 // Stop a node.
 //
 // POST /nodes/stop
-func (UnimplementedHandler) StopNode(ctx context.Context, req *StopNodeParams) error {
+func (UnimplementedHandler) StopNode(ctx context.Context, req *StopNodeRequest) error {
 	return ht.ErrNotImplemented
 }
 

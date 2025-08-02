@@ -256,14 +256,14 @@ func (s *Error) UnmarshalJSON(data []byte) error {
 }
 
 // Encode implements json.Marshaler.
-func (s *ListNodeResult) Encode(e *jx.Encoder) {
+func (s *ListNodeResponse) Encode(e *jx.Encoder) {
 	e.ObjStart()
 	s.encodeFields(e)
 	e.ObjEnd()
 }
 
 // encodeFields encodes fields.
-func (s *ListNodeResult) encodeFields(e *jx.Encoder) {
+func (s *ListNodeResponse) encodeFields(e *jx.Encoder) {
 	{
 		e.FieldStart("Nodes")
 		e.ArrStart()
@@ -274,14 +274,14 @@ func (s *ListNodeResult) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfListNodeResult = [1]string{
+var jsonFieldsNameOfListNodeResponse = [1]string{
 	0: "Nodes",
 }
 
-// Decode decodes ListNodeResult from json.
-func (s *ListNodeResult) Decode(d *jx.Decoder) error {
+// Decode decodes ListNodeResponse from json.
+func (s *ListNodeResponse) Decode(d *jx.Decoder) error {
 	if s == nil {
-		return errors.New("invalid: unable to decode ListNodeResult to nil")
+		return errors.New("invalid: unable to decode ListNodeResponse to nil")
 	}
 	var requiredBitSet [1]uint8
 
@@ -310,7 +310,7 @@ func (s *ListNodeResult) Decode(d *jx.Decoder) error {
 		}
 		return nil
 	}); err != nil {
-		return errors.Wrap(err, "decode ListNodeResult")
+		return errors.Wrap(err, "decode ListNodeResponse")
 	}
 	// Validate required fields.
 	var failures []validate.FieldError
@@ -327,8 +327,8 @@ func (s *ListNodeResult) Decode(d *jx.Decoder) error {
 				bitIdx := bits.TrailingZeros8(result)
 				fieldIdx := i*8 + bitIdx
 				var name string
-				if fieldIdx < len(jsonFieldsNameOfListNodeResult) {
-					name = jsonFieldsNameOfListNodeResult[fieldIdx]
+				if fieldIdx < len(jsonFieldsNameOfListNodeResponse) {
+					name = jsonFieldsNameOfListNodeResponse[fieldIdx]
 				} else {
 					name = strconv.Itoa(fieldIdx)
 				}
@@ -349,41 +349,41 @@ func (s *ListNodeResult) Decode(d *jx.Decoder) error {
 }
 
 // MarshalJSON implements stdjson.Marshaler.
-func (s *ListNodeResult) MarshalJSON() ([]byte, error) {
+func (s *ListNodeResponse) MarshalJSON() ([]byte, error) {
 	e := jx.Encoder{}
 	s.Encode(&e)
 	return e.Bytes(), nil
 }
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *ListNodeResult) UnmarshalJSON(data []byte) error {
+func (s *ListNodeResponse) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
 
 // Encode implements json.Marshaler.
-func (s *NewNodeParams) Encode(e *jx.Encoder) {
+func (s *NewNodeRequest) Encode(e *jx.Encoder) {
 	e.ObjStart()
 	s.encodeFields(e)
 	e.ObjEnd()
 }
 
 // encodeFields encodes fields.
-func (s *NewNodeParams) encodeFields(e *jx.Encoder) {
+func (s *NewNodeRequest) encodeFields(e *jx.Encoder) {
 	{
 		e.FieldStart("Endpoint")
 		e.Str(s.Endpoint)
 	}
 }
 
-var jsonFieldsNameOfNewNodeParams = [1]string{
+var jsonFieldsNameOfNewNodeRequest = [1]string{
 	0: "Endpoint",
 }
 
-// Decode decodes NewNodeParams from json.
-func (s *NewNodeParams) Decode(d *jx.Decoder) error {
+// Decode decodes NewNodeRequest from json.
+func (s *NewNodeRequest) Decode(d *jx.Decoder) error {
 	if s == nil {
-		return errors.New("invalid: unable to decode NewNodeParams to nil")
+		return errors.New("invalid: unable to decode NewNodeRequest to nil")
 	}
 	var requiredBitSet [1]uint8
 
@@ -406,7 +406,7 @@ func (s *NewNodeParams) Decode(d *jx.Decoder) error {
 		}
 		return nil
 	}); err != nil {
-		return errors.Wrap(err, "decode NewNodeParams")
+		return errors.Wrap(err, "decode NewNodeRequest")
 	}
 	// Validate required fields.
 	var failures []validate.FieldError
@@ -423,8 +423,8 @@ func (s *NewNodeParams) Decode(d *jx.Decoder) error {
 				bitIdx := bits.TrailingZeros8(result)
 				fieldIdx := i*8 + bitIdx
 				var name string
-				if fieldIdx < len(jsonFieldsNameOfNewNodeParams) {
-					name = jsonFieldsNameOfNewNodeParams[fieldIdx]
+				if fieldIdx < len(jsonFieldsNameOfNewNodeRequest) {
+					name = jsonFieldsNameOfNewNodeRequest[fieldIdx]
 				} else {
 					name = strconv.Itoa(fieldIdx)
 				}
@@ -445,27 +445,27 @@ func (s *NewNodeParams) Decode(d *jx.Decoder) error {
 }
 
 // MarshalJSON implements stdjson.Marshaler.
-func (s *NewNodeParams) MarshalJSON() ([]byte, error) {
+func (s *NewNodeRequest) MarshalJSON() ([]byte, error) {
 	e := jx.Encoder{}
 	s.Encode(&e)
 	return e.Bytes(), nil
 }
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *NewNodeParams) UnmarshalJSON(data []byte) error {
+func (s *NewNodeRequest) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
 
 // Encode implements json.Marshaler.
-func (s *NewNodeResult) Encode(e *jx.Encoder) {
+func (s *NewNodeResponse) Encode(e *jx.Encoder) {
 	e.ObjStart()
 	s.encodeFields(e)
 	e.ObjEnd()
 }
 
 // encodeFields encodes fields.
-func (s *NewNodeResult) encodeFields(e *jx.Encoder) {
+func (s *NewNodeResponse) encodeFields(e *jx.Encoder) {
 	{
 		e.FieldStart("ID")
 		s.ID.Encode(e)
@@ -480,16 +480,16 @@ func (s *NewNodeResult) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfNewNodeResult = [3]string{
+var jsonFieldsNameOfNewNodeResponse = [3]string{
 	0: "ID",
 	1: "Endpoint",
 	2: "AccessSecret",
 }
 
-// Decode decodes NewNodeResult from json.
-func (s *NewNodeResult) Decode(d *jx.Decoder) error {
+// Decode decodes NewNodeResponse from json.
+func (s *NewNodeResponse) Decode(d *jx.Decoder) error {
 	if s == nil {
-		return errors.New("invalid: unable to decode NewNodeResult to nil")
+		return errors.New("invalid: unable to decode NewNodeResponse to nil")
 	}
 	var requiredBitSet [1]uint8
 
@@ -534,7 +534,7 @@ func (s *NewNodeResult) Decode(d *jx.Decoder) error {
 		}
 		return nil
 	}); err != nil {
-		return errors.Wrap(err, "decode NewNodeResult")
+		return errors.Wrap(err, "decode NewNodeResponse")
 	}
 	// Validate required fields.
 	var failures []validate.FieldError
@@ -551,8 +551,8 @@ func (s *NewNodeResult) Decode(d *jx.Decoder) error {
 				bitIdx := bits.TrailingZeros8(result)
 				fieldIdx := i*8 + bitIdx
 				var name string
-				if fieldIdx < len(jsonFieldsNameOfNewNodeResult) {
-					name = jsonFieldsNameOfNewNodeResult[fieldIdx]
+				if fieldIdx < len(jsonFieldsNameOfNewNodeResponse) {
+					name = jsonFieldsNameOfNewNodeResponse[fieldIdx]
 				} else {
 					name = strconv.Itoa(fieldIdx)
 				}
@@ -573,14 +573,14 @@ func (s *NewNodeResult) Decode(d *jx.Decoder) error {
 }
 
 // MarshalJSON implements stdjson.Marshaler.
-func (s *NewNodeResult) MarshalJSON() ([]byte, error) {
+func (s *NewNodeResponse) MarshalJSON() ([]byte, error) {
 	e := jx.Encoder{}
 	s.Encode(&e)
 	return e.Bytes(), nil
 }
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *NewNodeResult) UnmarshalJSON(data []byte) error {
+func (s *NewNodeResponse) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -1080,28 +1080,28 @@ func (s *OptNilString) UnmarshalJSON(data []byte) error {
 }
 
 // Encode implements json.Marshaler.
-func (s *StartNodeParams) Encode(e *jx.Encoder) {
+func (s *StartNodeRequest) Encode(e *jx.Encoder) {
 	e.ObjStart()
 	s.encodeFields(e)
 	e.ObjEnd()
 }
 
 // encodeFields encodes fields.
-func (s *StartNodeParams) encodeFields(e *jx.Encoder) {
+func (s *StartNodeRequest) encodeFields(e *jx.Encoder) {
 	{
 		e.FieldStart("ID")
 		s.ID.Encode(e)
 	}
 }
 
-var jsonFieldsNameOfStartNodeParams = [1]string{
+var jsonFieldsNameOfStartNodeRequest = [1]string{
 	0: "ID",
 }
 
-// Decode decodes StartNodeParams from json.
-func (s *StartNodeParams) Decode(d *jx.Decoder) error {
+// Decode decodes StartNodeRequest from json.
+func (s *StartNodeRequest) Decode(d *jx.Decoder) error {
 	if s == nil {
-		return errors.New("invalid: unable to decode StartNodeParams to nil")
+		return errors.New("invalid: unable to decode StartNodeRequest to nil")
 	}
 	var requiredBitSet [1]uint8
 
@@ -1122,7 +1122,7 @@ func (s *StartNodeParams) Decode(d *jx.Decoder) error {
 		}
 		return nil
 	}); err != nil {
-		return errors.Wrap(err, "decode StartNodeParams")
+		return errors.Wrap(err, "decode StartNodeRequest")
 	}
 	// Validate required fields.
 	var failures []validate.FieldError
@@ -1139,8 +1139,8 @@ func (s *StartNodeParams) Decode(d *jx.Decoder) error {
 				bitIdx := bits.TrailingZeros8(result)
 				fieldIdx := i*8 + bitIdx
 				var name string
-				if fieldIdx < len(jsonFieldsNameOfStartNodeParams) {
-					name = jsonFieldsNameOfStartNodeParams[fieldIdx]
+				if fieldIdx < len(jsonFieldsNameOfStartNodeRequest) {
+					name = jsonFieldsNameOfStartNodeRequest[fieldIdx]
 				} else {
 					name = strconv.Itoa(fieldIdx)
 				}
@@ -1161,35 +1161,35 @@ func (s *StartNodeParams) Decode(d *jx.Decoder) error {
 }
 
 // MarshalJSON implements stdjson.Marshaler.
-func (s *StartNodeParams) MarshalJSON() ([]byte, error) {
+func (s *StartNodeRequest) MarshalJSON() ([]byte, error) {
 	e := jx.Encoder{}
 	s.Encode(&e)
 	return e.Bytes(), nil
 }
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *StartNodeParams) UnmarshalJSON(data []byte) error {
+func (s *StartNodeRequest) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
 
 // Encode implements json.Marshaler.
-func (s *StartNodeResult) Encode(e *jx.Encoder) {
+func (s *StartNodeResponse) Encode(e *jx.Encoder) {
 	e.ObjStart()
 	s.encodeFields(e)
 	e.ObjEnd()
 }
 
 // encodeFields encodes fields.
-func (s *StartNodeResult) encodeFields(e *jx.Encoder) {
+func (s *StartNodeResponse) encodeFields(e *jx.Encoder) {
 }
 
-var jsonFieldsNameOfStartNodeResult = [0]string{}
+var jsonFieldsNameOfStartNodeResponse = [0]string{}
 
-// Decode decodes StartNodeResult from json.
-func (s *StartNodeResult) Decode(d *jx.Decoder) error {
+// Decode decodes StartNodeResponse from json.
+func (s *StartNodeResponse) Decode(d *jx.Decoder) error {
 	if s == nil {
-		return errors.New("invalid: unable to decode StartNodeResult to nil")
+		return errors.New("invalid: unable to decode StartNodeResponse to nil")
 	}
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
@@ -1198,48 +1198,48 @@ func (s *StartNodeResult) Decode(d *jx.Decoder) error {
 			return d.Skip()
 		}
 	}); err != nil {
-		return errors.Wrap(err, "decode StartNodeResult")
+		return errors.Wrap(err, "decode StartNodeResponse")
 	}
 
 	return nil
 }
 
 // MarshalJSON implements stdjson.Marshaler.
-func (s *StartNodeResult) MarshalJSON() ([]byte, error) {
+func (s *StartNodeResponse) MarshalJSON() ([]byte, error) {
 	e := jx.Encoder{}
 	s.Encode(&e)
 	return e.Bytes(), nil
 }
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *StartNodeResult) UnmarshalJSON(data []byte) error {
+func (s *StartNodeResponse) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
 
 // Encode implements json.Marshaler.
-func (s *StopNodeParams) Encode(e *jx.Encoder) {
+func (s *StopNodeRequest) Encode(e *jx.Encoder) {
 	e.ObjStart()
 	s.encodeFields(e)
 	e.ObjEnd()
 }
 
 // encodeFields encodes fields.
-func (s *StopNodeParams) encodeFields(e *jx.Encoder) {
+func (s *StopNodeRequest) encodeFields(e *jx.Encoder) {
 	{
 		e.FieldStart("ID")
 		s.ID.Encode(e)
 	}
 }
 
-var jsonFieldsNameOfStopNodeParams = [1]string{
+var jsonFieldsNameOfStopNodeRequest = [1]string{
 	0: "ID",
 }
 
-// Decode decodes StopNodeParams from json.
-func (s *StopNodeParams) Decode(d *jx.Decoder) error {
+// Decode decodes StopNodeRequest from json.
+func (s *StopNodeRequest) Decode(d *jx.Decoder) error {
 	if s == nil {
-		return errors.New("invalid: unable to decode StopNodeParams to nil")
+		return errors.New("invalid: unable to decode StopNodeRequest to nil")
 	}
 	var requiredBitSet [1]uint8
 
@@ -1260,7 +1260,7 @@ func (s *StopNodeParams) Decode(d *jx.Decoder) error {
 		}
 		return nil
 	}); err != nil {
-		return errors.Wrap(err, "decode StopNodeParams")
+		return errors.Wrap(err, "decode StopNodeRequest")
 	}
 	// Validate required fields.
 	var failures []validate.FieldError
@@ -1277,8 +1277,8 @@ func (s *StopNodeParams) Decode(d *jx.Decoder) error {
 				bitIdx := bits.TrailingZeros8(result)
 				fieldIdx := i*8 + bitIdx
 				var name string
-				if fieldIdx < len(jsonFieldsNameOfStopNodeParams) {
-					name = jsonFieldsNameOfStopNodeParams[fieldIdx]
+				if fieldIdx < len(jsonFieldsNameOfStopNodeRequest) {
+					name = jsonFieldsNameOfStopNodeRequest[fieldIdx]
 				} else {
 					name = strconv.Itoa(fieldIdx)
 				}
@@ -1299,35 +1299,35 @@ func (s *StopNodeParams) Decode(d *jx.Decoder) error {
 }
 
 // MarshalJSON implements stdjson.Marshaler.
-func (s *StopNodeParams) MarshalJSON() ([]byte, error) {
+func (s *StopNodeRequest) MarshalJSON() ([]byte, error) {
 	e := jx.Encoder{}
 	s.Encode(&e)
 	return e.Bytes(), nil
 }
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *StopNodeParams) UnmarshalJSON(data []byte) error {
+func (s *StopNodeRequest) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
 
 // Encode implements json.Marshaler.
-func (s *StopNodeResult) Encode(e *jx.Encoder) {
+func (s *StopNodeResponse) Encode(e *jx.Encoder) {
 	e.ObjStart()
 	s.encodeFields(e)
 	e.ObjEnd()
 }
 
 // encodeFields encodes fields.
-func (s *StopNodeResult) encodeFields(e *jx.Encoder) {
+func (s *StopNodeResponse) encodeFields(e *jx.Encoder) {
 }
 
-var jsonFieldsNameOfStopNodeResult = [0]string{}
+var jsonFieldsNameOfStopNodeResponse = [0]string{}
 
-// Decode decodes StopNodeResult from json.
-func (s *StopNodeResult) Decode(d *jx.Decoder) error {
+// Decode decodes StopNodeResponse from json.
+func (s *StopNodeResponse) Decode(d *jx.Decoder) error {
 	if s == nil {
-		return errors.New("invalid: unable to decode StopNodeResult to nil")
+		return errors.New("invalid: unable to decode StopNodeResponse to nil")
 	}
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
@@ -1336,21 +1336,21 @@ func (s *StopNodeResult) Decode(d *jx.Decoder) error {
 			return d.Skip()
 		}
 	}); err != nil {
-		return errors.Wrap(err, "decode StopNodeResult")
+		return errors.Wrap(err, "decode StopNodeResponse")
 	}
 
 	return nil
 }
 
 // MarshalJSON implements stdjson.Marshaler.
-func (s *StopNodeResult) MarshalJSON() ([]byte, error) {
+func (s *StopNodeResponse) MarshalJSON() ([]byte, error) {
 	e := jx.Encoder{}
 	s.Encode(&e)
 	return e.Bytes(), nil
 }
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *StopNodeResult) UnmarshalJSON(data []byte) error {
+func (s *StopNodeResponse) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
