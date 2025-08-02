@@ -1,4 +1,4 @@
-package authkeygen
+package keygen
 
 import (
 	"crypto/rand"

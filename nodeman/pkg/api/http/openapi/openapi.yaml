@@ -1,0 +1,245 @@
+openapi: 3.0.3
+info:
+  title: Node Management API
+  version: 1.0.0
+
+paths:
+  /nodes/new:
+    post:
+      summary: Create a new node
+      operationId: NewNode
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewNodeParams'
+      responses:
+        '200':
+          description: Created node
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewNodeResult'
+        'default':
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /nodes/start:
+    post:
+      summary: Start a node
+      operationId: StartNode
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartNodeParams'
+      responses:
+        '200':
+          description: Start result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StartNodeResult'
+        'default':
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /nodes/stop:
+    post:
+      summary: Stop a node
+      operationId: StopNode
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StopNodeParams'
+      responses:
+        '200':
+          description: Stop result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StopNodeResult'
+        'default':
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /nodes:
+    get:
+      summary: List all nodes
+      operationId: ListNodes
+      security:
+        - BearerAuth: []
+      parameters: []
+      responses:
+        '200':
+          description: List of nodes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListNodeResult'
+        'default':
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    NodeID:
+      type: integer
+      format: int32
+
+    NodeStatus:
+      type: string
+      enum: [unknown, stopped, running]
+
+    ClientConfig:
+      type: object
+      properties:
+        Template:
+          type: string
+        UserNameField:
+          type: string
+        VlessUUIDField:
+          type: string
+      required:
+        - Template
+        - UserNameField
+        - VlessUUIDField
+
+    NodeConnectionInfo:
+      type: object
+      properties:
+        Endpoint:
+          type: string
+        AccessKey:
+          type: string
+          format: byte
+      required:
+        - Endpoint
+        - AccessKey
+
+    NodeConfig:
+      type: object
+      properties:
+        ID:
+          $ref: '#/components/schemas/NodeID'
+        ClientConfig:
+          $ref: '#/components/schemas/ClientConfig'
+        ConnectionInfo:
+          $ref: '#/components/schemas/NodeConnectionInfo'
+      required:
+        - ID
+        - ClientConfig
+        - ConnectionInfo
+
+    Node:
+      type: object
+      properties:
+        Config:
+          $ref: '#/components/schemas/NodeConfig'
+        CurrentStatus:
+          $ref: '#/components/schemas/NodeStatus'
+        TargetStatus:
+          $ref: '#/components/schemas/NodeStatus'
+      required:
+        - Config
+        - CurrentStatus
+        - TargetStatus
+
+    NewNodeParams:
+      type: object
+      properties:
+        Endpoint:
+          type: string
+      required:
+        - Endpoint
+
+    NewNodeResult:
+      type: object
+      properties:
+        ID:
+          $ref: '#/components/schemas/NodeID'
+        Endpoint:
+          type: string
+        AccessSecret:
+          type: string
+      required:
+        - ID
+        - Endpoint
+        - AccessSecret
+
+    StartNodeParams:
+      type: object
+      properties:
+        ID:
+          $ref: '#/components/schemas/NodeID'
+      required:
+        - ID
+
+    StartNodeResult:
+      type: object
+      properties: {}
+
+    StopNodeParams:
+      type: object
+      properties:
+        ID:
+          $ref: '#/components/schemas/NodeID'
+      required:
+        - ID
+
+    StopNodeResult:
+      type: object
+      properties: {}
+
+    ListNodeParams:
+      type: object
+      properties: {}
+
+    ListNodeResult:
+      type: object
+      properties:
+        Nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Node'
+      required:
+        - Nodes
+
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+        details:
+          type: string
+          nullable: true
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
