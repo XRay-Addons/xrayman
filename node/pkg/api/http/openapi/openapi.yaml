@@ -7,7 +7,7 @@ paths:
   /start:
     post:
       summary: Start node with user list
-      operationId: StartPost
+      operationId: Start
       security:
         - BearerAuth: []
       requestBody:
@@ -33,7 +33,7 @@ paths:
   /stop:
     post:
       summary: Stop node 
-      operationId: StopPost
+      operationId: Stop
       security:
         - BearerAuth: []
       responses:
@@ -190,42 +190,6 @@ components:
         details:
           type: string
           nullable: true
-
-    ErrorUnauthorized:
-      allOf:
-        - $ref: '#/components/schemas/Error'
-        - type: object
-          x-go-name: ErrorUnauthorized
-          example:
-            message: Unauthorized
-          description: Request is not authenticated.
-
-    ErrorBadRequest:
-      allOf:
-        - $ref: '#/components/schemas/Error'
-        - type: object
-          x-go-name: ErrorBadRequest
-          example:
-            message: Invalid request
-          description: Request is syntactically or semantically invalid.
-
-    InternalServerError:
-      allOf:
-        - $ref: '#/components/schemas/Error'
-        - type: object
-          x-go-name: ErrorInternalServerError
-          example:
-            message: Internal server error
-          description: Unexpected server-side error.
-
-    UnknownStartError:
-       allOf:
-        - $ref: '#/components/schemas/Error'
-        - type: object
-          x-go-name: UnknownStartError
-          example:
-            message: Unknown error
-          description: No idea.
 
   securitySchemes:
     BearerAuth:

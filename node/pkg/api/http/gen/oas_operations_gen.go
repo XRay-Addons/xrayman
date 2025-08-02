@@ -8,6 +8,6 @@ type OperationName = string
 const (
 	EditUsersOperation OperationName = "EditUsers"
 	GetStatusOperation OperationName = "GetStatus"
-	StartPostOperation OperationName = "StartPost"
-	StopPostOperation  OperationName = "StopPost"
+	StartOperation     OperationName = "Start"
+	StopOperation      OperationName = "Stop"
 )

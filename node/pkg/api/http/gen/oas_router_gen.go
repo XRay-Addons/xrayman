@@ -96,7 +96,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 							// Leaf node.
 							switch r.Method {
 							case "POST":
-								s.handleStartPostRequest([0]string{}, elemIsEscaped, w, r)
+								s.handleStartRequest([0]string{}, elemIsEscaped, w, r)
 							default:
 								s.notAllowed(w, r, "POST")
 							}
@@ -138,7 +138,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 						// Leaf node.
 						switch r.Method {
 						case "POST":
-							s.handleStopPostRequest([0]string{}, elemIsEscaped, w, r)
+							s.handleStopRequest([0]string{}, elemIsEscaped, w, r)
 						default:
 							s.notAllowed(w, r, "POST")
 						}
@@ -298,9 +298,9 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 							// Leaf node.
 							switch method {
 							case "POST":
-								r.name = StartPostOperation
+								r.name = StartOperation
 								r.summary = "Start node with user list"
-								r.operationID = "StartPost"
+								r.operationID = "Start"
 								r.pathPattern = "/start"
 								r.args = args
 								r.count = 0
@@ -348,9 +348,9 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 						// Leaf node.
 						switch method {
 						case "POST":
-							r.name = StopPostOperation
+							r.name = StopOperation
 							r.summary = "Stop node"
-							r.operationID = "StopPost"
+							r.operationID = "Stop"
 							r.pathPattern = "/stop"
 							r.args = args
 							r.count = 0

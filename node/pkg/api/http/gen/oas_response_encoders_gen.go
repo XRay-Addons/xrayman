@@ -41,7 +41,7 @@ func encodeGetStatusResponse(response *StatusResponse, w http.ResponseWriter, sp
 	return nil
 }
 
-func encodeStartPostResponse(response *StartResponse, w http.ResponseWriter, span trace.Span) error {
+func encodeStartResponse(response *StartResponse, w http.ResponseWriter, span trace.Span) error {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(200)
 	span.SetStatus(codes.Ok, http.StatusText(200))
@@ -55,7 +55,7 @@ func encodeStartPostResponse(response *StartResponse, w http.ResponseWriter, spa
 	return nil
 }
 
-func encodeStopPostResponse(response *EmptyResponse, w http.ResponseWriter, span trace.Span) error {
+func encodeStopResponse(response *EmptyResponse, w http.ResponseWriter, span trace.Span) error {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(200)
 	span.SetStatus(codes.Ok, http.StatusText(200))

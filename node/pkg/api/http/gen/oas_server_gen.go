@@ -20,18 +20,18 @@ type Handler interface {
 	//
 	// GET /status
 	GetStatus(ctx context.Context) (*StatusResponse, error)
-	// StartPost implements StartPost operation.
+	// Start implements Start operation.
 	//
 	// Start node with user list.
 	//
 	// POST /start
-	StartPost(ctx context.Context, req *StartRequest) (*StartResponse, error)
-	// StopPost implements StopPost operation.
+	Start(ctx context.Context, req *StartRequest) (*StartResponse, error)
+	// Stop implements Stop operation.
 	//
 	// Stop node.
 	//
 	// POST /stop
-	StopPost(ctx context.Context) error
+	Stop(ctx context.Context) error
 	// NewError creates *ErrorStatusCode from error returned by handler.
 	//
 	// Used for common default response.

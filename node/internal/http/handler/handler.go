@@ -34,7 +34,7 @@ func New(s Service, log *zap.Logger) (*Handler, error) {
 	}, nil
 }
 
-func (h *Handler) StartPost(ctx context.Context, req *api.StartRequest) (_ *api.StartResponse, err error) {
+func (h *Handler) Start(ctx context.Context, req *api.StartRequest) (_ *api.StartResponse, err error) {
 	if h == nil || h.service == nil {
 		return nil, fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
 	}
@@ -48,7 +48,7 @@ func (h *Handler) StartPost(ctx context.Context, req *api.StartRequest) (_ *api.
 	return ConvertStartResult(res), nil
 }
 
-func (h *Handler) StopPost(ctx context.Context) error {
+func (h *Handler) Stop(ctx context.Context) error {
 	if h == nil || h.service == nil {
 		return fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
 	}

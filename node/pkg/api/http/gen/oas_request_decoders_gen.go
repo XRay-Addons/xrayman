@@ -85,7 +85,7 @@ func (s *Server) decodeEditUsersRequest(r *http.Request) (
 	}
 }
 
-func (s *Server) decodeStartPostRequest(r *http.Request) (
+func (s *Server) decodeStartRequest(r *http.Request) (
 	req *StartRequest,
 	close func() error,
 	rerr error,

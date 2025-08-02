@@ -25,7 +25,7 @@ func encodeEditUsersRequest(
 	return nil
 }
 
-func encodeStartPostRequest(
+func encodeStartRequest(
 	req *StartRequest,
 	r *http.Request,
 ) error {

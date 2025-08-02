@@ -40,18 +40,18 @@ type Invoker interface {
 	//
 	// GET /status
 	GetStatus(ctx context.Context) (*StatusResponse, error)
-	// StartPost invokes StartPost operation.
+	// Start invokes Start operation.
 	//
 	// Start node with user list.
 	//
 	// POST /start
-	StartPost(ctx context.Context, request *StartRequest) (*StartResponse, error)
-	// StopPost invokes StopPost operation.
+	Start(ctx context.Context, request *StartRequest) (*StartResponse, error)
+	// Stop invokes Stop operation.
 	//
 	// Stop node.
 	//
 	// POST /stop
-	StopPost(ctx context.Context) error
+	Stop(ctx context.Context) error
 }
 
 // Client implements OAS client.
@@ -316,19 +316,19 @@ func (c *Client) sendGetStatus(ctx context.Context) (res *StatusResponse, err er
 	return result, nil
 }
 
-// StartPost invokes StartPost operation.
+// Start invokes Start operation.
 //
 // Start node with user list.
 //
 // POST /start
-func (c *Client) StartPost(ctx context.Context, request *StartRequest) (*StartResponse, error) {
-	res, err := c.sendStartPost(ctx, request)
+func (c *Client) Start(ctx context.Context, request *StartRequest) (*StartResponse, error) {
+	res, err := c.sendStart(ctx, request)
 	return res, err
 }
 
-func (c *Client) sendStartPost(ctx context.Context, request *StartRequest) (res *StartResponse, err error) {
+func (c *Client) sendStart(ctx context.Context, request *StartRequest) (res *StartResponse, err error) {
 	otelAttrs := []attribute.KeyValue{
-		otelogen.OperationID("StartPost"),
+		otelogen.OperationID("Start"),
 		semconv.HTTPRequestMethodKey.String("POST"),
 		semconv.HTTPRouteKey.String("/start"),
 	}
@@ -345,7 +345,7 @@ func (c *Client) sendStartPost(ctx context.Context, request *StartRequest) (res 
 	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
 
 	// Start a span for this request.
-	ctx, span := c.cfg.Tracer.Start(ctx, StartPostOperation,
+	ctx, span := c.cfg.Tracer.Start(ctx, StartOperation,
 		trace.WithAttributes(otelAttrs...),
 		clientSpanKind,
 	)
@@ -371,7 +371,7 @@ func (c *Client) sendStartPost(ctx context.Context, request *StartRequest) (res 
 	if err != nil {
 		return res, errors.Wrap(err, "create request")
 	}
-	if err := encodeStartPostRequest(request, r); err != nil {
+	if err := encodeStartRequest(request, r); err != nil {
 		return res, errors.Wrap(err, "encode request")
 	}
 
@@ -380,7 +380,7 @@ func (c *Client) sendStartPost(ctx context.Context, request *StartRequest) (res 
 		var satisfied bitset
 		{
 			stage = "Security:BearerAuth"
-			switch err := c.securityBearerAuth(ctx, StartPostOperation, r); {
+			switch err := c.securityBearerAuth(ctx, StartOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -416,7 +416,7 @@ func (c *Client) sendStartPost(ctx context.Context, request *StartRequest) (res 
 	defer resp.Body.Close()
 
 	stage = "DecodeResponse"
-	result, err := decodeStartPostResponse(resp)
+	result, err := decodeStartResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -424,19 +424,19 @@ func (c *Client) sendStartPost(ctx context.Context, request *StartRequest) (res 
 	return result, nil
 }
 
-// StopPost invokes StopPost operation.
+// Stop invokes Stop operation.
 //
 // Stop node.
 //
 // POST /stop
-func (c *Client) StopPost(ctx context.Context) error {
-	_, err := c.sendStopPost(ctx)
+func (c *Client) Stop(ctx context.Context) error {
+	_, err := c.sendStop(ctx)
 	return err
 }
 
-func (c *Client) sendStopPost(ctx context.Context) (res *EmptyResponse, err error) {
+func (c *Client) sendStop(ctx context.Context) (res *EmptyResponse, err error) {
 	otelAttrs := []attribute.KeyValue{
-		otelogen.OperationID("StopPost"),
+		otelogen.OperationID("Stop"),
 		semconv.HTTPRequestMethodKey.String("POST"),
 		semconv.HTTPRouteKey.String("/stop"),
 	}
@@ -453,7 +453,7 @@ func (c *Client) sendStopPost(ctx context.Context) (res *EmptyResponse, err erro
 	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
 
 	// Start a span for this request.
-	ctx, span := c.cfg.Tracer.Start(ctx, StopPostOperation,
+	ctx, span := c.cfg.Tracer.Start(ctx, StopOperation,
 		trace.WithAttributes(otelAttrs...),
 		clientSpanKind,
 	)
@@ -485,7 +485,7 @@ func (c *Client) sendStopPost(ctx context.Context) (res *EmptyResponse, err erro
 		var satisfied bitset
 		{
 			stage = "Security:BearerAuth"
-			switch err := c.securityBearerAuth(ctx, StopPostOperation, r); {
+			switch err := c.securityBearerAuth(ctx, StopOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -521,7 +521,7 @@ func (c *Client) sendStopPost(ctx context.Context) (res *EmptyResponse, err erro
 	defer resp.Body.Close()
 
 	stage = "DecodeResponse"
-	result, err := decodeStopPostResponse(resp)
+	result, err := decodeStopResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

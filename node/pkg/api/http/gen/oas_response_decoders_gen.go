@@ -189,7 +189,7 @@ func decodeGetStatusResponse(resp *http.Response) (res *StatusResponse, _ error)
 	return res, errors.Wrap(defRes, "error")
 }
 
-func decodeStartPostResponse(resp *http.Response) (res *StartResponse, _ error) {
+func decodeStartResponse(resp *http.Response) (res *StartResponse, _ error) {
 	switch resp.StatusCode {
 	case 200:
 		// Code 200.
@@ -272,7 +272,7 @@ func decodeStartPostResponse(resp *http.Response) (res *StartResponse, _ error) 
 	return res, errors.Wrap(defRes, "error")
 }
 
-func decodeStopPostResponse(resp *http.Response) (res *EmptyResponse, _ error) {
+func decodeStopResponse(resp *http.Response) (res *EmptyResponse, _ error) {
 	switch resp.StatusCode {
 	case 200:
 		// Code 200.

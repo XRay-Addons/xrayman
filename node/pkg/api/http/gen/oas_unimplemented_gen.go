@@ -31,21 +31,21 @@ func (UnimplementedHandler) GetStatus(ctx context.Context) (r *StatusResponse, _
 	return r, ht.ErrNotImplemented
 }
 
-// StartPost implements StartPost operation.
+// Start implements Start operation.
 //
 // Start node with user list.
 //
 // POST /start
-func (UnimplementedHandler) StartPost(ctx context.Context, req *StartRequest) (r *StartResponse, _ error) {
+func (UnimplementedHandler) Start(ctx context.Context, req *StartRequest) (r *StartResponse, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
-// StopPost implements StopPost operation.
+// Stop implements Stop operation.
 //
 // Stop node.
 //
 // POST /stop
-func (UnimplementedHandler) StopPost(ctx context.Context) error {
+func (UnimplementedHandler) Stop(ctx context.Context) error {
 	return ht.ErrNotImplemented
 }
 

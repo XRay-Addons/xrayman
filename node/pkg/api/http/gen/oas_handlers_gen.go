@@ -405,22 +405,22 @@ func (s *Server) handleGetStatusRequest(args [0]string, argsEscaped bool, w http
 	}
 }
 
-// handleStartPostRequest handles StartPost operation.
+// handleStartRequest handles Start operation.
 //
 // Start node with user list.
 //
 // POST /start
-func (s *Server) handleStartPostRequest(args [0]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleStartRequest(args [0]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	otelAttrs := []attribute.KeyValue{
-		otelogen.OperationID("StartPost"),
+		otelogen.OperationID("Start"),
 		semconv.HTTPRequestMethodKey.String("POST"),
 		semconv.HTTPRouteKey.String("/start"),
 	}
 
 	// Start a span for this request.
-	ctx, span := s.cfg.Tracer.Start(r.Context(), StartPostOperation,
+	ctx, span := s.cfg.Tracer.Start(r.Context(), StartOperation,
 		trace.WithAttributes(otelAttrs...),
 		serverSpanKind,
 	)
@@ -475,15 +475,15 @@ func (s *Server) handleStartPostRequest(args [0]string, argsEscaped bool, w http
 		}
 		err          error
 		opErrContext = ogenerrors.OperationContext{
-			Name: StartPostOperation,
-			ID:   "StartPost",
+			Name: StartOperation,
+			ID:   "Start",
 		}
 	)
 	{
 		type bitset = [1]uint8
 		var satisfied bitset
 		{
-			sctx, ok, err := s.securityBearerAuth(ctx, StartPostOperation, r)
+			sctx, ok, err := s.securityBearerAuth(ctx, StartOperation, r)
 			if err != nil {
 				err = &ogenerrors.SecurityError{
 					OperationContext: opErrContext,
@@ -525,7 +525,7 @@ func (s *Server) handleStartPostRequest(args [0]string, argsEscaped bool, w http
 			return
 		}
 	}
-	request, close, err := s.decodeStartPostRequest(r)
+	request, close, err := s.decodeStartRequest(r)
 	if err != nil {
 		err = &ogenerrors.DecodeRequestError{
 			OperationContext: opErrContext,
@@ -545,9 +545,9 @@ func (s *Server) handleStartPostRequest(args [0]string, argsEscaped bool, w http
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
 			Context:          ctx,
-			OperationName:    StartPostOperation,
+			OperationName:    StartOperation,
 			OperationSummary: "Start node with user list",
-			OperationID:      "StartPost",
+			OperationID:      "Start",
 			Body:             request,
 			Params:           middleware.Parameters{},
 			Raw:              r,
@@ -567,12 +567,12 @@ func (s *Server) handleStartPostRequest(args [0]string, argsEscaped bool, w http
 			mreq,
 			nil,
 			func(ctx context.Context, request Request, params Params) (response Response, err error) {
-				response, err = s.h.StartPost(ctx, request)
+				response, err = s.h.Start(ctx, request)
 				return response, err
 			},
 		)
 	} else {
-		response, err = s.h.StartPost(ctx, request)
+		response, err = s.h.Start(ctx, request)
 	}
 	if err != nil {
 		if errRes, ok := errors.Into[*ErrorStatusCode](err); ok {
@@ -591,7 +591,7 @@ func (s *Server) handleStartPostRequest(args [0]string, argsEscaped bool, w http
 		return
 	}
 
-	if err := encodeStartPostResponse(response, w, span); err != nil {
+	if err := encodeStartResponse(response, w, span); err != nil {
 		defer recordError("EncodeResponse", err)
 		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
 			s.cfg.ErrorHandler(ctx, w, r, err)
@@ -600,22 +600,22 @@ func (s *Server) handleStartPostRequest(args [0]string, argsEscaped bool, w http
 	}
 }
 
-// handleStopPostRequest handles StopPost operation.
+// handleStopRequest handles Stop operation.
 //
 // Stop node.
 //
 // POST /stop
-func (s *Server) handleStopPostRequest(args [0]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleStopRequest(args [0]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	otelAttrs := []attribute.KeyValue{
-		otelogen.OperationID("StopPost"),
+		otelogen.OperationID("Stop"),
 		semconv.HTTPRequestMethodKey.String("POST"),
 		semconv.HTTPRouteKey.String("/stop"),
 	}
 
 	// Start a span for this request.
-	ctx, span := s.cfg.Tracer.Start(r.Context(), StopPostOperation,
+	ctx, span := s.cfg.Tracer.Start(r.Context(), StopOperation,
 		trace.WithAttributes(otelAttrs...),
 		serverSpanKind,
 	)
@@ -670,15 +670,15 @@ func (s *Server) handleStopPostRequest(args [0]string, argsEscaped bool, w http.
 		}
 		err          error
 		opErrContext = ogenerrors.OperationContext{
-			Name: StopPostOperation,
-			ID:   "StopPost",
+			Name: StopOperation,
+			ID:   "Stop",
 		}
 	)
 	{
 		type bitset = [1]uint8
 		var satisfied bitset
 		{
-			sctx, ok, err := s.securityBearerAuth(ctx, StopPostOperation, r)
+			sctx, ok, err := s.securityBearerAuth(ctx, StopOperation, r)
 			if err != nil {
 				err = &ogenerrors.SecurityError{
 					OperationContext: opErrContext,
@@ -725,9 +725,9 @@ func (s *Server) handleStopPostRequest(args [0]string, argsEscaped bool, w http.
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
 			Context:          ctx,
-			OperationName:    StopPostOperation,
+			OperationName:    StopOperation,
 			OperationSummary: "Stop node",
-			OperationID:      "StopPost",
+			OperationID:      "Stop",
 			Body:             nil,
 			Params:           middleware.Parameters{},
 			Raw:              r,
@@ -747,12 +747,12 @@ func (s *Server) handleStopPostRequest(args [0]string, argsEscaped bool, w http.
 			mreq,
 			nil,
 			func(ctx context.Context, request Request, params Params) (response Response, err error) {
-				err = s.h.StopPost(ctx)
+				err = s.h.Stop(ctx)
 				return response, err
 			},
 		)
 	} else {
-		err = s.h.StopPost(ctx)
+		err = s.h.Stop(ctx)
 	}
 	if err != nil {
 		if errRes, ok := errors.Into[*ErrorStatusCode](err); ok {
@@ -771,7 +771,7 @@ func (s *Server) handleStopPostRequest(args [0]string, argsEscaped bool, w http.
 		return
 	}
 
-	if err := encodeStopPostResponse(response, w, span); err != nil {
+	if err := encodeStopResponse(response, w, span); err != nil {
 		defer recordError("EncodeResponse", err)
 		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
 			s.cfg.ErrorHandler(ctx, w, r, err)
