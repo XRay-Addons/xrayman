@@ -12,31 +12,6 @@ func (s *ErrorStatusCode) Error() string {
 	return fmt.Sprintf("code %d: %+v", s.StatusCode, s.Response)
 }
 
-type BearerAuth struct {
-	Token string
-	Roles []string
-}
-
-// GetToken returns the value of Token.
-func (s *BearerAuth) GetToken() string {
-	return s.Token
-}
-
-// GetRoles returns the value of Roles.
-func (s *BearerAuth) GetRoles() []string {
-	return s.Roles
-}
-
-// SetToken sets the value of Token.
-func (s *BearerAuth) SetToken(val string) {
-	s.Token = val
-}
-
-// SetRoles sets the value of Roles.
-func (s *BearerAuth) SetRoles(val []string) {
-	s.Roles = val
-}
-
 // Ref: #/components/schemas/ClientConfig
 type ClientConfig struct {
 	Template       string `json:"Template"`
@@ -160,7 +135,7 @@ func (s *NewNodeRequest) SetEndpoint(val string) {
 type NewNodeResponse struct {
 	ID           NodeID `json:"ID"`
 	Endpoint     string `json:"Endpoint"`
-	AccessSecret string `json:"AccessSecret"`
+	AccessSecret []byte `json:"AccessSecret"`
 }
 
 // GetID returns the value of ID.
@@ -174,7 +149,7 @@ func (s *NewNodeResponse) GetEndpoint() string {
 }
 
 // GetAccessSecret returns the value of AccessSecret.
-func (s *NewNodeResponse) GetAccessSecret() string {
+func (s *NewNodeResponse) GetAccessSecret() []byte {
 	return s.AccessSecret
 }
 
@@ -189,7 +164,7 @@ func (s *NewNodeResponse) SetEndpoint(val string) {
 }
 
 // SetAccessSecret sets the value of AccessSecret.
-func (s *NewNodeResponse) SetAccessSecret(val string) {
+func (s *NewNodeResponse) SetAccessSecret(val []byte) {
 	s.AccessSecret = val
 }
 

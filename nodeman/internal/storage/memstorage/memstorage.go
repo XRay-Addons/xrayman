@@ -5,192 +5,108 @@ import (
 	"sync"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service/service"
 )
 
 type Storage struct {
 	lock sync.Locker
 
-	nodes         []models.NodeConfig
-	currentStatus []models.NodeStatus
-	targetStatus  []models.NodeStatus
-
-	users      []models.UserProfile
-	userStatus []models.UserStatus
-
+	nodes      []models.Node
+	users      []models.User
 	syncStatus [][]models.UserStatus
 }
 
-func NewMemStorage() *Storage {
+func New() *Storage {
 	return &Storage{}
 }
 
 var _ service.Storage = (*Storage)(nil)
 
-func (s *Storage) DoUoW(ctx context.Context, fn service.UoWFn) error {
-	s.lock.Lock()
-	defer s.lock.Lock()
-
-	return fn(s)
-}
-
-func (s *Storage) NewUoW() (service.UoW, error) {
-	return s, nil
+func (s *Storage) NewUoW() service.UoW {
+	panic("unimplemented")
 }
 
 var _ service.UoW = (*Storage)(nil)
 
 func (s *Storage) Do(ctx context.Context, fn service.UoWFn) error {
-	return s.DoUoW(ctx, fn)
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	return fn(s)
 }
 
 var _ service.UoWContext = (*Storage)(nil)
 
-func (s *Storage) NodeConfigStorage() service.NodeConfigStorage {
-	return s
+// UsersStorage impl
+func (s *Storage) ListUsers(ctx context.Context) ([]models.User, error) {
+	var users []models.User
+	users = append(users, s.users...)
+	return users, nil
 }
 
-func (s *Storage) NodeStatusStorage() service.NodeStatusStorage {
-	return s
-}
-
-func (s *Storage) PendingSyncsStorage() service.PendingSyncsStorage {
-	return s
-}
-
-func (s *Storage) UserStatusStorage() service.UserStatusStorage {
-	return s
-}
-
-func (s *Storage) UsersStorage() service.UsersStorage {
-	return s
-}
-
-var _ service.NodeConfigStorage = (*Storage)(nil)
-
-func (s *Storage) AddNode(ctx context.Context, node *models.NodeConfig) error {
-	node.ID = models.NodeID(len(s.nodes))
-	s.nodes = append(s.nodes, *node)
-	s.currentStatus = append(s.currentStatus, models.NodeStatusUnknown)
-	s.targetStatus = append(s.targetStatus, models.NodeStatusStopped)
-	return nil
-}
-
-func (s *Storage) ListNodes(ctx context.Context) ([]models.NodeConfig, error) {
-	nodes := make([]models.NodeConfig, 0, len(s.nodes))
+// NodeStatesStorage impl
+func (s *Storage) ListNodes(ctx context.Context) ([]models.Node, error) {
+	var nodes []models.Node
 	nodes = append(nodes, s.nodes...)
 	return nodes, nil
 }
 
-func (s *Storage) UpdateConnectionInfo(ctx context.Context,
-	id models.NodeID, connInfo *models.NodeConnectionInfo,
-) error {
-	s.nodes[id].ConnectionInfo = *connInfo
-	return nil
-}
-
-func (s *Storage) GetConnectionInfo(ctx context.Context, id models.NodeID) (
-	*models.NodeConnectionInfo, error,
-) {
-	return &s.nodes[id].ConnectionInfo, nil
-}
-
-func (s *Storage) GetClientConfig(ctx context.Context, id models.NodeID) (
-	*models.ClientConfig, error,
-) {
-	return &s.nodes[id].ClientConfig, nil
-}
-
 func (s *Storage) UpdateClientConfig(ctx context.Context,
-	id models.NodeID, cfg *models.ClientConfig,
+	id models.NodeID, cfg models.ClientConfig,
 ) error {
-	s.nodes[id].ClientConfig = *cfg
+	s.nodes[id].Config.ClientConfig = cfg
 	return nil
 }
-
-var _ service.NodeStatusStorage = (*Storage)(nil)
 
 func (s *Storage) FetchNodeStatus(ctx context.Context, id models.NodeID) (
 	target models.NodeStatus, current models.NodeStatus, err error,
 ) {
-	return s.targetStatus[id], s.currentStatus[id], nil
+	node := s.nodes[id]
+	return node.TargetStatus, node.CurrentStatus, nil
 }
 
 func (s *Storage) UpdateCurrentStatus(ctx context.Context,
 	id models.NodeID, status models.NodeStatus,
 ) error {
-	s.currentStatus[id] = status
+	s.nodes[id].CurrentStatus = status
 	return nil
 }
 
-func (s *Storage) UpdateTargetStatus(ctx context.Context,
-	id models.NodeID, status models.NodeStatus,
-) error {
-	s.targetStatus[id] = status
-	return nil
-}
-
-var _ service.PendingSyncsStorage = (*Storage)(nil)
-
+// UserSyncsStorage impl
 func (s *Storage) FindPendingSyncs(ctx context.Context, id models.NodeID) (
 	[]models.UserSyncStatus, error,
 ) {
-	syncs := make([]models.UserSyncStatus, 0, len(s.users))
-	for i, u := range s.users {
-		if s.userStatus[i] != s.syncStatus[id][i] {
-			syncs = append(syncs, models.UserSyncStatus{
-				User:          u,
-				TargetStatus:  s.userStatus[i],
-				CurrentStatus: s.syncStatus[id][i],
-			})
+	var syncStatus []models.UserSyncStatus
+	for userId, user := range s.users {
+		if user.TargetStatus == s.syncStatus[id][userId] {
+			continue
 		}
+		syncStatus = append(syncStatus, models.UserSyncStatus{
+			User:          user,
+			CurrentStatus: s.syncStatus[id][userId],
+		})
 	}
-	return syncs, nil
+	return syncStatus, nil
 }
 
 func (s *Storage) PatchPendingSyncs(ctx context.Context,
 	id models.NodeID, patch []models.UserStatusPatch,
 ) error {
-	for _, u := range patch {
-		s.syncStatus[id][u.UserID] = u.Status
+	for _, p := range patch {
+		s.syncStatus[id][p.UserID] = p.Status
 	}
 	return nil
 }
 
-var _ service.UserStatusStorage = (*Storage)(nil)
-
-func (s *Storage) GetUserStatus(ctx context.Context, id models.UserID) (
-	models.UserStatus, error,
-) {
-	return s.userStatus[id], nil
+func (s *Storage) NewNode(ctx context.Context, node *models.Node) error {
+	node.ID = models.NodeID(len(s.nodes))
+	s.nodes = append(s.nodes, *node)
+	return nil
 }
 
-func (s *Storage) SetUserStatus(ctx context.Context, id models.UserID,
-	status models.UserStatus,
+func (s *Storage) SetTargetNodeStatus(ctx context.Context,
+	id models.NodeID, status models.NodeStatus,
 ) error {
-	s.userStatus[id] = status
+	s.nodes[id].TargetStatus = status
 	return nil
-}
-
-var _ service.UsersStorage = (*Storage)(nil)
-
-func (s *Storage) AddUser(ctx context.Context, user *models.UserProfile) error {
-	user.ID = models.UserID(len(s.users))
-	s.users = append(s.users, *user)
-	s.userStatus = append(s.userStatus, models.UserStatusInactive)
-	for i := range s.userStatus {
-		s.syncStatus[i] = append(s.syncStatus[i], models.UserStatusInactive)
-	}
-	return nil
-}
-
-func (s *Storage) ListUsers(ctx context.Context) ([]models.UserTargetState, error) {
-	users := make([]models.UserTargetState, 0, len(s.users))
-	for i, u := range s.users {
-		users = append(users, models.UserTargetState{
-			User:   u,
-			Target: s.userStatus[i],
-		})
-	}
-	return users, nil
 }

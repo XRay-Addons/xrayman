@@ -15,19 +15,19 @@ type ClientConfig struct {
 }
 
 type NodeConnectionInfo struct {
-	Endpoint  string
-	AccessKey []byte
+	Endpoint     string
+	AccessSecret []byte
 }
 
 type NodeID int
 
 type NodeConfig struct {
-	ID             NodeID
 	ClientConfig   ClientConfig
 	ConnectionInfo NodeConnectionInfo
 }
 
 type Node struct {
+	ID            NodeID
 	Config        NodeConfig
 	CurrentStatus NodeStatus
 	TargetStatus  NodeStatus

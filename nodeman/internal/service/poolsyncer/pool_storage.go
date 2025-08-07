@@ -3,6 +3,7 @@ package poolsyncer
 import (
 	"context"
 
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/uow"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
@@ -37,13 +38,6 @@ type UoWContext interface {
 	UserSyncsStorage
 }
 
-type UoWFn func(UoWContext) error
+type UoWFn = uow.Fn[UoWContext]
 
-type UoW interface {
-	Do(ctx context.Context, fn UoWFn) error
-}
-
-type PoolStorage interface {
-	NewUoW() (UoW, error)
-	DoUoW(ctx context.Context, fn UoWFn) error
-}
+type UoW = uow.UoW[UoWContext]

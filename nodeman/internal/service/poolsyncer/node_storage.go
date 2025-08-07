@@ -8,32 +8,6 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodesyncer"
 )
 
-type NodeStorage struct {
-	base   PoolStorage
-	nodeID models.NodeID
-}
-
-var _ nodesyncer.NodeStorage = (*NodeStorage)(nil)
-
-func (s *NodeStorage) DoUoW(ctx context.Context, fn nodesyncer.UoWFn) error {
-	uow, err := s.NewUoW()
-	if err != nil {
-		return err
-	}
-	return uow.Do(ctx, fn)
-}
-
-func (s *NodeStorage) NewUoW() (nodesyncer.UoW, error) {
-	uow, err := s.base.NewUoW()
-	if err != nil {
-		return nil, fmt.Errorf("node %v: %w", s.nodeID, err)
-	}
-	return &NodeUoW{
-		base:   uow,
-		nodeID: s.nodeID,
-	}, nil
-}
-
 type NodeUoW struct {
 	base   UoW
 	nodeID models.NodeID
@@ -41,16 +15,16 @@ type NodeUoW struct {
 
 var _ nodesyncer.UoW = (*NodeUoW)(nil)
 
-func (s *NodeUoW) Do(ctx context.Context, fn nodesyncer.UoWFn) error {
-	return s.base.Do(ctx, func(uowCtx UoWContext) error {
+func (uow *NodeUoW) Do(ctx context.Context, fn nodesyncer.UoWFn) error {
+	return uow.base.Do(ctx, func(uowctx UoWContext) error {
 		nodeUoWCtx := &NodeUoWContext{
-			base:   uowCtx,
-			nodeID: s.nodeID,
+			base:   uowctx,
+			nodeID: uow.nodeID,
 		}
 		if err := fn(nodeUoWCtx); err != nil {
-			return fmt.Errorf("node %v: %w", s.nodeID, err)
+			return fmt.Errorf("node %v: %w", uow.nodeID, err)
 		}
-		return nil
+		return fn(nodeUoWCtx)
 	})
 }
 

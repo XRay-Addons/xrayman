@@ -3,6 +3,7 @@ package nodesyncer
 import (
 	"context"
 
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/uow"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
@@ -32,13 +33,5 @@ type UoWContext interface {
 	SyncsStorage
 }
 
-type UoWFn func(UoWContext) error
-
-type UoW interface {
-	Do(ctx context.Context, fn UoWFn) error
-}
-
-type NodeStorage interface {
-	NewUoW() (UoW, error)
-	DoUoW(ctx context.Context, fn UoWFn) error
-}
+type UoWFn = uow.Fn[UoWContext]
+type UoW = uow.UoW[UoWContext]

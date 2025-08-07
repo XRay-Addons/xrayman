@@ -7,7 +7,7 @@ type NewNodeParams struct {
 type NewNodeResult struct {
 	ID           NodeID
 	Endpoint     string
-	AccessSecret string
+	AccessSecret []byte
 }
 
 type StartNodeParams struct {

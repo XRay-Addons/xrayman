@@ -10,10 +10,14 @@ import (
 type NodesSyncer struct {
 }
 
+func New() *NodesSyncer {
+	return &NodesSyncer{}
+}
+
 // NodeSyncer implements poolsyncer.NodeSyncer without import it to
 // avoid cyclic dependency
 func (s *NodesSyncer) SyncNode(ctx context.Context,
-	client NodeClient, storage NodeStorage,
+	client NodeClient, uow UoW,
 ) error {
 	if s == nil {
 		return fmt.Errorf("node syncer: sync node: %w", errdefs.ErrNilObjectCall)
@@ -21,11 +25,11 @@ func (s *NodesSyncer) SyncNode(ctx context.Context,
 	if client == nil {
 		return fmt.Errorf("node syncer: sync node: client: %w", errdefs.ErrNilArgPassed)
 	}
-	if storage == nil {
-		return fmt.Errorf("node syncer: sync node: storage: %w", errdefs.ErrNilArgPassed)
+	if uow == nil {
+		return fmt.Errorf("node syncer: sync node: uow: %w", errdefs.ErrNilArgPassed)
 	}
 
-	nodeSyncer, err := NewNodeSyncer(storage, client)
+	nodeSyncer, err := NewNodeSyncer(uow, client)
 	if err != nil {
 		return fmt.Errorf("nodes syncer: sync node: %w", err)
 	}

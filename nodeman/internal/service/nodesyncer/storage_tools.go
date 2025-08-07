@@ -7,10 +7,10 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
-func fetchStatus(ctx context.Context, storage NodeStorage) (
+func fetchStatus(ctx context.Context, uow UoW) (
 	target, current models.NodeStatus, err error,
 ) {
-	if err = storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
+	if err = uow.Do(ctx, func(uowctx UoWContext) (err error) {
 		target, current, err = uowctx.FetchNodeStatus(ctx)
 		return
 	}); err != nil {
@@ -19,10 +19,10 @@ func fetchStatus(ctx context.Context, storage NodeStorage) (
 	return
 }
 
-func listUsers(ctx context.Context, storage NodeStorage) (
+func listUsers(ctx context.Context, uow UoW) (
 	users []models.User, err error,
 ) {
-	if err = storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
+	if err = uow.Do(ctx, func(uowctx UoWContext) (err error) {
 		users, err = uowctx.ListUsers(ctx)
 		return
 	}); err != nil {
@@ -31,10 +31,10 @@ func listUsers(ctx context.Context, storage NodeStorage) (
 	return
 }
 
-func updateCurrentStatus(ctx context.Context, storage NodeStorage,
+func updateCurrentStatus(ctx context.Context, uow UoW,
 	status models.NodeStatus) (err error,
 ) {
-	if err = storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
+	if err = uow.Do(ctx, func(uowctx UoWContext) (err error) {
 		return uowctx.UpdateCurrentStatus(ctx, status)
 	}); err != nil {
 		err = fmt.Errorf("update current node status: %w", err)
@@ -43,9 +43,9 @@ func updateCurrentStatus(ctx context.Context, storage NodeStorage,
 }
 
 func findPendingSyncs(ctx context.Context,
-	storage NodeStorage,
+	uow UoW,
 ) (syncs []models.UserSyncStatus, err error) {
-	if err = storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
+	if err = uow.Do(ctx, func(uowctx UoWContext) (err error) {
 		syncs, err = uowctx.FindPendingSyncs(ctx)
 		return
 	}); err != nil {
@@ -55,9 +55,9 @@ func findPendingSyncs(ctx context.Context,
 }
 
 func patchPendingSyncs(ctx context.Context,
-	storage NodeStorage, patch []models.UserStatusPatch,
+	uow UoW, patch []models.UserStatusPatch,
 ) (err error) {
-	if err = storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
+	if err = uow.Do(ctx, func(uowctx UoWContext) (err error) {
 		return uowctx.PatchPendingSyncs(ctx, patch)
 	}); err != nil {
 		err = fmt.Errorf("patch pending syncs: %w", err)
@@ -67,12 +67,12 @@ func patchPendingSyncs(ctx context.Context,
 	return
 }
 
-func updateNode(ctx context.Context, storage NodeStorage,
+func updateNode(ctx context.Context, uow UoW,
 	patch []models.UserStatusPatch,
 	status models.NodeStatus,
 	cfg *models.ClientConfig,
 ) (err error) {
-	if err = storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
+	if err = uow.Do(ctx, func(uowctx UoWContext) (err error) {
 		if status > 0 { // TODO: invalid status?
 			if err = uowctx.UpdateCurrentStatus(ctx, status); err != nil {
 				return

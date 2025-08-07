@@ -36,12 +36,9 @@ func WithLogger(log *zap.Logger) Option {
 	}
 }
 
-func New(h api.Handler, sec api.SecurityHandler, options ...Option) (http.Handler, error) {
+func New(h api.Handler, options ...Option) (http.Handler, error) {
 	if h == nil {
 		return nil, fmt.Errorf("router init: handler: %w", errdefs.ErrNilArgPassed)
-	}
-	if sec == nil {
-		return nil, fmt.Errorf("router init: security: %w", errdefs.ErrNilArgPassed)
 	}
 
 	ro := &routerOptions{
@@ -54,7 +51,7 @@ func New(h api.Handler, sec api.SecurityHandler, options ...Option) (http.Handle
 	}
 
 	// create api handler
-	apiHandler, err := api.NewServer(h, sec)
+	apiHandler, err := api.NewServer(h)
 	if err != nil {
 		return nil, fmt.Errorf("router: init: %w", err)
 	}

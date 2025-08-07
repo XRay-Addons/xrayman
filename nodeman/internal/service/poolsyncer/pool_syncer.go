@@ -10,33 +10,33 @@ import (
 )
 
 type PoolSyncer struct {
-	client  PoolClient
-	storage PoolStorage
-	syncer  NodesSyncer
+	client PoolClient
+	uow    UoW
+	syncer NodesSyncer
 }
 
-func New(client PoolClient, storage PoolStorage, syncer NodesSyncer) (*PoolSyncer, error) {
+func New(client PoolClient, uow UoW, syncer NodesSyncer) (*PoolSyncer, error) {
 	if client == nil {
 		return nil, fmt.Errorf("pool syncer init: pool client: %w", errdefs.ErrNilArgPassed)
 	}
-	if storage == nil {
-		return nil, fmt.Errorf("pool syncer init: storage %w", errdefs.ErrNilArgPassed)
+	if uow == nil {
+		return nil, fmt.Errorf("pool syncer init: uow %w", errdefs.ErrNilArgPassed)
 	}
 	if syncer == nil {
 		return nil, fmt.Errorf("pool syncer init: node syncer %w", errdefs.ErrNilArgPassed)
 	}
 
 	return &PoolSyncer{
-		client:  client,
-		storage: storage,
-		syncer:  syncer,
+		client: client,
+		uow:    uow,
+		syncer: syncer,
 	}, nil
 }
 
 func (s *PoolSyncer) SyncPool(ctx context.Context) (*models.PoolSyncResult, error) {
 	// get nodes list
 	var nodes []models.Node
-	if err := s.storage.DoUoW(ctx, func(uow UoWContext) (err error) {
+	if err := s.uow.Do(ctx, func(uow UoWContext) (err error) {
 		nodes, err = uow.ListNodes(ctx)
 		return
 	}); err != nil {
@@ -66,7 +66,7 @@ func (s *PoolSyncer) syncNodes(ctx context.Context,
 		go func() {
 			defer wg.Done()
 			nodeSyncResults[idx] = models.NodeSyncResult{
-				ID:       node.Config.ID,
+				ID:       node.ID,
 				Endpoint: node.Config.ConnectionInfo.Endpoint,
 				Err:      s.syncNode(ctx, node),
 			}
@@ -78,9 +78,9 @@ func (s *PoolSyncer) syncNodes(ctx context.Context,
 }
 
 func (s *PoolSyncer) syncNode(ctx context.Context, node models.Node) error {
-	nodeStorage := &NodeStorage{
-		base:   s.storage,
-		nodeID: node.Config.ID,
+	nodeUoW := &NodeUoW{
+		base:   s.uow,
+		nodeID: node.ID,
 	}
 
 	nodeClient, err := s.client.GetNodeClient(ctx, node.Config.ConnectionInfo)
@@ -88,7 +88,7 @@ func (s *PoolSyncer) syncNode(ctx context.Context, node models.Node) error {
 		return fmt.Errorf("pool sync node: %w", err)
 	}
 
-	if err := s.syncer.SyncNode(ctx, nodeStorage, nodeClient); err != nil {
+	if err := s.syncer.SyncNode(ctx, nodeUoW, nodeClient); err != nil {
 		return fmt.Errorf("pool sync node: %w", err)
 	}
 	return nil

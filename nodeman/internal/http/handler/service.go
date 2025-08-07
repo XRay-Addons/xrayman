@@ -10,6 +10,6 @@ import (
 type Service interface {
 	NewNode(ctx context.Context, p models.NewNodeParams) (*models.NewNodeResult, error)
 	StartNode(ctx context.Context, p models.StartNodeParams) (*models.StartNodeResult, error)
-	StopNode(ctx context.Context, p models.StopNodeResult) (*models.StopNodeResult, error)
+	StopNode(ctx context.Context, p models.StopNodeParams) (*models.StopNodeResult, error)
 	ListNodes(ctx context.Context, p models.ListNodeParams) (*models.ListNodeResult, error)
 }

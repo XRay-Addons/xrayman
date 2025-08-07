@@ -11,7 +11,11 @@ import (
 type Keygen struct {
 }
 
-func (kg *Keygen) GenerateHS256Secret() (string, error) {
+func New() *Keygen {
+	return &Keygen{}
+}
+
+func GenerateHS256Secret() (string, error) {
 	const size = 32
 	b := make([]byte, size)
 	if _, err := rand.Read(b); err != nil {

@@ -18,7 +18,9 @@ func TestNodeReconciler(t *testing.T) {
 	// create node based on mocks
 	client := NewClientMock()
 	storage := NewStorageMock(nUsers)
-	node, err := nodesyncer.NewNodeSyncer(storage, client)
+	uow, err := storage.NewUoW()
+	require.NoError(t, err)
+	node, err := nodesyncer.NewNodeSyncer(uow, client)
 	require.NoError(t, err)
 
 	for range nRuns {
@@ -52,7 +54,9 @@ func TestNodeReconciler_UnstableStorage(t *testing.T) {
 	// create node based on mocks
 	client := NewClientMock()
 	storage := NewUnstableStorageMock(nUsers)
-	node, err := nodesyncer.NewNodeSyncer(storage, client)
+	uow, err := storage.NewUoW()
+	require.NoError(t, err)
+	node, err := nodesyncer.NewNodeSyncer(uow, client)
 	require.NoError(t, err)
 
 	for range nRuns {
@@ -95,7 +99,9 @@ func TestNodeReconciler_UnstableStorage_UnstableNode(t *testing.T) {
 	// create node based on mocks
 	client := NewUnstableClientMock()
 	storage := NewUnstableStorageMock(nUsers)
-	node, err := nodesyncer.NewNodeSyncer(storage, client)
+	uow, err := storage.NewUoW()
+	require.NoError(t, err)
+	node, err := nodesyncer.NewNodeSyncer(uow, client)
 	require.NoError(t, err)
 
 	for range nRuns {

@@ -476,7 +476,7 @@ func (s *NewNodeResponse) encodeFields(e *jx.Encoder) {
 	}
 	{
 		e.FieldStart("AccessSecret")
-		e.Str(s.AccessSecret)
+		e.Base64(s.AccessSecret)
 	}
 }
 
@@ -520,8 +520,8 @@ func (s *NewNodeResponse) Decode(d *jx.Decoder) error {
 		case "AccessSecret":
 			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
-				v, err := d.Str()
-				s.AccessSecret = string(v)
+				v, err := d.Base64()
+				s.AccessSecret = []byte(v)
 				if err != nil {
 					return err
 				}

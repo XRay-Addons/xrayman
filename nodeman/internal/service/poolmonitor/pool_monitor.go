@@ -43,10 +43,9 @@ func New(syncer PoolSyncer, options ...Option) (*PoolMonitor, error) {
 	if syncer == nil {
 		return nil, fmt.Errorf("pool monitor: init: %w", errdefs.ErrNilArgPassed)
 	}
-	// init
+	// init default options
 	ctx, cancel := context.WithCancel(context.Background())
 	pm := &PoolMonitor{
-		executor:     waveexec.NewWaveExecutor(syncFn(syncer)),
 		syncInterval: 5 * time.Second,
 		cancel:       cancel,
 		log:          zap.NewNop(),
@@ -55,6 +54,9 @@ func New(syncer PoolSyncer, options ...Option) (*PoolMonitor, error) {
 	for _, o := range options {
 		o(pm)
 	}
+	// add sync loop
+	syncFn := pm.syncFn(syncer)
+	pm.executor = waveexec.NewWaveExecutor(syncFn)
 
 	// run sync loop
 	pm.wg.Add(1)
@@ -93,9 +95,14 @@ func (pm *PoolMonitor) Sync(ctx context.Context) (*models.PoolSyncResult, error)
 	return res, nil
 }
 
-func syncFn(ps PoolSyncer) waveexec.Fn {
+func (pm *PoolMonitor) syncFn(ps PoolSyncer) waveexec.Fn {
 	return func(ctx context.Context) (any, error) {
-		return ps.SyncNodesPool(ctx)
+		syncResult, err := ps.SyncNodesPool(ctx)
+		if err != nil {
+			pm.logSyncResult(*syncResult)
+		}
+
+		return syncResult, err
 	}
 }
 

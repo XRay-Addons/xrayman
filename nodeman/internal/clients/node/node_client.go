@@ -1,40 +1,21 @@
-package client
+package node
 
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/clients/node/converter"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodesyncer"
 )
 
 type NodeClient struct {
 	client *api.Client
 }
 
-var _ service.NodeClient = (*NodeClient)(nil)
-
-func NewNodeClient(endpoint string, security api.SecuritySource, httpClient *http.Client) (
-	*NodeClient, error,
-) {
-	opts := make([]api.ClientOption, 0)
-	if httpClient != nil {
-		opts = append(opts, api.WithClient(httpClient))
-	}
-
-	client, err := api.NewClient(endpoint, security, opts...)
-	if err != nil {
-		return nil, fmt.Errorf("node client init: %w", err)
-	}
-
-	return &NodeClient{
-		client: client,
-	}, nil
-}
+var _ nodesyncer.NodeClient = (*NodeClient)(nil)
 
 func (c *NodeClient) Start(ctx context.Context, users []models.UserProfile) (
 	*models.ClientConfig, error,
@@ -44,7 +25,7 @@ func (c *NodeClient) Start(ctx context.Context, users []models.UserProfile) (
 	}
 
 	startRequest := api.StartRequest{Users: converter.ConvertUsers(users)}
-	startResponse, err := c.client.StartPost(ctx, &startRequest)
+	startResponse, err := c.client.Start(ctx, &startRequest)
 	if err != nil {
 		return nil, fmt.Errorf("node client: start: %w", err)
 	}
@@ -58,7 +39,7 @@ func (c *NodeClient) Stop(ctx context.Context) error {
 		return fmt.Errorf("node client: stop: %w", errdefs.ErrNilObjectCall)
 	}
 
-	if err := c.client.StopPost(ctx); err != nil {
+	if err := c.client.Stop(ctx); err != nil {
 		return fmt.Errorf("node client: stop: %w", err)
 	}
 	return nil
@@ -77,7 +58,7 @@ func (c *NodeClient) CheckStatus(ctx context.Context) (models.NodeStatus, error)
 	return converter.ConvertNodeStatus(status.ServiceStatus), nil
 }
 
-func (c *NodeClient) UpdateUserStates(ctx context.Context, update models.NodeUsersUpdate) error {
+func (c *NodeClient) UpdateUsers(ctx context.Context, update models.NodeUsersUpdate) error {
 	if c == nil || c.client == nil {
 		return fmt.Errorf("node client: status: %w", errdefs.ErrNilObjectCall)
 	}

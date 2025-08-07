@@ -10,31 +10,31 @@ import (
 )
 
 type NodeSyncer struct {
-	storage NodeStorage
-	client  NodeClient
+	uow    UoW
+	client NodeClient
 }
 
-func NewNodeSyncer(storage NodeStorage, client NodeClient) (*NodeSyncer, error) {
-	if storage == nil {
-		return nil, fmt.Errorf("node syncer: init: storage: %w", errdefs.ErrNilArgPassed)
+func NewNodeSyncer(uow UoW, client NodeClient) (*NodeSyncer, error) {
+	if uow == nil {
+		return nil, fmt.Errorf("node syncer: init: uow: %w", errdefs.ErrNilArgPassed)
 	}
 	if client == nil {
 		return nil, fmt.Errorf("node syncer: init: client: %w", errdefs.ErrNilArgPassed)
 	}
 	return &NodeSyncer{
-		storage: storage,
-		client:  client,
+		uow:    uow,
+		client: client,
 	}, nil
 }
 
-// sync node state between node (available via client) and storage.
-// required node and user states are described in storage.
+// sync node state between node (available via client) and uow.
+// required node and user states are described in uow.
 // we want to try put node to this state via client,
 // and after successful or unsuccessful attempt
 // update actual node state according to changes we made or not.
 // the situation I hate and try to avoid is
 // - i update node via client (for example, remove user)
-// - then trying to write it to storage, and all attempts failed
+// - then trying to write it to uow, and all attempts failed
 //   due to database connection lost or db host limitations or whatever
 // - after i fix it, user marked in database as active,
 //   but it's actually not. and i have no clue what is going wrong
@@ -44,17 +44,17 @@ func NewNodeSyncer(storage NodeStorage, client NodeClient) (*NodeSyncer, error) 
 //   between them leads to not-so-interesting errors. hate it.
 //
 //   to avoid it, let's mark items we are going to modify as 'Unknown value'
-//   in storage, and after attempt, try to write to storage actual values.
-//   the worst case is node modified but next storage update fails,
-//   but now invalid values are explicitly marked as 'Unknown' in storage,
+//   in uow, and after attempt, try to write to uow actual values.
+//   the worst case is node modified but next uow update fails,
+//   but now invalid values are explicitly marked as 'Unknown' in uow,
 //   so it is possible to detect and handle it.
 
 func (s *NodeSyncer) SyncState(ctx context.Context) error {
-	if s == nil || s.storage == nil || s.client == nil {
+	if s == nil || s.uow == nil || s.client == nil {
 		return fmt.Errorf("node: sync state: %w", errdefs.ErrNilObjectCall)
 	}
 
-	target, previous, err := fetchStatus(ctx, s.storage)
+	target, previous, err := fetchStatus(ctx, s.uow)
 	if err != nil {
 		return fmt.Errorf("node: sync state: %w", err)
 	}
@@ -92,19 +92,19 @@ func (s *NodeSyncer) SyncState(ctx context.Context) error {
 
 func (s *NodeSyncer) startNode(ctx context.Context) (err error) {
 	// safe state-changing stuff
-	if err = updateCurrentStatus(ctx, s.storage, models.NodeStatusUnknown); err != nil {
+	if err = updateCurrentStatus(ctx, s.uow, models.NodeStatusUnknown); err != nil {
 		return fmt.Errorf("start node: %w", err)
 	}
 	defer func() {
 		if err == nil {
 			return
 		}
-		if syncErr := updateCurrentStatus(ctx, s.storage, models.NodeStatusStopped); syncErr != nil {
+		if syncErr := updateCurrentStatus(ctx, s.uow, models.NodeStatusStopped); syncErr != nil {
 			err = errors.Join(err, fmt.Errorf("sync after start node: %w", err))
 		}
 	}()
 
-	users, err := listUsers(ctx, s.storage)
+	users, err := listUsers(ctx, s.uow)
 	if err != nil {
 		return fmt.Errorf("start node: %w", err)
 	}
@@ -119,7 +119,7 @@ func (s *NodeSyncer) startNode(ctx context.Context) (err error) {
 	}
 
 	// update stored node state
-	err = updateNode(ctx, s.storage,
+	err = updateNode(ctx, s.uow,
 		getUsersPatch(users),
 		models.NodeStatusRunning,
 		nodeConfig)
@@ -133,14 +133,14 @@ func (s *NodeSyncer) startNode(ctx context.Context) (err error) {
 func (s *NodeSyncer) stopNode(ctx context.Context) (err error) {
 	// safe state-changing stuff. change state to unknown before
 	// stopping, to stopped on success or back to running on fail
-	if err = updateCurrentStatus(ctx, s.storage, models.NodeStatusUnknown); err != nil {
+	if err = updateCurrentStatus(ctx, s.uow, models.NodeStatusUnknown); err != nil {
 		return fmt.Errorf("start node: %w", err)
 	}
 	defer func() {
 		if err == nil {
 			return
 		}
-		if syncErr := updateCurrentStatus(ctx, s.storage, models.NodeStatusRunning); syncErr != nil {
+		if syncErr := updateCurrentStatus(ctx, s.uow, models.NodeStatusRunning); syncErr != nil {
 			err = errors.Join(err, fmt.Errorf("sync after start node: %w", err))
 		}
 	}()
@@ -151,7 +151,7 @@ func (s *NodeSyncer) stopNode(ctx context.Context) (err error) {
 
 	// dont update actual status of users on disabled nodes because it has no matter.
 	// it updates when node started again.
-	if err = updateCurrentStatus(ctx, s.storage, models.NodeStatusStopped); err != nil {
+	if err = updateCurrentStatus(ctx, s.uow, models.NodeStatusStopped); err != nil {
 		return fmt.Errorf("stop node: %w", err)
 	}
 	return nil
@@ -180,7 +180,7 @@ func getUsersPatch(users []models.User) []models.UserStatusPatch {
 
 func (s *NodeSyncer) syncNodeUsers(ctx context.Context, updateNodeState bool) (err error) {
 	// get users to update
-	pendingSyncs, err := findPendingSyncs(ctx, s.storage)
+	pendingSyncs, err := findPendingSyncs(ctx, s.uow)
 	if err != nil {
 		return fmt.Errorf("sync node users: %w", err)
 	}
@@ -215,9 +215,9 @@ func (s *NodeSyncer) syncNodeUsers(ctx context.Context, updateNodeState bool) (e
 	// change state to actual 'Running' on pre-update.
 	// (and don't touch after update)
 	if updateNodeState {
-		err = updateNode(ctx, s.storage, preUpdatePatch, models.NodeStatusRunning, nil)
+		err = updateNode(ctx, s.uow, preUpdatePatch, models.NodeStatusRunning, nil)
 	} else {
-		err = patchPendingSyncs(ctx, s.storage, preUpdatePatch)
+		err = patchPendingSyncs(ctx, s.uow, preUpdatePatch)
 	}
 	if err != nil {
 		return fmt.Errorf("sync node users: pre update patch: %w", err)
@@ -227,7 +227,7 @@ func (s *NodeSyncer) syncNodeUsers(ctx context.Context, updateNodeState bool) (e
 		return fmt.Errorf("edit node users: %w", err)
 	}
 
-	if err := patchPendingSyncs(ctx, s.storage, postUpdatePatch); err != nil {
+	if err := patchPendingSyncs(ctx, s.uow, postUpdatePatch); err != nil {
 		return fmt.Errorf("sync node users: pre update patch: %w", err)
 	}
 

@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"fmt"
+
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
 )
@@ -8,17 +10,38 @@ import (
 // goverter:converter
 // goverter:output:format function
 // goverter:output:file ./converter_generated.go
-// goverter:typedef-to-base:true
-
+// goverter:extend ConvertNodeID RConvertNodeID ConvertNodeStatusResult
+//
 //go:generate goverter gen .
 type Converter interface {
-	ConvertNewNodeRequest(source *api.NewNodeRequest) *models.NewNodeParams
-	ConvertNewNodeResult(source *models.NewNodeResult) *api.NewNodeResponse
+	ConvertNewNodeRequest(r *api.NewNodeRequest) *models.NewNodeParams
+	ConvertNewNodeResult(r *models.NewNodeResult) *api.NewNodeResponse
 
-	ConvertStartNodeRequest(source *api.StartNodeRequest) *models.StartNodeParams
-	ConvertStopNodeRequest(source *api.StopNodeRequest) *models.StartNodeParams
-	ConvertListNodesResult(source *api.ListNodeResponse) *models.ListNodeResult
+	ConvertStartNodeRequest(r *api.StartNodeRequest) *models.StartNodeParams
+	ConvertStopNodeRequest(r *api.StopNodeRequest) *models.StopNodeParams
 
-	//ConvertNodeID(models.NodeID) int
-	//RConvertNodeID(int) models.NodeID
+	ConvertListNodesResult(r *models.ListNodeResult) *api.ListNodeResponse
+}
+
+func ConvertNodeID(i models.NodeID) api.NodeID {
+	return api.NodeID(i)
+}
+
+func RConvertNodeID(i api.NodeID) models.NodeID {
+	return models.NodeID(i)
+}
+
+func ConvertNodeStatusResult(source models.NodeStatus) api.NodeStatus {
+	var response api.NodeStatus
+	switch source {
+	case models.NodeStatusStopped:
+		response = api.NodeStatusStopped
+	case models.NodeStatusRunning:
+		response = api.NodeStatusRunning
+	case models.NodeStatusUnknown:
+		response = api.NodeStatusUnknown
+	default:
+		panic(fmt.Sprintf("unexpected enum element: %v", source))
+	}
+	return response
 }

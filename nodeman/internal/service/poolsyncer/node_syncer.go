@@ -8,6 +8,6 @@ import (
 
 type NodesSyncer interface {
 	SyncNode(ctx context.Context,
-		storage nodesyncer.NodeStorage,
+		uow nodesyncer.UoW,
 		client nodesyncer.NodeClient) error
 }

@@ -8,8 +8,6 @@ paths:
     post:
       summary: Create a new node
       operationId: NewNode
-      security:
-        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -34,8 +32,6 @@ paths:
     post:
       summary: Start a node
       operationId: StartNode
-      security:
-        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -60,8 +56,6 @@ paths:
     post:
       summary: Stop a node
       operationId: StopNode
-      security:
-        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -86,8 +80,6 @@ paths:
     get:
       summary: List all nodes
       operationId: ListNodes
-      security:
-        - BearerAuth: []
       parameters: []
       responses:
         '200':
@@ -184,6 +176,7 @@ components:
           type: string
         AccessSecret:
           type: string
+          format: byte
       required:
         - ID
         - Endpoint
@@ -237,9 +230,3 @@ components:
         details:
           type: string
           nullable: true
-
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
