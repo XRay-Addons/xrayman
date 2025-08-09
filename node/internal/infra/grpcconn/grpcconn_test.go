@@ -49,7 +49,10 @@ func TestGRPCConn(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to connect to test grpc server: %v", err)
 	}
-	defer conn.Close(context.TODO())
+	defer func() {
+		err := conn.Close(context.TODO())
+		require.NoError(t, err)
+	}()
 
 	err = conn.Connect(ctx)
 	require.NoError(t, err)
@@ -71,7 +74,10 @@ func TestGRPCConnTimeout(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to connect to test grpc server: %v", err)
 	}
-	defer conn.Close(context.TODO())
+	defer func() {
+		err := conn.Close(context.TODO())
+		require.NoError(t, err)
+	}()
 
 	err = conn.Connect(ctx)
 	require.True(t, errors.Is(err, context.DeadlineExceeded))

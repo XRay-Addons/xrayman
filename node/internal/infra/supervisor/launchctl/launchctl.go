@@ -178,7 +178,9 @@ func (ctl *XRayCtl) createServiceLoop(ctx context.Context, log *zap.Logger) {
 		return nil
 	}
 
-	retry.RetryInfinite(ctx, initFn, 250*time.Millisecond)
+	if err := retry.RetryInfinite(ctx, initFn, 250*time.Millisecond); err != nil {
+		log.Error("retry: init service", zap.Error(err))
+	}
 }
 
 func (ctl *XRayCtl) Start(ctx context.Context) error {

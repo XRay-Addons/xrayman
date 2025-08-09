@@ -74,7 +74,7 @@ func extractFields(items []gjson.Result, name string) ([]string, error) {
 
 	// get fields list
 	fields := make([]string, 0, len(uniqueFields))
-	for f, _ := range uniqueFields {
+	for f := range uniqueFields {
 		fields = append(fields, f)
 	}
 

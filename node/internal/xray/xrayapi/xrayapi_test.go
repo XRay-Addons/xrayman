@@ -74,7 +74,8 @@ func TestXRayAPI(t *testing.T) {
 	xrayapi, err := New(testApiURL, testXRayInbounds, log)
 	assert.NoError(t, err)
 	defer func() {
-		xrayapi.Close(ctx)
+		err := xrayapi.Close(ctx)
+		require.NoError(t, err)
 	}()
 
 	// ping stopped service

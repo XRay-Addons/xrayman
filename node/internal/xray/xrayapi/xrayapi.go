@@ -53,6 +53,9 @@ func (api *XRayApi) Close(ctx context.Context) error {
 		return nil
 	}
 
+	api.mu.Lock()
+	defer api.mu.Unlock()
+
 	api.hsClient = nil
 	api.ssClient = nil
 
@@ -68,6 +71,10 @@ func (api *XRayApi) Connect(ctx context.Context) error {
 	if api == nil {
 		return fmt.Errorf("%w: xray api: connect", errdefs.ErrNilObjectCall)
 	}
+
+	api.mu.Lock()
+	defer api.mu.Unlock()
+
 	if err := api.apiConn.Connect(ctx); err != nil {
 		return fmt.Errorf("xray api: connect: %w", err)
 	}
@@ -78,6 +85,10 @@ func (api *XRayApi) Disconnect(ctx context.Context) error {
 	if api == nil {
 		return fmt.Errorf("%w: xray api: disconnect", errdefs.ErrNilObjectCall)
 	}
+
+	api.mu.Lock()
+	defer api.mu.Unlock()
+
 	if err := api.apiConn.Disconnect(ctx); err != nil {
 		return fmt.Errorf("xray api: disconnect: %w", err)
 	}
@@ -91,6 +102,9 @@ func (api *XRayApi) EditUsers(
 	if api == nil || api.hsClient == nil {
 		return fmt.Errorf("%w: xray api", errdefs.ErrNilObjectCall)
 	}
+
+	api.mu.Lock()
+	defer api.mu.Unlock()
 
 	var editUsersTx tx.Tx
 	for _, in := range api.inbounds {
@@ -140,6 +154,9 @@ func (api *XRayApi) Ping(ctx context.Context) error {
 	if api == nil || api.ssClient == nil {
 		return fmt.Errorf("%w: xray api", errdefs.ErrNilObjectCall)
 	}
+
+	api.mu.Lock()
+	defer api.mu.Unlock()
 
 	return ping(ctx, api.ssClient)
 }

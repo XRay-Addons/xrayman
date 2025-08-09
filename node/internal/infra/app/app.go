@@ -91,16 +91,20 @@ func New(opts ...Option) *App {
 	return app
 }
 
-func (app *App) Run() error {
+func (app *App) Run() (err error) {
 	// init app components
-	if err := app.init(); err != nil {
-		return fmt.Errorf("app run: %w", err)
+	if initErr := app.init(); initErr != nil {
+		return fmt.Errorf("app run: %w", initErr)
 	}
-	defer app.close()
+	defer func() {
+		if closeErr := app.close(); closeErr != nil {
+			err = errors.Join(err, fmt.Errorf("app close: %w", closeErr))
+		}
+	}()
 
 	// run runners
-	if err := app.run(); err != nil {
-		return fmt.Errorf("app run: %w", err)
+	if runErr := app.run(); runErr != nil {
+		return fmt.Errorf("app run: %w", runErr)
 	}
 
 	return nil

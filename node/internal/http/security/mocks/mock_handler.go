@@ -84,31 +84,31 @@ func (mr *MockHandlerMockRecorder) NewError(ctx, err any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewError", reflect.TypeOf((*MockHandler)(nil).NewError), ctx, err)
 }
 
-// StartPost mocks base method.
-func (m *MockHandler) StartPost(ctx context.Context, req *api.StartRequest) (*api.StartResponse, error) {
+// Start mocks base method.
+func (m *MockHandler) Start(ctx context.Context, req *api.StartRequest) (*api.StartResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartPost", ctx, req)
+	ret := m.ctrl.Call(m, "Start", ctx, req)
 	ret0, _ := ret[0].(*api.StartResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// StartPost indicates an expected call of StartPost.
-func (mr *MockHandlerMockRecorder) StartPost(ctx, req any) *gomock.Call {
+// Start indicates an expected call of Start.
+func (mr *MockHandlerMockRecorder) Start(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartPost", reflect.TypeOf((*MockHandler)(nil).StartPost), ctx, req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockHandler)(nil).Start), ctx, req)
 }
 
-// StopPost mocks base method.
-func (m *MockHandler) StopPost(ctx context.Context) error {
+// Stop mocks base method.
+func (m *MockHandler) Stop(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StopPost", ctx)
+	ret := m.ctrl.Call(m, "Stop", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// StopPost indicates an expected call of StopPost.
-func (mr *MockHandlerMockRecorder) StopPost(ctx any) *gomock.Call {
+// Stop indicates an expected call of Stop.
+func (mr *MockHandlerMockRecorder) Stop(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StopPost", reflect.TypeOf((*MockHandler)(nil).StopPost), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stop", reflect.TypeOf((*MockHandler)(nil).Stop), ctx)
 }
