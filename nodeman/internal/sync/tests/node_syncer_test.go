@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service/syncer"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/sync/nodesync"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,14 +20,13 @@ func TestNodeSyncer(t *testing.T) {
 	storage := NewStorageMock(nUsers)
 	uow, err := storage.NewUoW()
 	require.NoError(t, err)
-	node, err := syncer.NewNodeSyncer(uow, client)
-	require.NoError(t, err)
+	syncer := nodesync.New()
 
 	for range nRuns {
 		for range nRunOps {
 			// apply random operation, then sync
 			storage.RandomExternalOperation()
-			node.SyncNodeState(context.TODO())
+			syncer.SyncNodeState(context.TODO(), client, uow)
 		}
 
 		// check state is ok. only node required to be running matters
@@ -56,8 +55,7 @@ func TestNodeSyncer_UnstableStorage(t *testing.T) {
 	storage := NewUnstableStorageMock(nUsers)
 	uow, err := storage.NewUoW()
 	require.NoError(t, err)
-	node, err := syncer.NewNodeSyncer(uow, client)
-	require.NoError(t, err)
+	syncer := nodesync.New()
 
 	for range nRuns {
 		storage.Instability = instability
@@ -65,12 +63,12 @@ func TestNodeSyncer_UnstableStorage(t *testing.T) {
 		for range nRunOps {
 			// apply random operation, then sync
 			storage.RandomExternalOperation()
-			node.SyncNodeState(context.TODO())
+			syncer.SyncNodeState(context.TODO(), client, uow)
 		}
 
 		// disable instability for one check to fix state
 		storage.Instability = 0.
-		node.SyncNodeState(context.TODO())
+		syncer.SyncNodeState(context.TODO(), client, uow)
 
 		baseStorage := storage.BaseStorage
 		// check state is ok. only node required to be running matters
@@ -101,8 +99,7 @@ func TestNodeSyncer_UnstableStorage_UnstableNode(t *testing.T) {
 	storage := NewUnstableStorageMock(nUsers)
 	uow, err := storage.NewUoW()
 	require.NoError(t, err)
-	node, err := syncer.NewNodeSyncer(uow, client)
-	require.NoError(t, err)
+	syncer := nodesync.New()
 
 	for range nRuns {
 		storage.Instability = instability
@@ -111,13 +108,13 @@ func TestNodeSyncer_UnstableStorage_UnstableNode(t *testing.T) {
 		for range nRunOps {
 			// apply random operation, then sync
 			storage.RandomExternalOperation()
-			node.SyncNodeState(context.TODO())
+			syncer.SyncNodeState(context.TODO(), client, uow)
 		}
 
 		// disable instability for one check to fix state
 		storage.Instability = 0.
 		client.Instability = 0.
-		node.SyncNodeState(context.TODO())
+		syncer.SyncNodeState(context.TODO(), client, uow)
 
 		baseStorage := storage.BaseStorage
 		baseClient := client.BaseClient

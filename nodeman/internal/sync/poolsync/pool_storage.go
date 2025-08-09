@@ -1,4 +1,4 @@
-package poolsyncer
+package poolsync
 
 import (
 	"context"
@@ -7,14 +7,7 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
-////////////////////////////////////////////////////////////////////////////////
-// storage to use in PoolSyncer
-
-type UsersStorage interface {
-	ListUsers(ctx context.Context) ([]models.User, error)
-}
-
-type NodeStatesStorage interface {
+type PoolStatesStorage interface {
 	ListNodes(ctx context.Context) (
 		[]models.Node, error)
 	UpdateClientConfig(ctx context.Context, id models.NodeID,
@@ -25,7 +18,7 @@ type NodeStatesStorage interface {
 		s models.NodeStatus) error
 }
 
-type UserSyncsStorage interface {
+type PoolSyncsStorage interface {
 	FindPendingSyncs(ctx context.Context, id models.NodeID) (
 		[]models.UserSyncStatus, error)
 	PatchPendingSyncs(ctx context.Context, id models.NodeID,
@@ -34,8 +27,8 @@ type UserSyncsStorage interface {
 
 type UoWContext interface {
 	UsersStorage
-	NodeStatesStorage
-	UserSyncsStorage
+	PoolStatesStorage
+	PoolSyncsStorage
 }
 
 type UoWFn = uow.Fn[UoWContext]

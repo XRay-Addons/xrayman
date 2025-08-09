@@ -1,5 +1,4 @@
-// node storage impl based on pool storage
-package syncer
+package poolsync
 
 import (
 	"context"
@@ -8,15 +7,15 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
-type PoolNodeUoW struct {
-	base   PoolUoW
+type poolNodeUoW struct {
+	base   UoW
 	nodeID models.NodeID
 }
 
-var _ NodeUoW = (*PoolNodeUoW)(nil)
+var _ NodeUoW = (*poolNodeUoW)(nil)
 
-func (uow *PoolNodeUoW) Do(ctx context.Context, fn NodeUoWFn) error {
-	return uow.base.Do(ctx, func(uowctx PoolUoWContext) error {
+func (uow *poolNodeUoW) Do(ctx context.Context, fn NodeUoWFn) error {
+	return uow.base.Do(ctx, func(uowctx UoWContext) error {
 		nodeUoWCtx := &PoolNodeUoWContext{
 			base:   uowctx,
 			nodeID: uow.nodeID,
@@ -29,7 +28,7 @@ func (uow *PoolNodeUoW) Do(ctx context.Context, fn NodeUoWFn) error {
 }
 
 type PoolNodeUoWContext struct {
-	base   PoolUoWContext
+	base   UoWContext
 	nodeID models.NodeID
 }
 

@@ -1,5 +1,4 @@
-// node storage interface
-package syncer
+package poolsync
 
 import (
 	"context"
