@@ -1,0 +1,37 @@
+// pool storage interface
+package syncer
+
+import (
+	"context"
+
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/uow"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
+)
+
+type PoolStatesStorage interface {
+	ListNodes(ctx context.Context) (
+		[]models.Node, error)
+	UpdateClientConfig(ctx context.Context, id models.NodeID,
+		cfg models.ClientConfig) error
+	FetchNodeStatus(ctx context.Context, id models.NodeID) (
+		target, current models.NodeStatus, err error)
+	UpdateCurrentStatus(ctx context.Context, id models.NodeID,
+		s models.NodeStatus) error
+}
+
+type PoolSyncsStorage interface {
+	FindPendingSyncs(ctx context.Context, id models.NodeID) (
+		[]models.UserSyncStatus, error)
+	PatchPendingSyncs(ctx context.Context, id models.NodeID,
+		patch []models.UserStatusPatch) error
+}
+
+type PoolUoWContext interface {
+	UsersStorage
+	PoolStatesStorage
+	PoolSyncsStorage
+}
+
+type PoolUoWFn = uow.Fn[PoolUoWContext]
+
+type PoolUoW = uow.UoW[PoolUoWContext]

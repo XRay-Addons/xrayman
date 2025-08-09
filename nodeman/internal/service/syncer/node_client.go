@@ -1,4 +1,4 @@
-package nodesyncer
+package syncer
 
 import (
 	"context"

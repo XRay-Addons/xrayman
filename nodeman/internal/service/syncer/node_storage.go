@@ -1,4 +1,5 @@
-package nodesyncer
+// node storage interface
+package syncer
 
 import (
 	"context"
@@ -20,18 +21,18 @@ type NodeStateStorage interface {
 		s models.NodeStatus) error
 }
 
-type SyncsStorage interface {
+type NodeSyncsStorage interface {
 	FindPendingSyncs(ctx context.Context) (
 		[]models.UserSyncStatus, error)
 	PatchPendingSyncs(ctx context.Context,
 		patch []models.UserStatusPatch) error
 }
 
-type UoWContext interface {
+type NodeUoWContext interface {
 	UsersStorage
 	NodeStateStorage
-	SyncsStorage
+	NodeSyncsStorage
 }
 
-type UoWFn = uow.Fn[UoWContext]
-type UoW = uow.UoW[UoWContext]
+type NodeUoWFn = uow.Fn[NodeUoWContext]
+type NodeUoW = uow.UoW[NodeUoWContext]

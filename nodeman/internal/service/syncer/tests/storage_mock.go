@@ -6,7 +6,7 @@ import (
 	"math/rand/v2"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodesyncer"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service/syncer"
 )
 
 // simple storage mock with random extrnal operations emulation
@@ -107,9 +107,9 @@ func (s *StorageMock) apply(patch *StorageMockPatch) error {
 	return nil
 }
 
-var _ nodesyncer.NodeStorage = (*StorageMock)(nil)
+var _ syncer.NodeUoW = (*StorageMock)(nil)
 
-func (s *StorageMock) DoUoW(ctx context.Context, fn nodesyncer.UoWFn) error {
+func (s *StorageMock) Do(ctx context.Context, fn syncer.NodeUoWFn) error {
 	uow, err := s.NewUoW()
 	if err != nil {
 		return fmt.Errorf("init uow: %w", err)
@@ -120,7 +120,7 @@ func (s *StorageMock) DoUoW(ctx context.Context, fn nodesyncer.UoWFn) error {
 	return nil
 }
 
-func (s *StorageMock) NewUoW() (nodesyncer.UoW, error) {
+func (s *StorageMock) NewUoW() (syncer.NodeUoW, error) {
 	return &StorageMockPatch{
 		parent: s,
 	}, nil
@@ -132,8 +132,8 @@ type StorageMockPatch struct {
 	usersPatch []models.UserStatusPatch
 }
 
-var _ nodesyncer.UoWContext = (*StorageMockPatch)(nil)
-var _ nodesyncer.UoW = (*StorageMockPatch)(nil)
+var _ syncer.NodeUoWContext = (*StorageMockPatch)(nil)
+var _ syncer.NodeUoW = (*StorageMockPatch)(nil)
 
 func (s *StorageMockPatch) FetchNodeStatus(ctx context.Context) (
 	target models.NodeStatus, current models.NodeStatus, err error,
@@ -163,7 +163,7 @@ func (s *StorageMockPatch) UpdateClientConfig(ctx context.Context, cfg models.Cl
 	return nil
 }
 
-func (s *StorageMockPatch) Do(ctx context.Context, fn nodesyncer.UoWFn) error {
+func (s *StorageMockPatch) Do(ctx context.Context, fn syncer.NodeUoWFn) error {
 	if err := fn(s); err != nil {
 		return fmt.Errorf("patch cfg error: %w", err)
 	}
@@ -182,7 +182,7 @@ func NewUnstableStorageMock(nUsers int) *UnstableStorageMock {
 	}
 }
 
-func (s *UnstableStorageMock) DoUoW(ctx context.Context, fn nodesyncer.UoWFn) error {
+func (s *UnstableStorageMock) DoUoW(ctx context.Context, fn syncer.NodeUoWFn) error {
 	// some times this method returns error
 	if s.BaseStorage.rand.Float32() < s.Instability {
 		return fmt.Errorf("unstable storage")
@@ -202,7 +202,7 @@ func (s *UnstableStorageMock) DoUoW(ctx context.Context, fn nodesyncer.UoWFn) er
 	return nil
 }
 
-func (s *UnstableStorageMock) NewUoW() (nodesyncer.UoW, error) {
+func (s *UnstableStorageMock) NewUoW() (syncer.NodeUoW, error) {
 	return &StorageMockPatch{
 		parent: s.BaseStorage,
 	}, nil
