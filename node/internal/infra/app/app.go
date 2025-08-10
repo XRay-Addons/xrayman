@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/XRay-Addons/xrayman/node/internal/infra/tx"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/tx"
 	"github.com/oklog/run"
 	"go.uber.org/zap"
 )

@@ -7,6 +7,7 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/sync/syncservice"
 )
 
 type Syncer struct {
@@ -14,6 +15,8 @@ type Syncer struct {
 	client Client
 	syncer NodeSyncer
 }
+
+var _ syncservice.PoolSyncer = (*Syncer)(nil)
 
 func New(uow UoW, client Client, syncer NodeSyncer) (*Syncer, error) {
 	if client == nil {

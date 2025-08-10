@@ -1,4 +1,4 @@
-package poolmonitor
+package syncservice
 
 import (
 	"context"
@@ -10,10 +10,11 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/waveexec"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service"
 	"go.uber.org/zap"
 )
 
-type PoolMonitor struct {
+type SyncService struct {
 	executor *waveexec.WaveExecutor
 
 	syncInterval time.Duration
@@ -23,120 +24,122 @@ type PoolMonitor struct {
 	log *zap.Logger
 }
 
-type Option func(pm *PoolMonitor)
+var _ service.SyncService = (*SyncService)(nil)
+
+type Option func(ss *SyncService)
 
 func WithSyncInterval(interval time.Duration) Option {
-	return func(pm *PoolMonitor) {
-		pm.syncInterval = interval
+	return func(ss *SyncService) {
+		ss.syncInterval = interval
 	}
 }
 
 func WithLog(log *zap.Logger) Option {
-	return func(pm *PoolMonitor) {
+	return func(ss *SyncService) {
 		if log != nil {
-			pm.log = log
+			ss.log = log
 		}
 	}
 }
 
-func New(syncer PoolSyncer, options ...Option) (*PoolMonitor, error) {
+func New(syncer PoolSyncer, options ...Option) (*SyncService, error) {
 	if syncer == nil {
 		return nil, fmt.Errorf("pool monitor: init: %w", errdefs.ErrNilArgPassed)
 	}
 	// init default options
 	ctx, cancel := context.WithCancel(context.Background())
-	pm := &PoolMonitor{
+	ss := &SyncService{
 		syncInterval: 5 * time.Second,
 		cancel:       cancel,
 		log:          zap.NewNop(),
 	}
 	// apply options
 	for _, o := range options {
-		o(pm)
+		o(ss)
 	}
 	// add sync loop
-	syncFn := pm.syncFn(syncer)
-	pm.executor = waveexec.NewWaveExecutor(syncFn)
+	syncFn := ss.syncFn(syncer)
+	ss.executor = waveexec.NewWaveExecutor(syncFn)
 
 	// run sync loop
-	pm.wg.Add(1)
+	ss.wg.Add(1)
 	go func() {
-		defer pm.wg.Done()
-		pm.syncLoop(ctx)
+		defer ss.wg.Done()
+		ss.syncLoop(ctx)
 	}()
 
-	return pm, nil
+	return ss, nil
 }
 
-func (pm *PoolMonitor) Close() error {
-	if pm == nil {
+func (ss *SyncService) Close() error {
+	if ss == nil {
 		return nil
 	}
-	if pm.cancel != nil {
-		pm.cancel()
+	if ss.cancel != nil {
+		ss.cancel()
 	}
-	pm.wg.Wait()
-	pm.executor.Close()
+	ss.wg.Wait()
+	ss.executor.Close()
 	return nil
 }
 
-func (pm *PoolMonitor) Sync(ctx context.Context) (*models.PoolSyncResult, error) {
-	if pm == nil {
+func (ss *SyncService) SyncNodesPool(ctx context.Context) ([]models.NodeSyncResult, error) {
+	if ss == nil {
 		return nil, fmt.Errorf("pool monitor: sync: %w", errdefs.ErrNilObjectCall)
 	}
-	syncResult, err := pm.executor.Invoke(ctx)
+	syncResult, err := ss.executor.Invoke(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("pool monitor: sync: %w", err)
 	}
-	res, ok := syncResult.(*models.PoolSyncResult)
+	res, ok := syncResult.([]models.NodeSyncResult)
 	if !ok {
 		return nil, fmt.Errorf("pool monitor: sync: cast result: %w", errdefs.ErrIPE)
 	}
 	return res, nil
 }
 
-func (pm *PoolMonitor) syncFn(ps PoolSyncer) waveexec.Fn {
+func (ss *SyncService) syncFn(ps PoolSyncer) waveexec.Fn {
 	return func(ctx context.Context) (any, error) {
-		syncResult, err := ps.SyncNodesPool(ctx)
+		syncResult, err := ps.SyncPoolState(ctx)
 		if err != nil {
-			pm.logSyncResult(*syncResult)
+			ss.logSyncResult(syncResult)
 		}
 
 		return syncResult, err
 	}
 }
 
-func (pm *PoolMonitor) syncLoop(ctx context.Context) {
+func (ss *SyncService) syncLoop(ctx context.Context) {
 	for {
-		// set sync time limit to pm.syncInterval
-		syncCtx, cancel := context.WithTimeout(ctx, pm.syncInterval)
-		syncResult, err := pm.Sync(syncCtx)
+		// set sync time limit to ss.syncInterval
+		syncCtx, cancel := context.WithTimeout(ctx, ss.syncInterval)
+		syncResult, err := ss.SyncNodesPool(syncCtx)
 		cancel()
 
 		// log results
 		if err != nil {
-			pm.log.Error("pool sync", zap.Error(err))
+			ss.log.Error("pool sync", zap.Error(err))
 		} else {
-			pm.logSyncResult(*syncResult)
+			ss.logSyncResult(syncResult)
 		}
 
 		// wait 'syncInterval' time and sync again
 		select {
-		case <-time.After(pm.syncInterval):
+		case <-time.After(ss.syncInterval):
 		case <-ctx.Done():
 			return
 		}
 	}
 }
 
-func (pm *PoolMonitor) logSyncResult(r models.PoolSyncResult) {
-	for _, n := range r.Nodes {
+func (ss *SyncService) logSyncResult(r []models.NodeSyncResult) {
+	for _, n := range r {
 		if n.Err == nil {
-			pm.log.Info("background node sync OK",
+			ss.log.Info("background node sync OK",
 				zap.String("nodeID", strconv.Itoa(int(n.ID))),
 				zap.String("endpoint", n.Endpoint))
 		} else {
-			pm.log.Error("background node sync",
+			ss.log.Error("background node sync",
 				zap.Error(n.Err),
 				zap.String("nodeID", strconv.Itoa(int(n.ID))),
 				zap.String("endpoint", n.Endpoint))

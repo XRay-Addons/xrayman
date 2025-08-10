@@ -1,4 +1,4 @@
-package httpclient
+package tlscfg
 
 import (
 	"crypto/tls"
@@ -7,13 +7,13 @@ import (
 	"os"
 )
 
-func createTLSConfig(cfg tlsConfig) (*tls.Config, error) {
-	cert, err := tls.LoadX509KeyPair(cfg.crt, cfg.key)
+func New(crt, key, caCrt string) (*tls.Config, error) {
+	cert, err := tls.LoadX509KeyPair(crt, key)
 	if err != nil {
 		return nil, fmt.Errorf("loading server cert: %w", err)
 	}
 
-	caCert, err := os.ReadFile(cfg.caCrt)
+	caCert, err := os.ReadFile(caCrt)
 	if err != nil {
 		return nil, fmt.Errorf("reading ca cert: %w", err)
 	}

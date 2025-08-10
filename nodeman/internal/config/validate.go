@@ -5,7 +5,7 @@ import (
 	"net"
 	"os"
 
-	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 )
 
 func Validate(c Config) error {

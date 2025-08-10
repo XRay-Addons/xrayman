@@ -5,7 +5,8 @@ import (
 	"sync"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service/service"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/sync/poolsync"
 )
 
 type Storage struct {
@@ -16,26 +17,50 @@ type Storage struct {
 	syncStatus [][]models.UserStatus
 }
 
+type serviceUoW struct {
+	storage *Storage
+}
+
+type poolsyncUoW struct {
+	storage *Storage
+}
+
 func New() *Storage {
 	return &Storage{}
 }
 
-var _ service.Storage = (*Storage)(nil)
-
-func (s *Storage) NewUoW() service.UoW {
-	panic("unimplemented")
+func (s *Storage) ServiceUoW() service.UoW {
+	return &serviceUoW{storage: s}
 }
 
-var _ service.UoW = (*Storage)(nil)
+func (s *Storage) PoolSyncUoW() poolsync.UoW {
+	return &poolsyncUoW{storage: s}
+}
 
-func (s *Storage) Do(ctx context.Context, fn service.UoWFn) error {
+func (s *Storage) DoService(ctx context.Context, fn service.UoWFn) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
+	return fn(s)
+}
 
+func (s *Storage) DoPoolSync(ctx context.Context, fn poolsync.UoWFn) error {
+	s.lock.Lock()
+	defer s.lock.Unlock()
 	return fn(s)
 }
 
 var _ service.UoWContext = (*Storage)(nil)
+var _ poolsync.UoWContext = (*Storage)(nil)
+var _ service.UoW = (*serviceUoW)(nil)
+var _ poolsync.UoW = (*poolsyncUoW)(nil)
+
+func (s *serviceUoW) Do(ctx context.Context, fn service.UoWFn) error {
+	return s.storage.DoService(ctx, fn)
+}
+
+func (s *poolsyncUoW) Do(ctx context.Context, fn poolsync.UoWFn) error {
+	return s.storage.DoPoolSync(ctx, fn)
+}
 
 // UsersStorage impl
 func (s *Storage) ListUsers(ctx context.Context) ([]models.User, error) {

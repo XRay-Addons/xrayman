@@ -1,6 +1,6 @@
 package service
 
 type Keygen interface {
-	GenerateHS256Secret() (string, error)
+	GenerateHS256Secret() ([]byte, error)
 	GenerateVlessUUID() (string, error)
 }

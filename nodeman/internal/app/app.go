@@ -6,9 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/XRay-Addons/xrayman/node/internal/clients/node/security"
 	client "github.com/XRay-Addons/xrayman/nodeman/internal/clients/node"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/clients/node/security"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/config"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
@@ -16,12 +14,13 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/server"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/tlscfg"
 	a "github.com/XRay-Addons/xrayman/nodeman/internal/infra/app"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/httpclient"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/keygen"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodesyncer"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service/poolmonitor"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service/poolsyncer"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service/service"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/storage/memstorage"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/sync/nodesync"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/sync/poolsync"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/sync/syncservice"
 
 	"go.uber.org/zap"
 )
@@ -35,42 +34,25 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		return nil, fmt.Errorf("%w: app init: logger", errdefs.ErrNilArgPassed)
 	}
 
-	//var srvCfg *xraycfg.ServerCfg
-	//var clientCfg *xraycfg.ClientCfg
-	var tlsCfg *tls.Config
-	//var xrayService *xrayservice.XRayService
-	//var xrayAPI *xrayapi.XRayApi
-
 	var storage *memstorage.Storage
+
+	var tlsCfg *tls.Config
+	var httpClient *http.Client
+	var poolClient *client.PoolClient
+
+	var nodeSyncer *nodesync.Syncer
+	var poolSyncer *poolsync.Syncer
+	var syncService *syncservice.SyncService
+
 	var kg *keygen.Keygen
 
-	var httpClient *http.Client
-	var poolClient client.PoolClient
-	//var sec *security.SecurityFactory
-	var nodeSyncer *nodesyncer.NodesSyncer
-
 	var s *service.Service
-	var h *handler.Handler
-	//var sec api.SecurityHandler
-	var r http.Handler
 
+	var h *handler.Handler
+	var r http.Handler
 	var httpServer *server.HttpServer
 
 	app := a.New(
-		/*// server config
-		a.WithComponent("server cfg",
-			func() (err error) {
-				srvCfg, err = xraycfg.NewServerCfg(cfg.XRayServer())
-				return
-			}, nil,
-		),
-		// client config
-		a.WithComponent("client cfg",
-			func() (err error) {
-				clientCfg, err = xraycfg.NewClientCfg(cfg.XRayClient())
-				return
-			}, nil,
-		),*/
 		// TLS config
 		a.WithComponent("tls cfg",
 			func() (err error) {
@@ -79,6 +61,24 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 					return
 				}
 				tlsCfg, err = tlscfg.Load(cfg.NodemanCrt(), cfg.NodemanKey(), cfg.RootCrt())
+				return
+			}, nil,
+		),
+		// http client
+		a.WithComponent("http client",
+			func() (err error) {
+				httpClient, err = httpclient.New(httpclient.WithTLS(tlsCfg))
+				return
+			},
+			func(ctx context.Context) error {
+				httpClient.CloseIdleConnections()
+				return nil
+			},
+		),
+		// pool client
+		a.WithComponent("pool client",
+			func() (err error) {
+				poolClient, err = client.NewPoolClient(client.WithHTTPClient(httpClient))
 				return
 			}, nil,
 		),
@@ -91,6 +91,34 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 			}, nil,
 		),
 
+		// node syncer
+		a.WithComponent("node syncer",
+			func() error {
+				nodeSyncer = nodesync.New()
+				return nil
+			}, nil,
+		),
+		// pool syncer
+		a.WithComponent("pool syncer",
+			func() (err error) {
+				poolSyncer, err = poolsync.New(storage.PoolSyncUoW(), poolClient, nodeSyncer)
+				return
+			}, nil,
+		),
+		// sync service
+		a.WithComponent("sync service",
+			func() (err error) {
+				syncService, err = syncservice.New(poolSyncer, syncservice.WithLog(log))
+				return
+			},
+			func(ctx context.Context) error {
+				if err := syncService.Close(); err != nil {
+					return fmt.Errorf("app close: sync service: %w", err)
+				}
+				return nil
+			},
+		),
+
 		// keygen
 		a.WithComponent("keygen",
 			func() error {
@@ -99,58 +127,14 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 			}, nil,
 		),
 
-		// http client
-		a.WithComponent("http client", 
-			func() (err error) {
-				httpClient, err = httpclient.New()
-				return
-			},
-			func() (err error) {
-				httpClient.CloseIdleConnections()
-			},
-		),
-		// pool client
-		a.WithComponent("pool client",
-			func() (err error) {
-				clientFactory, err = client.NewPoolClient(client.WithHTTPClient(httpClient))
-				return
-			}, nil,
-		),
-		// node syncer
-		a.WithComponent("node syncer",
-			func() (err error) {
-				nodesyncer.New()
-			}
-	
-	)
-		// pool syncer
-		a.WithComponent("pool syncer",
-			func() (err error) {
-				poolsyncer.New(clientFactory,  )
-			}
-	)
-		// security
-		a.WithComponent("nodes security",
-			func() error {
-				sec = security.NewFactory()
-				return nil
-			}, nil,
-		),
-
-		// poolmon
-		a.WithComponent("poolmon",
-			func() error {
-				poolmonitor.New()
-			}
-
-
 		// service
 		a.WithComponent("service",
 			func() (err error) {
-				s, err = service.New(storage, kg, xrayService, xrayAPI)
+				s, err = service.New(storage.ServiceUoW(), syncService, kg)
 				return
 			}, nil,
 		),
+
 		// handler
 		a.WithComponent("handler",
 			func() (err error) {
@@ -158,6 +142,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 				return
 			}, nil,
 		),
+
 		// router
 		a.WithComponent("router",
 			func() (err error) {

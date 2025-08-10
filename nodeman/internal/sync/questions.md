@@ -13,3 +13,7 @@
 
     pool_node_storage.go // NodeStorage impl based on PoolStorage
     pool_syncer.go       // implementation of pool syncer, use PoolClient, PoolStorage, NodeSyncer
+
+// syncservice
+    pool_syncer.go       // PoolSyncer iface
+    sync_service.go      // SyncService, uses PoolSyncer

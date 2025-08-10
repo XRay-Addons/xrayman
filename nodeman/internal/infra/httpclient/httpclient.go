@@ -2,26 +2,21 @@ package httpclient
 
 import (
 	"crypto/tls"
-	"fmt"
 	"net"
 	"net/http"
 	"time"
 )
 
-type HttpClientOption func(opts *httpClientConfig)
+type Option func(opts *config)
 
-func WithTLS(crt, key, caCrt string) HttpClientOption {
-	return func(cfg *httpClientConfig) {
-		cfg.tlsConfig = &tlsConfig{
-			crt:   crt,
-			key:   key,
-			caCrt: caCrt,
-		}
+func WithTLS(tlscfg *tls.Config) Option {
+	return func(cfg *config) {
+		cfg.tlsConfig = tlscfg
 	}
 }
 
-func New(options ...HttpClientOption) (*http.Client, error) {
-	cfg := httpClientConfig{
+func New(options ...Option) (*http.Client, error) {
+	cfg := config{
 		dialerTimeout:       30 * time.Second,
 		keepAlive:           30 * time.Second,
 		maxIdleConns:        24,
@@ -33,17 +28,8 @@ func New(options ...HttpClientOption) (*http.Client, error) {
 		o(&cfg)
 	}
 
-	var tlsConfig *tls.Config
-	if cfg.tlsConfig != nil {
-		var err error
-		tlsConfig, err = createTLSConfig(*cfg.tlsConfig)
-		if err != nil {
-			return nil, fmt.Errorf("http client init: %w", err)
-		}
-	}
-
 	transport := &http.Transport{
-		TLSClientConfig: tlsConfig,
+		TLSClientConfig: cfg.tlsConfig,
 		DialContext: (&net.Dialer{
 			Timeout:   cfg.dialerTimeout,
 			KeepAlive: cfg.keepAlive,
@@ -57,4 +43,13 @@ func New(options ...HttpClientOption) (*http.Client, error) {
 		Transport: transport,
 		Timeout:   30 * time.Second,
 	}, nil
+}
+
+type config struct {
+	tlsConfig           *tls.Config
+	dialerTimeout       time.Duration
+	keepAlive           time.Duration
+	maxIdleConns        int
+	idleConnTimeout     time.Duration
+	tlsHandshakeTimeout time.Duration
 }

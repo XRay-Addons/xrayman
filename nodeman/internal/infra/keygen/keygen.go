@@ -2,7 +2,6 @@ package keygen
 
 import (
 	"crypto/rand"
-	"encoding/base64"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -15,13 +14,13 @@ func New() *Keygen {
 	return &Keygen{}
 }
 
-func GenerateHS256Secret() (string, error) {
+func (kg *Keygen) GenerateHS256Secret() ([]byte, error) {
 	const size = 32
 	b := make([]byte, size)
 	if _, err := rand.Read(b); err != nil {
-		return "", fmt.Errorf("failed to generate random secret: %w", err)
+		return nil, fmt.Errorf("failed to generate random secret: %w", err)
 	}
-	return base64.RawURLEncoding.EncodeToString(b), nil
+	return b, nil
 }
 
 func (kg *Keygen) GenerateVlessUUID() (string, error) {

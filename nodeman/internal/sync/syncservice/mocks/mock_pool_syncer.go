@@ -41,17 +41,17 @@ func (m *MockPoolSyncer) EXPECT() *MockPoolSyncerMockRecorder {
 	return m.recorder
 }
 
-// SyncNodesPool mocks base method.
-func (m *MockPoolSyncer) SyncNodesPool(ctx context.Context) (*models.PoolSyncResult, error) {
+// SyncPoolState mocks base method.
+func (m *MockPoolSyncer) SyncPoolState(ctx context.Context) ([]models.NodeSyncResult, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SyncNodesPool", ctx)
-	ret0, _ := ret[0].(*models.PoolSyncResult)
+	ret := m.ctrl.Call(m, "SyncPoolState", ctx)
+	ret0, _ := ret[0].([]models.NodeSyncResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// SyncNodesPool indicates an expected call of SyncNodesPool.
-func (mr *MockPoolSyncerMockRecorder) SyncNodesPool(ctx any) *gomock.Call {
+// SyncPoolState indicates an expected call of SyncPoolState.
+func (mr *MockPoolSyncerMockRecorder) SyncPoolState(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncNodesPool", reflect.TypeOf((*MockPoolSyncer)(nil).SyncNodesPool), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncPoolState", reflect.TypeOf((*MockPoolSyncer)(nil).SyncPoolState), ctx)
 }
