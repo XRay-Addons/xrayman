@@ -12,9 +12,9 @@ func Validate(c Config) error {
 	if _, err := net.ResolveTCPAddr("tcp", c.Endpoint); err != nil {
 		return fmt.Errorf("%w: invalid endpoint: %v", errdefs.ErrConfig, err)
 	}
-	if len(c.AccessKey) != 0 && len(c.AccessKey) != 32 {
+	if len(c.AccessSecret) != 0 && len(c.AccessSecret) != 32 {
 		return fmt.Errorf("%w: invalid access key length %v, required 32",
-			errdefs.ErrConfig, c.AccessKey)
+			errdefs.ErrConfig, c.AccessSecret)
 	}
 	if err := checkExecutable(c.XRayExec()); err != nil {
 		return fmt.Errorf("%w: xray exec: %v", errdefs.ErrConfig, err)

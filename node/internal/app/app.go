@@ -108,12 +108,12 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// security
 		a.WithComponent("security",
 			func() (err error) {
-				if len(cfg.AccessKey) == 0 {
+				if len(cfg.AccessSecret) == 0 {
 					log.Warn("access key is empty, authentification disabled. use it only for testing!!!")
 					sec = security.NewBackdoor()
 					return
 				}
-				sec = security.New([]byte(cfg.AccessKey))
+				sec = security.New([]byte(cfg.AccessSecret))
 				return
 			}, nil,
 		),

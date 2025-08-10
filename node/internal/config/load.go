@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/base64"
 	"flag"
 	"os"
 	"path"
@@ -17,6 +18,9 @@ func LoadConfig() (*Config, error) {
 	if err := readEnvParams(cfg); err != nil {
 		return nil, err
 	}
+	if err := initAccessSecret(cfg); err != nil {
+		return nil, err
+	}
 	initCertPaths(cfg)
 
 	return cfg, nil
@@ -24,9 +28,9 @@ func LoadConfig() (*Config, error) {
 
 func defaultConfig() *Config {
 	return &Config{
-		Endpoint:  "localhost:8080",
-		AccessKey: "",
-		XRayDir:   defaultXRayManDir(),
+		Endpoint:        "localhost:8080",
+		accessSecretB64: "",
+		XRayDir:         defaultXRayManDir(),
 	}
 }
 
@@ -44,8 +48,8 @@ func readCLIParams(c *Config) error {
 
 	fs.StringVar(&c.Endpoint, "a", c.Endpoint,
 		"server endpoint tcp address, like :8080, 127.0.0.1:80, localhost:22")
-	fs.StringVar(&c.AccessKey, "k", c.AccessKey,
-		"key to access to this node")
+	fs.StringVar(&c.accessSecretB64, "k", c.accessSecretB64,
+		"secret key to access to this node")
 	fs.StringVar(&c.XRayDir, "x", c.XRayDir,
 		`xray binaries and configs dir. must contains
 xray, xray_server.json, xray_client.json. to encrypt connection
@@ -60,6 +64,15 @@ add certificates node.crt node.key ca.crt`)
 
 func readEnvParams(c *Config) error {
 	return env.Parse(c)
+}
+
+func initAccessSecret(c *Config) error {
+	secret, err := base64.StdEncoding.DecodeString(c.accessSecretB64)
+	if err != nil {
+		return err
+	}
+	c.AccessSecret = secret
+	return nil
 }
 
 func initCertPaths(c *Config) {

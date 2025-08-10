@@ -3,10 +3,10 @@ package config
 import "path"
 
 type Config struct {
-	Endpoint  string `env:"ENDPOINT"`
-	AccessKey string `env:"ACCESS_KEY"`
-
-	XRayDir string `env:"XRAY_DIR"`
+	Endpoint        string `env:"ENDPOINT"`
+	accessSecretB64 string `env:"ACCESS_SECRET"`
+	AccessSecret    []byte
+	XRayDir         string `env:"XRAY_DIR"`
 
 	nodeCrt string
 	nodeKey string
