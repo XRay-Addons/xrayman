@@ -9,11 +9,11 @@ import (
 )
 
 func ConvertClientCfg(source gen.ClientCfg) models.ClientConfig {
-	var modelsClientCfg models.ClientConfig
-	modelsClientCfg.Template = source.Template
-	modelsClientCfg.UserNameField = source.UserNameField
-	modelsClientCfg.VlessUUIDField = source.VlessUUIDField
-	return modelsClientCfg
+	var modelsClientConfig models.ClientConfig
+	modelsClientConfig.Template = source.Template
+	modelsClientConfig.UserNameField = source.UserNameField
+	modelsClientConfig.VlessUUIDField = source.VlessUUIDField
+	return modelsClientConfig
 }
 func ConvertUsers(source []models.UserProfile) []gen.User {
 	var apiUserList []gen.User

@@ -62,7 +62,7 @@ func (s *Service) NewNode(ctx context.Context, p models.NewNodeParams) (*models.
 }
 
 func (s *Service) StartNode(ctx context.Context, p models.StartNodeParams) (*models.StartNodeResult, error) {
-	if err := s.setNodeStatus(ctx, p.ID, models.NodeStatusStopped); err != nil {
+	if err := s.setNodeStatus(ctx, p.ID, models.NodeStatusRunning); err != nil {
 		return nil, fmt.Errorf("service: start node: %w", err)
 	}
 	return &models.StartNodeResult{}, nil
@@ -97,7 +97,7 @@ func (s *Service) setNodeStatus(ctx context.Context, id models.NodeID, status mo
 	}
 	// set target node state to storage
 	if err := s.uow.Do(ctx, func(uowctx UoWContext) (err error) {
-		err = uowctx.SetTargetNodeStatus(ctx, id, models.NodeStatusRunning)
+		err = uowctx.SetTargetNodeStatus(ctx, id, status)
 		return
 	}); err != nil {
 		return fmt.Errorf("set node status: %w", err)
@@ -122,7 +122,7 @@ func (s *Service) syncNode(ctx context.Context, id models.NodeID) error {
 		if syncRes.Err == nil {
 			return nil
 		}
-		return fmt.Errorf("service: sync node: %w", err)
+		return fmt.Errorf("service: sync node: %w", syncRes.Err)
 	}
 	return fmt.Errorf("servuce: sync node: node not found: %w", errdefs.ErrIPE)
 }

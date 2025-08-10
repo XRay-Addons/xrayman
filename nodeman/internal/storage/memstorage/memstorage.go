@@ -2,15 +2,17 @@ package memstorage
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
+	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/sync/poolsync"
 )
 
 type Storage struct {
-	lock sync.Locker
+	lock sync.Mutex
 
 	nodes      []models.Node
 	users      []models.User
@@ -38,12 +40,18 @@ func (s *Storage) PoolSyncUoW() poolsync.UoW {
 }
 
 func (s *Storage) DoService(ctx context.Context, fn service.UoWFn) error {
+	if s == nil {
+		return fmt.Errorf("storage: do service: %w", errdefs.ErrNilObjectCall)
+	}
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	return fn(s)
 }
 
 func (s *Storage) DoPoolSync(ctx context.Context, fn poolsync.UoWFn) error {
+	if s == nil {
+		return fmt.Errorf("storage: do pool sync: %w", errdefs.ErrNilObjectCall)
+	}
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	return fn(s)

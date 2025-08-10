@@ -10,8 +10,9 @@ import (
 // goverter:converter
 // goverter:output:format function
 // goverter:output:file ./converter_generated.go
+//
+//go:generate goverter gen .
 type Converter interface {
-	//ConvertUser(user models.UserProfile) api.User
 	ConvertUsers(users []models.UserProfile) []api.User
 	ConvertClientCfg(cfg api.ClientCfg) models.ClientConfig
 	ConvertUsersUpdate(users models.NodeUsersUpdate) api.EditUsersRequest

@@ -7,6 +7,7 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/constants"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/converter"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/httperr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
@@ -38,20 +39,20 @@ func (h *Handler) NewNode(ctx context.Context, req *api.NewNodeRequest) (*api.Ne
 	if h == nil || h.service == nil {
 		return nil, fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
 	}
-	p := ConvertNewNodeRequest(req)
+	p := converter.ConvertNewNodeRequest(req)
 	res, err := h.service.NewNode(ctx, *p)
 	if err != nil {
 		h.logError(ctx, err)
 		return nil, httperr.ErrInternalServerError
 	}
-	return ConvertNewNodeResult(res), nil
+	return converter.ConvertNewNodeResult(res), nil
 }
 
 func (h *Handler) StartNode(ctx context.Context, req *api.StartNodeRequest) error {
 	if h == nil || h.service == nil {
 		return fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
 	}
-	p := ConvertStartNodeRequest(req)
+	p := converter.ConvertStartNodeRequest(req)
 	_, err := h.service.StartNode(ctx, *p)
 	if err != nil {
 		h.logError(ctx, err)
@@ -64,7 +65,7 @@ func (h *Handler) StopNode(ctx context.Context, req *api.StopNodeRequest) error 
 	if h == nil || h.service == nil {
 		return fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
 	}
-	p := ConvertStopNodeRequest(req)
+	p := converter.ConvertStopNodeRequest(req)
 	_, err := h.service.StopNode(ctx, *p)
 	if err != nil {
 		h.logError(ctx, err)
@@ -82,7 +83,7 @@ func (h *Handler) ListNodes(ctx context.Context) (*api.ListNodeResponse, error) 
 		h.logError(ctx, err)
 		return nil, httperr.ErrInternalServerError
 	}
-	return ConvertListNodesResult(res), nil
+	return converter.ConvertListNodesResult(res), nil
 }
 
 func (h *Handler) NewError(ctx context.Context, err error) *api.ErrorStatusCode {

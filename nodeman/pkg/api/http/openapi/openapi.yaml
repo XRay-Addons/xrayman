@@ -124,30 +124,29 @@ components:
       properties:
         Endpoint:
           type: string
-        AccessKey:
+        AccessSecret:
           type: string
           format: byte
       required:
         - Endpoint
-        - AccessKey
+        - AccessSecret
 
     NodeConfig:
       type: object
       properties:
-        ID:
-          $ref: '#/components/schemas/NodeID'
         ClientConfig:
           $ref: '#/components/schemas/ClientConfig'
         ConnectionInfo:
           $ref: '#/components/schemas/NodeConnectionInfo'
       required:
-        - ID
         - ClientConfig
         - ConnectionInfo
 
     Node:
       type: object
       properties:
+        ID:
+          $ref: '#/components/schemas/NodeID'
         Config:
           $ref: '#/components/schemas/NodeConfig'
         CurrentStatus:
@@ -155,6 +154,7 @@ components:
         TargetStatus:
           $ref: '#/components/schemas/NodeStatus'
       required:
+        - ID
         - Config
         - CurrentStatus
         - TargetStatus
