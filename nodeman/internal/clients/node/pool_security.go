@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
 type PoolSecurity struct {
@@ -12,7 +13,7 @@ type PoolSecurity struct {
 	expiration time.Duration
 }
 
-func (ps *PoolSecurity) GetNodeSecurity(secret []byte) (*NodeSecurity, error) {
+func (ps *PoolSecurity) GetNodeSecurity(secret models.AccessSecret) (*NodeSecurity, error) {
 	if ps == nil {
 		return nil, fmt.Errorf("pool security: get node security: %w", errdefs.ErrNilObjectCall)
 	}

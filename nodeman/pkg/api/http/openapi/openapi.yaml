@@ -164,8 +164,22 @@ components:
       properties:
         Endpoint:
           type: string
+        CertHash:
+          type: string
+          format: byte
+          minLength: 44
+          maxLength: 44
+          description: Base64-encoded 32-byte certificate hash
+        AccessSecret:
+          type: string
+          format: byte
+          minLength: 44
+          maxLength: 44
+          description: Base64-encoded 32-byte access secret
       required:
         - Endpoint
+        - CertHash
+        - AccessSecret
 
     NewNodeResponse:
       type: object
@@ -174,13 +188,9 @@ components:
           $ref: '#/components/schemas/NodeID'
         Endpoint:
           type: string
-        AccessSecret:
-          type: string
-          format: byte
       required:
         - ID
         - Endpoint
-        - AccessSecret
 
     StartNodeRequest:
       type: object

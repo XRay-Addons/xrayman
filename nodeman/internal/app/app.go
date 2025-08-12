@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"net/http"
 
@@ -12,10 +11,8 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/router"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/server"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/http/tlscfg"
 	a "github.com/XRay-Addons/xrayman/nodeman/internal/infra/app"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/httpclient"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/keygen"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/node"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/pool"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service"
@@ -36,15 +33,12 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 
 	var storage *memstorage.Storage
 
-	var tlsCfg *tls.Config
-	var httpClient *http.Client
+	var httpClient *httpclient.ClientFactory
 	var poolClient *client.PoolClient
 
 	var nodeSyncer *node.Syncer
 	var poolSyncer *pool.Syncer
 	var syncMan *syncman.Manager
-
-	var kg *keygen.Keygen
 
 	var s *service.Service
 
@@ -53,27 +47,16 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 	var httpServer *server.HttpServer
 
 	app := a.New(
-		// TLS config
-		a.WithComponent("tls cfg",
-			func() (err error) {
-				if !cfg.HasCerts() {
-					log.Warn("xray dir contains NO certs, encryption disabled. use it only for testing!!!")
-					return
-				}
-				tlsCfg, err = tlscfg.Load(cfg.NodemanCrt(), cfg.NodemanKey(), cfg.RootCrt())
-				return
-			}, nil,
-		),
 		// http client
 		a.WithComponent("http client",
 			func() (err error) {
-				httpClient, err = httpclient.New(httpclient.WithTLS(tlsCfg))
+				httpClient = httpclient.NewClientFactory()
 				return
-			},
-			func(ctx context.Context) error {
-				httpClient.CloseIdleConnections()
-				return nil
-			},
+			}, nil,
+			//func(ctx context.Context) error {
+			//	httpClient.CloseIdleConnections()
+			//	return nil
+			//},
 		),
 		// pool client
 		a.WithComponent("pool client",
@@ -101,7 +84,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// pool syncer
 		a.WithComponent("pool syncer",
 			func() (err error) {
-				poolSyncer, err = pool.NewSyncer(storage.PoolSyncUoW(), poolClient, nodeSyncer)
+				poolSyncer, err = pool.NewSyncer(storage.PoolUoW(), poolClient, nodeSyncer)
 				return
 			}, nil,
 		),
@@ -119,18 +102,10 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 			},
 		),
 
-		// keygen
-		a.WithComponent("keygen",
-			func() error {
-				kg = keygen.New()
-				return nil
-			}, nil,
-		),
-
 		// service
 		a.WithComponent("service",
 			func() (err error) {
-				s, err = service.New(syncMan, storage.ServiceUoW(), kg)
+				s, err = service.New(syncMan, storage.ServiceUoW())
 				return
 			}, nil,
 		),

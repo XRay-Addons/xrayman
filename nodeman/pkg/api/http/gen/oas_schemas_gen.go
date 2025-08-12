@@ -119,6 +119,10 @@ func (s *ListNodeResponse) SetNodes(val []Node) {
 // Ref: #/components/schemas/NewNodeRequest
 type NewNodeRequest struct {
 	Endpoint string `json:"Endpoint"`
+	// Base64-encoded 32-byte certificate hash.
+	CertHash []byte `json:"CertHash"`
+	// Base64-encoded 32-byte access secret.
+	AccessSecret []byte `json:"AccessSecret"`
 }
 
 // GetEndpoint returns the value of Endpoint.
@@ -126,16 +130,35 @@ func (s *NewNodeRequest) GetEndpoint() string {
 	return s.Endpoint
 }
 
+// GetCertHash returns the value of CertHash.
+func (s *NewNodeRequest) GetCertHash() []byte {
+	return s.CertHash
+}
+
+// GetAccessSecret returns the value of AccessSecret.
+func (s *NewNodeRequest) GetAccessSecret() []byte {
+	return s.AccessSecret
+}
+
 // SetEndpoint sets the value of Endpoint.
 func (s *NewNodeRequest) SetEndpoint(val string) {
 	s.Endpoint = val
 }
 
+// SetCertHash sets the value of CertHash.
+func (s *NewNodeRequest) SetCertHash(val []byte) {
+	s.CertHash = val
+}
+
+// SetAccessSecret sets the value of AccessSecret.
+func (s *NewNodeRequest) SetAccessSecret(val []byte) {
+	s.AccessSecret = val
+}
+
 // Ref: #/components/schemas/NewNodeResponse
 type NewNodeResponse struct {
-	ID           NodeID `json:"ID"`
-	Endpoint     string `json:"Endpoint"`
-	AccessSecret []byte `json:"AccessSecret"`
+	ID       NodeID `json:"ID"`
+	Endpoint string `json:"Endpoint"`
 }
 
 // GetID returns the value of ID.
@@ -148,11 +171,6 @@ func (s *NewNodeResponse) GetEndpoint() string {
 	return s.Endpoint
 }
 
-// GetAccessSecret returns the value of AccessSecret.
-func (s *NewNodeResponse) GetAccessSecret() []byte {
-	return s.AccessSecret
-}
-
 // SetID sets the value of ID.
 func (s *NewNodeResponse) SetID(val NodeID) {
 	s.ID = val
@@ -161,11 +179,6 @@ func (s *NewNodeResponse) SetID(val NodeID) {
 // SetEndpoint sets the value of Endpoint.
 func (s *NewNodeResponse) SetEndpoint(val string) {
 	s.Endpoint = val
-}
-
-// SetAccessSecret sets the value of AccessSecret.
-func (s *NewNodeResponse) SetAccessSecret(val []byte) {
-	s.AccessSecret = val
 }
 
 // Ref: #/components/schemas/Node

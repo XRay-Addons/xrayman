@@ -3,14 +3,9 @@ package config
 import "path"
 
 type Config struct {
-	Endpoint        string `env:"ENDPOINT"`
-	accessSecretB64 string `env:"ACCESS_SECRET"`
-	AccessSecret    []byte
-	XRayDir         string `env:"XRAY_DIR"`
-
-	nodeCrt string
-	nodeKey string
-	rootCrt string
+	Endpoint      string `env:"ENDPOINT"`
+	XRayDir       string `env:"XRAY_DIR"`
+	PersistentDir string `env:"PERSISTENT_DIR"`
 }
 
 func (c *Config) XRayExec() string {
@@ -25,7 +20,7 @@ func (c *Config) XRayClient() string {
 	return path.Join(c.XRayDir, "xray_client.json")
 }
 
-func (c *Config) HasCerts() bool {
+/*func (c *Config) HasCerts() bool {
 	return c.nodeCrt != "" ||
 		c.nodeKey != "" ||
 		c.rootCrt != ""
@@ -41,4 +36,4 @@ func (c *Config) NodeKey() string {
 
 func (c *Config) RootCrt() string {
 	return c.rootCrt
-}
+}*/

@@ -7,7 +7,7 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/syncservice"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/syncman"
 )
 
 type syncFn = func(ctx context.Context) ([]models.NodeSyncResult, error)
@@ -16,7 +16,7 @@ type Syncer struct {
 	fn syncFn
 }
 
-var _ syncservice.PoolSyncer = (*Syncer)(nil)
+var _ syncman.PoolSyncer = (*Syncer)(nil)
 
 func NewSyncer(uow UoW, client Client, syncer NodeSyncer) (*Syncer, error) {
 	if client == nil {

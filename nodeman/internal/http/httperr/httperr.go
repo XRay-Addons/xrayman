@@ -9,10 +9,12 @@ import (
 )
 
 var (
+	ErrInvaildPayload = new(http.StatusBadRequest,
+		"invalid request payload", "try to send valid")
 	ErrInternalServerError = new(http.StatusInternalServerError,
-		"Internal server error")
+		"internal server error")
 	ErrAuthToken = new(http.StatusUnauthorized,
-		"Invalid auth token", "try another one")
+		"invalid auth token", "try another one")
 	ErrUnknown = new(http.StatusInternalServerError,
 		"unknown error", "we really don't know")
 )

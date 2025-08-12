@@ -14,6 +14,7 @@ import (
 	"github.com/XRay-Addons/xrayman/node/internal/http/server"
 	"github.com/XRay-Addons/xrayman/node/internal/http/tlscfg"
 	a "github.com/XRay-Addons/xrayman/node/internal/infra/app"
+	"github.com/XRay-Addons/xrayman/node/internal/persistence"
 	"github.com/XRay-Addons/xrayman/node/internal/service"
 	"github.com/XRay-Addons/xrayman/node/internal/xray/xrayapi"
 	"github.com/XRay-Addons/xrayman/node/internal/xray/xraycfg"
@@ -32,6 +33,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		return nil, fmt.Errorf("%w: app init: logger", errdefs.ErrNilArgPassed)
 	}
 
+	var persistent *persistence.Persistent
 	var srvCfg *xraycfg.ServerCfg
 	var clientCfg *xraycfg.ClientCfg
 	var tlsCfg *tls.Config
@@ -46,6 +48,13 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 	var httpServer *server.HttpServer
 
 	app := a.New(
+		// persistent config
+		a.WithComponent("persistent",
+			func() (err error) {
+				persistent, err = persistence.New(cfg.PersistentDir, log)
+				return
+			}, nil,
+		),
 		// server config
 		a.WithComponent("server cfg",
 			func() (err error) {
@@ -63,11 +72,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// TLS config
 		a.WithComponent("tls cfg",
 			func() (err error) {
-				if !cfg.HasCerts() {
-					log.Warn("xray dir contains NO certs, encryption disabled. use it only for testing!!!")
-					return
-				}
-				tlsCfg, err = tlscfg.Load(cfg.NodeCrt(), cfg.NodeKey(), cfg.RootCrt())
+				tlsCfg, err = tlscfg.Load(persistent.CertPath(), persistent.KeyPath())
 				return
 			}, nil,
 		),
@@ -108,12 +113,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// security
 		a.WithComponent("security",
 			func() (err error) {
-				if len(cfg.AccessSecret) == 0 {
-					log.Warn("access key is empty, authentification disabled. use it only for testing!!!")
-					sec = security.NewBackdoor()
-					return
-				}
-				sec = security.New([]byte(cfg.AccessSecret))
+				sec = security.New([]byte(persistent.JWTSecret()))
 				return
 			}, nil,
 		),

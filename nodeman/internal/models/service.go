@@ -1,13 +1,14 @@
 package models
 
 type NewNodeParams struct {
-	Endpoint string
+	Endpoint     string
+	CertHash     CertHash
+	AccessSecret AccessSecret
 }
 
 type NewNodeResult struct {
-	ID           NodeID
-	Endpoint     string
-	AccessSecret []byte
+	ID       NodeID
+	Endpoint string
 }
 
 type StartNodeParams struct {

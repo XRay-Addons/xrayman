@@ -14,9 +14,13 @@ type ClientConfig struct {
 	VlessUUIDField string
 }
 
+type AccessSecret = [32]byte
+type CertHash = [32]byte
+
 type NodeConnectionInfo struct {
 	Endpoint     string
-	AccessSecret []byte
+	AccessSecret AccessSecret
+	CertHash     CertHash
 }
 
 type NodeID int

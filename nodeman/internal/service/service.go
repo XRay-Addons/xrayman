@@ -12,25 +12,20 @@ import (
 type Service struct {
 	syncman SyncMan
 	uow     UoW
-	keygen  Keygen
 }
 
 var _ handler.Service = (*Service)(nil)
 
-func New(syncman SyncMan, uow UoW, keygen Keygen) (*Service, error) {
+func New(syncman SyncMan, uow UoW) (*Service, error) {
 	if syncman == nil {
 		return nil, fmt.Errorf("service init: syncman: %w", errdefs.ErrNilArgPassed)
 	}
 	if uow == nil {
 		return nil, fmt.Errorf("service init: uow: %w", errdefs.ErrNilArgPassed)
 	}
-	if keygen == nil {
-		return nil, fmt.Errorf("service init: keygen: %w", errdefs.ErrNilArgPassed)
-	}
 	return &Service{
 		syncman: syncman,
 		uow:     uow,
-		keygen:  keygen,
 	}, nil
 }
 
@@ -38,13 +33,11 @@ func (s *Service) NewNode(ctx context.Context, p models.NewNodeParams) (*models.
 	if s == nil {
 		return nil, fmt.Errorf("service: start: %w", errdefs.ErrNilObjectCall)
 	}
-	accessSecret, err := s.keygen.GenerateHS256Secret()
-	if err != nil {
-		return nil, fmt.Errorf("new node: %w", err)
-	}
 	var node models.Node
-	node.Config.ConnectionInfo.AccessSecret = accessSecret
 	node.Config.ConnectionInfo.Endpoint = p.Endpoint
+	node.Config.ConnectionInfo.AccessSecret = p.AccessSecret
+	node.Config.ConnectionInfo.CertHash = p.CertHash
+
 	node.CurrentStatus = models.NodeStatusStopped
 	node.TargetStatus = models.NodeStatusStopped
 	if err := s.uow.Do(ctx, func(uowctx UoWContext) (err error) {
@@ -54,9 +47,8 @@ func (s *Service) NewNode(ctx context.Context, p models.NewNodeParams) (*models.
 		return nil, fmt.Errorf("service: new node: %w", err)
 	}
 	return &models.NewNodeResult{
-		ID:           node.ID,
-		Endpoint:     node.Config.ConnectionInfo.Endpoint,
-		AccessSecret: node.Config.ConnectionInfo.AccessSecret,
+		ID:       node.ID,
+		Endpoint: node.Config.ConnectionInfo.Endpoint,
 	}, nil
 }
 

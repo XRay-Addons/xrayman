@@ -61,6 +61,7 @@ func WithSignalCancel() Option {
 			close: func(error) {
 				signal.Stop(sigCh)
 				close(sigCh)
+				signal.Reset(syscall.SIGINT, syscall.SIGTERM)
 			},
 		})
 	}
@@ -193,9 +194,10 @@ func (app *App) close() error {
 	var closeErrs []error
 	for i := len(app.components) - 1; i >= 0; i-- {
 		ctx, cancel := context.WithTimeout(context.Background(), app.cancelTimeout)
-		defer cancel()
+		err := app.components[i].close(ctx)
+		cancel()
 
-		if err := app.components[i].close(ctx); err != nil {
+		if err != nil {
 			closeErrs = append(closeErrs, err)
 		}
 	}

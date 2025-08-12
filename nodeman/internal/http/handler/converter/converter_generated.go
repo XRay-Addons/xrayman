@@ -22,14 +22,24 @@ func ConvertListNodesResult(source *models.ListNodeResult) *gen.ListNodeResponse
 	}
 	return pApiListNodeResponse
 }
-func ConvertNewNodeRequest(source *gen.NewNodeRequest) *models.NewNodeParams {
+func ConvertNewNodeRequest(source *gen.NewNodeRequest) (*models.NewNodeParams, error) {
 	var pModelsNewNodeParams *models.NewNodeParams
 	if source != nil {
 		var modelsNewNodeParams models.NewNodeParams
 		modelsNewNodeParams.Endpoint = (*source).Endpoint
+		byteList, err := ConvertCertHash((*source).CertHash)
+		if err != nil {
+			return nil, err
+		}
+		modelsNewNodeParams.CertHash = byteList
+		byteList2, err := ConvertCertHash((*source).AccessSecret)
+		if err != nil {
+			return nil, err
+		}
+		modelsNewNodeParams.AccessSecret = byteList2
 		pModelsNewNodeParams = &modelsNewNodeParams
 	}
-	return pModelsNewNodeParams
+	return pModelsNewNodeParams, nil
 }
 func ConvertNewNodeResult(source *models.NewNodeResult) *gen.NewNodeResponse {
 	var pApiNewNodeResponse *gen.NewNodeResponse
@@ -37,33 +47,27 @@ func ConvertNewNodeResult(source *models.NewNodeResult) *gen.NewNodeResponse {
 		var apiNewNodeResponse gen.NewNodeResponse
 		apiNewNodeResponse.ID = ConvertNodeID((*source).ID)
 		apiNewNodeResponse.Endpoint = (*source).Endpoint
-		if (*source).AccessSecret != nil {
-			apiNewNodeResponse.AccessSecret = make([]uint8, len((*source).AccessSecret))
-			for i := 0; i < len((*source).AccessSecret); i++ {
-				apiNewNodeResponse.AccessSecret[i] = (*source).AccessSecret[i]
-			}
-		}
 		pApiNewNodeResponse = &apiNewNodeResponse
 	}
 	return pApiNewNodeResponse
 }
-func ConvertStartNodeRequest(source *gen.StartNodeRequest) *models.StartNodeParams {
+func ConvertStartNodeRequest(source *gen.StartNodeRequest) (*models.StartNodeParams, error) {
 	var pModelsStartNodeParams *models.StartNodeParams
 	if source != nil {
 		var modelsStartNodeParams models.StartNodeParams
 		modelsStartNodeParams.ID = RConvertNodeID((*source).ID)
 		pModelsStartNodeParams = &modelsStartNodeParams
 	}
-	return pModelsStartNodeParams
+	return pModelsStartNodeParams, nil
 }
-func ConvertStopNodeRequest(source *gen.StopNodeRequest) *models.StopNodeParams {
+func ConvertStopNodeRequest(source *gen.StopNodeRequest) (*models.StopNodeParams, error) {
 	var pModelsStopNodeParams *models.StopNodeParams
 	if source != nil {
 		var modelsStopNodeParams models.StopNodeParams
 		modelsStopNodeParams.ID = RConvertNodeID((*source).ID)
 		pModelsStopNodeParams = &modelsStopNodeParams
 	}
-	return pModelsStopNodeParams
+	return pModelsStopNodeParams, nil
 }
 func modelsClientConfigToApiClientConfig(source models.ClientConfig) gen.ClientConfig {
 	var apiClientConfig gen.ClientConfig
@@ -81,11 +85,9 @@ func modelsNodeConfigToApiNodeConfig(source models.NodeConfig) gen.NodeConfig {
 func modelsNodeConnectionInfoToApiNodeConnectionInfo(source models.NodeConnectionInfo) gen.NodeConnectionInfo {
 	var apiNodeConnectionInfo gen.NodeConnectionInfo
 	apiNodeConnectionInfo.Endpoint = source.Endpoint
-	if source.AccessSecret != nil {
-		apiNodeConnectionInfo.AccessSecret = make([]uint8, len(source.AccessSecret))
-		for i := 0; i < len(source.AccessSecret); i++ {
-			apiNodeConnectionInfo.AccessSecret[i] = source.AccessSecret[i]
-		}
+	apiNodeConnectionInfo.AccessSecret = make([]uint8, len(source.AccessSecret))
+	for i := 0; i < len(source.AccessSecret); i++ {
+		apiNodeConnectionInfo.AccessSecret[i] = source.AccessSecret[i]
 	}
 	return apiNodeConnectionInfo
 }

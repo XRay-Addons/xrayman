@@ -13,8 +13,8 @@ import (
 )
 
 type PoolClient struct {
-	sec        *PoolSecurity
-	httpClient *http.Client
+	sec        PoolSecurity
+	httpClient HTTPClientFactory
 }
 
 var _ pool.Client = (*PoolClient)(nil)
@@ -33,15 +33,15 @@ func WithSecExpiration(exp time.Duration) Option {
 	}
 }
 
-func WithHTTPClient(hc *http.Client) Option {
-	return func(pc *PoolClient) {
-		pc.httpClient = hc
+func WithHTTPClient(h HTTPClientFactory) Option {
+	return func(s *PoolClient) {
+		s.httpClient = h
 	}
 }
 
 func NewPoolClient(opts ...Option) (*PoolClient, error) {
 	pc := &PoolClient{
-		sec: &PoolSecurity{
+		sec: PoolSecurity{
 			issuer:     "node manager",
 			expiration: 10 * time.Minute,
 		},
@@ -58,11 +58,22 @@ func (c *PoolClient) GetNodeClient(ctx context.Context,
 	if c == nil {
 		return nil, fmt.Errorf("node client factory: get: %w", errdefs.ErrNilObjectCall)
 	}
+
+	var err error
+	var httpClient *http.Client
+	if c.httpClient != nil {
+		if httpClient, err = c.httpClient.GetNodeClient(cfg.CertHash); err != nil {
+			return nil, fmt.Errorf("node client factory: get: %w", err)
+		}
+	}
+
 	nodeSec, err := c.sec.GetNodeSecurity(cfg.AccessSecret)
 	if err != nil {
 		return nil, fmt.Errorf("node client factory: get: %w", err)
 	}
-	client, err := api.NewClient(cfg.Endpoint, nodeSec, api.WithClient(c.httpClient))
+
+	client, err := api.NewClient(cfg.Endpoint,
+		nodeSec, api.WithClient(httpClient))
 	if err != nil {
 		return nil, fmt.Errorf("node client init: %w", err)
 	}

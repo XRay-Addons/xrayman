@@ -6,11 +6,12 @@ import (
 	"time"
 
 	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	"github.com/golang-jwt/jwt/v4"
 )
 
 type NodeSecurity struct {
-	secret     []byte
+	secret     models.AccessSecret
 	issuer     string
 	expiration time.Duration
 }

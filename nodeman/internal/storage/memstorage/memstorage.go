@@ -7,7 +7,7 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/poolsync"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/pool"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service"
 )
 
@@ -35,7 +35,7 @@ func (s *Storage) ServiceUoW() service.UoW {
 	return &serviceUoW{storage: s}
 }
 
-func (s *Storage) PoolSyncUoW() poolsync.UoW {
+func (s *Storage) PoolUoW() pool.UoW {
 	return &poolsyncUoW{storage: s}
 }
 
@@ -48,7 +48,7 @@ func (s *Storage) DoService(ctx context.Context, fn service.UoWFn) error {
 	return fn(s)
 }
 
-func (s *Storage) DoPoolSync(ctx context.Context, fn poolsync.UoWFn) error {
+func (s *Storage) DoPoolSync(ctx context.Context, fn pool.UoWFn) error {
 	if s == nil {
 		return fmt.Errorf("storage: do pool sync: %w", errdefs.ErrNilObjectCall)
 	}
@@ -58,15 +58,15 @@ func (s *Storage) DoPoolSync(ctx context.Context, fn poolsync.UoWFn) error {
 }
 
 var _ service.UoWContext = (*Storage)(nil)
-var _ poolsync.UoWContext = (*Storage)(nil)
+var _ pool.UoWContext = (*Storage)(nil)
 var _ service.UoW = (*serviceUoW)(nil)
-var _ poolsync.UoW = (*poolsyncUoW)(nil)
+var _ pool.UoW = (*poolsyncUoW)(nil)
 
 func (s *serviceUoW) Do(ctx context.Context, fn service.UoWFn) error {
 	return s.storage.DoService(ctx, fn)
 }
 
-func (s *poolsyncUoW) Do(ctx context.Context, fn poolsync.UoWFn) error {
+func (s *poolsyncUoW) Do(ctx context.Context, fn pool.UoWFn) error {
 	return s.storage.DoPoolSync(ctx, fn)
 }
 

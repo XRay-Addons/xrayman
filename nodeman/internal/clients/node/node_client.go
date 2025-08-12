@@ -8,14 +8,14 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/clients/node/converter"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/poolsync"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/pool"
 )
 
 type NodeClient struct {
 	client *api.Client
 }
 
-var _ poolsync.NodeClient = (*NodeClient)(nil)
+var _ pool.NodeClient = (*NodeClient)(nil)
 
 func (c *NodeClient) Start(ctx context.Context, users []models.UserProfile) (
 	*models.ClientConfig, error,

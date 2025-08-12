@@ -39,7 +39,10 @@ func (h *Handler) NewNode(ctx context.Context, req *api.NewNodeRequest) (*api.Ne
 	if h == nil || h.service == nil {
 		return nil, fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
 	}
-	p := converter.ConvertNewNodeRequest(req)
+	p, err := converter.ConvertNewNodeRequest(req)
+	if err != nil {
+		return nil, httperr.ErrInvaildPayload
+	}
 	res, err := h.service.NewNode(ctx, *p)
 	if err != nil {
 		h.logError(ctx, err)
@@ -52,8 +55,11 @@ func (h *Handler) StartNode(ctx context.Context, req *api.StartNodeRequest) erro
 	if h == nil || h.service == nil {
 		return fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
 	}
-	p := converter.ConvertStartNodeRequest(req)
-	_, err := h.service.StartNode(ctx, *p)
+	p, err := converter.ConvertStartNodeRequest(req)
+	if err != nil {
+		return httperr.ErrInvaildPayload
+	}
+	_, err = h.service.StartNode(ctx, *p)
 	if err != nil {
 		h.logError(ctx, err)
 		return httperr.ErrInternalServerError
@@ -65,8 +71,11 @@ func (h *Handler) StopNode(ctx context.Context, req *api.StopNodeRequest) error 
 	if h == nil || h.service == nil {
 		return fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
 	}
-	p := converter.ConvertStopNodeRequest(req)
-	_, err := h.service.StopNode(ctx, *p)
+	p, err := converter.ConvertStopNodeRequest(req)
+	if err != nil {
+		return httperr.ErrInvaildPayload
+	}
+	_, err = h.service.StopNode(ctx, *p)
 	if err != nil {
 		h.logError(ctx, err)
 		return httperr.ErrInternalServerError

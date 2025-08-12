@@ -61,6 +61,7 @@ func WithSignalCancel() Option {
 			close: func(error) {
 				signal.Stop(sigCh)
 				close(sigCh)
+				signal.Reset(syscall.SIGINT, syscall.SIGTERM)
 			},
 		})
 	}
