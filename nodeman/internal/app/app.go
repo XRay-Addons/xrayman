@@ -16,11 +16,11 @@ import (
 	a "github.com/XRay-Addons/xrayman/nodeman/internal/infra/app"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/httpclient"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/keygen"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/node"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/pool"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/storage/memstorage"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/sync/nodesync"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/sync/poolsync"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/sync/syncservice"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/syncman"
 
 	"go.uber.org/zap"
 )
@@ -40,9 +40,9 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 	var httpClient *http.Client
 	var poolClient *client.PoolClient
 
-	var nodeSyncer *nodesync.Syncer
-	var poolSyncer *poolsync.Syncer
-	var syncService *syncservice.SyncService
+	var nodeSyncer *node.Syncer
+	var poolSyncer *pool.Syncer
+	var syncMan *syncman.Manager
 
 	var kg *keygen.Keygen
 
@@ -94,25 +94,25 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// node syncer
 		a.WithComponent("node syncer",
 			func() error {
-				nodeSyncer = nodesync.New()
+				nodeSyncer = node.NewSyncer()
 				return nil
 			}, nil,
 		),
 		// pool syncer
 		a.WithComponent("pool syncer",
 			func() (err error) {
-				poolSyncer, err = poolsync.New(storage.PoolSyncUoW(), poolClient, nodeSyncer)
+				poolSyncer, err = pool.NewSyncer(storage.PoolSyncUoW(), poolClient, nodeSyncer)
 				return
 			}, nil,
 		),
-		// sync service
-		a.WithComponent("sync service",
+		// sync manager
+		a.WithComponent("sync man",
 			func() (err error) {
-				syncService, err = syncservice.New(poolSyncer, syncservice.WithLog(log))
+				syncMan, err = syncman.New(poolSyncer, syncman.WithLog(log))
 				return
 			},
 			func(ctx context.Context) error {
-				if err := syncService.Close(); err != nil {
+				if err := syncMan.Close(); err != nil {
 					return fmt.Errorf("app close: sync service: %w", err)
 				}
 				return nil
@@ -130,7 +130,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// service
 		a.WithComponent("service",
 			func() (err error) {
-				s, err = service.New(storage.ServiceUoW(), syncService, kg)
+				s, err = service.New(syncMan, storage.ServiceUoW(), kg)
 				return
 			}, nil,
 		),

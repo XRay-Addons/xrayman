@@ -7,8 +7,8 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/poolsync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/sync/poolsync"
 )
 
 type Storage struct {

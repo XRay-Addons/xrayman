@@ -1,4 +1,4 @@
-package poolsync
+package pool
 
 import (
 	"context"

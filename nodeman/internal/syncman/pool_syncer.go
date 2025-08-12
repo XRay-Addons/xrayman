@@ -1,4 +1,4 @@
-package syncservice
+package syncman
 
 import (
 	"context"

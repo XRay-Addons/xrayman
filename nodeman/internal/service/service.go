@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
@@ -11,27 +10,27 @@ import (
 )
 
 type Service struct {
-	uow    UoW
-	sync   SyncService
-	keygen Keygen
+	syncman SyncMan
+	uow     UoW
+	keygen  Keygen
 }
 
 var _ handler.Service = (*Service)(nil)
 
-func New(uow UoW, sync SyncService, keygen Keygen) (*Service, error) {
+func New(syncman SyncMan, uow UoW, keygen Keygen) (*Service, error) {
+	if syncman == nil {
+		return nil, fmt.Errorf("service init: syncman: %w", errdefs.ErrNilArgPassed)
+	}
 	if uow == nil {
 		return nil, fmt.Errorf("service init: uow: %w", errdefs.ErrNilArgPassed)
-	}
-	if sync == nil {
-		return nil, fmt.Errorf("service init: sync: %w", errdefs.ErrNilArgPassed)
 	}
 	if keygen == nil {
 		return nil, fmt.Errorf("service init: keygen: %w", errdefs.ErrNilArgPassed)
 	}
 	return &Service{
-		uow:    uow,
-		sync:   sync,
-		keygen: keygen,
+		syncman: syncman,
+		uow:     uow,
+		keygen:  keygen,
 	}, nil
 }
 
@@ -111,7 +110,7 @@ func (s *Service) setNodeStatus(ctx context.Context, id models.NodeID, status mo
 }
 
 func (s *Service) syncNode(ctx context.Context, id models.NodeID) error {
-	syncResults, err := s.sync.SyncNodesPool(ctx)
+	syncResults, err := s.syncman.SyncNodesPool(ctx)
 	if err != nil {
 		return fmt.Errorf("service: sync node: %w", err)
 	}
@@ -124,12 +123,12 @@ func (s *Service) syncNode(ctx context.Context, id models.NodeID) error {
 		}
 		return fmt.Errorf("service: sync node: %w", syncRes.Err)
 	}
-	return fmt.Errorf("servuce: sync node: node not found: %w", errdefs.ErrIPE)
+	return fmt.Errorf("service: sync node: node not found: %w", errdefs.ErrIPE)
 }
 
 // sync all nodes, return nil if at least one node synced ok
-func (s *Service) syncAllNodes(ctx context.Context) error {
-	syncResults, err := s.sync.SyncNodesPool(ctx)
+/*func (s *Service) syncAllNodes(ctx context.Context) error {
+	syncResults, err := s.syncman.SyncNodesPool(ctx)
 	if err != nil {
 		return fmt.Errorf("service: sync all nodes: %w", err)
 	}
@@ -144,4 +143,4 @@ func (s *Service) syncAllNodes(ctx context.Context) error {
 		errs = append(errs, syncRes.Err)
 	}
 	return fmt.Errorf("servuce: sync all nodes: %w", errors.Join(errs...))
-}
+}*/

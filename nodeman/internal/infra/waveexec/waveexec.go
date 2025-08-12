@@ -23,33 +23,33 @@ import (
 // Notes:
 // - Context passed to Invoke uses only as canceller
 
-type Fn = func(ctx context.Context) (any, error)
+type Fn[T any] = func(ctx context.Context) (T, error)
 
-type WaveExecutor struct {
-	fn       execFn
-	nextWave []execWaveItem
+type WaveExecutor[T any] struct {
+	fn       execFn[T]
+	nextWave []execWaveItem[T]
 	reqCh    chan struct{}
 	mu       sync.Mutex
 	done     chan struct{}
 }
 
-type execFn = func(context.Context) execResult
+type execFn[T any] = func(context.Context) execResult[T]
 
-type execResult struct {
-	result any
+type execResult[T any] struct {
+	result T
 	err    error
 }
 
-type execWaveItem struct {
+type execWaveItem[T any] struct {
 	ctx    context.Context
-	result chan execResult
+	result chan execResult[T]
 }
 
-func NewWaveExecutor(fn Fn) *WaveExecutor {
-	we := &WaveExecutor{
-		fn: func(ctx context.Context) execResult {
+func NewWaveExecutor[T any](fn Fn[T]) *WaveExecutor[T] {
+	we := &WaveExecutor[T]{
+		fn: func(ctx context.Context) execResult[T] {
 			res, err := fn(ctx)
-			return execResult{result: res, err: err}
+			return execResult[T]{result: res, err: err}
 		},
 		reqCh: make(chan struct{}, 1),
 		done:  make(chan struct{}),
@@ -58,15 +58,15 @@ func NewWaveExecutor(fn Fn) *WaveExecutor {
 	return we
 }
 
-func (we *WaveExecutor) Close() {
+func (we *WaveExecutor[T]) Close() {
 	close(we.reqCh)
 	<-we.done
 }
 
-func (we *WaveExecutor) Invoke(ctx context.Context) (any, error) {
-	waveItem := execWaveItem{
+func (we *WaveExecutor[T]) Invoke(ctx context.Context) (any, error) {
+	waveItem := execWaveItem[T]{
 		ctx:    ctx,
-		result: make(chan execResult, 1),
+		result: make(chan execResult[T], 1),
 	}
 
 	we.mu.Lock()
@@ -91,7 +91,7 @@ func (we *WaveExecutor) Invoke(ctx context.Context) (any, error) {
 	}
 }
 
-func (we *WaveExecutor) runExecLoop() {
+func (we *WaveExecutor[T]) runExecLoop() {
 	defer close(we.done)
 	for range we.reqCh {
 		we.mu.Lock()
@@ -120,7 +120,7 @@ func (we *WaveExecutor) runExecLoop() {
 	}
 }
 
-func (we *WaveExecutor) anyAliveContext(items ...execWaveItem) context.Context {
+func (we *WaveExecutor[T]) anyAliveContext(items ...execWaveItem[T]) context.Context {
 	if len(items) == 0 {
 		return context.Background()
 	}
