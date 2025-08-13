@@ -14,7 +14,7 @@ import (
 	"github.com/XRay-Addons/xrayman/node/internal/http/server"
 	"github.com/XRay-Addons/xrayman/node/internal/http/tlscfg"
 	a "github.com/XRay-Addons/xrayman/node/internal/infra/app"
-	"github.com/XRay-Addons/xrayman/node/internal/persistence"
+	"github.com/XRay-Addons/xrayman/node/internal/seccfg"
 	"github.com/XRay-Addons/xrayman/node/internal/service"
 	"github.com/XRay-Addons/xrayman/node/internal/xray/xrayapi"
 	"github.com/XRay-Addons/xrayman/node/internal/xray/xraycfg"
@@ -33,7 +33,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		return nil, fmt.Errorf("%w: app init: logger", errdefs.ErrNilArgPassed)
 	}
 
-	var persistent *persistence.Persistent
+	var secCfg *seccfg.SecurityConfig
 	var srvCfg *xraycfg.ServerCfg
 	var clientCfg *xraycfg.ClientCfg
 	var tlsCfg *tls.Config
@@ -42,7 +42,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 
 	var s *service.Service
 	var h *handler.Handler
-	var sec api.SecurityHandler
+	var apiSec api.SecurityHandler
 	var r http.Handler
 
 	var httpServer *server.HttpServer
@@ -51,7 +51,11 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// persistent config
 		a.WithComponent("persistent",
 			func() (err error) {
-				persistent, err = persistence.New(cfg.PersistentDir, log)
+				secCfg, err = seccfg.New(cfg.PersistentDir)
+				if err != nil {
+					return
+				}
+				log.Info("node access", zap.String("key", secCfg.AccessKey.String()))
 				return
 			}, nil,
 		),
@@ -72,7 +76,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// TLS config
 		a.WithComponent("tls cfg",
 			func() (err error) {
-				tlsCfg, err = tlscfg.Load(persistent.CertPath(), persistent.KeyPath())
+				tlsCfg, err = tlscfg.Load(secCfg.Cert, secCfg.Key)
 				return
 			}, nil,
 		),
@@ -113,14 +117,15 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// security
 		a.WithComponent("security",
 			func() (err error) {
-				sec = security.New([]byte(persistent.JWTSecret()))
+				jwtsec := secCfg.AccessKey.AccessSecret
+				apiSec = security.New(jwtsec)
 				return
 			}, nil,
 		),
 		// router
 		a.WithComponent("router",
 			func() (err error) {
-				r, err = router.New(h, sec, router.WithLogger(log))
+				r, err = router.New(h, apiSec, router.WithLogger(log))
 				return
 			}, nil,
 		),

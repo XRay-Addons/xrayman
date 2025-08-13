@@ -5,17 +5,18 @@ import (
 	"fmt"
 
 	"github.com/XRay-Addons/xrayman/node/internal/http/httperr"
+	"github.com/XRay-Addons/xrayman/node/internal/models"
 	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
 	"github.com/golang-jwt/jwt"
 )
 
 type Handler struct {
-	secret []byte
+	secret models.AccessSecret
 }
 
 var _ api.SecurityHandler = (*Handler)(nil)
 
-func New(secret []byte) *Handler {
+func New(secret models.AccessSecret) *Handler {
 	return &Handler{secret: secret}
 }
 
@@ -28,7 +29,7 @@ func (s *Handler) HandleBearerAuth(ctx context.Context,
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 			}
-			return s.secret, nil
+			return s.secret[:], nil
 		},
 	)
 
