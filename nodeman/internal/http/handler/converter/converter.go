@@ -1,7 +1,6 @@
 package converter
 
 import (
-	"encoding/base64"
 	"fmt"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
@@ -11,7 +10,7 @@ import (
 // goverter:converter
 // goverter:output:format function
 // goverter:output:file ./converter_generated.go
-// goverter:extend ConvertNodeID RConvertNodeID ConvertNodeStatusResult ConvertAccessSecret ConvertCertHash
+// goverter:extend ConvertNodeID RConvertNodeID ConvertNodeStatusResult ConvertAccessKey RConvertAccessKey
 //
 //go:generate goverter gen .
 type Converter interface {
@@ -24,51 +23,26 @@ type Converter interface {
 	ConvertListNodesResult(r *models.ListNodeResult) *api.ListNodeResponse
 }
 
-// goverter:extend
 func ConvertNodeID(i models.NodeID) api.NodeID {
 	return api.NodeID(i)
 }
 
-// goverter:extend
 func RConvertNodeID(i api.NodeID) models.NodeID {
 	return models.NodeID(i)
 }
 
-// goverter:extend
-func ConvertAccessSecret(s []byte) (models.AccessSecret, error) {
-	var secret models.AccessSecret
-
-	decoded, err := base64.StdEncoding.DecodeString(string(s))
-	if err != nil {
-		return secret, fmt.Errorf("base64 decode error: %w", err)
+func ConvertAccessKey(s string) (models.AccessKey, error) {
+	var accessKey models.AccessKey
+	if err := accessKey.UnmarshalText([]byte(s)); err != nil {
+		return accessKey, fmt.Errorf("convert access key: %w", err)
 	}
-
-	if len(decoded) != len(secret) {
-		return secret, fmt.Errorf("invalid length: expected %d, got %d", len(secret), len(decoded))
-	}
-
-	copy(secret[:], decoded)
-	return secret, nil
+	return accessKey, nil
 }
 
-// goverter:extend
-func ConvertCertHash(h []byte) (models.CertHash, error) {
-	var hash models.CertHash
-
-	decoded, err := base64.StdEncoding.DecodeString(string(h))
-	if err != nil {
-		return hash, fmt.Errorf("base64 decode error: %w", err)
-	}
-
-	if len(decoded) != len(hash) {
-		return hash, fmt.Errorf("invalid length: expected %d, got %d", len(hash), len(decoded))
-	}
-
-	copy(hash[:], decoded)
-	return hash, nil
+func RConvertAccessKey(key models.AccessKey) string {
+	return key.String()
 }
 
-// goverter:extend
 func ConvertNodeStatusResult(source models.NodeStatus) api.NodeStatus {
 	var response api.NodeStatus
 	switch source {

@@ -62,12 +62,12 @@ func (c *PoolClient) GetNodeClient(ctx context.Context,
 	var err error
 	var httpClient *http.Client
 	if c.httpClient != nil {
-		if httpClient, err = c.httpClient.GetNodeClient(cfg.CertHash); err != nil {
+		if httpClient, err = c.httpClient.GetNodeClient(cfg.AccessKey.CertHash); err != nil {
 			return nil, fmt.Errorf("node client factory: get: %w", err)
 		}
 	}
 
-	nodeSec, err := c.sec.GetNodeSecurity(cfg.AccessSecret)
+	nodeSec, err := c.sec.GetNodeSecurity(cfg.AccessKey.AccessSecret)
 	if err != nil {
 		return nil, fmt.Errorf("node client factory: get: %w", err)
 	}

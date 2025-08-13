@@ -375,19 +375,14 @@ func (s *NewNodeRequest) encodeFields(e *jx.Encoder) {
 		e.Str(s.Endpoint)
 	}
 	{
-		e.FieldStart("CertHash")
-		e.Base64(s.CertHash)
-	}
-	{
-		e.FieldStart("AccessSecret")
-		e.Base64(s.AccessSecret)
+		e.FieldStart("AccessKey")
+		e.Str(s.AccessKey)
 	}
 }
 
-var jsonFieldsNameOfNewNodeRequest = [3]string{
+var jsonFieldsNameOfNewNodeRequest = [2]string{
 	0: "Endpoint",
-	1: "CertHash",
-	2: "AccessSecret",
+	1: "AccessKey",
 }
 
 // Decode decodes NewNodeRequest from json.
@@ -411,29 +406,17 @@ func (s *NewNodeRequest) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"Endpoint\"")
 			}
-		case "CertHash":
+		case "AccessKey":
 			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
-				v, err := d.Base64()
-				s.CertHash = []byte(v)
+				v, err := d.Str()
+				s.AccessKey = string(v)
 				if err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"CertHash\"")
-			}
-		case "AccessSecret":
-			requiredBitSet[0] |= 1 << 2
-			if err := func() error {
-				v, err := d.Base64()
-				s.AccessSecret = []byte(v)
-				if err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"AccessSecret\"")
+				return errors.Wrap(err, "decode field \"AccessKey\"")
 			}
 		default:
 			return d.Skip()
@@ -445,7 +428,7 @@ func (s *NewNodeRequest) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000111,
+		0b00000011,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -864,14 +847,14 @@ func (s *NodeConnectionInfo) encodeFields(e *jx.Encoder) {
 		e.Str(s.Endpoint)
 	}
 	{
-		e.FieldStart("AccessSecret")
-		e.Base64(s.AccessSecret)
+		e.FieldStart("AccessKey")
+		e.Str(s.AccessKey)
 	}
 }
 
 var jsonFieldsNameOfNodeConnectionInfo = [2]string{
 	0: "Endpoint",
-	1: "AccessSecret",
+	1: "AccessKey",
 }
 
 // Decode decodes NodeConnectionInfo from json.
@@ -895,17 +878,17 @@ func (s *NodeConnectionInfo) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"Endpoint\"")
 			}
-		case "AccessSecret":
+		case "AccessKey":
 			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
-				v, err := d.Base64()
-				s.AccessSecret = []byte(v)
+				v, err := d.Str()
+				s.AccessKey = string(v)
 				if err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"AccessSecret\"")
+				return errors.Wrap(err, "decode field \"AccessKey\"")
 			}
 		default:
 			return d.Skip()

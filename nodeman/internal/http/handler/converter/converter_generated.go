@@ -27,16 +27,11 @@ func ConvertNewNodeRequest(source *gen.NewNodeRequest) (*models.NewNodeParams, e
 	if source != nil {
 		var modelsNewNodeParams models.NewNodeParams
 		modelsNewNodeParams.Endpoint = (*source).Endpoint
-		byteList, err := ConvertCertHash((*source).CertHash)
+		modelsAccessKey, err := ConvertAccessKey((*source).AccessKey)
 		if err != nil {
 			return nil, err
 		}
-		modelsNewNodeParams.CertHash = byteList
-		byteList2, err := ConvertCertHash((*source).AccessSecret)
-		if err != nil {
-			return nil, err
-		}
-		modelsNewNodeParams.AccessSecret = byteList2
+		modelsNewNodeParams.AccessKey = modelsAccessKey
 		pModelsNewNodeParams = &modelsNewNodeParams
 	}
 	return pModelsNewNodeParams, nil
@@ -85,10 +80,7 @@ func modelsNodeConfigToApiNodeConfig(source models.NodeConfig) gen.NodeConfig {
 func modelsNodeConnectionInfoToApiNodeConnectionInfo(source models.NodeConnectionInfo) gen.NodeConnectionInfo {
 	var apiNodeConnectionInfo gen.NodeConnectionInfo
 	apiNodeConnectionInfo.Endpoint = source.Endpoint
-	apiNodeConnectionInfo.AccessSecret = make([]uint8, len(source.AccessSecret))
-	for i := 0; i < len(source.AccessSecret); i++ {
-		apiNodeConnectionInfo.AccessSecret[i] = source.AccessSecret[i]
-	}
+	apiNodeConnectionInfo.AccessKey = RConvertAccessKey(source.AccessKey)
 	return apiNodeConnectionInfo
 }
 func modelsNodeToApiNode(source models.Node) gen.Node {

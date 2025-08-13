@@ -26,8 +26,8 @@ func (s *NodeSecurity) BearerAuth(ctx context.Context,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	signed, err := token.SignedString(s.secret)
+	// secret is [32]byte, but token require []byte
+	signed, err := token.SignedString(s.secret[:])
 	if err != nil {
 		return api.BearerAuth{}, fmt.Errorf("failed to sign JWT: %w", err)
 	}

@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"net"
@@ -112,6 +113,10 @@ func verifyPeerFn(certHash CertHash) func(rawCerts [][]byte, verifiedChains [][]
 			return err
 		}
 		sum := sha256Sum(cert.Raw)
+		fmt.Println(base64.StdEncoding.EncodeToString(cert.Raw))
+		fmt.Println(base64.StdEncoding.EncodeToString(sum[:]))
+		fmt.Println(base64.StdEncoding.EncodeToString(certHash[:]))
+
 		if sum != certHash {
 			return errors.New("certificate pinning failed")
 		}

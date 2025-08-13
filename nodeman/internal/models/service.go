@@ -1,9 +1,8 @@
 package models
 
 type NewNodeParams struct {
-	Endpoint     string
-	CertHash     CertHash
-	AccessSecret AccessSecret
+	Endpoint  string
+	AccessKey AccessKey
 }
 
 type NewNodeResult struct {

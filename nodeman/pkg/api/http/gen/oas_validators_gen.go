@@ -58,39 +58,20 @@ func (s *NewNodeRequest) Validate() error {
 	var failures []validate.FieldError
 	if err := func() error {
 		if err := (validate.String{
-			MinLength:    44,
+			MinLength:    88,
 			MinLengthSet: true,
-			MaxLength:    44,
+			MaxLength:    88,
 			MaxLengthSet: true,
 			Email:        false,
 			Hostname:     false,
 			Regex:        nil,
-		}).Validate(string(s.CertHash)); err != nil {
+		}).Validate(string(s.AccessKey)); err != nil {
 			return errors.Wrap(err, "string")
 		}
 		return nil
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
-			Name:  "CertHash",
-			Error: err,
-		})
-	}
-	if err := func() error {
-		if err := (validate.String{
-			MinLength:    44,
-			MinLengthSet: true,
-			MaxLength:    44,
-			MaxLengthSet: true,
-			Email:        false,
-			Hostname:     false,
-			Regex:        nil,
-		}).Validate(string(s.AccessSecret)); err != nil {
-			return errors.Wrap(err, "string")
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "AccessSecret",
+			Name:  "AccessKey",
 			Error: err,
 		})
 	}

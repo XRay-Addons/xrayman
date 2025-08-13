@@ -124,12 +124,11 @@ components:
       properties:
         Endpoint:
           type: string
-        AccessSecret:
+        AccessKey:
           type: string
-          format: byte
       required:
         - Endpoint
-        - AccessSecret
+        - AccessKey
 
     NodeConfig:
       type: object
@@ -164,22 +163,14 @@ components:
       properties:
         Endpoint:
           type: string
-        CertHash:
+        AccessKey:
           type: string
-          format: byte
-          minLength: 44
-          maxLength: 44
-          description: Base64-encoded 32-byte certificate hash
-        AccessSecret:
-          type: string
-          format: byte
-          minLength: 44
-          maxLength: 44
-          description: Base64-encoded 32-byte access secret
+          minLength: 88
+          maxLength: 88
+          description: Base64-encoded 32-byte access secret + 32-byte cert hash
       required:
         - Endpoint
-        - CertHash
-        - AccessSecret
+        - AccessKey
 
     NewNodeResponse:
       type: object

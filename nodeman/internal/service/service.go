@@ -35,8 +35,7 @@ func (s *Service) NewNode(ctx context.Context, p models.NewNodeParams) (*models.
 	}
 	var node models.Node
 	node.Config.ConnectionInfo.Endpoint = p.Endpoint
-	node.Config.ConnectionInfo.AccessSecret = p.AccessSecret
-	node.Config.ConnectionInfo.CertHash = p.CertHash
+	node.Config.ConnectionInfo.AccessKey = p.AccessKey
 
 	node.CurrentStatus = models.NodeStatusStopped
 	node.TargetStatus = models.NodeStatusStopped

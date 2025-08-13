@@ -119,10 +119,8 @@ func (s *ListNodeResponse) SetNodes(val []Node) {
 // Ref: #/components/schemas/NewNodeRequest
 type NewNodeRequest struct {
 	Endpoint string `json:"Endpoint"`
-	// Base64-encoded 32-byte certificate hash.
-	CertHash []byte `json:"CertHash"`
-	// Base64-encoded 32-byte access secret.
-	AccessSecret []byte `json:"AccessSecret"`
+	// Base64-encoded 32-byte access secret + 32-byte cert hash.
+	AccessKey string `json:"AccessKey"`
 }
 
 // GetEndpoint returns the value of Endpoint.
@@ -130,14 +128,9 @@ func (s *NewNodeRequest) GetEndpoint() string {
 	return s.Endpoint
 }
 
-// GetCertHash returns the value of CertHash.
-func (s *NewNodeRequest) GetCertHash() []byte {
-	return s.CertHash
-}
-
-// GetAccessSecret returns the value of AccessSecret.
-func (s *NewNodeRequest) GetAccessSecret() []byte {
-	return s.AccessSecret
+// GetAccessKey returns the value of AccessKey.
+func (s *NewNodeRequest) GetAccessKey() string {
+	return s.AccessKey
 }
 
 // SetEndpoint sets the value of Endpoint.
@@ -145,14 +138,9 @@ func (s *NewNodeRequest) SetEndpoint(val string) {
 	s.Endpoint = val
 }
 
-// SetCertHash sets the value of CertHash.
-func (s *NewNodeRequest) SetCertHash(val []byte) {
-	s.CertHash = val
-}
-
-// SetAccessSecret sets the value of AccessSecret.
-func (s *NewNodeRequest) SetAccessSecret(val []byte) {
-	s.AccessSecret = val
+// SetAccessKey sets the value of AccessKey.
+func (s *NewNodeRequest) SetAccessKey(val string) {
+	s.AccessKey = val
 }
 
 // Ref: #/components/schemas/NewNodeResponse
@@ -257,8 +245,8 @@ func (s *NodeConfig) SetConnectionInfo(val NodeConnectionInfo) {
 
 // Ref: #/components/schemas/NodeConnectionInfo
 type NodeConnectionInfo struct {
-	Endpoint     string `json:"Endpoint"`
-	AccessSecret []byte `json:"AccessSecret"`
+	Endpoint  string `json:"Endpoint"`
+	AccessKey string `json:"AccessKey"`
 }
 
 // GetEndpoint returns the value of Endpoint.
@@ -266,9 +254,9 @@ func (s *NodeConnectionInfo) GetEndpoint() string {
 	return s.Endpoint
 }
 
-// GetAccessSecret returns the value of AccessSecret.
-func (s *NodeConnectionInfo) GetAccessSecret() []byte {
-	return s.AccessSecret
+// GetAccessKey returns the value of AccessKey.
+func (s *NodeConnectionInfo) GetAccessKey() string {
+	return s.AccessKey
 }
 
 // SetEndpoint sets the value of Endpoint.
@@ -276,9 +264,9 @@ func (s *NodeConnectionInfo) SetEndpoint(val string) {
 	s.Endpoint = val
 }
 
-// SetAccessSecret sets the value of AccessSecret.
-func (s *NodeConnectionInfo) SetAccessSecret(val []byte) {
-	s.AccessSecret = val
+// SetAccessKey sets the value of AccessKey.
+func (s *NodeConnectionInfo) SetAccessKey(val string) {
+	s.AccessKey = val
 }
 
 type NodeID int32
