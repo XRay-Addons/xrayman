@@ -1,22 +1,6 @@
-package seccfg
+package secrets
 
-import (
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/sha256"
-	"crypto/x509"
-	"crypto/x509/pkix"
-	"encoding/pem"
-	"fmt"
-	"math/big"
-	"os"
-	"path"
-	"time"
-
-	"github.com/XRay-Addons/xrayman/node/internal/models"
-)
-
-func generateSecurity(dir string, issuer string, expire time.Duration) error {
+/*func generateSecurity(dir string, issuer string, expire time.Duration) error {
 	// generate tls cert
 	privKey, err := generateRSAKey()
 	if err != nil {
@@ -126,4 +110,4 @@ func writeFiles(dir string, certPEM, keyPEM []byte, accessKey models.AccessKey) 
 		return fmt.Errorf("writeFiles: write access key: %w", err)
 	}
 	return nil
-}
+}*/

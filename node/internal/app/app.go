@@ -14,7 +14,7 @@ import (
 	"github.com/XRay-Addons/xrayman/node/internal/http/server"
 	"github.com/XRay-Addons/xrayman/node/internal/http/tlscfg"
 	a "github.com/XRay-Addons/xrayman/node/internal/infra/app"
-	"github.com/XRay-Addons/xrayman/node/internal/seccfg"
+	"github.com/XRay-Addons/xrayman/node/internal/secrets"
 	"github.com/XRay-Addons/xrayman/node/internal/service"
 	"github.com/XRay-Addons/xrayman/node/internal/xray/xrayapi"
 	"github.com/XRay-Addons/xrayman/node/internal/xray/xraycfg"
@@ -33,7 +33,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		return nil, fmt.Errorf("%w: app init: logger", errdefs.ErrNilArgPassed)
 	}
 
-	var secCfg *seccfg.SecurityConfig
+	var sec *secrets.Secrets
 	var srvCfg *xraycfg.ServerCfg
 	var clientCfg *xraycfg.ClientCfg
 	var tlsCfg *tls.Config
@@ -48,14 +48,14 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 	var httpServer *server.HttpServer
 
 	app := a.New(
-		// persistent config
-		a.WithComponent("persistent",
+		// secrets config
+		a.WithComponent("secrets",
 			func() (err error) {
-				secCfg, err = seccfg.New(cfg.PersistentDir)
+				sec, err = secrets.Init(cfg.PersistentDir)
 				if err != nil {
 					return
 				}
-				log.Info("node access", zap.String("key", secCfg.AccessKey.String()))
+				log.Info("node access", zap.String("key", sec.AccessKey.String()))
 				return
 			}, nil,
 		),
@@ -76,7 +76,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// TLS config
 		a.WithComponent("tls cfg",
 			func() (err error) {
-				tlsCfg, err = tlscfg.Load(secCfg.Cert, secCfg.Key)
+				tlsCfg, err = tlscfg.Load(sec.Cert, sec.Key)
 				return
 			}, nil,
 		),
@@ -117,7 +117,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// security
 		a.WithComponent("security",
 			func() (err error) {
-				jwtsec := secCfg.AccessKey.AccessSecret
+				jwtsec := sec.AccessKey.AccessSecret
 				apiSec = security.New(jwtsec)
 				return
 			}, nil,
