@@ -61,3 +61,12 @@ type ListUserParams struct {
 type ListUsersResult struct {
 	Users []User
 }
+
+type UserSubParams struct {
+	ID       UserID
+	SlugName string
+}
+
+type UserSubResult struct {
+	SubText string
+}

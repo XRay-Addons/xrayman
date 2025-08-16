@@ -147,6 +147,19 @@ func (s *Service) ListUsers(ctx context.Context, p models.ListUserParams) (*mode
 	}, nil
 }
 
+func (s *Service) GetUserSub(ctx context.Context, p models.UserSubParams) (*models.UserSubResult, error) {
+	if s == nil {
+		return nil, fmt.Errorf("service: get user sub: %w", errdefs.ErrNilObjectCall)
+	}
+	var user *models.User
+	if err := s.uow.Do(ctx, func(uowctx UoWContext) (err error) {
+		user, err = uowctx.GetUser(ctx, p.ID)
+		return
+	}); err != nil {
+		return nil, fmt.Errorf("get user sub: %w", err)
+	}
+}
+
 func (s *Service) setNodeStatus(ctx context.Context, id models.NodeID, status models.NodeStatus) error {
 	if s == nil {
 		return fmt.Errorf("set node status: %w", errdefs.ErrNilObjectCall)
