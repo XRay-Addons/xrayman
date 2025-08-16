@@ -95,6 +95,96 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /user/new:
+    post:
+      summary: Create a new user
+      operationId: NewUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewUserRequest'
+      responses:
+        '200':
+          description: Created user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewUserResponse'
+        'default':
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /user/enable:
+    post:
+      summary: Enable a user on all nodes
+      operationId: EnableUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnableUserRequest'
+      responses:
+        '200':
+          description: User enabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnableUserResponse'
+        'default':
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /user/disable:
+    post:
+      summary: Disable a user from all nodes
+      operationId: DisableUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DisableUserRequest'
+      responses:
+        '200':
+          description: User disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisableUserResponse'
+        'default':
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users:
+    get:
+      summary: List all users
+      operationId: ListUsers
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListUsersResponse'
+        'default':
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
 components:
   schemas:
     NodeID:
@@ -221,13 +311,105 @@ components:
       required:
         - Nodes
 
+    UserID:
+      type: integer
+      format: int32
+
+    UserStatus:
+      type: string
+      enum: [unknown, enabled, disabled]
+
+    UserProfile:
+      type: object
+      properties:
+        Name:
+          type: string
+        SlugName:
+          type: string
+        VlessUUID:
+          type: string
+      required:
+        - Name
+        - SlugName
+        - VlessUUID
+
+    User:
+      type: object
+      properties:
+        ID:
+          $ref: '#/components/schemas/UserID'
+        Profile:
+          $ref: '#/components/schemas/UserProfile'
+        TargetStatus:
+          $ref: '#/components/schemas/UserStatus'
+      required:
+        - ID
+        - Profile
+        - TargetStatus
+
+    NewUserRequest:
+      type: object
+      properties:
+        Name:
+          type: string
+      required:
+        - Name
+
+    NewUserResponse:
+      type: object
+      properties:
+        ID:
+          $ref: '#/components/schemas/UserID'
+        Name:
+          type: string
+        UserPageURL:
+          type: string
+      required:
+        - ID
+        - Name
+        - UserPageURL
+
+    EnableUserRequest:
+      type: object
+      properties:
+        ID:
+          $ref: '#/components/schemas/UserID'
+      required:
+        - ID
+
+    EnableUserResponse:
+      type: object
+      properties: {}
+
+    DisableUserRequest:
+      type: object
+      properties:
+        ID:
+          $ref: '#/components/schemas/UserID'
+      required:
+        - ID
+
+    DisableUserResponse:
+      type: object
+      properties: {}
+
+    ListUsersResponse:
+      type: object
+      properties:
+        Users:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+      required:
+        - Users
+
     Error:
       type: object
-      required:
-        - message
       properties:
-        message:
+        Message:
           type: string
-        details:
+        Details:
           type: string
           nullable: true
+      required:
+        - Message

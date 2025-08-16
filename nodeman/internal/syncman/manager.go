@@ -89,11 +89,7 @@ func (m *Manager) SyncNodesPool(ctx context.Context) ([]models.NodeSyncResult, e
 	if err != nil {
 		return nil, fmt.Errorf("pool monitor: sync: %w", err)
 	}
-	res, ok := syncResult.([]models.NodeSyncResult)
-	if !ok {
-		return nil, fmt.Errorf("pool monitor: sync: cast result: %w", errdefs.ErrIPE)
-	}
-	return res, nil
+	return *syncResult, nil
 }
 
 func (m *Manager) syncFn(ps PoolSyncer) waveexec.Fn[[]models.NodeSyncResult] {

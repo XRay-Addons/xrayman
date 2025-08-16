@@ -27,18 +27,42 @@ func trimTrailingSlashes(u *url.URL) {
 
 // Invoker invokes operations described by OpenAPI v3 specification.
 type Invoker interface {
+	// DisableUser invokes DisableUser operation.
+	//
+	// Disable a user from all nodes.
+	//
+	// POST /user/disable
+	DisableUser(ctx context.Context, request *DisableUserRequest) error
+	// EnableUser invokes EnableUser operation.
+	//
+	// Enable a user on all nodes.
+	//
+	// POST /user/enable
+	EnableUser(ctx context.Context, request *EnableUserRequest) error
 	// ListNodes invokes ListNodes operation.
 	//
 	// List all nodes.
 	//
 	// GET /nodes
 	ListNodes(ctx context.Context) (*ListNodeResponse, error)
+	// ListUsers invokes ListUsers operation.
+	//
+	// List all users.
+	//
+	// GET /users
+	ListUsers(ctx context.Context) (*ListUsersResponse, error)
 	// NewNode invokes NewNode operation.
 	//
 	// Create a new node.
 	//
 	// POST /nodes/new
 	NewNode(ctx context.Context, request *NewNodeRequest) (*NewNodeResponse, error)
+	// NewUser invokes NewUser operation.
+	//
+	// Create a new user.
+	//
+	// POST /user/new
+	NewUser(ctx context.Context, request *NewUserRequest) (*NewUserResponse, error)
 	// StartNode invokes StartNode operation.
 	//
 	// Start a node.
@@ -98,6 +122,156 @@ func (c *Client) requestURL(ctx context.Context) *url.URL {
 		return c.serverURL
 	}
 	return u
+}
+
+// DisableUser invokes DisableUser operation.
+//
+// Disable a user from all nodes.
+//
+// POST /user/disable
+func (c *Client) DisableUser(ctx context.Context, request *DisableUserRequest) error {
+	_, err := c.sendDisableUser(ctx, request)
+	return err
+}
+
+func (c *Client) sendDisableUser(ctx context.Context, request *DisableUserRequest) (res *DisableUserResponse, err error) {
+	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("DisableUser"),
+		semconv.HTTPRequestMethodKey.String("POST"),
+		semconv.HTTPRouteKey.String("/user/disable"),
+	}
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, DisableUserOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [1]string
+	pathParts[0] = "/user/disable"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "POST", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodeDisableUserRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodeDisableUserResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// EnableUser invokes EnableUser operation.
+//
+// Enable a user on all nodes.
+//
+// POST /user/enable
+func (c *Client) EnableUser(ctx context.Context, request *EnableUserRequest) error {
+	_, err := c.sendEnableUser(ctx, request)
+	return err
+}
+
+func (c *Client) sendEnableUser(ctx context.Context, request *EnableUserRequest) (res *EnableUserResponse, err error) {
+	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("EnableUser"),
+		semconv.HTTPRequestMethodKey.String("POST"),
+		semconv.HTTPRouteKey.String("/user/enable"),
+	}
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, EnableUserOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [1]string
+	pathParts[0] = "/user/enable"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "POST", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodeEnableUserRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodeEnableUserResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
 }
 
 // ListNodes invokes ListNodes operation.
@@ -165,6 +339,78 @@ func (c *Client) sendListNodes(ctx context.Context) (res *ListNodeResponse, err 
 
 	stage = "DecodeResponse"
 	result, err := decodeListNodesResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// ListUsers invokes ListUsers operation.
+//
+// List all users.
+//
+// GET /users
+func (c *Client) ListUsers(ctx context.Context) (*ListUsersResponse, error) {
+	res, err := c.sendListUsers(ctx)
+	return res, err
+}
+
+func (c *Client) sendListUsers(ctx context.Context) (res *ListUsersResponse, err error) {
+	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("ListUsers"),
+		semconv.HTTPRequestMethodKey.String("GET"),
+		semconv.HTTPRouteKey.String("/users"),
+	}
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, ListUsersOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [1]string
+	pathParts[0] = "/users"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodeListUsersResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -240,6 +486,81 @@ func (c *Client) sendNewNode(ctx context.Context, request *NewNodeRequest) (res 
 
 	stage = "DecodeResponse"
 	result, err := decodeNewNodeResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// NewUser invokes NewUser operation.
+//
+// Create a new user.
+//
+// POST /user/new
+func (c *Client) NewUser(ctx context.Context, request *NewUserRequest) (*NewUserResponse, error) {
+	res, err := c.sendNewUser(ctx, request)
+	return res, err
+}
+
+func (c *Client) sendNewUser(ctx context.Context, request *NewUserRequest) (res *NewUserResponse, err error) {
+	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("NewUser"),
+		semconv.HTTPRequestMethodKey.String("POST"),
+		semconv.HTTPRouteKey.String("/user/new"),
+	}
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, NewUserOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [1]string
+	pathParts[0] = "/user/new"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "POST", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodeNewUserRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodeNewUserResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

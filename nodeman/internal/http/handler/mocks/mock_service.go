@@ -41,6 +41,36 @@ func (m *MockService) EXPECT() *MockServiceMockRecorder {
 	return m.recorder
 }
 
+// DisableUser mocks base method.
+func (m *MockService) DisableUser(ctx context.Context, p models.DisableUserParams) (*models.DisableUserResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DisableUser", ctx, p)
+	ret0, _ := ret[0].(*models.DisableUserResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DisableUser indicates an expected call of DisableUser.
+func (mr *MockServiceMockRecorder) DisableUser(ctx, p any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DisableUser", reflect.TypeOf((*MockService)(nil).DisableUser), ctx, p)
+}
+
+// EnableUser mocks base method.
+func (m *MockService) EnableUser(ctx context.Context, p models.EnableUserParams) (*models.EnableUserResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EnableUser", ctx, p)
+	ret0, _ := ret[0].(*models.EnableUserResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// EnableUser indicates an expected call of EnableUser.
+func (mr *MockServiceMockRecorder) EnableUser(ctx, p any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnableUser", reflect.TypeOf((*MockService)(nil).EnableUser), ctx, p)
+}
+
 // ListNodes mocks base method.
 func (m *MockService) ListNodes(ctx context.Context, p models.ListNodeParams) (*models.ListNodeResult, error) {
 	m.ctrl.T.Helper()
@@ -56,6 +86,21 @@ func (mr *MockServiceMockRecorder) ListNodes(ctx, p any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListNodes", reflect.TypeOf((*MockService)(nil).ListNodes), ctx, p)
 }
 
+// ListUsers mocks base method.
+func (m *MockService) ListUsers(ctx context.Context, p models.ListUserParams) (*models.ListUsersResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListUsers", ctx, p)
+	ret0, _ := ret[0].(*models.ListUsersResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListUsers indicates an expected call of ListUsers.
+func (mr *MockServiceMockRecorder) ListUsers(ctx, p any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListUsers", reflect.TypeOf((*MockService)(nil).ListUsers), ctx, p)
+}
+
 // NewNode mocks base method.
 func (m *MockService) NewNode(ctx context.Context, p models.NewNodeParams) (*models.NewNodeResult, error) {
 	m.ctrl.T.Helper()
@@ -69,6 +114,21 @@ func (m *MockService) NewNode(ctx context.Context, p models.NewNodeParams) (*mod
 func (mr *MockServiceMockRecorder) NewNode(ctx, p any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewNode", reflect.TypeOf((*MockService)(nil).NewNode), ctx, p)
+}
+
+// NewUser mocks base method.
+func (m *MockService) NewUser(ctx context.Context, p models.NewUserParams) (*models.NewUserResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewUser", ctx, p)
+	ret0, _ := ret[0].(*models.NewUserResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NewUser indicates an expected call of NewUser.
+func (mr *MockServiceMockRecorder) NewUser(ctx, p any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewUser", reflect.TypeOf((*MockService)(nil).NewUser), ctx, p)
 }
 
 // StartNode mocks base method.
@@ -87,7 +147,7 @@ func (mr *MockServiceMockRecorder) StartNode(ctx, p any) *gomock.Call {
 }
 
 // StopNode mocks base method.
-func (m *MockService) StopNode(ctx context.Context, p models.StopNodeResult) (*models.StopNodeResult, error) {
+func (m *MockService) StopNode(ctx context.Context, p models.StopNodeParams) (*models.StopNodeResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StopNode", ctx, p)
 	ret0, _ := ret[0].(*models.StopNodeResult)

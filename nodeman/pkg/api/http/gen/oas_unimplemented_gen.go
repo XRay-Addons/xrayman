@@ -13,6 +13,24 @@ type UnimplementedHandler struct{}
 
 var _ Handler = UnimplementedHandler{}
 
+// DisableUser implements DisableUser operation.
+//
+// Disable a user from all nodes.
+//
+// POST /user/disable
+func (UnimplementedHandler) DisableUser(ctx context.Context, req *DisableUserRequest) error {
+	return ht.ErrNotImplemented
+}
+
+// EnableUser implements EnableUser operation.
+//
+// Enable a user on all nodes.
+//
+// POST /user/enable
+func (UnimplementedHandler) EnableUser(ctx context.Context, req *EnableUserRequest) error {
+	return ht.ErrNotImplemented
+}
+
 // ListNodes implements ListNodes operation.
 //
 // List all nodes.
@@ -22,12 +40,30 @@ func (UnimplementedHandler) ListNodes(ctx context.Context) (r *ListNodeResponse,
 	return r, ht.ErrNotImplemented
 }
 
+// ListUsers implements ListUsers operation.
+//
+// List all users.
+//
+// GET /users
+func (UnimplementedHandler) ListUsers(ctx context.Context) (r *ListUsersResponse, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // NewNode implements NewNode operation.
 //
 // Create a new node.
 //
 // POST /nodes/new
 func (UnimplementedHandler) NewNode(ctx context.Context, req *NewNodeRequest) (r *NewNodeResponse, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// NewUser implements NewUser operation.
+//
+// Create a new user.
+//
+// POST /user/new
+func (UnimplementedHandler) NewUser(ctx context.Context, req *NewUserRequest) (r *NewUserResponse, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

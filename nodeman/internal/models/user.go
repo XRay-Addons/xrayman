@@ -3,8 +3,8 @@ package models
 type UserID int
 
 type UserProfile struct {
-	ID        UserID
 	Name      string
+	SlugName  string
 	VlessUUID string
 }
 
@@ -12,11 +12,12 @@ type UserStatus int
 
 const (
 	UserStatusUnknown UserStatus = iota + 1
-	UserStatusInactive
-	UserStatusActive
+	UserStatusDisabled
+	UserStatusEnabled
 )
 
 type User struct {
+	ID           UserID
 	Profile      UserProfile
 	TargetStatus UserStatus
 }
@@ -38,10 +39,10 @@ type NodeUsersUpdate struct {
 
 func (s UserStatus) String() string {
 	switch s {
-	case UserStatusInactive:
-		return "Inactive"
-	case UserStatusActive:
-		return "Active"
+	case UserStatusEnabled:
+		return "Enabled"
+	case UserStatusDisabled:
+		return "Disabled"
 	default:
 		return "Unknown"
 	}
@@ -57,8 +58,8 @@ type UserStatus int
 
 const (
 	UserStatusUnknown UserStatus = iota + 1
-	UserStatusInactive
-	UserStatusActive
+	UserStatusDisabled
+	UserStatusEnabled
 )
 
 // Rename it!
@@ -85,9 +86,9 @@ type UserStatusPatch struct {
 
 func (s UserStatus) String() string {
 	switch s {
-	case UserStatusInactive:
+	case UserStatusDisabled:
 		return "Inactive"
-	case UserStatusActive:
+	case UserStatusEnabled:
 		return "Active"
 	default:
 		return "Unknown"

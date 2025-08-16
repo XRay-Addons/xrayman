@@ -12,4 +12,9 @@ type Service interface {
 	StartNode(ctx context.Context, p models.StartNodeParams) (*models.StartNodeResult, error)
 	StopNode(ctx context.Context, p models.StopNodeParams) (*models.StopNodeResult, error)
 	ListNodes(ctx context.Context, p models.ListNodeParams) (*models.ListNodeResult, error)
+
+	NewUser(ctx context.Context, p models.NewUserParams) (*models.NewUserResult, error)
+	DisableUser(ctx context.Context, p models.DisableUserParams) (*models.DisableUserResult, error)
+	EnableUser(ctx context.Context, p models.EnableUserParams) (*models.EnableUserResult, error)
+	ListUsers(ctx context.Context, p models.ListUserParams) (*models.ListUsersResult, error)
 }

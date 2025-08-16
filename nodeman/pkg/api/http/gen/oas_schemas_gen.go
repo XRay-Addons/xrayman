@@ -49,10 +49,46 @@ func (s *ClientConfig) SetVlessUUIDField(val string) {
 	s.VlessUUIDField = val
 }
 
+// Ref: #/components/schemas/DisableUserRequest
+type DisableUserRequest struct {
+	ID UserID `json:"ID"`
+}
+
+// GetID returns the value of ID.
+func (s *DisableUserRequest) GetID() UserID {
+	return s.ID
+}
+
+// SetID sets the value of ID.
+func (s *DisableUserRequest) SetID(val UserID) {
+	s.ID = val
+}
+
+// Ref: #/components/schemas/DisableUserResponse
+type DisableUserResponse struct{}
+
+// Ref: #/components/schemas/EnableUserRequest
+type EnableUserRequest struct {
+	ID UserID `json:"ID"`
+}
+
+// GetID returns the value of ID.
+func (s *EnableUserRequest) GetID() UserID {
+	return s.ID
+}
+
+// SetID sets the value of ID.
+func (s *EnableUserRequest) SetID(val UserID) {
+	s.ID = val
+}
+
+// Ref: #/components/schemas/EnableUserResponse
+type EnableUserResponse struct{}
+
 // Ref: #/components/schemas/Error
 type Error struct {
-	Message string       `json:"message"`
-	Details OptNilString `json:"details"`
+	Message string       `json:"Message"`
+	Details OptNilString `json:"Details"`
 }
 
 // GetMessage returns the value of Message.
@@ -116,6 +152,21 @@ func (s *ListNodeResponse) SetNodes(val []Node) {
 	s.Nodes = val
 }
 
+// Ref: #/components/schemas/ListUsersResponse
+type ListUsersResponse struct {
+	Users []User `json:"Users"`
+}
+
+// GetUsers returns the value of Users.
+func (s *ListUsersResponse) GetUsers() []User {
+	return s.Users
+}
+
+// SetUsers sets the value of Users.
+func (s *ListUsersResponse) SetUsers(val []User) {
+	s.Users = val
+}
+
 // Ref: #/components/schemas/NewNodeRequest
 type NewNodeRequest struct {
 	Endpoint string `json:"Endpoint"`
@@ -167,6 +218,58 @@ func (s *NewNodeResponse) SetID(val NodeID) {
 // SetEndpoint sets the value of Endpoint.
 func (s *NewNodeResponse) SetEndpoint(val string) {
 	s.Endpoint = val
+}
+
+// Ref: #/components/schemas/NewUserRequest
+type NewUserRequest struct {
+	Name string `json:"Name"`
+}
+
+// GetName returns the value of Name.
+func (s *NewUserRequest) GetName() string {
+	return s.Name
+}
+
+// SetName sets the value of Name.
+func (s *NewUserRequest) SetName(val string) {
+	s.Name = val
+}
+
+// Ref: #/components/schemas/NewUserResponse
+type NewUserResponse struct {
+	ID          UserID `json:"ID"`
+	Name        string `json:"Name"`
+	UserPageURL string `json:"UserPageURL"`
+}
+
+// GetID returns the value of ID.
+func (s *NewUserResponse) GetID() UserID {
+	return s.ID
+}
+
+// GetName returns the value of Name.
+func (s *NewUserResponse) GetName() string {
+	return s.Name
+}
+
+// GetUserPageURL returns the value of UserPageURL.
+func (s *NewUserResponse) GetUserPageURL() string {
+	return s.UserPageURL
+}
+
+// SetID sets the value of ID.
+func (s *NewUserResponse) SetID(val UserID) {
+	s.ID = val
+}
+
+// SetName sets the value of Name.
+func (s *NewUserResponse) SetName(val string) {
+	s.Name = val
+}
+
+// SetUserPageURL sets the value of UserPageURL.
+func (s *NewUserResponse) SetUserPageURL(val string) {
+	s.UserPageURL = val
 }
 
 // Ref: #/components/schemas/Node
@@ -418,3 +521,128 @@ func (s *StopNodeRequest) SetID(val NodeID) {
 
 // Ref: #/components/schemas/StopNodeResponse
 type StopNodeResponse struct{}
+
+// Ref: #/components/schemas/User
+type User struct {
+	ID           UserID      `json:"ID"`
+	Profile      UserProfile `json:"Profile"`
+	TargetStatus UserStatus  `json:"TargetStatus"`
+}
+
+// GetID returns the value of ID.
+func (s *User) GetID() UserID {
+	return s.ID
+}
+
+// GetProfile returns the value of Profile.
+func (s *User) GetProfile() UserProfile {
+	return s.Profile
+}
+
+// GetTargetStatus returns the value of TargetStatus.
+func (s *User) GetTargetStatus() UserStatus {
+	return s.TargetStatus
+}
+
+// SetID sets the value of ID.
+func (s *User) SetID(val UserID) {
+	s.ID = val
+}
+
+// SetProfile sets the value of Profile.
+func (s *User) SetProfile(val UserProfile) {
+	s.Profile = val
+}
+
+// SetTargetStatus sets the value of TargetStatus.
+func (s *User) SetTargetStatus(val UserStatus) {
+	s.TargetStatus = val
+}
+
+type UserID int32
+
+// Ref: #/components/schemas/UserProfile
+type UserProfile struct {
+	Name      string `json:"Name"`
+	SlugName  string `json:"SlugName"`
+	VlessUUID string `json:"VlessUUID"`
+}
+
+// GetName returns the value of Name.
+func (s *UserProfile) GetName() string {
+	return s.Name
+}
+
+// GetSlugName returns the value of SlugName.
+func (s *UserProfile) GetSlugName() string {
+	return s.SlugName
+}
+
+// GetVlessUUID returns the value of VlessUUID.
+func (s *UserProfile) GetVlessUUID() string {
+	return s.VlessUUID
+}
+
+// SetName sets the value of Name.
+func (s *UserProfile) SetName(val string) {
+	s.Name = val
+}
+
+// SetSlugName sets the value of SlugName.
+func (s *UserProfile) SetSlugName(val string) {
+	s.SlugName = val
+}
+
+// SetVlessUUID sets the value of VlessUUID.
+func (s *UserProfile) SetVlessUUID(val string) {
+	s.VlessUUID = val
+}
+
+// Ref: #/components/schemas/UserStatus
+type UserStatus string
+
+const (
+	UserStatusUnknown  UserStatus = "unknown"
+	UserStatusEnabled  UserStatus = "enabled"
+	UserStatusDisabled UserStatus = "disabled"
+)
+
+// AllValues returns all UserStatus values.
+func (UserStatus) AllValues() []UserStatus {
+	return []UserStatus{
+		UserStatusUnknown,
+		UserStatusEnabled,
+		UserStatusDisabled,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s UserStatus) MarshalText() ([]byte, error) {
+	switch s {
+	case UserStatusUnknown:
+		return []byte(s), nil
+	case UserStatusEnabled:
+		return []byte(s), nil
+	case UserStatusDisabled:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *UserStatus) UnmarshalText(data []byte) error {
+	switch UserStatus(data) {
+	case UserStatusUnknown:
+		*s = UserStatusUnknown
+		return nil
+	case UserStatusEnabled:
+		*s = UserStatusEnabled
+		return nil
+	case UserStatusDisabled:
+		*s = UserStatusDisabled
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}

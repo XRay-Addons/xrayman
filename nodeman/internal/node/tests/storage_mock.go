@@ -27,10 +27,10 @@ func NewStorageMock(nUsers int) *StorageMock {
 	for i := range nUsers {
 		u := models.User{
 			Profile:      models.UserProfile{ID: models.UserID(i)},
-			TargetStatus: models.UserStatusInactive,
+			TargetStatus: models.UserStatusDisabled,
 		}
 		if rnd.IntN(2) == 1 {
-			u.TargetStatus = models.UserStatusActive
+			u.TargetStatus = models.UserStatusEnabled
 		}
 		users = append(users, u)
 		usersStatus = append(usersStatus, models.UserStatusUnknown)
@@ -54,13 +54,13 @@ func (s *StorageMock) RandomExternalOperation() {
 		// switch user state
 		userIdx := s.rand.IntN(len(s.Users))
 		u := s.Users[userIdx]
-		u.TargetStatus = (models.UserStatusActive + models.UserStatusInactive) - u.TargetStatus
+		u.TargetStatus = (models.UserStatusEnabled + models.UserStatusDisabled) - u.TargetStatus
 		s.Users[userIdx] = u
 	} else {
 		// add new user
 		s.Users = append(s.Users, models.User{
 			Profile:      models.UserProfile{ID: models.UserID(len(s.Users))},
-			TargetStatus: models.UserStatusActive,
+			TargetStatus: models.UserStatusEnabled,
 		})
 		s.CurrentUserStatus = append(s.CurrentUserStatus, models.UserStatusUnknown)
 	}

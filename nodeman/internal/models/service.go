@@ -31,25 +31,33 @@ type ListNodeResult struct {
 	Nodes []Node
 }
 
-/*type NewUserRequest struct {
+type NewUserParams struct {
 	Name string
 }
 
-type NewUserResponse struct {
-	User            User
-	SubscriptionURL string
+type NewUserResult struct {
+	ID          UserID
+	Name        string
+	UserPageURL string
 }
 
-type EnableUserRequest struct {
+type EnableUserParams struct {
 	ID UserID
 }
 
-type EnableUserResponse struct {
+type EnableUserResult struct {
 }
 
-type DisableUserRequest struct {
+type DisableUserParams struct {
 	ID UserID
 }
 
-type DisableUserResponse struct {
-}*/
+type DisableUserResult struct {
+}
+
+type ListUserParams struct {
+}
+
+type ListUsersResult struct {
+	Users []User
+}

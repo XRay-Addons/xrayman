@@ -48,60 +48,40 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		switch elem[0] {
-		case '/': // Prefix: "/nodes"
+		case '/': // Prefix: "/"
 
-			if l := len("/nodes"); len(elem) >= l && elem[0:l] == "/nodes" {
+			if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 				elem = elem[l:]
 			} else {
 				break
 			}
 
 			if len(elem) == 0 {
-				switch r.Method {
-				case "GET":
-					s.handleListNodesRequest([0]string{}, elemIsEscaped, w, r)
-				default:
-					s.notAllowed(w, r, "GET")
-				}
-
-				return
+				break
 			}
 			switch elem[0] {
-			case '/': // Prefix: "/"
+			case 'n': // Prefix: "nodes"
 
-				if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+				if l := len("nodes"); len(elem) >= l && elem[0:l] == "nodes" {
 					elem = elem[l:]
 				} else {
 					break
 				}
 
 				if len(elem) == 0 {
-					break
+					switch r.Method {
+					case "GET":
+						s.handleListNodesRequest([0]string{}, elemIsEscaped, w, r)
+					default:
+						s.notAllowed(w, r, "GET")
+					}
+
+					return
 				}
 				switch elem[0] {
-				case 'n': // Prefix: "new"
+				case '/': // Prefix: "/"
 
-					if l := len("new"); len(elem) >= l && elem[0:l] == "new" {
-						elem = elem[l:]
-					} else {
-						break
-					}
-
-					if len(elem) == 0 {
-						// Leaf node.
-						switch r.Method {
-						case "POST":
-							s.handleNewNodeRequest([0]string{}, elemIsEscaped, w, r)
-						default:
-							s.notAllowed(w, r, "POST")
-						}
-
-						return
-					}
-
-				case 's': // Prefix: "st"
-
-					if l := len("st"); len(elem) >= l && elem[0:l] == "st" {
+					if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 						elem = elem[l:]
 					} else {
 						break
@@ -111,9 +91,9 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 						break
 					}
 					switch elem[0] {
-					case 'a': // Prefix: "art"
+					case 'n': // Prefix: "new"
 
-						if l := len("art"); len(elem) >= l && elem[0:l] == "art" {
+						if l := len("new"); len(elem) >= l && elem[0:l] == "new" {
 							elem = elem[l:]
 						} else {
 							break
@@ -123,7 +103,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 							// Leaf node.
 							switch r.Method {
 							case "POST":
-								s.handleStartNodeRequest([0]string{}, elemIsEscaped, w, r)
+								s.handleNewNodeRequest([0]string{}, elemIsEscaped, w, r)
 							default:
 								s.notAllowed(w, r, "POST")
 							}
@@ -131,9 +111,91 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 							return
 						}
 
-					case 'o': // Prefix: "op"
+					case 's': // Prefix: "st"
 
-						if l := len("op"); len(elem) >= l && elem[0:l] == "op" {
+						if l := len("st"); len(elem) >= l && elem[0:l] == "st" {
+							elem = elem[l:]
+						} else {
+							break
+						}
+
+						if len(elem) == 0 {
+							break
+						}
+						switch elem[0] {
+						case 'a': // Prefix: "art"
+
+							if l := len("art"); len(elem) >= l && elem[0:l] == "art" {
+								elem = elem[l:]
+							} else {
+								break
+							}
+
+							if len(elem) == 0 {
+								// Leaf node.
+								switch r.Method {
+								case "POST":
+									s.handleStartNodeRequest([0]string{}, elemIsEscaped, w, r)
+								default:
+									s.notAllowed(w, r, "POST")
+								}
+
+								return
+							}
+
+						case 'o': // Prefix: "op"
+
+							if l := len("op"); len(elem) >= l && elem[0:l] == "op" {
+								elem = elem[l:]
+							} else {
+								break
+							}
+
+							if len(elem) == 0 {
+								// Leaf node.
+								switch r.Method {
+								case "POST":
+									s.handleStopNodeRequest([0]string{}, elemIsEscaped, w, r)
+								default:
+									s.notAllowed(w, r, "POST")
+								}
+
+								return
+							}
+
+						}
+
+					}
+
+				}
+
+			case 'u': // Prefix: "user"
+
+				if l := len("user"); len(elem) >= l && elem[0:l] == "user" {
+					elem = elem[l:]
+				} else {
+					break
+				}
+
+				if len(elem) == 0 {
+					break
+				}
+				switch elem[0] {
+				case '/': // Prefix: "/"
+
+					if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+						elem = elem[l:]
+					} else {
+						break
+					}
+
+					if len(elem) == 0 {
+						break
+					}
+					switch elem[0] {
+					case 'd': // Prefix: "disable"
+
+						if l := len("disable"); len(elem) >= l && elem[0:l] == "disable" {
 							elem = elem[l:]
 						} else {
 							break
@@ -143,7 +205,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 							// Leaf node.
 							switch r.Method {
 							case "POST":
-								s.handleStopNodeRequest([0]string{}, elemIsEscaped, w, r)
+								s.handleDisableUserRequest([0]string{}, elemIsEscaped, w, r)
 							default:
 								s.notAllowed(w, r, "POST")
 							}
@@ -151,6 +213,66 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 							return
 						}
 
+					case 'e': // Prefix: "enable"
+
+						if l := len("enable"); len(elem) >= l && elem[0:l] == "enable" {
+							elem = elem[l:]
+						} else {
+							break
+						}
+
+						if len(elem) == 0 {
+							// Leaf node.
+							switch r.Method {
+							case "POST":
+								s.handleEnableUserRequest([0]string{}, elemIsEscaped, w, r)
+							default:
+								s.notAllowed(w, r, "POST")
+							}
+
+							return
+						}
+
+					case 'n': // Prefix: "new"
+
+						if l := len("new"); len(elem) >= l && elem[0:l] == "new" {
+							elem = elem[l:]
+						} else {
+							break
+						}
+
+						if len(elem) == 0 {
+							// Leaf node.
+							switch r.Method {
+							case "POST":
+								s.handleNewUserRequest([0]string{}, elemIsEscaped, w, r)
+							default:
+								s.notAllowed(w, r, "POST")
+							}
+
+							return
+						}
+
+					}
+
+				case 's': // Prefix: "s"
+
+					if l := len("s"); len(elem) >= l && elem[0:l] == "s" {
+						elem = elem[l:]
+					} else {
+						break
+					}
+
+					if len(elem) == 0 {
+						// Leaf node.
+						switch r.Method {
+						case "GET":
+							s.handleListUsersRequest([0]string{}, elemIsEscaped, w, r)
+						default:
+							s.notAllowed(w, r, "GET")
+						}
+
+						return
 					}
 
 				}
@@ -237,68 +359,44 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 			break
 		}
 		switch elem[0] {
-		case '/': // Prefix: "/nodes"
+		case '/': // Prefix: "/"
 
-			if l := len("/nodes"); len(elem) >= l && elem[0:l] == "/nodes" {
+			if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 				elem = elem[l:]
 			} else {
 				break
 			}
 
 			if len(elem) == 0 {
-				switch method {
-				case "GET":
-					r.name = ListNodesOperation
-					r.summary = "List all nodes"
-					r.operationID = "ListNodes"
-					r.pathPattern = "/nodes"
-					r.args = args
-					r.count = 0
-					return r, true
-				default:
-					return
-				}
+				break
 			}
 			switch elem[0] {
-			case '/': // Prefix: "/"
+			case 'n': // Prefix: "nodes"
 
-				if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+				if l := len("nodes"); len(elem) >= l && elem[0:l] == "nodes" {
 					elem = elem[l:]
 				} else {
 					break
 				}
 
 				if len(elem) == 0 {
-					break
+					switch method {
+					case "GET":
+						r.name = ListNodesOperation
+						r.summary = "List all nodes"
+						r.operationID = "ListNodes"
+						r.pathPattern = "/nodes"
+						r.args = args
+						r.count = 0
+						return r, true
+					default:
+						return
+					}
 				}
 				switch elem[0] {
-				case 'n': // Prefix: "new"
+				case '/': // Prefix: "/"
 
-					if l := len("new"); len(elem) >= l && elem[0:l] == "new" {
-						elem = elem[l:]
-					} else {
-						break
-					}
-
-					if len(elem) == 0 {
-						// Leaf node.
-						switch method {
-						case "POST":
-							r.name = NewNodeOperation
-							r.summary = "Create a new node"
-							r.operationID = "NewNode"
-							r.pathPattern = "/nodes/new"
-							r.args = args
-							r.count = 0
-							return r, true
-						default:
-							return
-						}
-					}
-
-				case 's': // Prefix: "st"
-
-					if l := len("st"); len(elem) >= l && elem[0:l] == "st" {
+					if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 						elem = elem[l:]
 					} else {
 						break
@@ -308,9 +406,9 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 						break
 					}
 					switch elem[0] {
-					case 'a': // Prefix: "art"
+					case 'n': // Prefix: "new"
 
-						if l := len("art"); len(elem) >= l && elem[0:l] == "art" {
+						if l := len("new"); len(elem) >= l && elem[0:l] == "new" {
 							elem = elem[l:]
 						} else {
 							break
@@ -320,10 +418,10 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 							// Leaf node.
 							switch method {
 							case "POST":
-								r.name = StartNodeOperation
-								r.summary = "Start a node"
-								r.operationID = "StartNode"
-								r.pathPattern = "/nodes/start"
+								r.name = NewNodeOperation
+								r.summary = "Create a new node"
+								r.operationID = "NewNode"
+								r.pathPattern = "/nodes/new"
 								r.args = args
 								r.count = 0
 								return r, true
@@ -332,9 +430,99 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 							}
 						}
 
-					case 'o': // Prefix: "op"
+					case 's': // Prefix: "st"
 
-						if l := len("op"); len(elem) >= l && elem[0:l] == "op" {
+						if l := len("st"); len(elem) >= l && elem[0:l] == "st" {
+							elem = elem[l:]
+						} else {
+							break
+						}
+
+						if len(elem) == 0 {
+							break
+						}
+						switch elem[0] {
+						case 'a': // Prefix: "art"
+
+							if l := len("art"); len(elem) >= l && elem[0:l] == "art" {
+								elem = elem[l:]
+							} else {
+								break
+							}
+
+							if len(elem) == 0 {
+								// Leaf node.
+								switch method {
+								case "POST":
+									r.name = StartNodeOperation
+									r.summary = "Start a node"
+									r.operationID = "StartNode"
+									r.pathPattern = "/nodes/start"
+									r.args = args
+									r.count = 0
+									return r, true
+								default:
+									return
+								}
+							}
+
+						case 'o': // Prefix: "op"
+
+							if l := len("op"); len(elem) >= l && elem[0:l] == "op" {
+								elem = elem[l:]
+							} else {
+								break
+							}
+
+							if len(elem) == 0 {
+								// Leaf node.
+								switch method {
+								case "POST":
+									r.name = StopNodeOperation
+									r.summary = "Stop a node"
+									r.operationID = "StopNode"
+									r.pathPattern = "/nodes/stop"
+									r.args = args
+									r.count = 0
+									return r, true
+								default:
+									return
+								}
+							}
+
+						}
+
+					}
+
+				}
+
+			case 'u': // Prefix: "user"
+
+				if l := len("user"); len(elem) >= l && elem[0:l] == "user" {
+					elem = elem[l:]
+				} else {
+					break
+				}
+
+				if len(elem) == 0 {
+					break
+				}
+				switch elem[0] {
+				case '/': // Prefix: "/"
+
+					if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+						elem = elem[l:]
+					} else {
+						break
+					}
+
+					if len(elem) == 0 {
+						break
+					}
+					switch elem[0] {
+					case 'd': // Prefix: "disable"
+
+						if l := len("disable"); len(elem) >= l && elem[0:l] == "disable" {
 							elem = elem[l:]
 						} else {
 							break
@@ -344,10 +532,10 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 							// Leaf node.
 							switch method {
 							case "POST":
-								r.name = StopNodeOperation
-								r.summary = "Stop a node"
-								r.operationID = "StopNode"
-								r.pathPattern = "/nodes/stop"
+								r.name = DisableUserOperation
+								r.summary = "Disable a user from all nodes"
+								r.operationID = "DisableUser"
+								r.pathPattern = "/user/disable"
 								r.args = args
 								r.count = 0
 								return r, true
@@ -356,6 +544,78 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 							}
 						}
 
+					case 'e': // Prefix: "enable"
+
+						if l := len("enable"); len(elem) >= l && elem[0:l] == "enable" {
+							elem = elem[l:]
+						} else {
+							break
+						}
+
+						if len(elem) == 0 {
+							// Leaf node.
+							switch method {
+							case "POST":
+								r.name = EnableUserOperation
+								r.summary = "Enable a user on all nodes"
+								r.operationID = "EnableUser"
+								r.pathPattern = "/user/enable"
+								r.args = args
+								r.count = 0
+								return r, true
+							default:
+								return
+							}
+						}
+
+					case 'n': // Prefix: "new"
+
+						if l := len("new"); len(elem) >= l && elem[0:l] == "new" {
+							elem = elem[l:]
+						} else {
+							break
+						}
+
+						if len(elem) == 0 {
+							// Leaf node.
+							switch method {
+							case "POST":
+								r.name = NewUserOperation
+								r.summary = "Create a new user"
+								r.operationID = "NewUser"
+								r.pathPattern = "/user/new"
+								r.args = args
+								r.count = 0
+								return r, true
+							default:
+								return
+							}
+						}
+
+					}
+
+				case 's': // Prefix: "s"
+
+					if l := len("s"); len(elem) >= l && elem[0:l] == "s" {
+						elem = elem[l:]
+					} else {
+						break
+					}
+
+					if len(elem) == 0 {
+						// Leaf node.
+						switch method {
+						case "GET":
+							r.name = ListUsersOperation
+							r.summary = "List all users"
+							r.operationID = "ListUsers"
+							r.pathPattern = "/users"
+							r.args = args
+							r.count = 0
+							return r, true
+						default:
+							return
+						}
 					}
 
 				}

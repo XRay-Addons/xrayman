@@ -63,7 +63,7 @@ func (we *WaveExecutor[T]) Close() {
 	<-we.done
 }
 
-func (we *WaveExecutor[T]) Invoke(ctx context.Context) (any, error) {
+func (we *WaveExecutor[T]) Invoke(ctx context.Context) (*T, error) {
 	waveItem := execWaveItem[T]{
 		ctx:    ctx,
 		result: make(chan execResult[T], 1),
@@ -85,7 +85,7 @@ func (we *WaveExecutor[T]) Invoke(ctx context.Context) (any, error) {
 
 	select {
 	case res := <-waveItem.result:
-		return res.result, res.err
+		return &res.result, res.err
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	}

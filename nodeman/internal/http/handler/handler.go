@@ -95,6 +95,66 @@ func (h *Handler) ListNodes(ctx context.Context) (*api.ListNodeResponse, error) 
 	return converter.ConvertListNodesResult(res), nil
 }
 
+func (h *Handler) NewUser(ctx context.Context, req *api.NewUserRequest) (*api.NewUserResponse, error) {
+	if h == nil || h.service == nil {
+		return nil, fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
+	}
+	p, err := converter.ConvertNewUserRequest(req)
+	if err != nil {
+		return nil, httperr.ErrInvaildPayload
+	}
+	res, err := h.service.NewUser(ctx, *p)
+	if err != nil {
+		h.logError(ctx, err)
+		return nil, httperr.ErrInternalServerError
+	}
+	return converter.ConvertNewUserResult(res), nil
+}
+
+func (h *Handler) EnableUser(ctx context.Context, req *api.EnableUserRequest) error {
+	if h == nil || h.service == nil {
+		return fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
+	}
+	p, err := converter.ConvertEnableUserRequest(req)
+	if err != nil {
+		return httperr.ErrInvaildPayload
+	}
+	_, err = h.service.EnableUser(ctx, *p)
+	if err != nil {
+		h.logError(ctx, err)
+		return httperr.ErrInternalServerError
+	}
+	return nil
+}
+
+func (h *Handler) DisableUser(ctx context.Context, req *api.DisableUserRequest) error {
+	if h == nil || h.service == nil {
+		return fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
+	}
+	p, err := converter.ConvertDisableUserRequest(req)
+	if err != nil {
+		return httperr.ErrInvaildPayload
+	}
+	_, err = h.service.DisableUser(ctx, *p)
+	if err != nil {
+		h.logError(ctx, err)
+		return httperr.ErrInternalServerError
+	}
+	return nil
+}
+
+func (h *Handler) ListUsers(ctx context.Context) (*api.ListUsersResponse, error) {
+	if h == nil || h.service == nil {
+		return nil, fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
+	}
+	res, err := h.service.ListUsers(ctx, models.ListUserParams{})
+	if err != nil {
+		h.logError(ctx, err)
+		return nil, httperr.ErrInternalServerError
+	}
+	return converter.ConvertListUsersResult(res), nil
+}
+
 func (h *Handler) NewError(ctx context.Context, err error) *api.ErrorStatusCode {
 	// use passed HttpErr or default unknown
 	httpErr := httperr.ErrUnknown

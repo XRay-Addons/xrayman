@@ -82,7 +82,7 @@ func readAccessKey(dir string) (*models.AccessKey, error) {
 func writeAccessKey(dir string, key models.AccessKey) error {
 	wrapper := accessKeyWrapper{AccessKey: key}
 
-	data, err := json.MarshalIndent(wrapper, "", "  ")
+	data, err := json.MarshalIndent(&wrapper, "", "  ")
 	if err != nil {
 		return fmt.Errorf("write access key: %w", err)
 	}

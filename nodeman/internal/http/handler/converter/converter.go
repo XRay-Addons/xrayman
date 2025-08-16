@@ -10,7 +10,11 @@ import (
 // goverter:converter
 // goverter:output:format function
 // goverter:output:file ./converter_generated.go
-// goverter:extend ConvertNodeID RConvertNodeID ConvertNodeStatusResult ConvertAccessKey RConvertAccessKey
+// goverter:extend ConvertNodeID RConvertNodeID
+// goverter:extend ConvertNodeStatusResult
+// goverter:extend ConvertAccessKey RConvertAccessKey
+// goverter:extend ConvertUserID RConvertUserID
+// goverter:extend ConvertUserStatusResult
 //
 //go:generate goverter gen .
 type Converter interface {
@@ -18,9 +22,19 @@ type Converter interface {
 	ConvertNewNodeResult(r *models.NewNodeResult) *api.NewNodeResponse
 
 	ConvertStartNodeRequest(r *api.StartNodeRequest) (*models.StartNodeParams, error)
+
 	ConvertStopNodeRequest(r *api.StopNodeRequest) (*models.StopNodeParams, error)
 
 	ConvertListNodesResult(r *models.ListNodeResult) *api.ListNodeResponse
+
+	ConvertNewUserRequest(r *api.NewUserRequest) (*models.NewUserParams, error)
+	ConvertNewUserResult(r *models.NewUserResult) *api.NewUserResponse
+
+	ConvertEnableUserRequest(r *api.EnableUserRequest) (*models.EnableUserParams, error)
+
+	ConvertDisableUserRequest(r *api.DisableUserRequest) (*models.DisableUserParams, error)
+
+	ConvertListUsersResult(r *models.ListUsersResult) *api.ListUsersResponse
 }
 
 func ConvertNodeID(i models.NodeID) api.NodeID {
@@ -52,6 +66,29 @@ func ConvertNodeStatusResult(source models.NodeStatus) api.NodeStatus {
 		response = api.NodeStatusRunning
 	case models.NodeStatusUnknown:
 		response = api.NodeStatusUnknown
+	default:
+		panic(fmt.Sprintf("unexpected enum element: %v", source))
+	}
+	return response
+}
+
+func ConvertUserID(i models.UserID) api.UserID {
+	return api.UserID(i)
+}
+
+func RConvertUserID(i api.UserID) models.UserID {
+	return models.UserID(i)
+}
+
+func ConvertUserStatusResult(source models.UserStatus) api.UserStatus {
+	var response api.UserStatus
+	switch source {
+	case models.UserStatusDisabled:
+		response = api.UserStatusDisabled
+	case models.UserStatusEnabled:
+		response = api.UserStatusEnabled
+	case models.UserStatusUnknown:
+		response = api.UserStatusUnknown
 	default:
 		panic(fmt.Sprintf("unexpected enum element: %v", source))
 	}

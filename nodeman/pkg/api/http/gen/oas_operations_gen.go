@@ -6,8 +6,12 @@ package api
 type OperationName = string
 
 const (
-	ListNodesOperation OperationName = "ListNodes"
-	NewNodeOperation   OperationName = "NewNode"
-	StartNodeOperation OperationName = "StartNode"
-	StopNodeOperation  OperationName = "StopNode"
+	DisableUserOperation OperationName = "DisableUser"
+	EnableUserOperation  OperationName = "EnableUser"
+	ListNodesOperation   OperationName = "ListNodes"
+	ListUsersOperation   OperationName = "ListUsers"
+	NewNodeOperation     OperationName = "NewNode"
+	NewUserOperation     OperationName = "NewUser"
+	StartNodeOperation   OperationName = "StartNode"
+	StopNodeOperation    OperationName = "StopNode"
 )

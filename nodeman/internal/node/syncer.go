@@ -102,20 +102,22 @@ func (s *syncer) startNode(ctx context.Context) (err error) {
 		return fmt.Errorf("start node: %w", err)
 	}
 
-	active, inactive, err := s.getUsers(ctx)
+	users, err := s.getUsers(ctx)
 	if err != nil {
 		return fmt.Errorf("start node: %w", err)
 	}
 
+	enabledUsers := s.getEnabledUsers(users)
+
 	// start node
-	clientConfig, err := s.client.Start(ctx, active)
+	clientConfig, err := s.client.Start(ctx, enabledUsers)
 	if err != nil {
 		return fmt.Errorf("start node: %w", err)
 	}
 
 	// update stored node state
 	if err := s.uow.Do(ctx, func(uowctx pool.NodeUoWContext) (err error) {
-		if err = uowctx.PatchPendingSyncs(ctx, s.getUsersPatch(active, inactive)); err != nil {
+		if err = uowctx.PatchPendingSyncs(ctx, s.getUsersPatch(users)); err != nil {
 			return
 		}
 		if err = uowctx.UpdateCurrentStatus(ctx, models.NodeStatusRunning); err != nil {
@@ -132,9 +134,8 @@ func (s *syncer) startNode(ctx context.Context) (err error) {
 	return nil
 }
 
-func (s *syncer) getUsers(ctx context.Context) (active, inactive []models.UserProfile, err error) {
+func (s *syncer) getUsers(ctx context.Context) (users []models.User, err error) {
 	// get all users
-	var users []models.User
 	if err = s.uow.Do(ctx, func(uowctx pool.NodeUoWContext) (err error) {
 		users, err = uowctx.ListUsers(ctx)
 		return
@@ -143,31 +144,25 @@ func (s *syncer) getUsers(ctx context.Context) (active, inactive []models.UserPr
 		return
 	}
 
-	// split onto active and inactive
-	for _, u := range users {
-		switch u.TargetStatus {
-		case models.UserStatusActive:
-			active = append(active, u.Profile)
-		case models.UserStatusInactive:
-			inactive = append(inactive, u.Profile)
-		}
-	}
-
 	return
 }
 
-func (s *syncer) getUsersPatch(active, inactive []models.UserProfile) []models.UserStatusPatch {
-	patch := make([]models.UserStatusPatch, 0, len(active)+len(inactive))
-	for _, u := range active {
-		patch = append(patch, models.UserStatusPatch{
-			UserID: u.ID,
-			Status: models.UserStatusActive,
-		})
+func (s *syncer) getEnabledUsers(users []models.User) []models.UserProfile {
+	enabled := make([]models.UserProfile, 0, len(users))
+	for _, u := range users {
+		if u.TargetStatus == models.UserStatusEnabled {
+			enabled = append(enabled, u.Profile)
+		}
 	}
-	for _, u := range inactive {
+	return enabled
+}
+
+func (s *syncer) getUsersPatch(users []models.User) []models.UserStatusPatch {
+	patch := make([]models.UserStatusPatch, 0, len(users))
+	for _, u := range users {
 		patch = append(patch, models.UserStatusPatch{
 			UserID: u.ID,
-			Status: models.UserStatusInactive,
+			Status: u.TargetStatus,
 		})
 	}
 	return patch
@@ -240,17 +235,17 @@ func (s *syncer) buildUserUpdate(syncs []models.UserSyncStatus) (
 
 	for _, u := range syncs {
 		switch u.User.TargetStatus {
-		case models.UserStatusActive:
+		case models.UserStatusEnabled:
 			update.Add = append(update.Add, u.User.Profile)
-		case models.UserStatusInactive:
+		case models.UserStatusDisabled:
 			update.Remove = append(update.Remove, u.User.Profile)
 		}
 		prePatch = append(prePatch, models.UserStatusPatch{
-			UserID: u.User.Profile.ID,
+			UserID: u.User.ID,
 			Status: models.UserStatusUnknown,
 		})
 		postPatch = append(postPatch, models.UserStatusPatch{
-			UserID: u.User.Profile.ID,
+			UserID: u.User.ID,
 			Status: u.User.TargetStatus,
 		})
 	}

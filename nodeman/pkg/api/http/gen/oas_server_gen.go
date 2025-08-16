@@ -8,18 +8,42 @@ import (
 
 // Handler handles operations described by OpenAPI v3 specification.
 type Handler interface {
+	// DisableUser implements DisableUser operation.
+	//
+	// Disable a user from all nodes.
+	//
+	// POST /user/disable
+	DisableUser(ctx context.Context, req *DisableUserRequest) error
+	// EnableUser implements EnableUser operation.
+	//
+	// Enable a user on all nodes.
+	//
+	// POST /user/enable
+	EnableUser(ctx context.Context, req *EnableUserRequest) error
 	// ListNodes implements ListNodes operation.
 	//
 	// List all nodes.
 	//
 	// GET /nodes
 	ListNodes(ctx context.Context) (*ListNodeResponse, error)
+	// ListUsers implements ListUsers operation.
+	//
+	// List all users.
+	//
+	// GET /users
+	ListUsers(ctx context.Context) (*ListUsersResponse, error)
 	// NewNode implements NewNode operation.
 	//
 	// Create a new node.
 	//
 	// POST /nodes/new
 	NewNode(ctx context.Context, req *NewNodeRequest) (*NewNodeResponse, error)
+	// NewUser implements NewUser operation.
+	//
+	// Create a new user.
+	//
+	// POST /user/new
+	NewUser(ctx context.Context, req *NewUserRequest) (*NewUserResponse, error)
 	// StartNode implements StartNode operation.
 	//
 	// Start a node.

@@ -8,6 +8,24 @@ import (
 	gen "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
 )
 
+func ConvertDisableUserRequest(source *gen.DisableUserRequest) (*models.DisableUserParams, error) {
+	var pModelsDisableUserParams *models.DisableUserParams
+	if source != nil {
+		var modelsDisableUserParams models.DisableUserParams
+		modelsDisableUserParams.ID = RConvertUserID((*source).ID)
+		pModelsDisableUserParams = &modelsDisableUserParams
+	}
+	return pModelsDisableUserParams, nil
+}
+func ConvertEnableUserRequest(source *gen.EnableUserRequest) (*models.EnableUserParams, error) {
+	var pModelsEnableUserParams *models.EnableUserParams
+	if source != nil {
+		var modelsEnableUserParams models.EnableUserParams
+		modelsEnableUserParams.ID = RConvertUserID((*source).ID)
+		pModelsEnableUserParams = &modelsEnableUserParams
+	}
+	return pModelsEnableUserParams, nil
+}
 func ConvertListNodesResult(source *models.ListNodeResult) *gen.ListNodeResponse {
 	var pApiListNodeResponse *gen.ListNodeResponse
 	if source != nil {
@@ -21,6 +39,20 @@ func ConvertListNodesResult(source *models.ListNodeResult) *gen.ListNodeResponse
 		pApiListNodeResponse = &apiListNodeResponse
 	}
 	return pApiListNodeResponse
+}
+func ConvertListUsersResult(source *models.ListUsersResult) *gen.ListUsersResponse {
+	var pApiListUsersResponse *gen.ListUsersResponse
+	if source != nil {
+		var apiListUsersResponse gen.ListUsersResponse
+		if (*source).Users != nil {
+			apiListUsersResponse.Users = make([]gen.User, len((*source).Users))
+			for i := 0; i < len((*source).Users); i++ {
+				apiListUsersResponse.Users[i] = modelsUserToApiUser((*source).Users[i])
+			}
+		}
+		pApiListUsersResponse = &apiListUsersResponse
+	}
+	return pApiListUsersResponse
 }
 func ConvertNewNodeRequest(source *gen.NewNodeRequest) (*models.NewNodeParams, error) {
 	var pModelsNewNodeParams *models.NewNodeParams
@@ -45,6 +77,26 @@ func ConvertNewNodeResult(source *models.NewNodeResult) *gen.NewNodeResponse {
 		pApiNewNodeResponse = &apiNewNodeResponse
 	}
 	return pApiNewNodeResponse
+}
+func ConvertNewUserRequest(source *gen.NewUserRequest) (*models.NewUserParams, error) {
+	var pModelsNewUserParams *models.NewUserParams
+	if source != nil {
+		var modelsNewUserParams models.NewUserParams
+		modelsNewUserParams.Name = (*source).Name
+		pModelsNewUserParams = &modelsNewUserParams
+	}
+	return pModelsNewUserParams, nil
+}
+func ConvertNewUserResult(source *models.NewUserResult) *gen.NewUserResponse {
+	var pApiNewUserResponse *gen.NewUserResponse
+	if source != nil {
+		var apiNewUserResponse gen.NewUserResponse
+		apiNewUserResponse.ID = ConvertUserID((*source).ID)
+		apiNewUserResponse.Name = (*source).Name
+		apiNewUserResponse.UserPageURL = (*source).UserPageURL
+		pApiNewUserResponse = &apiNewUserResponse
+	}
+	return pApiNewUserResponse
 }
 func ConvertStartNodeRequest(source *gen.StartNodeRequest) (*models.StartNodeParams, error) {
 	var pModelsStartNodeParams *models.StartNodeParams
@@ -90,4 +142,18 @@ func modelsNodeToApiNode(source models.Node) gen.Node {
 	apiNode.CurrentStatus = ConvertNodeStatusResult(source.CurrentStatus)
 	apiNode.TargetStatus = ConvertNodeStatusResult(source.TargetStatus)
 	return apiNode
+}
+func modelsUserProfileToApiUserProfile(source models.UserProfile) gen.UserProfile {
+	var apiUserProfile gen.UserProfile
+	apiUserProfile.Name = source.Name
+	apiUserProfile.SlugName = source.SlugName
+	apiUserProfile.VlessUUID = source.VlessUUID
+	return apiUserProfile
+}
+func modelsUserToApiUser(source models.User) gen.User {
+	var apiUser gen.User
+	apiUser.ID = ConvertUserID(source.ID)
+	apiUser.Profile = modelsUserProfileToApiUserProfile(source.Profile)
+	apiUser.TargetStatus = ConvertUserStatusResult(source.TargetStatus)
+	return apiUser
 }

@@ -70,13 +70,6 @@ func (s *poolsyncUoW) Do(ctx context.Context, fn pool.UoWFn) error {
 	return s.storage.DoPoolSync(ctx, fn)
 }
 
-// UsersStorage impl
-func (s *Storage) ListUsers(ctx context.Context) ([]models.User, error) {
-	var users []models.User
-	users = append(users, s.users...)
-	return users, nil
-}
-
 // NodeStatesStorage impl
 func (s *Storage) ListNodes(ctx context.Context) ([]models.Node, error) {
 	var nodes []models.Node
@@ -134,6 +127,11 @@ func (s *Storage) PatchPendingSyncs(ctx context.Context,
 func (s *Storage) NewNode(ctx context.Context, node *models.Node) error {
 	node.ID = models.NodeID(len(s.nodes))
 	s.nodes = append(s.nodes, *node)
+	nodeUsers := make([]models.UserStatus, len(s.users))
+	for i := range nodeUsers {
+		nodeUsers[i] = models.UserStatusDisabled
+	}
+	s.syncStatus = append(s.syncStatus, nodeUsers)
 	return nil
 }
 
@@ -142,4 +140,25 @@ func (s *Storage) SetTargetNodeStatus(ctx context.Context,
 ) error {
 	s.nodes[id].TargetStatus = status
 	return nil
+}
+
+// UsersStorage impl
+func (s *Storage) NewUser(ctx context.Context, user *models.User) error {
+	user.ID = models.UserID(len(s.users))
+	s.users = append(s.users, *user)
+	for nodeID := range s.syncStatus {
+		s.syncStatus[nodeID] = append(s.syncStatus[nodeID], models.UserStatusDisabled)
+	}
+	return nil
+}
+
+func (s *Storage) SetTargetUserStatus(ctx context.Context, id models.UserID, status models.UserStatus) error {
+	s.users[id].TargetStatus = status
+	return nil
+}
+
+func (s *Storage) ListUsers(ctx context.Context) ([]models.User, error) {
+	var users []models.User
+	users = append(users, s.users...)
+	return users, nil
 }
