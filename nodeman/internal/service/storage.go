@@ -27,9 +27,15 @@ type UsersStorage interface {
 	SetTargetUserStatus(ctx context.Context, id models.UserID, status models.UserStatus) error
 }
 
+type UserNodesStorage interface {
+	// get nodes where user is active
+	GetUserNodes(ctx context.Context, id models.UserID) ([]models.Node, error)
+}
+
 type UoWContext interface {
 	NodesStorage
 	UsersStorage
+	UserNodesStorage
 }
 
 type UoWFn = uow.Fn[UoWContext]

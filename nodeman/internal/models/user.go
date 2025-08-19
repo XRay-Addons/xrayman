@@ -3,9 +3,9 @@ package models
 type UserID int
 
 type UserProfile struct {
-	Name      string
-	SlugName  string
-	VlessUUID string
+	VisibleName string
+	Name        string
+	VlessUUID   string
 }
 
 type UserStatus int

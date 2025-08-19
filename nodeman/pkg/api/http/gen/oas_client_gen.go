@@ -15,6 +15,7 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.opentelemetry.io/otel/trace"
 
+	"github.com/ogen-go/ogen/conv"
 	ht "github.com/ogen-go/ogen/http"
 	"github.com/ogen-go/ogen/otelogen"
 	"github.com/ogen-go/ogen/uri"
@@ -39,6 +40,12 @@ type Invoker interface {
 	//
 	// POST /user/enable
 	EnableUser(ctx context.Context, request *EnableUserRequest) error
+	// GetUserSub invokes GetUserSub operation.
+	//
+	// Get subscription by user.
+	//
+	// GET /sub/{ID}-{Name}
+	GetUserSub(ctx context.Context, params GetUserSubParams) (GetUserSubResponse, error)
 	// ListNodes invokes ListNodes operation.
 	//
 	// List all nodes.
@@ -267,6 +274,118 @@ func (c *Client) sendEnableUser(ctx context.Context, request *EnableUserRequest)
 
 	stage = "DecodeResponse"
 	result, err := decodeEnableUserResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// GetUserSub invokes GetUserSub operation.
+//
+// Get subscription by user.
+//
+// GET /sub/{ID}-{Name}
+func (c *Client) GetUserSub(ctx context.Context, params GetUserSubParams) (GetUserSubResponse, error) {
+	res, err := c.sendGetUserSub(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendGetUserSub(ctx context.Context, params GetUserSubParams) (res GetUserSubResponse, err error) {
+	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("GetUserSub"),
+		semconv.HTTPRequestMethodKey.String("GET"),
+		semconv.HTTPRouteKey.String("/sub/{ID}-{Name}"),
+	}
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, GetUserSubOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [4]string
+	pathParts[0] = "/sub/"
+	{
+		// Encode "ID" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "ID",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			if unwrapped := int32(params.ID); true {
+				return e.EncodeValue(conv.Int32ToString(unwrapped))
+			}
+			return nil
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "-"
+	{
+		// Encode "Name" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "Name",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.Name))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodeGetUserSubResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

@@ -9,6 +9,7 @@ import (
 
 	"github.com/XRay-Addons/xrayman/node/internal/http/httperr"
 	"github.com/XRay-Addons/xrayman/node/internal/http/security/mocks"
+	"github.com/XRay-Addons/xrayman/node/internal/models"
 	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
 	"github.com/golang-jwt/jwt"
 	"github.com/stretchr/testify/assert"
@@ -19,9 +20,6 @@ import (
 //go:generate mockgen -source=../../../pkg/api/http/gen/oas_server_gen.go -destination=./mocks/mock_handler.go -package=mocks
 
 func TestSecurity(t *testing.T) {
-
-	//authErr := api.ErrorStatusCode(*httperr.ErrAuthToken)
-
 	tests := []struct {
 		name          string
 		path          string
@@ -70,7 +68,9 @@ func TestSecurity(t *testing.T) {
 			mockHandler := mocks.NewMockHandler(ctrl)
 			tt.mockSetup(mockHandler)
 
-			srv, err := api.NewServer(mockHandler, New(tt.serverSecret))
+			var s models.AccessSecret
+			copy(s[:], tt.requestSecret)
+			srv, err := api.NewServer(mockHandler, New(s))
 			require.NoError(t, err)
 
 			claims := jwt.MapClaims{

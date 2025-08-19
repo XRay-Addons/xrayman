@@ -185,6 +185,37 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /sub/{ID}-{Name}:
+    get:
+      summary: Get subscription by user
+      operationId: GetUserSub
+      parameters:
+        - name: ID
+          in: path
+          required: true
+          description: User ID
+          schema:
+            $ref: '#/components/schemas/UserID'
+        - name: Name
+          in: path
+          required: true
+          description: User name
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of subscription
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUserSubResponse'
+        'default':
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
 components:
   schemas:
     NodeID:
@@ -324,13 +355,13 @@ components:
       properties:
         Name:
           type: string
-        SlugName:
+        VisibleName:
           type: string
         VlessUUID:
           type: string
       required:
         - Name
-        - SlugName
+        - VisibleName
         - VlessUUID
 
     User:
@@ -350,23 +381,23 @@ components:
     NewUserRequest:
       type: object
       properties:
-        Name:
+        VisibleName:
           type: string
       required:
-        - Name
+        - VisibleName
 
     NewUserResponse:
       type: object
       properties:
         ID:
           $ref: '#/components/schemas/UserID'
-        Name:
+        VisibleName:
           type: string
         UserPageURL:
           type: string
       required:
         - ID
-        - Name
+        - VisibleName
         - UserPageURL
 
     EnableUserRequest:
@@ -402,6 +433,16 @@ components:
             $ref: '#/components/schemas/User'
       required:
         - Users
+
+    Subscription:
+      type: object
+      description: "subscription json object"
+      additionalProperties: true
+
+    GetUserSubResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/Subscription'
 
     Error:
       type: object

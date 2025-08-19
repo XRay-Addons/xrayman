@@ -1,5 +1,7 @@
 package models
 
+import "encoding/json"
+
 type NewNodeParams struct {
 	Endpoint  string
 	AccessKey AccessKey
@@ -32,12 +34,12 @@ type ListNodeResult struct {
 }
 
 type NewUserParams struct {
-	Name string
+	VisibleName string
 }
 
 type NewUserResult struct {
 	ID          UserID
-	Name        string
+	VisibleName string
 	UserPageURL string
 }
 
@@ -62,11 +64,11 @@ type ListUsersResult struct {
 	Users []User
 }
 
-type UserSubParams struct {
-	ID       UserID
-	SlugName string
+type GetUserSubParams struct {
+	ID   UserID
+	Name string
 }
 
-type UserSubResult struct {
-	SubText string
-}
+type Subscription = json.RawMessage
+
+type GetUserSubResult = []Subscription

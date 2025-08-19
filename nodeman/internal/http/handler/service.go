@@ -17,4 +17,6 @@ type Service interface {
 	DisableUser(ctx context.Context, p models.DisableUserParams) (*models.DisableUserResult, error)
 	EnableUser(ctx context.Context, p models.EnableUserParams) (*models.EnableUserResult, error)
 	ListUsers(ctx context.Context, p models.ListUserParams) (*models.ListUsersResult, error)
+
+	GetUserSub(ctx context.Context, p models.GetUserSubParams) (*models.GetUserSubResult, error)
 }

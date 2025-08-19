@@ -7,5 +7,5 @@ import (
 )
 
 func makeUserPageURL(u models.User) string {
-	return fmt.Sprintf("./%d-%s", u.ID, u.Profile.SlugName)
+	return fmt.Sprintf("./%d-%s", u.ID, u.Profile.Name)
 }

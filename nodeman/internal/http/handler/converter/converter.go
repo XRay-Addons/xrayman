@@ -1,6 +1,7 @@
 package converter
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
@@ -15,6 +16,7 @@ import (
 // goverter:extend ConvertAccessKey RConvertAccessKey
 // goverter:extend ConvertUserID RConvertUserID
 // goverter:extend ConvertUserStatusResult
+// goverter:extend ConvertSubscription
 //
 //go:generate goverter gen .
 type Converter interface {
@@ -35,6 +37,9 @@ type Converter interface {
 	ConvertDisableUserRequest(r *api.DisableUserRequest) (*models.DisableUserParams, error)
 
 	ConvertListUsersResult(r *models.ListUsersResult) *api.ListUsersResponse
+
+	ConvertUserSubRequest(r *api.GetUserSubParams) (*models.GetUserSubParams, error)
+	ConvertUserSubResult(r *models.GetUserSubResult) (*api.GetUserSubResponse, error)
 }
 
 func ConvertNodeID(i models.NodeID) api.NodeID {
@@ -93,4 +98,12 @@ func ConvertUserStatusResult(source models.UserStatus) api.UserStatus {
 		panic(fmt.Sprintf("unexpected enum element: %v", source))
 	}
 	return response
+}
+
+func ConvertSubscription(source models.Subscription) (api.Subscription, error) {
+	var s api.Subscription
+	if err := json.Unmarshal([]byte(source), &s); err != nil {
+		return nil, err
+	}
+	return s, nil
 }

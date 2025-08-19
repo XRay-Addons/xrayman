@@ -162,3 +162,23 @@ func (s *Storage) ListUsers(ctx context.Context) ([]models.User, error) {
 	users = append(users, s.users...)
 	return users, nil
 }
+
+func (s *Storage) GetUser(ctx context.Context, id models.UserID) (*models.User, error) {
+	return &s.users[id], nil
+}
+
+func (s *Storage) GetUserNodes(ctx context.Context, id models.UserID) ([]models.Node, error) {
+	var nodes []models.Node
+
+	for _, node := range s.nodes {
+		userNode := node.CurrentStatus == models.NodeStatusRunning &&
+			node.TargetStatus == models.NodeStatusRunning &&
+			s.syncStatus[node.ID][id] == models.UserStatusEnabled
+
+		if userNode {
+			nodes = append(nodes, node)
+		}
+	}
+
+	return nodes, nil
+}

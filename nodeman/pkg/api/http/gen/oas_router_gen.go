@@ -40,6 +40,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		s.notFound(w, r)
 		return
 	}
+	args := [2]string{}
 
 	// Static code generated router with unwrapped path search.
 	switch {
@@ -169,6 +170,61 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 				}
 
+			case 's': // Prefix: "sub/"
+
+				if l := len("sub/"); len(elem) >= l && elem[0:l] == "sub/" {
+					elem = elem[l:]
+				} else {
+					break
+				}
+
+				// Param: "ID"
+				// Match until "-"
+				idx := strings.IndexByte(elem, '-')
+				if idx < 0 {
+					idx = len(elem)
+				}
+				args[0] = elem[:idx]
+				elem = elem[idx:]
+
+				if len(elem) == 0 {
+					break
+				}
+				switch elem[0] {
+				case '-': // Prefix: "-"
+
+					if l := len("-"); len(elem) >= l && elem[0:l] == "-" {
+						elem = elem[l:]
+					} else {
+						break
+					}
+
+					// Param: "Name"
+					// Leaf parameter, slashes are prohibited
+					idx := strings.IndexByte(elem, '/')
+					if idx >= 0 {
+						break
+					}
+					args[1] = elem
+					elem = ""
+
+					if len(elem) == 0 {
+						// Leaf node.
+						switch r.Method {
+						case "GET":
+							s.handleGetUserSubRequest([2]string{
+								args[0],
+								args[1],
+							}, elemIsEscaped, w, r)
+						default:
+							s.notAllowed(w, r, "GET")
+						}
+
+						return
+					}
+
+				}
+
 			case 'u': // Prefix: "user"
 
 				if l := len("user"); len(elem) >= l && elem[0:l] == "user" {
@@ -291,7 +347,7 @@ type Route struct {
 	operationID string
 	pathPattern string
 	count       int
-	args        [0]string
+	args        [2]string
 }
 
 // Name returns ogen operation name.
@@ -492,6 +548,62 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 
 						}
 
+					}
+
+				}
+
+			case 's': // Prefix: "sub/"
+
+				if l := len("sub/"); len(elem) >= l && elem[0:l] == "sub/" {
+					elem = elem[l:]
+				} else {
+					break
+				}
+
+				// Param: "ID"
+				// Match until "-"
+				idx := strings.IndexByte(elem, '-')
+				if idx < 0 {
+					idx = len(elem)
+				}
+				args[0] = elem[:idx]
+				elem = elem[idx:]
+
+				if len(elem) == 0 {
+					break
+				}
+				switch elem[0] {
+				case '-': // Prefix: "-"
+
+					if l := len("-"); len(elem) >= l && elem[0:l] == "-" {
+						elem = elem[l:]
+					} else {
+						break
+					}
+
+					// Param: "Name"
+					// Leaf parameter, slashes are prohibited
+					idx := strings.IndexByte(elem, '/')
+					if idx >= 0 {
+						break
+					}
+					args[1] = elem
+					elem = ""
+
+					if len(elem) == 0 {
+						// Leaf node.
+						switch method {
+						case "GET":
+							r.name = GetUserSubOperation
+							r.summary = "Get subscription by user"
+							r.operationID = "GetUserSub"
+							r.pathPattern = "/sub/{ID}-{Name}"
+							r.args = args
+							r.count = 2
+							return r, true
+						default:
+							return
+						}
 					}
 
 				}

@@ -10,6 +10,9 @@ var (
 	ErrConfig error = errors.New("config error")
 	ErrAccess       = errors.New("access error")
 
+	// incorrect incoming requests
+	ErrNotFound = errors.New("not found")
+
 	// incorrect code (nil dereference etc)
 	ErrIPE           = errors.New("internal program error")
 	ErrNilObjectCall = fmt.Errorf("%w: nil object call", ErrIPE)

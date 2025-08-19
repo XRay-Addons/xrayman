@@ -82,7 +82,7 @@ func ConvertNewUserRequest(source *gen.NewUserRequest) (*models.NewUserParams, e
 	var pModelsNewUserParams *models.NewUserParams
 	if source != nil {
 		var modelsNewUserParams models.NewUserParams
-		modelsNewUserParams.Name = (*source).Name
+		modelsNewUserParams.VisibleName = (*source).VisibleName
 		pModelsNewUserParams = &modelsNewUserParams
 	}
 	return pModelsNewUserParams, nil
@@ -92,7 +92,7 @@ func ConvertNewUserResult(source *models.NewUserResult) *gen.NewUserResponse {
 	if source != nil {
 		var apiNewUserResponse gen.NewUserResponse
 		apiNewUserResponse.ID = ConvertUserID((*source).ID)
-		apiNewUserResponse.Name = (*source).Name
+		apiNewUserResponse.VisibleName = (*source).VisibleName
 		apiNewUserResponse.UserPageURL = (*source).UserPageURL
 		pApiNewUserResponse = &apiNewUserResponse
 	}
@@ -115,6 +115,27 @@ func ConvertStopNodeRequest(source *gen.StopNodeRequest) (*models.StopNodeParams
 		pModelsStopNodeParams = &modelsStopNodeParams
 	}
 	return pModelsStopNodeParams, nil
+}
+func ConvertUserSubRequest(source *gen.GetUserSubParams) (*models.GetUserSubParams, error) {
+	var pModelsGetUserSubParams *models.GetUserSubParams
+	if source != nil {
+		var modelsGetUserSubParams models.GetUserSubParams
+		modelsGetUserSubParams.ID = RConvertUserID((*source).ID)
+		modelsGetUserSubParams.Name = (*source).Name
+		pModelsGetUserSubParams = &modelsGetUserSubParams
+	}
+	return pModelsGetUserSubParams, nil
+}
+func ConvertUserSubResult(source *[]models.Subscription) (*gen.GetUserSubResponse, error) {
+	var pApiGetUserSubResponse *gen.GetUserSubResponse
+	if source != nil {
+		apiGetUserSubResponse, err := modelsSubscriptionListToApiGetUserSubResponse((*source))
+		if err != nil {
+			return nil, err
+		}
+		pApiGetUserSubResponse = &apiGetUserSubResponse
+	}
+	return pApiGetUserSubResponse, nil
 }
 func modelsClientConfigToApiClientConfig(source models.ClientConfig) gen.ClientConfig {
 	var apiClientConfig gen.ClientConfig
@@ -143,10 +164,24 @@ func modelsNodeToApiNode(source models.Node) gen.Node {
 	apiNode.TargetStatus = ConvertNodeStatusResult(source.TargetStatus)
 	return apiNode
 }
+func modelsSubscriptionListToApiGetUserSubResponse(source []models.Subscription) (gen.GetUserSubResponse, error) {
+	var apiGetUserSubResponse gen.GetUserSubResponse
+	if source != nil {
+		apiGetUserSubResponse = make(gen.GetUserSubResponse, len(source))
+		for i := 0; i < len(source); i++ {
+			apiSubscription, err := ConvertSubscription(source[i])
+			if err != nil {
+				return nil, err
+			}
+			apiGetUserSubResponse[i] = apiSubscription
+		}
+	}
+	return apiGetUserSubResponse, nil
+}
 func modelsUserProfileToApiUserProfile(source models.UserProfile) gen.UserProfile {
 	var apiUserProfile gen.UserProfile
 	apiUserProfile.Name = source.Name
-	apiUserProfile.SlugName = source.SlugName
+	apiUserProfile.VisibleName = source.VisibleName
 	apiUserProfile.VlessUUID = source.VlessUUID
 	return apiUserProfile
 }

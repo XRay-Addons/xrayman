@@ -20,6 +20,12 @@ type Handler interface {
 	//
 	// POST /user/enable
 	EnableUser(ctx context.Context, req *EnableUserRequest) error
+	// GetUserSub implements GetUserSub operation.
+	//
+	// Get subscription by user.
+	//
+	// GET /sub/{ID}-{Name}
+	GetUserSub(ctx context.Context, params GetUserSubParams) (GetUserSubResponse, error)
 	// ListNodes implements ListNodes operation.
 	//
 	// List all nodes.

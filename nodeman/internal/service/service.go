@@ -1,9 +1,12 @@
 package service
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"text/template"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
@@ -93,11 +96,11 @@ func (s *Service) NewUser(ctx context.Context, p models.NewUserParams) (*models.
 	if err != nil {
 		return nil, fmt.Errorf("service: new user: %w", err)
 	}
-	slugName := makeSlugName(p.Name)
+	name := makeSlugName(p.VisibleName)
 
 	var user models.User
-	user.Profile.Name = p.Name
-	user.Profile.SlugName = slugName
+	user.Profile.VisibleName = p.VisibleName
+	user.Profile.Name = name
 	user.Profile.VlessUUID = vlessUUID
 	user.TargetStatus = models.UserStatusEnabled
 
@@ -112,7 +115,7 @@ func (s *Service) NewUser(ctx context.Context, p models.NewUserParams) (*models.
 
 	return &models.NewUserResult{
 		ID:          user.ID,
-		Name:        user.Profile.Name,
+		VisibleName: user.Profile.VisibleName,
 		UserPageURL: makeUserPageURL(user),
 	}, nil
 }
@@ -147,17 +150,57 @@ func (s *Service) ListUsers(ctx context.Context, p models.ListUserParams) (*mode
 	}, nil
 }
 
-func (s *Service) GetUserSub(ctx context.Context, p models.UserSubParams) (*models.UserSubResult, error) {
+func (s *Service) GetUserSub(ctx context.Context, p models.GetUserSubParams) (*models.GetUserSubResult, error) {
 	if s == nil {
 		return nil, fmt.Errorf("service: get user sub: %w", errdefs.ErrNilObjectCall)
 	}
+
+	// validate user
 	var user *models.User
 	if err := s.uow.Do(ctx, func(uowctx UoWContext) (err error) {
 		user, err = uowctx.GetUser(ctx, p.ID)
 		return
 	}); err != nil {
-		return nil, fmt.Errorf("get user sub: %w", err)
+		return nil, fmt.Errorf("service: get user sub: %w", err)
 	}
+	if p.Name != user.Profile.Name {
+		return nil, fmt.Errorf("service: get user sub: %w", errdefs.ErrNotFound)
+	}
+
+	// get active nodes for user
+	var userNodes []models.Node
+	if err := s.uow.Do(ctx, func(uowctx UoWContext) (err error) {
+		userNodes, err = uowctx.GetUserNodes(ctx, user.ID)
+		return
+	}); err != nil {
+		return nil, fmt.Errorf("service: get user sub: %w", err)
+	}
+
+	// create subscription content
+	subscriptions := make([]json.RawMessage, 0, len(userNodes))
+	for _, node := range userNodes {
+		tmpl, err := template.New("client").Parse(node.Config.ClientConfig.Template)
+		if err != nil {
+			return nil, fmt.Errorf("service: get user sub: node template parsing: %v: %w", err, errdefs.ErrConfig)
+		}
+		var buf bytes.Buffer
+		err = tmpl.Execute(&buf, map[string]string{
+			node.Config.ClientConfig.UserNameField:  user.Profile.Name,
+			node.Config.ClientConfig.VlessUUIDField: user.Profile.VlessUUID,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("service: get user sub: node template filling: %v: %w", err, errdefs.ErrConfig)
+		}
+		// parse as array or as single subscription
+		var arr []json.RawMessage
+		if err := json.Unmarshal(buf.Bytes(), &arr); err == nil {
+			subscriptions = append(subscriptions, arr...)
+			continue
+		}
+		subscriptions = append(subscriptions, json.RawMessage(buf.Bytes()))
+	}
+
+	return &subscriptions, nil
 }
 
 func (s *Service) setNodeStatus(ctx context.Context, id models.NodeID, status models.NodeStatus) error {

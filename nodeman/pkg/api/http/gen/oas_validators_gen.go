@@ -10,6 +10,14 @@ import (
 	"github.com/ogen-go/ogen/validate"
 )
 
+func (s GetUserSubResponse) Validate() error {
+	alias := ([]Subscription)(s)
+	if alias == nil {
+		return errors.New("nil is invalid value")
+	}
+	return nil
+}
+
 func (s *ListNodeResponse) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer

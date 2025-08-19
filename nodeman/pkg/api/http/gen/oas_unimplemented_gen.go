@@ -31,6 +31,15 @@ func (UnimplementedHandler) EnableUser(ctx context.Context, req *EnableUserReque
 	return ht.ErrNotImplemented
 }
 
+// GetUserSub implements GetUserSub operation.
+//
+// Get subscription by user.
+//
+// GET /sub/{ID}-{Name}
+func (UnimplementedHandler) GetUserSub(ctx context.Context, params GetUserSubParams) (r GetUserSubResponse, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // ListNodes implements ListNodes operation.
 //
 // List all nodes.

@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/go-faster/errors"
+	"github.com/go-faster/jx"
 )
 
 func (s *ErrorStatusCode) Error() string {
@@ -137,6 +138,8 @@ func (s *ErrorStatusCode) SetResponse(val Error) {
 	s.Response = val
 }
 
+type GetUserSubResponse []Subscription
+
 // Ref: #/components/schemas/ListNodeResponse
 type ListNodeResponse struct {
 	Nodes []Node `json:"Nodes"`
@@ -222,23 +225,23 @@ func (s *NewNodeResponse) SetEndpoint(val string) {
 
 // Ref: #/components/schemas/NewUserRequest
 type NewUserRequest struct {
-	Name string `json:"Name"`
+	VisibleName string `json:"VisibleName"`
 }
 
-// GetName returns the value of Name.
-func (s *NewUserRequest) GetName() string {
-	return s.Name
+// GetVisibleName returns the value of VisibleName.
+func (s *NewUserRequest) GetVisibleName() string {
+	return s.VisibleName
 }
 
-// SetName sets the value of Name.
-func (s *NewUserRequest) SetName(val string) {
-	s.Name = val
+// SetVisibleName sets the value of VisibleName.
+func (s *NewUserRequest) SetVisibleName(val string) {
+	s.VisibleName = val
 }
 
 // Ref: #/components/schemas/NewUserResponse
 type NewUserResponse struct {
 	ID          UserID `json:"ID"`
-	Name        string `json:"Name"`
+	VisibleName string `json:"VisibleName"`
 	UserPageURL string `json:"UserPageURL"`
 }
 
@@ -247,9 +250,9 @@ func (s *NewUserResponse) GetID() UserID {
 	return s.ID
 }
 
-// GetName returns the value of Name.
-func (s *NewUserResponse) GetName() string {
-	return s.Name
+// GetVisibleName returns the value of VisibleName.
+func (s *NewUserResponse) GetVisibleName() string {
+	return s.VisibleName
 }
 
 // GetUserPageURL returns the value of UserPageURL.
@@ -262,9 +265,9 @@ func (s *NewUserResponse) SetID(val UserID) {
 	s.ID = val
 }
 
-// SetName sets the value of Name.
-func (s *NewUserResponse) SetName(val string) {
-	s.Name = val
+// SetVisibleName sets the value of VisibleName.
+func (s *NewUserResponse) SetVisibleName(val string) {
+	s.VisibleName = val
 }
 
 // SetUserPageURL sets the value of UserPageURL.
@@ -522,6 +525,19 @@ func (s *StopNodeRequest) SetID(val NodeID) {
 // Ref: #/components/schemas/StopNodeResponse
 type StopNodeResponse struct{}
 
+// Subscription json object.
+// Ref: #/components/schemas/Subscription
+type Subscription map[string]jx.Raw
+
+func (s *Subscription) init() Subscription {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
 // Ref: #/components/schemas/User
 type User struct {
 	ID           UserID      `json:"ID"`
@@ -563,9 +579,9 @@ type UserID int32
 
 // Ref: #/components/schemas/UserProfile
 type UserProfile struct {
-	Name      string `json:"Name"`
-	SlugName  string `json:"SlugName"`
-	VlessUUID string `json:"VlessUUID"`
+	Name        string `json:"Name"`
+	VisibleName string `json:"VisibleName"`
+	VlessUUID   string `json:"VlessUUID"`
 }
 
 // GetName returns the value of Name.
@@ -573,9 +589,9 @@ func (s *UserProfile) GetName() string {
 	return s.Name
 }
 
-// GetSlugName returns the value of SlugName.
-func (s *UserProfile) GetSlugName() string {
-	return s.SlugName
+// GetVisibleName returns the value of VisibleName.
+func (s *UserProfile) GetVisibleName() string {
+	return s.VisibleName
 }
 
 // GetVlessUUID returns the value of VlessUUID.
@@ -588,9 +604,9 @@ func (s *UserProfile) SetName(val string) {
 	s.Name = val
 }
 
-// SetSlugName sets the value of SlugName.
-func (s *UserProfile) SetSlugName(val string) {
-	s.SlugName = val
+// SetVisibleName sets the value of VisibleName.
+func (s *UserProfile) SetVisibleName(val string) {
+	s.VisibleName = val
 }
 
 // SetVlessUUID sets the value of VlessUUID.

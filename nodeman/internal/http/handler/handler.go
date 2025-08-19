@@ -155,6 +155,25 @@ func (h *Handler) ListUsers(ctx context.Context) (*api.ListUsersResponse, error)
 	return converter.ConvertListUsersResult(res), nil
 }
 
+func (h *Handler) GetUserSub(ctx context.Context, req api.GetUserSubParams) (api.GetUserSubResponse, error) {
+	if h == nil || h.service == nil {
+		return nil, fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
+	}
+	p, err := converter.ConvertUserSubRequest(&req)
+	if err != nil {
+		return nil, httperr.ErrInvaildPayload
+	}
+	sub, err := h.service.GetUserSub(ctx, *p)
+	if err != nil {
+		return nil, err
+	}
+	subResponse, err := converter.ConvertUserSubResult(sub)
+	if err != nil {
+		return nil, err
+	}
+	return *subResponse, nil
+}
+
 func (h *Handler) NewError(ctx context.Context, err error) *api.ErrorStatusCode {
 	// use passed HttpErr or default unknown
 	httpErr := httperr.ErrUnknown
