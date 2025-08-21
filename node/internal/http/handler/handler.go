@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/node/internal/http/constants"
@@ -23,10 +22,10 @@ var _ api.Handler = (*Handler)(nil)
 
 func New(s Service, log *zap.Logger) (*Handler, error) {
 	if s == nil {
-		return nil, fmt.Errorf("handler init: service: %w", errdefs.ErrNilArgPassed)
+		return nil, errdefs.NewNilArg("s")
 	}
 	if log == nil {
-		return nil, fmt.Errorf("handler init: logger: %w", errdefs.ErrNilArgPassed)
+		return nil, errdefs.NewNilArg("log")
 	}
 	return &Handler{
 		service: s,
@@ -36,7 +35,7 @@ func New(s Service, log *zap.Logger) (*Handler, error) {
 
 func (h *Handler) Start(ctx context.Context, req *api.StartRequest) (_ *api.StartResponse, err error) {
 	if h == nil || h.service == nil {
-		return nil, fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
+		return nil, errdefs.NewNilCall()
 	}
 
 	p := ConvertStartRequest(req)
@@ -50,7 +49,7 @@ func (h *Handler) Start(ctx context.Context, req *api.StartRequest) (_ *api.Star
 
 func (h *Handler) Stop(ctx context.Context) error {
 	if h == nil || h.service == nil {
-		return fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
+		return errdefs.NewNilCall()
 	}
 	_, err := h.service.Stop(ctx, models.StopParams{})
 	if err != nil {
@@ -62,7 +61,7 @@ func (h *Handler) Stop(ctx context.Context) error {
 
 func (h *Handler) GetStatus(ctx context.Context) (*api.StatusResponse, error) {
 	if h == nil || h.service == nil {
-		return nil, fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
+		return nil, errdefs.NewNilCall()
 	}
 	status, err := h.service.Status(ctx, models.StatusParams{})
 	if err != nil {
@@ -74,7 +73,7 @@ func (h *Handler) GetStatus(ctx context.Context) (*api.StatusResponse, error) {
 
 func (h *Handler) EditUsers(ctx context.Context, req *api.EditUsersRequest) error {
 	if h == nil || h.service == nil {
-		return fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
+		return errdefs.NewNilCall()
 	}
 	p := ConvertEditUsersRequest(req)
 	_, err := h.service.EditUsers(ctx, *p)

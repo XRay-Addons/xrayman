@@ -1,7 +1,6 @@
 package router
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -38,10 +37,10 @@ func WithLogger(log *zap.Logger) Option {
 
 func New(h api.Handler, sec api.SecurityHandler, options ...Option) (http.Handler, error) {
 	if h == nil {
-		return nil, fmt.Errorf("router init: handler: %w", errdefs.ErrNilArgPassed)
+		return nil, errdefs.NewNilArg("h")
 	}
 	if sec == nil {
-		return nil, fmt.Errorf("router init: security: %w", errdefs.ErrNilArgPassed)
+		return nil, errdefs.NewNilArg("sec")
 	}
 
 	ro := &routerOptions{
@@ -56,7 +55,7 @@ func New(h api.Handler, sec api.SecurityHandler, options ...Option) (http.Handle
 	// create api handler
 	apiHandler, err := api.NewServer(h, sec)
 	if err != nil {
-		return nil, fmt.Errorf("router: init: %w", err)
+		return nil, errdefs.WithStack(err)
 	}
 
 	// add middleware from chi

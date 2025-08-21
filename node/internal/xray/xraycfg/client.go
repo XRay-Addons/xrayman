@@ -2,7 +2,6 @@ package xraycfg
 
 import (
 	"bytes"
-	"fmt"
 	"text/template"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
@@ -18,20 +17,20 @@ type ClientCfg struct {
 func NewClientCfg(path string) (*ClientCfg, error) {
 	cfgTemplate, err := cfgread.ReadJSON(path)
 	if err != nil {
-		return nil, fmt.Errorf("%w: client config file reading: %v", errdefs.ErrConfig, err)
+		return nil, err
 	}
 	_, err = template.New("validate").Parse(cfgTemplate)
 	if err != nil {
-		return nil, fmt.Errorf("%w: invalid client config template", errdefs.ErrConfig)
+		return nil, err
 	}
 
 	nameField, err := extractNameField(cfgTemplate)
 	if err != nil {
-		return nil, fmt.Errorf("client cfg init: %w: %v", errdefs.ErrConfig, err)
+		return nil, err
 	}
 	vlessUUIdField, err := extractVlessUUIDField(cfgTemplate)
 	if err != nil {
-		return nil, fmt.Errorf("client cfg init: %w: %v", errdefs.ErrConfig, err)
+		return nil, err
 	}
 
 	clientCfg := models.ClientCfg{
@@ -41,7 +40,7 @@ func NewClientCfg(path string) (*ClientCfg, error) {
 	}
 
 	if err = validateClientConfig(&clientCfg); err != nil {
-		return nil, fmt.Errorf("validate client config template: %w", err)
+		return nil, err
 	}
 
 	return &ClientCfg{cfg: clientCfg}, nil
@@ -50,7 +49,7 @@ func NewClientCfg(path string) (*ClientCfg, error) {
 func validateClientConfig(cfg *models.ClientCfg) error {
 	t, err := template.New("json").Parse(cfg.Template)
 	if err != nil {
-		return fmt.Errorf("%w: template syntax: %v", errdefs.ErrConfig, err)
+		return errdefs.WithStack(err)
 	}
 
 	testTemplateData := map[string]string{
@@ -59,11 +58,11 @@ func validateClientConfig(cfg *models.ClientCfg) error {
 	}
 	var buf bytes.Buffer
 	if err := t.Execute(&buf, &testTemplateData); err != nil {
-		return fmt.Errorf("%w: template execution: %v", errdefs.ErrConfig, err)
+		return errdefs.WithStack(err)
 	}
 
 	if !gjson.Valid(buf.String()) {
-		return fmt.Errorf("%w: invalid filled json", errdefs.ErrConfig)
+		return errdefs.WithStack(err)
 	}
 
 	return nil
@@ -71,7 +70,7 @@ func validateClientConfig(cfg *models.ClientCfg) error {
 
 func (cfg *ClientCfg) Get() (*models.ClientCfg, error) {
 	if cfg == nil {
-		return nil, fmt.Errorf("%w: client cfg: get", errdefs.ErrNilObjectCall)
+		return nil, errdefs.NewNilCall()
 	}
 	return &cfg.cfg, nil
 }

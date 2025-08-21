@@ -28,7 +28,7 @@ func addUser(
 		return nil
 	}
 
-	return fmt.Errorf("%w: add user: %v", errdefs.ErrGRPC, err)
+	return errdefs.WithStack(err)
 }
 
 func removeUser(
@@ -46,7 +46,7 @@ func removeUser(
 	if err != nil && strings.Contains(err.Error(), notFoundErrPattern) {
 		return nil
 	}
-	return fmt.Errorf("%w: remove user: %v", errdefs.ErrGRPC, err)
+	return errdefs.WithStack(err)
 }
 
 func ping(
@@ -55,7 +55,7 @@ func ping(
 ) error {
 	_, err := ssClient.GetSysStats(ctx, &statsService.SysStatsRequest{})
 	if err != nil {
-		return fmt.Errorf("%w: ping call: %v", errdefs.ErrGRPC, err)
+		return errdefs.WithStack(err)
 	}
 
 	return nil

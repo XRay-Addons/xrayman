@@ -2,7 +2,6 @@ package models
 
 import (
 	"encoding/base64"
-	"fmt"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 )
@@ -26,10 +25,10 @@ func (k *AccessKey) UnmarshalText(text []byte) error {
 	raw := make([]byte, base64.StdEncoding.DecodedLen(len(text)))
 	n, err := base64.StdEncoding.Decode(raw, text)
 	if err != nil {
-		return err
+		return errdefs.WithStack(err)
 	}
 	if n != len(k.CertHash)+len(k.AccessSecret) {
-		return fmt.Errorf("access key: length: %w", errdefs.ErrConfig)
+		return errdefs.New("access key: invalid length")
 	}
 	copy(k.CertHash[:], raw[:len(k.CertHash)])
 	copy(k.AccessSecret[:], raw[len(k.CertHash):])

@@ -7,11 +7,12 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
-	"fmt"
 	"math/big"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 )
 
 func ensureTLS(dir string, iss string, exp time.Duration) (cert, key []byte, err error) {
@@ -21,11 +22,11 @@ func ensureTLS(dir string, iss string, exp time.Duration) (cert, key []byte, err
 
 	cert, key, err = generateTLS(iss, exp)
 	if err != nil {
-		return nil, nil, fmt.Errorf("ensure tls: %w", err)
+		return nil, nil, err
 	}
 
 	if err := writeTLS(dir, cert, key); err != nil {
-		return nil, nil, fmt.Errorf("ensure tls: %w", err)
+		return nil, nil, err
 	}
 
 	return cert, key, nil
@@ -37,16 +38,16 @@ func readTLS(dir string) (cert, key []byte, err error) {
 
 	cert, err = os.ReadFile(certPath)
 	if err != nil {
-		return nil, nil, fmt.Errorf("read tls: %w", err)
+		return nil, nil, errdefs.WithStack(err)
 	}
 
 	key, err = os.ReadFile(keyPath)
 	if err != nil {
-		return nil, nil, fmt.Errorf("read tls: %w", err)
+		return nil, nil, errdefs.WithStack(err)
 	}
 
 	if _, err := tls.X509KeyPair(cert, key); err != nil {
-		return nil, nil, fmt.Errorf("read tls: %w", err)
+		return nil, nil, errdefs.WithStack(err)
 	}
 
 	return cert, key, nil
@@ -54,14 +55,14 @@ func readTLS(dir string) (cert, key []byte, err error) {
 
 func writeTLS(dir string, cert, key []byte) error {
 	if err := os.MkdirAll(dir, 0o700); err != nil {
-		return fmt.Errorf("write tls: %w", err)
+		return errdefs.WithStack(err)
 	}
 
 	if err := os.WriteFile(filepath.Join(dir, CertFile), cert, 0o600); err != nil {
-		return fmt.Errorf("write tls: %w", err)
+		return errdefs.WithStack(err)
 	}
 	if err := os.WriteFile(filepath.Join(dir, KeyFile), key, 0o600); err != nil {
-		return fmt.Errorf("write tls: %w", err)
+		return errdefs.WithStack(err)
 	}
 
 	return nil
@@ -70,12 +71,12 @@ func writeTLS(dir string, cert, key []byte) error {
 func generateTLS(issuer string, exp time.Duration) (certPEM, keyPEM []byte, err error) {
 	priv, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
-		return nil, nil, fmt.Errorf("generate tls: %w", err)
+		return nil, nil, errdefs.WithStack(err)
 	}
 
 	serial, err := rand.Int(rand.Reader, big.NewInt(1<<62))
 	if err != nil {
-		return nil, nil, fmt.Errorf("generate tls: %w", err)
+		return nil, nil, errdefs.WithStack(err)
 	}
 
 	template := x509.Certificate{
@@ -92,7 +93,7 @@ func generateTLS(issuer string, exp time.Duration) (certPEM, keyPEM []byte, err 
 
 	certDER, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
 	if err != nil {
-		return nil, nil, fmt.Errorf("generate tls: %w", err)
+		return nil, nil, errdefs.WithStack(err)
 	}
 
 	certPEM = pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certDER})

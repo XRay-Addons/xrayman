@@ -2,7 +2,6 @@ package xrayapi
 
 import (
 	"context"
-	"fmt"
 	"sync"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
@@ -15,6 +14,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// TODO: WithLog
 type XRayApi struct {
 	inbounds []models.Inbound
 	apiConn  *grpcconn.GRPCConn
@@ -26,11 +26,11 @@ type XRayApi struct {
 
 func New(apiURL string, inbounds []models.Inbound, log *zap.Logger) (*XRayApi, error) {
 	if log == nil {
-		return nil, fmt.Errorf("%w: xray api init: log", errdefs.ErrNilArgPassed)
+		return nil, errdefs.NewNilArg("log")
 	}
 	apiConn, err := grpcconn.New(apiURL, log)
 	if err != nil {
-		return nil, fmt.Errorf("xray api: connect: %w", err)
+		return nil, err
 	}
 
 	hsClient := handlerService.NewHandlerServiceClient(apiConn)
@@ -60,7 +60,7 @@ func (api *XRayApi) Close(ctx context.Context) error {
 	api.ssClient = nil
 
 	if err := api.apiConn.Close(ctx); err != nil {
-		return fmt.Errorf("xray api: connection closing: %w", err)
+		return errdefs.WithStack(err)
 	}
 	api.apiConn = nil
 
@@ -69,28 +69,28 @@ func (api *XRayApi) Close(ctx context.Context) error {
 
 func (api *XRayApi) Connect(ctx context.Context) error {
 	if api == nil {
-		return fmt.Errorf("%w: xray api: connect", errdefs.ErrNilObjectCall)
+		return errdefs.NewNilCall()
 	}
 
 	api.mu.Lock()
 	defer api.mu.Unlock()
 
 	if err := api.apiConn.Connect(ctx); err != nil {
-		return fmt.Errorf("xray api: connect: %w", err)
+		return errdefs.WithStack(err)
 	}
 	return nil
 }
 
 func (api *XRayApi) Disconnect(ctx context.Context) error {
 	if api == nil {
-		return fmt.Errorf("%w: xray api: disconnect", errdefs.ErrNilObjectCall)
+		return errdefs.NewNilCall()
 	}
 
 	api.mu.Lock()
 	defer api.mu.Unlock()
 
 	if err := api.apiConn.Disconnect(ctx); err != nil {
-		return fmt.Errorf("xray api: disconnect: %w", err)
+		return errdefs.WithStack(err)
 	}
 	return nil
 }
@@ -100,7 +100,7 @@ func (api *XRayApi) EditUsers(
 	add, remove []models.User,
 ) error {
 	if api == nil || api.hsClient == nil {
-		return fmt.Errorf("%w: xray api", errdefs.ErrNilObjectCall)
+		return errdefs.NewNilCall()
 	}
 
 	api.mu.Lock()
@@ -112,7 +112,7 @@ func (api *XRayApi) EditUsers(
 		for _, u := range add {
 			inUser, err := getInboundUser(u, in.Type)
 			if err != nil {
-				return fmt.Errorf("xray api: edit users: %w", err)
+				return err
 			}
 			editUsersTx.AddItem(
 				api.addFn(in.Tag, inUser),
@@ -122,7 +122,7 @@ func (api *XRayApi) EditUsers(
 		for _, u := range remove {
 			inUser, err := getInboundUser(u, in.Type)
 			if err != nil {
-				return fmt.Errorf("xray api: edit users: %w", err)
+				return err
 			}
 			editUsersTx.AddItem(
 				api.removeFn(in.Tag, inUser.Email),
@@ -132,7 +132,7 @@ func (api *XRayApi) EditUsers(
 	}
 
 	if err := editUsersTx.Run(ctx); err != nil {
-		return fmt.Errorf("xray api: edit users: %w", err)
+		return err
 	}
 
 	return nil
@@ -152,7 +152,7 @@ func (api *XRayApi) removeFn(inTag string, userEmail string) tx.Fn {
 
 func (api *XRayApi) Ping(ctx context.Context) error {
 	if api == nil || api.ssClient == nil {
-		return fmt.Errorf("%w: xray api", errdefs.ErrNilObjectCall)
+		return errdefs.NewNilCall()
 	}
 
 	api.mu.Lock()

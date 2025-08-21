@@ -1,8 +1,9 @@
 package fs
 
 import (
-	"fmt"
 	"os"
+
+	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 )
 
 func AccessFile(path string) (bool, error) {
@@ -11,7 +12,7 @@ func AccessFile(path string) (bool, error) {
 		if os.IsNotExist(err) {
 			return false, nil
 		}
-		return false, fmt.Errorf("fs: access file: %w", err)
+		return false, errdefs.NewFileAccess(path, err)
 	}
 	return !info.IsDir(), nil
 }
@@ -22,7 +23,7 @@ func AccessDir(path string) (bool, error) {
 		if os.IsNotExist(err) {
 			return false, nil
 		}
-		return false, fmt.Errorf("fs: access dir: %w", err)
+		return false, errdefs.NewFileAccess(path, err)
 	}
 	return info.IsDir(), nil
 }

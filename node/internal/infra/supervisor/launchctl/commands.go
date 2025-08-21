@@ -1,12 +1,10 @@
 package launchctl
 
 import (
-	"fmt"
 	"path/filepath"
 	"regexp"
 	"strings"
 
-	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/node/internal/infra/exec"
 )
 
@@ -18,7 +16,7 @@ func createService(domain, plistLocation string) error {
 		"bootstrap", domain, plistLocation,
 	})
 	if err != nil {
-		return fmt.Errorf("%w: bootstrap: %v", errdefs.ErrService, err)
+		return err
 	}
 	return nil
 }
@@ -33,7 +31,7 @@ func removeService(domain, service string) error {
 	if err == nil || strings.Contains(stderr, notExistsStderr) {
 		return nil
 	}
-	return fmt.Errorf("%w: bootout: %v", errdefs.ErrService, err)
+	return err
 }
 
 func startService(domain, service string) error {
@@ -41,7 +39,7 @@ func startService(domain, service string) error {
 		"kickstart", "-k", filepath.Join(domain, service),
 	})
 	if err != nil {
-		return fmt.Errorf("%w: kickstart: %v", errdefs.ErrService, err)
+		return err
 	}
 	return nil
 }
@@ -54,7 +52,7 @@ func stopService(domain, service string) error {
 
 	const alreadyStoppedStderr = "No process to signal."
 	if err != nil && !strings.Contains(stderr, alreadyStoppedStderr) {
-		return fmt.Errorf("%w: kill: %v", errdefs.ErrService, err)
+		return err
 	}
 	return nil
 }
@@ -66,7 +64,7 @@ func getServiceStatus(domain, service string) (string, error) {
 	})
 
 	if err != nil {
-		return "", fmt.Errorf("%w: print: %v", errdefs.ErrService, err)
+		return "", err
 	}
 
 	return extractStatusString(stdout), nil

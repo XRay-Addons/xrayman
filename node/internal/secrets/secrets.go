@@ -1,7 +1,6 @@
 package secrets
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/XRay-Addons/xrayman/node/internal/models"
@@ -49,11 +48,11 @@ func Init(dir string, opts ...Option) (*Secrets, error) {
 	}
 	cert, key, err := ensureTLS(dir, cfg.issuer, cfg.expire)
 	if err != nil {
-		return nil, fmt.Errorf("secrets: init: %w", err)
+		return nil, err
 	}
 	accessKey, err := ensureAccessKey(dir)
 	if err != nil {
-		return nil, fmt.Errorf("secrets: init: %w", err)
+		return nil, err
 	}
 	return &Secrets{
 		Cert:      cert,

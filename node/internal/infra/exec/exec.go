@@ -2,7 +2,6 @@ package exec
 
 import (
 	"bytes"
-	"fmt"
 	"os/exec"
 	"strings"
 
@@ -22,7 +21,8 @@ func Run(name string, args []string) (stdout, stderr string, err error) {
 
 	if err != nil {
 		fullCmd := name + " " + strings.Join(args, " ")
-		err = fmt.Errorf("%w: %s -> %s", errdefs.ErrExec, fullCmd, stdout)
+		err = errdefs.Withf(errdefs.WithStack(err),
+			"cmd: %s, out: %s", fullCmd, stdout)
 	}
 
 	return stdout, stderr, err

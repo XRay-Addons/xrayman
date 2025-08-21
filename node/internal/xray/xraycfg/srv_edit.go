@@ -13,13 +13,13 @@ func addSrvUsers(cfg string, ins []models.Inbound, us []models.User) (string, er
 	for _, inbound := range ins {
 		sectionUsers, err := makeSectionUsers(inbound.Type, us)
 		if err != nil {
-			return "", fmt.Errorf("make section user: %w", err)
+			return "", err
 		}
 
 		usersPath := fmt.Sprintf("inbounds.#(tag=%s).settings.clients", inbound.Tag)
 		usersCfg, err = sjson.Set(usersCfg, usersPath, sectionUsers)
 		if err != nil {
-			return "", fmt.Errorf("%w: set config users: %v", errdefs.ErrConfig, err)
+			return "", errdefs.WithStack(err)
 		}
 	}
 
@@ -31,7 +31,7 @@ func makeSectionUsers(it models.InboundType, us []models.User) ([]map[string]str
 	for _, u := range us {
 		su, err := makeSectionUser(it, u)
 		if err != nil {
-			return nil, fmt.Errorf("make section user: %w", err)
+			return nil, err
 		}
 		sectionUsers = append(sectionUsers, su)
 	}
@@ -52,6 +52,6 @@ func makeSectionUser(it models.InboundType, u models.User) (map[string]string, e
 			"id":    u.VlessUUID,
 		}, nil
 	default:
-		return nil, fmt.Errorf("unsupported inbound type")
+		return nil, errdefs.Newf("unsupported inbound type: %v", it)
 	}
 }

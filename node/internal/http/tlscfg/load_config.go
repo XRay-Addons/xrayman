@@ -2,13 +2,14 @@ package tlscfg
 
 import (
 	"crypto/tls"
-	"fmt"
+
+	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 )
 
 func Load(nodeCrt, nodeKey []byte) (*tls.Config, error) {
 	cert, err := tls.X509KeyPair(nodeCrt, nodeKey)
 	if err != nil {
-		return nil, fmt.Errorf("loading server cert: %w", err)
+		return nil, errdefs.WithStack(err)
 	}
 
 	return &tls.Config{

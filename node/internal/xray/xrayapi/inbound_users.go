@@ -1,8 +1,6 @@
 package xrayapi
 
 import (
-	"fmt"
-
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 	"github.com/xtls/xray-core/common/protocol"
@@ -13,7 +11,7 @@ import (
 func getInboundUser(u models.User, in models.InboundType) (*protocol.User, error) {
 	switch in {
 	case models.VlessTcpReality, models.VlessXHTTP:
-		vlessAccunt, err := getVlessAccound(u, in)
+		vlessAccunt, err := getVlessAccount(u, in)
 		if err != nil {
 			return nil, err
 		}
@@ -22,11 +20,11 @@ func getInboundUser(u models.User, in models.InboundType) (*protocol.User, error
 			Account: serial.ToTypedMessage(vlessAccunt),
 		}, nil
 	default:
-		return nil, fmt.Errorf("%w: unsupported inbound: %v", errdefs.ErrConfig, in)
+		return nil, errdefs.Newf("unsupported inbound: %v", in)
 	}
 }
 
-func getVlessAccound(u models.User, in models.InboundType) (*vless.Account, error) {
+func getVlessAccount(u models.User, in models.InboundType) (*vless.Account, error) {
 	switch in {
 	case models.VlessTcpReality:
 		return &vless.Account{
@@ -40,6 +38,6 @@ func getVlessAccound(u models.User, in models.InboundType) (*vless.Account, erro
 			Encryption: "none",
 		}, nil
 	default:
-		return nil, fmt.Errorf("%w: unsupported inbound", errdefs.ErrIPE)
+		return nil, errdefs.Newf("unsupported inbound: %v", in)
 	}
 }

@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"net"
 	"os"
 
@@ -10,16 +9,17 @@ import (
 
 func Validate(c Config) error {
 	if _, err := net.ResolveTCPAddr("tcp", c.Endpoint); err != nil {
-		return fmt.Errorf("%w: invalid endpoint: %v", errdefs.ErrConfig, err)
+		return errdefs.Withf(errdefs.WithStack(err),
+			"invalid endpoint %s", c.Endpoint)
 	}
 	if err := checkExecutable(c.XRayExec()); err != nil {
-		return fmt.Errorf("%w: xray exec: %v", errdefs.ErrConfig, err)
+		return err
 	}
 	if err := checkFile(c.XRayServer()); err != nil {
-		return fmt.Errorf("%w: xray server cfg: %v", errdefs.ErrConfig, err)
+		return err
 	}
 	if err := checkFile(c.XRayClient()); err != nil {
-		return fmt.Errorf("%w: xray client cfg: %v", errdefs.ErrConfig, err)
+		return err
 	}
 
 	return nil
@@ -28,25 +28,26 @@ func Validate(c Config) error {
 func checkExecutable(path string) error {
 	info, err := os.Stat(path)
 	if err != nil {
-		return fmt.Errorf("%s file not exists", path)
+		return errdefs.Withf(errdefs.WithStack(err),
+			"invalid executable %s", path)
 	}
 	if !info.Mode().IsRegular() {
-		return fmt.Errorf("%s not a regular file", path)
+		return errdefs.Newf("exectuable %s is not regular file", path)
 	}
 	perm := info.Mode().Perm()
 	if perm&0111 != 0 {
 		return nil
 	}
-	return fmt.Errorf("%s file not executable for current user: %v", path, perm)
+	return errdefs.Newf("file %ы executable for current user", path)
 }
 
 func checkFile(path string) error {
 	exists, err := checkFileExists(path)
 	if err != nil {
-		return err
+		return errdefs.WithStack(err)
 	}
 	if !exists {
-		return fmt.Errorf("%s file not exists", path)
+		return errdefs.Newf("file not exists: %v", path)
 	}
 	return nil
 }
@@ -57,7 +58,7 @@ func checkFileExists(path string) (bool, error) {
 		return false, nil
 	}
 	if !info.Mode().IsRegular() {
-		return false, fmt.Errorf("%s is not a regular file", path)
+		return false, errdefs.Newf("file %s is not regular file", path)
 	}
 	return true, nil
 }

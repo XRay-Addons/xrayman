@@ -2,9 +2,9 @@ package xraycfg
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
+	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 	"github.com/tidwall/gjson"
 )
 
@@ -12,11 +12,11 @@ func extractNameField(cfg string) (string, error) {
 	users := getUsers(gjson.Get(cfg, `outbounds`))
 	userIDs, err := extractFields(users, "email")
 	if err != nil {
-		return "", fmt.Errorf("extract Name field: %w", err)
+		return "", err
 	}
 	userID, err := getSingleValue(userIDs)
 	if err != nil {
-		return "", fmt.Errorf("extract Name field: %w", err)
+		return "", err
 	}
 	return userID, nil
 }
@@ -25,11 +25,11 @@ func extractVlessUUIDField(cfg string) (string, error) {
 	users := getUsers(gjson.Get(cfg, `outbounds.#(protocol=="vless")#`))
 	userIDs, err := extractFields(users, "id")
 	if err != nil {
-		return "", fmt.Errorf("extract VlessUUID field: %w", err)
+		return "", err
 	}
 	userID, err := getSingleValue(userIDs)
 	if err != nil {
-		return "", fmt.Errorf("extract VlessUUID field: %w", err)
+		return "", err
 	}
 	return userID, nil
 }
@@ -69,7 +69,7 @@ func extractFields(items []gjson.Result, name string) ([]string, error) {
 
 	// return all errors on error
 	if len(errs) > 0 {
-		return nil, fmt.Errorf("extract vless uuid field: %w", errors.Join(errs...))
+		return nil, errors.Join(errs...)
 	}
 
 	// get fields list
@@ -86,25 +86,25 @@ func extractTemplateVar(s string) (string, error) {
 	templateVar := strings.TrimSpace(s)
 	// trim "{{", "}}"
 	if !strings.HasPrefix(templateVar, "{{") || !strings.HasSuffix(templateVar, "}}") {
-		return "", fmt.Errorf("invalid template format: %s", s)
+		return "", errdefs.Newf("invalid template format: %s", s)
 	}
 	templateVar = templateVar[2 : len(templateVar)-2]
 	// trim spaces again
 	templateVar = strings.TrimSpace(templateVar)
 	// trim "."
 	if !strings.HasPrefix(templateVar, ".") {
-		return "", fmt.Errorf("template variable should start with '.'")
+		return "", errdefs.New("template variable should start with '.'")
 	}
 	templateVar = templateVar[1:]
 	if templateVar == "" {
-		return "", fmt.Errorf("empty variable name")
+		return "", errdefs.New("empty variable name")
 	}
 	return templateVar, nil
 }
 
 func getSingleValue(values []string) (string, error) {
 	if len(values) > 1 {
-		return "", fmt.Errorf("multiple name field templates found: %v", values)
+		return "", errdefs.Newf("multiple name field templates found: %v", values)
 	}
 	for _, value := range values {
 		return value, nil

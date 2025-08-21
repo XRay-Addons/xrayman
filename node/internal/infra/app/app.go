@@ -3,12 +3,12 @@ package app
 import (
 	"context"
 	"errors"
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/node/internal/infra/tx"
 	"github.com/oklog/run"
 	"go.uber.org/zap"
@@ -54,7 +54,7 @@ func WithSignalCancel() Option {
 				app.log.Info("Press Ctrl+C to stop the server...")
 				signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 				if sig := <-sigCh; sig != nil {
-					return fmt.Errorf("received signal: %s", sig)
+					return errdefs.Newf("received signal: %s", sig)
 				}
 				return nil
 			},
@@ -95,17 +95,17 @@ func New(opts ...Option) *App {
 func (app *App) Run() (err error) {
 	// init app components
 	if initErr := app.init(); initErr != nil {
-		return fmt.Errorf("app run: %w", initErr)
+		return initErr
 	}
 	defer func() {
 		if closeErr := app.close(); closeErr != nil {
-			err = errors.Join(err, fmt.Errorf("app close: %w", closeErr))
+			err = errors.Join(err, closeErr)
 		}
 	}()
 
 	// run runners
 	if runErr := app.run(); runErr != nil {
-		return fmt.Errorf("app run: %w", runErr)
+		return runErr
 	}
 
 	return nil
@@ -188,7 +188,7 @@ func (app *App) init() error {
 	}
 
 	if err := initTx.Run(context.Background()); err != nil {
-		return fmt.Errorf("init app: %w", err)
+		return err
 	}
 
 	return nil
@@ -209,7 +209,7 @@ func (app *App) close() error {
 		return nil
 	}
 
-	return fmt.Errorf("close app error: %w", errors.Join(closeErrs...))
+	return errors.Join(closeErrs...)
 }
 
 func (app *App) run() error {
@@ -220,7 +220,7 @@ func (app *App) run() error {
 	}
 
 	if err := g.Run(); err != nil {
-		return fmt.Errorf("app run: %w", err)
+		return err
 	}
 
 	return nil

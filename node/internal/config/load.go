@@ -6,6 +6,7 @@ import (
 	"path"
 	"runtime"
 
+	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 	"github.com/caarlos0/env/v6"
 )
 
@@ -54,12 +55,15 @@ xray`)
 (certs, secrets, config to connect to node) should be generated on-demand`)
 
 	if err := fs.Parse(os.Args[1:]); err != nil {
-		return err
+		return errdefs.WithStack(err)
 	}
 
 	return nil
 }
 
 func readEnvParams(c *Config) error {
-	return env.Parse(c)
+	if err := env.Parse(c); err != nil {
+		return errdefs.WithStack(err)
+	}
+	return nil
 }

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -20,6 +19,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// TODO: options
 type XRayCtl struct {
 	serviceName   string
 	userDomain    string // gui/501
@@ -35,15 +35,15 @@ const plistDirectory = "/Library/LaunchAgents"
 
 func New(serviceName string, command []string, log *zap.Logger) (*XRayCtl, error) {
 	if log == nil {
-		return nil, fmt.Errorf("%w: init service: logger", errdefs.ErrNilObjectCall)
+		return nil, errdefs.NewNilArg("log")
 	}
 	userDomain, err := userDomain()
 	if err != nil {
-		return nil, fmt.Errorf("init service: %w", err)
+		return nil, err
 	}
 	userHome, err := os.UserHomeDir()
 	if err != nil {
-		return nil, fmt.Errorf("init service: %w", err)
+		return nil, errdefs.WithStack(err)
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -56,7 +56,7 @@ func New(serviceName string, command []string, log *zap.Logger) (*XRayCtl, error
 
 	// init plist
 	if err := xrayCtl.createPlistFile(command); err != nil {
-		return nil, fmt.Errorf("init xrayctl: %w", err)
+		return nil, err
 	}
 
 	// run installing service loop
@@ -96,17 +96,17 @@ func (ctl *XRayCtl) Close(ctx context.Context) error {
 		return nil
 	}
 
-	return fmt.Errorf("%w: close service: %v",
-		errdefs.ErrService, errors.Join(closeErrs...))
+	return errors.Join(closeErrs...)
 }
 
 func (ctl *XRayCtl) createPlistFile(command []string) error {
 	plistContent, err := makePlist(ctl.serviceName, command)
 	if err != nil {
-		return fmt.Errorf("create plist file: %w", err)
+		return err
 	}
 	if err := os.WriteFile(ctl.plistLocation, plistContent, 0644); err != nil {
-		return fmt.Errorf("write service plist: %w: %v", errdefs.ErrAccess, err)
+		return errdefs.Withf(errdefs.WithStack(err),
+			"write file: %w", ctl.plistLocation)
 	}
 	return nil
 }
@@ -131,7 +131,7 @@ const plistTemplate = `<?xml version="1.0" encoding="UTF-8"?>
 func makePlist(serviceName string, command []string) ([]byte, error) {
 	tmpl, err := template.New("plist").Parse(plistTemplate)
 	if err != nil {
-		return nil, fmt.Errorf("parse service plist: %w: %v", errdefs.ErrIPE, err)
+		return nil, errdefs.WithStack(err)
 	}
 
 	data := map[string]interface{}{
@@ -141,7 +141,7 @@ func makePlist(serviceName string, command []string) ([]byte, error) {
 
 	var buf bytes.Buffer
 	if err := tmpl.Execute(&buf, data); err != nil {
-		return nil, fmt.Errorf("make service plist: %w: %v", errdefs.ErrIPE, err)
+		return nil, errdefs.WithStack(err)
 	}
 	return buf.Bytes(), nil
 }
@@ -151,7 +151,8 @@ func (ctl *XRayCtl) removePlistFile() error {
 	if err == nil || errors.Is(err, os.ErrNotExist) {
 		return nil
 	}
-	return fmt.Errorf("remove service plist: %w: %v", errdefs.ErrAccess, err)
+	return errdefs.Withf(errdefs.WithStack(err),
+		"remove file: %v", ctl.plistLocation)
 }
 
 func (ctl *XRayCtl) createServiceLoop(ctx context.Context, log *zap.Logger) {
@@ -185,7 +186,7 @@ func (ctl *XRayCtl) createServiceLoop(ctx context.Context, log *zap.Logger) {
 
 func (ctl *XRayCtl) Start(ctx context.Context) error {
 	if err := ctl.checkServiceReady(); err != nil {
-		return fmt.Errorf("service start: %w", err)
+		return err
 	}
 
 	// send start signal to service
@@ -201,17 +202,17 @@ func (ctl *XRayCtl) Start(ctx context.Context) error {
 		return err
 	}
 	if err := retry.RetryInfinite(ctx, checkStatus, 250*time.Millisecond); err != nil {
-		return fmt.Errorf("service starting: %w", err)
+		return err
 	}
 	if status != supervisorapi.StatusRunning {
-		return fmt.Errorf("%w: failed to start service", errdefs.ErrService)
+		return errdefs.New("failed to start service")
 	}
 	return nil
 }
 
 func (ctl *XRayCtl) Stop(ctx context.Context) error {
 	if err := ctl.checkServiceReady(); err != nil {
-		return fmt.Errorf("service stop: %w", err)
+		return err
 	}
 
 	return stopService(ctl.userDomain, ctl.serviceName)
@@ -219,12 +220,12 @@ func (ctl *XRayCtl) Stop(ctx context.Context) error {
 
 func (ctl *XRayCtl) Status(ctx context.Context) (supervisorapi.ServiceStatus, error) {
 	if err := ctl.checkServiceReady(); err != nil {
-		return supervisorapi.StatusUnknown, fmt.Errorf("service status: %w", err)
+		return supervisorapi.StatusUnknown, err
 	}
 
 	statusStr, err := getServiceStatus(ctl.userDomain, ctl.serviceName)
 	if err != nil {
-		return supervisorapi.StatusUnknown, fmt.Errorf("service status: %w", err)
+		return supervisorapi.StatusUnknown, err
 	}
 
 	switch statusStr {
@@ -233,17 +234,17 @@ func (ctl *XRayCtl) Status(ctx context.Context) (supervisorapi.ServiceStatus, er
 	case "not running":
 		return supervisorapi.StatusStopped, nil
 	default:
-		return supervisorapi.StatusUnknown, fmt.Errorf(
-			"%w: unknown ServiceStatus \"%s\"", errdefs.ErrService, statusStr)
+		return supervisorapi.StatusUnknown, errdefs.Newf(
+			"unknown ServiceStatus '%s'", statusStr)
 	}
 }
 
 func (ctl *XRayCtl) checkServiceReady() error {
 	if ctl == nil {
-		return fmt.Errorf("%w: xrayctl", errdefs.ErrNilObjectCall)
+		return errdefs.NewNilCall()
 	}
 	if !ctl.initialized.Load() {
-		return errdefs.ErrServiceNotReady
+		return errdefs.New("service not ready")
 	}
 	return nil
 }
@@ -251,7 +252,7 @@ func (ctl *XRayCtl) checkServiceReady() error {
 func userDomain() (string, error) {
 	u, err := user.Current()
 	if err != nil {
-		return "", fmt.Errorf("user domain: %w: %v", errdefs.ErrAccess, err)
+		return "", errdefs.WithStack(err)
 	}
 	return "gui/" + u.Uid, nil
 }

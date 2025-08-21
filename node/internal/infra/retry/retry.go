@@ -2,8 +2,9 @@ package retry
 
 import (
 	"context"
-	"fmt"
 	"time"
+
+	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 )
 
 type Fn = func(ctx context.Context) error
@@ -40,7 +41,7 @@ func RetryInfinite(ctx context.Context, fn Fn, delay time.Duration) (err error) 
 				return
 			}
 		case <-ctx.Done():
-			return fmt.Errorf("retrying cancelled, last error: %w", err)
+			return errdefs.With(err, "retrying cancelled, this is the last error")
 		}
 	}
 }

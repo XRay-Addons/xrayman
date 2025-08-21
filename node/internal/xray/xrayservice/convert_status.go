@@ -1,8 +1,6 @@
 package xrayservice
 
 import (
-	"fmt"
-
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/node/internal/infra/supervisor/supervisorapi"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
@@ -15,6 +13,6 @@ func convertStatus(s supervisorapi.ServiceStatus) (models.ServiceStatus, error) 
 	case supervisorapi.StatusRunning:
 		return models.ServiceRunning, nil
 	default:
-		return models.ServiceStopped, fmt.Errorf("unknown status %d: %w", s, errdefs.ErrIPE)
+		return models.ServiceStopped, errdefs.Newf("unknown status %v", s)
 	}
 }

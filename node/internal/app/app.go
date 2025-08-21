@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"crypto/tls"
-	"fmt"
 	"net/http"
 
 	"github.com/XRay-Addons/xrayman/node/internal/config"
@@ -30,7 +29,7 @@ type App struct {
 
 func New(cfg config.Config, log *zap.Logger) (*App, error) {
 	if log == nil {
-		return nil, fmt.Errorf("%w: app init: logger", errdefs.ErrNilArgPassed)
+		return nil, errdefs.NewNilArg("log")
 	}
 
 	var sec *secrets.Secrets
@@ -161,7 +160,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 
 func (app *App) Run() error {
 	if app == nil {
-		return fmt.Errorf("%w: app: run", errdefs.ErrNilObjectCall)
+		return errdefs.NewNilCall()
 	}
 	return app.app.Run()
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
@@ -16,7 +15,7 @@ type HttpServer struct {
 
 func New(endpoint string, handler http.Handler, tls *tls.Config) (*HttpServer, error) {
 	if handler == nil {
-		return nil, fmt.Errorf("http server init: handler: %w", errdefs.ErrNilArgPassed)
+		return nil, errdefs.NewNilArg("handler")
 	}
 
 	return &HttpServer{
@@ -30,7 +29,7 @@ func New(endpoint string, handler http.Handler, tls *tls.Config) (*HttpServer, e
 
 func (s *HttpServer) Listen() error {
 	if s == nil {
-		return fmt.Errorf("%w: http server", errdefs.ErrNilObjectCall)
+		return errdefs.NewNilCall()
 	}
 
 	var err error
@@ -41,7 +40,7 @@ func (s *HttpServer) Listen() error {
 		err = s.server.ListenAndServe()
 	}
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
-		return fmt.Errorf("http server: run: %w", err)
+		return errdefs.WithStack(err)
 	}
 	return nil
 }
@@ -55,7 +54,7 @@ func (s *HttpServer) Shutdown(ctx context.Context) error {
 		return nil
 	}
 	if err := s.server.Close(); err != nil {
-		return fmt.Errorf("http server: shutdown: %w", err)
+		return err
 	}
 	return nil
 }

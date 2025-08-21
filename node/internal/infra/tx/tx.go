@@ -3,7 +3,6 @@ package tx
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 )
 
@@ -43,7 +42,6 @@ func (tx *Tx) Run(ctx context.Context) error {
 	if err == nil {
 		return nil
 	}
-	err = fmt.Errorf("commit: %w", err)
 
 	// Use separate context for rollback to ensure it runs
 	rbCtx, cancel := context.WithTimeout(context.Background(), tx.rollbackTimeout)
@@ -52,10 +50,10 @@ func (tx *Tx) Run(ctx context.Context) error {
 	rbErrs := tx.rollback(rbCtx, commited)
 	if len(rbErrs) > 0 {
 		rbCombined := errors.Join(rbErrs...)
-		err = errors.Join(err, fmt.Errorf("rollback: %w", rbCombined))
+		err = errors.Join(err, rbCombined)
 	}
 
-	return fmt.Errorf("tx run: %w", err)
+	return err
 }
 
 type txItem struct {

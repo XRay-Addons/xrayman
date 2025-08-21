@@ -1,7 +1,6 @@
 package supervisor
 
 import (
-	"fmt"
 	"runtime"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
@@ -15,6 +14,6 @@ func New(serviceName string, command []string, log *zap.Logger) (supervisorapi.S
 	case "darwin":
 		return launchctl.New(serviceName, command, log)
 	default:
-		return nil, fmt.Errorf("supervisor: %w", errdefs.ErrUnsupportedPlatform)
+		return nil, errdefs.Newf("unsupported platform: %v", runtime.GOOS)
 	}
 }

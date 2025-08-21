@@ -6,17 +6,17 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
-	"fmt"
 	"os"
 	"path/filepath"
 
+	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 )
 
 func ensureAccessKey(dir string) (*models.AccessKey, error) {
 	certHash, err := getCertHash(dir)
 	if err != nil {
-		return nil, fmt.Errorf("ensure access key: %w", err)
+		return nil, err
 	}
 
 	// if access key exists and matches cert - ok
@@ -28,7 +28,7 @@ func ensureAccessKey(dir string) (*models.AccessKey, error) {
 	// generate new access key
 	accessSecret, err := generateAccessSecret()
 	if err != nil {
-		return nil, fmt.Errorf("ensure access key: %w", err)
+		return nil, err
 	}
 	accessKey = &models.AccessKey{
 		CertHash:     *certHash,
@@ -37,7 +37,7 @@ func ensureAccessKey(dir string) (*models.AccessKey, error) {
 
 	// write it
 	if err := writeAccessKey(dir, *accessKey); err != nil {
-		return nil, fmt.Errorf("ensure access key: %w", err)
+		return nil, err
 	}
 
 	return accessKey, nil
@@ -46,11 +46,11 @@ func ensureAccessKey(dir string) (*models.AccessKey, error) {
 func getCertHash(dir string) (*models.CertHash, error) {
 	certPEM, err := os.ReadFile(filepath.Join(dir, CertFile))
 	if err != nil {
-		return nil, fmt.Errorf("get cert hash: %w", err)
+		return nil, err
 	}
 	block, _ := pem.Decode(certPEM)
 	if block == nil {
-		return nil, fmt.Errorf("get cert hash: invalid certificate PEM")
+		return nil, errdefs.New("get cert hash: invalid certificate PEM")
 	}
 
 	cert, err := x509.ParseCertificate(block.Bytes)
@@ -70,11 +70,11 @@ type accessKeyWrapper struct {
 func readAccessKey(dir string) (*models.AccessKey, error) {
 	data, err := os.ReadFile(filepath.Join(dir, AccessFile))
 	if err != nil {
-		return nil, fmt.Errorf("read access key: %w", err)
+		return nil, errdefs.WithStack(err)
 	}
 	var wrapper accessKeyWrapper
 	if err := json.Unmarshal(data, &wrapper); err != nil {
-		return nil, fmt.Errorf("read access key: %w", err)
+		return nil, errdefs.WithStack(err)
 	}
 	return &wrapper.AccessKey, nil
 }
@@ -84,10 +84,10 @@ func writeAccessKey(dir string, key models.AccessKey) error {
 
 	data, err := json.MarshalIndent(&wrapper, "", "  ")
 	if err != nil {
-		return fmt.Errorf("write access key: %w", err)
+		return errdefs.WithStack(err)
 	}
 	if err := os.WriteFile(filepath.Join(dir, AccessFile), data, 0600); err != nil {
-		return fmt.Errorf("write access key: %w", err)
+		return errdefs.WithStack(err)
 	}
 	return nil
 }
@@ -95,7 +95,7 @@ func writeAccessKey(dir string, key models.AccessKey) error {
 func generateAccessSecret() (*models.AccessSecret, error) {
 	var secret models.AccessSecret
 	if _, err := rand.Read(secret[:]); err != nil {
-		return nil, fmt.Errorf("generate access secret: %w", err)
+		return nil, errdefs.WithStack(err)
 	}
 	return &secret, nil
 }

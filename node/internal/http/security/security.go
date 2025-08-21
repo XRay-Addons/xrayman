@@ -2,8 +2,8 @@ package security
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/node/internal/http/httperr"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
@@ -27,7 +27,7 @@ func (s *Handler) HandleBearerAuth(ctx context.Context,
 		t.GetToken(),
 		func(t *jwt.Token) (interface{}, error) {
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
+				return nil, errdefs.Newf("unexpected signing method: %v", t.Header["alg"])
 			}
 			return s.secret[:], nil
 		},
