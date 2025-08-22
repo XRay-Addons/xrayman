@@ -74,7 +74,7 @@ type UnstableClientMock struct {
 func NewUnstableClientMock() *UnstableClientMock {
 	return &UnstableClientMock{
 		BaseClient: NewClientMock(),
-		rand:       rand.New(rand.NewPCG(0, 0)),
+		rand:       rand.New(rand.NewPCG(0, 0)), // #nosec
 	}
 }
 

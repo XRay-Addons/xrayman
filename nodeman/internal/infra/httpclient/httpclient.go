@@ -33,13 +33,21 @@ type config struct {
 	tlsHandshakeTimeout time.Duration
 }
 
+const (
+	defaultDialerTimeout       = 30 * time.Second
+	defaultKeepAlive           = 30 * time.Second
+	defaultMaxIdleConns        = 24
+	defaultIdleConnTimeout     = 90 * time.Second
+	defaultTlsHandshakeTimeout = 10 * time.Second
+)
+
 func NewClientFactory(opts ...Option) *ClientFactory {
 	cfg := config{
-		dialerTimeout:       30 * time.Second,
-		keepAlive:           30 * time.Second,
-		maxIdleConns:        24,
-		idleConnTimeout:     90 * time.Second,
-		tlsHandshakeTimeout: 10 * time.Second,
+		dialerTimeout:       defaultDialerTimeout,
+		keepAlive:           defaultKeepAlive,
+		maxIdleConns:        defaultMaxIdleConns,
+		idleConnTimeout:     defaultIdleConnTimeout,
+		tlsHandshakeTimeout: defaultTlsHandshakeTimeout,
 	}
 	for _, o := range opts {
 		o(&cfg)
@@ -82,8 +90,7 @@ func (cf *ClientFactory) GetNodeClient(certHash CertHash) (*http.Client, error) 
 
 func (cf *ClientFactory) newHttpClient(certHash CertHash) *http.Client {
 	tlsConfig := &tls.Config{
-		InsecureSkipVerify: true,
-
+		InsecureSkipVerify:    true, // #nosec custom verification userd
 		VerifyPeerCertificate: verifyPeerFn(certHash),
 	}
 

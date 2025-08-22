@@ -38,11 +38,15 @@ func WithHTTPClient(h HTTPClientFactory) Option {
 	}
 }
 
+const (
+	defaultCertExpiration = 10 * time.Minute
+)
+
 func NewPoolClient(opts ...Option) (*PoolClient, error) {
 	pc := &PoolClient{
 		sec: PoolSecurity{
 			issuer:     "node manager",
-			expiration: 10 * time.Minute,
+			expiration: defaultCertExpiration,
 		},
 	}
 	for _, o := range opts {

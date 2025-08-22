@@ -15,8 +15,9 @@ func Withf(details string, args ...any) option {
 }
 
 func WithStack() option {
+	const wrappingTraceDepth = 3
 	return func(e *baseError) {
-		e.stack = getTrace(3)
+		e.stack = getTrace(wrappingTraceDepth)
 	}
 }
 

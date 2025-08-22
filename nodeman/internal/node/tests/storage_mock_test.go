@@ -23,7 +23,7 @@ type StorageMock struct {
 func NewStorageMock(nUsers int) *StorageMock {
 	users := make([]models.User, 0, nUsers)
 	usersStatus := make([]models.UserStatus, 0, nUsers)
-	rnd := rand.New(rand.NewPCG(0, 0))
+	rnd := rand.New(rand.NewPCG(0, 0)) // #nosec
 
 	for i := range nUsers {
 		u := models.User{
@@ -43,7 +43,7 @@ func NewStorageMock(nUsers int) *StorageMock {
 		TargetStatus:      models.NodeStatusRunning,
 		Users:             users,
 		CurrentUserStatus: usersStatus,
-		rand:              rand.New(rand.NewPCG(0, 0)),
+		rand:              rand.New(rand.NewPCG(0, 0)), // #nosec
 	}
 }
 

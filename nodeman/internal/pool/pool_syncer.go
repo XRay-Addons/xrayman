@@ -102,7 +102,9 @@ func syncNodes(ctx context.Context, syncer NodeSyncer, nodes []syncingNode) []mo
 
 func syncNode(ctx context.Context, syncer NodeSyncer, node syncingNode) models.NodeSyncResult {
 	syncErr := syncer.SyncNodeState(ctx, node.client, node.uow)
-
+	if syncErr != nil {
+		syncErr = errdefs.WrapWithf(syncErr, "nodeID: %v", node.node.ID)
+	}
 	return models.NodeSyncResult{
 		ID:       node.node.ID,
 		Endpoint: node.node.Config.ConnectionInfo.Endpoint,

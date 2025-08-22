@@ -38,6 +38,10 @@ func WithLog(log *zap.Logger) Option {
 	}
 }
 
+const (
+	defaultSyncInterval = 5 * time.Second
+)
+
 func New(syncer PoolSyncer, options ...Option) (*Manager, error) {
 	if syncer == nil {
 		return nil, errdefs.NewNilArg("syncer")
@@ -45,7 +49,7 @@ func New(syncer PoolSyncer, options ...Option) (*Manager, error) {
 	// init default options
 	ctx, cancel := context.WithCancel(context.Background())
 	m := &Manager{
-		interval: 5 * time.Second,
+		interval: defaultSyncInterval,
 		cancel:   cancel,
 		log:      zap.NewNop(),
 	}
@@ -113,7 +117,7 @@ func (m *Manager) syncLoop(ctx context.Context) {
 		case <-ticker.C:
 			// set sync time limit to m.interval
 			syncCtx, cancel := context.WithTimeout(ctx, m.interval)
-			m.SyncNodesPool(syncCtx)
+			_, _ = m.SyncNodesPool(syncCtx)
 			cancel()
 		case <-ctx.Done():
 			return

@@ -25,7 +25,7 @@ func TestNodeSyncer(t *testing.T) {
 		for range nRunOps {
 			// apply random operation, then sync
 			storage.RandomExternalOperation()
-			syncer.SyncNodeState(context.TODO(), client, uow)
+			_ = syncer.SyncNodeState(context.TODO(), client, uow)
 		}
 
 		// check state is ok. only node required to be running matters
@@ -62,12 +62,13 @@ func TestNodeSyncer_UnstableStorage(t *testing.T) {
 		for range nRunOps {
 			// apply random operation, then sync
 			storage.RandomExternalOperation()
-			syncer.SyncNodeState(context.TODO(), client, uow)
+			_ = syncer.SyncNodeState(context.TODO(), client, uow) // #nosec
 		}
 
 		// disable instability for one check to fix state
 		storage.Instability = 0.
-		syncer.SyncNodeState(context.TODO(), client, uow)
+		err = syncer.SyncNodeState(context.TODO(), client, uow)
+		require.NoError(t, err)
 
 		baseStorage := storage.BaseStorage
 		// check state is ok. only node required to be running matters
@@ -107,13 +108,14 @@ func TestNodeSyncer_UnstableStorage_UnstableNode(t *testing.T) {
 		for range nRunOps {
 			// apply random operation, then sync
 			storage.RandomExternalOperation()
-			syncer.SyncNodeState(context.TODO(), client, uow)
+			_ = syncer.SyncNodeState(context.TODO(), client, uow) // #nosec
 		}
 
 		// disable instability for one check to fix state
 		storage.Instability = 0.
 		client.Instability = 0.
-		syncer.SyncNodeState(context.TODO(), client, uow)
+		err = syncer.SyncNodeState(context.TODO(), client, uow)
+		require.NoError(t, err)
 
 		baseStorage := storage.BaseStorage
 		baseClient := client.BaseClient

@@ -2,8 +2,8 @@ package pool
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
@@ -21,7 +21,7 @@ func (uow *poolNodeUoW) Do(ctx context.Context, fn NodeUoWFn) error {
 			nodeID: uow.nodeID,
 		}
 		if err := fn(nodeUoWCtx); err != nil {
-			return fmt.Errorf("node %v: %w", uow.nodeID, err)
+			return errdefs.WrapWithf(err, "node: %v", uow.nodeID)
 		}
 		return fn(nodeUoWCtx)
 	})

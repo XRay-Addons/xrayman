@@ -2,7 +2,6 @@ package node
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
@@ -77,7 +76,6 @@ func (s *syncer) fetchNodeStatus(ctx context.Context) (
 		target, prev, err = uowctx.FetchNodeStatus(ctx)
 		return
 	}); err != nil {
-		err = fmt.Errorf("node: sync state: %w", err)
 		return
 	}
 
@@ -89,7 +87,6 @@ func (s *syncer) fetchNodeStatus(ctx context.Context) (
 	curr = prev
 	if target == models.NodeStatusRunning && prev != models.NodeStatusStopped {
 		if curr, err = s.client.CheckStatus(ctx); err != nil {
-			err = fmt.Errorf("node: sync state: %w", err)
 			return
 		}
 	}
@@ -140,7 +137,6 @@ func (s *syncer) getUsers(ctx context.Context) (users []models.User, err error) 
 		users, err = uowctx.ListUsers(ctx)
 		return
 	}); err != nil {
-		err = fmt.Errorf("update node status: %w", err)
 		return
 	}
 
@@ -219,7 +215,6 @@ func (s *syncer) getPendingSyncs(ctx context.Context) (pending []models.UserSync
 		pending, err = uowctx.FindPendingSyncs(ctx)
 		return err
 	}); err != nil {
-		err = fmt.Errorf("get pending syncs: %w", err)
 		return
 	}
 	return

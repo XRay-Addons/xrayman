@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 )
@@ -11,6 +12,14 @@ import (
 type HttpServer struct {
 	server http.Server
 }
+
+const (
+	defaultReadHeaderTimeout = 5 * time.Second
+	defaultReadTimeout       = 10 * time.Second
+	defaultWriteTimeout      = 10 * time.Second
+	defaultIdleTimeout       = 120 * time.Second
+	defaultMaxHeaderBytes    = 1 << 20 // 1 MB
+)
 
 func New(endpoint string, handler http.Handler) (*HttpServer, error) {
 	if handler == nil {
@@ -21,6 +30,12 @@ func New(endpoint string, handler http.Handler) (*HttpServer, error) {
 		server: http.Server{
 			Addr:    endpoint,
 			Handler: handler,
+
+			ReadHeaderTimeout: defaultReadHeaderTimeout,
+			ReadTimeout:       defaultReadTimeout,
+			WriteTimeout:      defaultWriteTimeout,
+			IdleTimeout:       defaultIdleTimeout,
+			MaxHeaderBytes:    defaultMaxHeaderBytes,
 		},
 	}, nil
 }

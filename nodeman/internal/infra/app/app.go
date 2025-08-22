@@ -3,12 +3,12 @@ package app
 import (
 	"context"
 	"errors"
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/tx"
 	"github.com/oklog/run"
 	"go.uber.org/zap"
@@ -54,7 +54,8 @@ func WithSignalCancel() Option {
 				app.log.Info("Press Ctrl+C to stop the server...")
 				signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 				if sig := <-sigCh; sig != nil {
-					return fmt.Errorf("received signal: %s", sig)
+					return errdefs.New("received interript signal",
+						errdefs.WithoutStack())
 				}
 				return nil
 			},
@@ -81,10 +82,14 @@ func WithCancelTimeout(timeout time.Duration) Option {
 	}
 }
 
+const (
+	defaultCancelTimeout = 5 * time.Second
+)
+
 func New(opts ...Option) *App {
 	app := &App{
 		log:           zap.NewNop(),
-		cancelTimeout: 5 * time.Second,
+		cancelTimeout: defaultCancelTimeout,
 	}
 	for _, o := range opts {
 		o(app)
@@ -92,12 +97,16 @@ func New(opts ...Option) *App {
 	return app
 }
 
-func (app *App) Run() error {
+func (app *App) Run() (err error) {
 	// init app components
 	if err := app.init(); err != nil {
 		return err
 	}
-	defer app.close()
+	defer func() {
+		if closeErr := app.close(); closeErr != nil {
+			err = errors.Join(closeErr, err)
+		}
+	}()
 
 	// run runners
 	if err := app.run(); err != nil {

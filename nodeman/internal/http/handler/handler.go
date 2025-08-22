@@ -19,20 +19,31 @@ type Handler struct {
 	log     *zap.Logger
 }
 
+func WithLogger(log *zap.Logger) option {
+	return func(h *Handler) {
+		if log == nil {
+			return
+		}
+		h.log = log
+	}
+}
+
+type option = func(h *Handler)
+
 var _ api.Handler = (*Handler)(nil)
 
-// TODO: log as option
-func New(s Service, log *zap.Logger) (*Handler, error) {
+func New(s Service, opts ...option) (*Handler, error) {
 	if s == nil {
 		return nil, errdefs.NewNilArg("s")
 	}
-	if log == nil {
-		return nil, errdefs.NewNilArg("log")
-	}
-	return &Handler{
+	handler := &Handler{
 		service: s,
-		log:     log,
-	}, nil
+		log:     zap.NewNop(),
+	}
+	for _, o := range opts {
+		o(handler)
+	}
+	return handler, nil
 }
 
 func (h *Handler) NewNode(ctx context.Context, req *api.NewNodeRequest) (*api.NewNodeResponse, error) {

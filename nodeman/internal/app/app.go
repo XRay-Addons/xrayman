@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	client "github.com/XRay-Addons/xrayman/nodeman/internal/clients/node"
@@ -94,11 +93,9 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 				syncMan, err = syncman.New(poolSyncer, syncman.WithLog(log))
 				return
 			},
-			func(ctx context.Context) error {
-				if err := syncMan.Close(); err != nil {
-					return fmt.Errorf("app close: sync service: %w", err)
-				}
-				return nil
+			func(ctx context.Context) (err error) {
+				err = syncMan.Close()
+				return
 			},
 		),
 
@@ -113,7 +110,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// handler
 		a.WithComponent("handler",
 			func() (err error) {
-				h, err = handler.New(s, log)
+				h, err = handler.New(s, handler.WithLogger(log))
 				return
 			}, nil,
 		),
