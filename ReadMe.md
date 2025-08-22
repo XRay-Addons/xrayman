@@ -17,7 +17,7 @@ use errors.As, errors.Is for your error processing. Error is just a text.
 So when pass errors from layer to layer you don't need to add caller function
 to error, you should add only meaningful context (about params, for example).
 
-### No fmt.Errorf wrapping
+### `fmt.Errorf` wrapping is forbidden
 
 Use only `errdefs` error wrapping and `errors.Join`.
 Wrap all errors from third-party libraries with callstacks

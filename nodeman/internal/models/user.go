@@ -1,11 +1,18 @@
 package models
 
+import "fmt"
+
 type UserID int
 
 type UserProfile struct {
+	ID          UserID
 	VisibleName string
 	Name        string
 	VlessUUID   string
+}
+
+func (u UserProfile) VlessEmail() string {
+	return fmt.Sprintf("%d-%s", u.ID, u.Name)
 }
 
 type UserStatus int
@@ -17,7 +24,6 @@ const (
 )
 
 type User struct {
-	ID           UserID
 	Profile      UserProfile
 	TargetStatus UserStatus
 }
@@ -47,50 +53,3 @@ func (s UserStatus) String() string {
 		return "Unknown"
 	}
 }
-
-/*type UserProfile struct {
-	ID        UserID
-	Name      string
-	VlessUUID string
-}
-
-type UserStatus int
-
-const (
-	UserStatusUnknown UserStatus = iota + 1
-	UserStatusDisabled
-	UserStatusEnabled
-)
-
-// Rename it!
-type UserTargetState struct {
-	User   UserProfile
-	Target UserStatus
-}
-
-type NodeUsersUpdate struct {
-	Add    []UserProfile
-	Remove []UserProfile
-}
-
-type UserSyncStatus struct {
-	User          UserProfile
-	TargetStatus  UserStatus
-	CurrentStatus UserStatus
-}
-
-type UserStatusPatch struct {
-	UserID UserID
-	Status UserStatus
-}
-
-func (s UserStatus) String() string {
-	switch s {
-	case UserStatusDisabled:
-		return "Inactive"
-	case UserStatusEnabled:
-		return "Active"
-	default:
-		return "Unknown"
-	}
-}*/

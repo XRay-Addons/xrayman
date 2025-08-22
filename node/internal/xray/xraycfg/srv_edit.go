@@ -42,13 +42,13 @@ func makeSectionUser(it models.InboundType, u models.User) (map[string]string, e
 	switch it {
 	case models.VlessTcpReality:
 		return map[string]string{
-			"email": u.Name,
+			"email": u.VlessEmail(),
 			"flow":  "xtls-rprx-vision",
 			"id":    u.VlessUUID,
 		}, nil
 	case models.VlessXHTTP:
 		return map[string]string{
-			"email": u.Name,
+			"email": u.VlessEmail(),
 			"id":    u.VlessUUID,
 		}, nil
 	default:

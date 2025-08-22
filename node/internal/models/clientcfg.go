@@ -1,7 +1,7 @@
 package models
 
 type ClientCfg struct {
-	Template       string
-	UserNameField  string
-	VlessUUIDField string
+	Template        string
+	VlessEmailField string
+	VlessUUIDField  string
 }

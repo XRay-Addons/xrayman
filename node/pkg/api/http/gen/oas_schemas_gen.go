@@ -39,9 +39,9 @@ func (s *BearerAuth) SetRoles(val []string) {
 
 // Ref: #/components/schemas/ClientCfg
 type ClientCfg struct {
-	Template       string `json:"template"`
-	UserNameField  string `json:"userNameField"`
-	VlessUUIDField string `json:"vlessUUIDField"`
+	Template        string `json:"template"`
+	VlessEmailField string `json:"vlessEmailField"`
+	VlessUUIDField  string `json:"vlessUUIDField"`
 }
 
 // GetTemplate returns the value of Template.
@@ -49,9 +49,9 @@ func (s *ClientCfg) GetTemplate() string {
 	return s.Template
 }
 
-// GetUserNameField returns the value of UserNameField.
-func (s *ClientCfg) GetUserNameField() string {
-	return s.UserNameField
+// GetVlessEmailField returns the value of VlessEmailField.
+func (s *ClientCfg) GetVlessEmailField() string {
+	return s.VlessEmailField
 }
 
 // GetVlessUUIDField returns the value of VlessUUIDField.
@@ -64,9 +64,9 @@ func (s *ClientCfg) SetTemplate(val string) {
 	s.Template = val
 }
 
-// SetUserNameField sets the value of UserNameField.
-func (s *ClientCfg) SetUserNameField(val string) {
-	s.UserNameField = val
+// SetVlessEmailField sets the value of VlessEmailField.
+func (s *ClientCfg) SetVlessEmailField(val string) {
+	s.VlessEmailField = val
 }
 
 // SetVlessUUIDField sets the value of VlessUUIDField.
@@ -309,8 +309,14 @@ func (s *StatusResponse) SetServiceStatus(val ServiceStatus) {
 
 // Ref: #/components/schemas/User
 type User struct {
+	ID        UserID `json:"ID"`
 	Name      string `json:"name"`
 	VlessUUID string `json:"vlessUUID"`
+}
+
+// GetID returns the value of ID.
+func (s *User) GetID() UserID {
+	return s.ID
 }
 
 // GetName returns the value of Name.
@@ -323,6 +329,11 @@ func (s *User) GetVlessUUID() string {
 	return s.VlessUUID
 }
 
+// SetID sets the value of ID.
+func (s *User) SetID(val UserID) {
+	s.ID = val
+}
+
 // SetName sets the value of Name.
 func (s *User) SetName(val string) {
 	s.Name = val
@@ -332,3 +343,5 @@ func (s *User) SetName(val string) {
 func (s *User) SetVlessUUID(val string) {
 	s.VlessUUID = val
 }
+
+type UserID int

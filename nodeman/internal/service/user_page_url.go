@@ -6,6 +6,6 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
-func makeUserPageURL(u models.User) string {
-	return fmt.Sprintf("./%d-%s", u.ID, u.Profile.Name)
+func makeUserPageURL(u models.UserProfile) string {
+	return fmt.Sprintf("./%d-%s", u.ID, u.Name)
 }

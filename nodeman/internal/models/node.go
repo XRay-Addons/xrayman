@@ -9,9 +9,9 @@ const (
 )
 
 type ClientConfig struct {
-	Template       string
-	UserNameField  string
-	VlessUUIDField string
+	Template        string
+	VlessEmailField string
+	VlessUUIDField  string
 }
 
 type NodeConnectionInfo struct {

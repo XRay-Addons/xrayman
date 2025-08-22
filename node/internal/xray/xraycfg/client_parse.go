@@ -8,7 +8,7 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-func extractNameField(cfg string) (string, error) {
+func extractVlessEmailField(cfg string) (string, error) {
 	users := getUsers(gjson.Get(cfg, `outbounds`))
 	userIDs, err := extractFields(users, "email")
 	if err != nil {

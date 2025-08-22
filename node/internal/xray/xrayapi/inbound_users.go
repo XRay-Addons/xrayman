@@ -16,7 +16,7 @@ func getInboundUser(u models.User, in models.InboundType) (*protocol.User, error
 			return nil, err
 		}
 		return &protocol.User{
-			Email:   u.Name,
+			Email:   u.VlessEmail(),
 			Account: serial.ToTypedMessage(vlessAccunt),
 		}, nil
 	default:

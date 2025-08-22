@@ -117,9 +117,9 @@ func TestValidClientCfg(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, testVlessUUIDField, uuidField)
 
-	nameField, err := extractNameField(testValidClientCfg)
+	emailField, err := extractVlessEmailField(testValidClientCfg)
 	require.NoError(t, err)
-	require.Equal(t, testNameField, nameField)
+	require.Equal(t, testNameField, emailField)
 
 	// test full config
 	tmpDir := t.TempDir()

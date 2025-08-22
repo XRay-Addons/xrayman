@@ -11,7 +11,7 @@ import (
 func ConvertClientCfg(source gen.ClientCfg) models.ClientConfig {
 	var modelsClientConfig models.ClientConfig
 	modelsClientConfig.Template = source.Template
-	modelsClientConfig.UserNameField = source.UserNameField
+	modelsClientConfig.VlessEmailField = source.VlessEmailField
 	modelsClientConfig.VlessUUIDField = source.VlessUUIDField
 	return modelsClientConfig
 }
@@ -33,6 +33,7 @@ func ConvertUsersUpdate(source models.NodeUsersUpdate) gen.EditUsersRequest {
 }
 func modelsUserProfileToApiUser(source models.UserProfile) gen.User {
 	var apiUser gen.User
+	apiUser.ID = gen.UserID(source.ID)
 	apiUser.Name = source.Name
 	apiUser.VlessUUID = source.VlessUUID
 	return apiUser

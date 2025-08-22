@@ -26,8 +26,8 @@ func (s *ClientConfig) encodeFields(e *jx.Encoder) {
 		e.Str(s.Template)
 	}
 	{
-		e.FieldStart("UserNameField")
-		e.Str(s.UserNameField)
+		e.FieldStart("VlessEmailField")
+		e.Str(s.VlessEmailField)
 	}
 	{
 		e.FieldStart("VlessUUIDField")
@@ -37,7 +37,7 @@ func (s *ClientConfig) encodeFields(e *jx.Encoder) {
 
 var jsonFieldsNameOfClientConfig = [3]string{
 	0: "Template",
-	1: "UserNameField",
+	1: "VlessEmailField",
 	2: "VlessUUIDField",
 }
 
@@ -62,17 +62,17 @@ func (s *ClientConfig) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"Template\"")
 			}
-		case "UserNameField":
+		case "VlessEmailField":
 			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				v, err := d.Str()
-				s.UserNameField = string(v)
+				s.VlessEmailField = string(v)
 				if err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"UserNameField\"")
+				return errors.Wrap(err, "decode field \"VlessEmailField\"")
 			}
 		case "VlessUUIDField":
 			requiredBitSet[0] |= 1 << 2
@@ -2079,10 +2079,6 @@ func (s *User) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *User) encodeFields(e *jx.Encoder) {
 	{
-		e.FieldStart("ID")
-		s.ID.Encode(e)
-	}
-	{
 		e.FieldStart("Profile")
 		s.Profile.Encode(e)
 	}
@@ -2092,10 +2088,9 @@ func (s *User) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfUser = [3]string{
-	0: "ID",
-	1: "Profile",
-	2: "TargetStatus",
+var jsonFieldsNameOfUser = [2]string{
+	0: "Profile",
+	1: "TargetStatus",
 }
 
 // Decode decodes User from json.
@@ -2107,18 +2102,8 @@ func (s *User) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "ID":
-			requiredBitSet[0] |= 1 << 0
-			if err := func() error {
-				if err := s.ID.Decode(d); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"ID\"")
-			}
 		case "Profile":
-			requiredBitSet[0] |= 1 << 1
+			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
 				if err := s.Profile.Decode(d); err != nil {
 					return err
@@ -2128,7 +2113,7 @@ func (s *User) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"Profile\"")
 			}
 		case "TargetStatus":
-			requiredBitSet[0] |= 1 << 2
+			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				if err := s.TargetStatus.Decode(d); err != nil {
 					return err
@@ -2147,7 +2132,7 @@ func (s *User) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000111,
+		0b00000011,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -2243,6 +2228,10 @@ func (s *UserProfile) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *UserProfile) encodeFields(e *jx.Encoder) {
 	{
+		e.FieldStart("ID")
+		s.ID.Encode(e)
+	}
+	{
 		e.FieldStart("Name")
 		e.Str(s.Name)
 	}
@@ -2256,10 +2245,11 @@ func (s *UserProfile) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfUserProfile = [3]string{
-	0: "Name",
-	1: "VisibleName",
-	2: "VlessUUID",
+var jsonFieldsNameOfUserProfile = [4]string{
+	0: "ID",
+	1: "Name",
+	2: "VisibleName",
+	3: "VlessUUID",
 }
 
 // Decode decodes UserProfile from json.
@@ -2271,8 +2261,18 @@ func (s *UserProfile) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "Name":
+		case "ID":
 			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.ID.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"ID\"")
+			}
+		case "Name":
+			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				v, err := d.Str()
 				s.Name = string(v)
@@ -2284,7 +2284,7 @@ func (s *UserProfile) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"Name\"")
 			}
 		case "VisibleName":
-			requiredBitSet[0] |= 1 << 1
+			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
 				v, err := d.Str()
 				s.VisibleName = string(v)
@@ -2296,7 +2296,7 @@ func (s *UserProfile) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"VisibleName\"")
 			}
 		case "VlessUUID":
-			requiredBitSet[0] |= 1 << 2
+			requiredBitSet[0] |= 1 << 3
 			if err := func() error {
 				v, err := d.Str()
 				s.VlessUUID = string(v)
@@ -2317,7 +2317,7 @@ func (s *UserProfile) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000111,
+		0b00001111,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.

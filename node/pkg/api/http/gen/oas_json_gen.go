@@ -26,8 +26,8 @@ func (s *ClientCfg) encodeFields(e *jx.Encoder) {
 		e.Str(s.Template)
 	}
 	{
-		e.FieldStart("userNameField")
-		e.Str(s.UserNameField)
+		e.FieldStart("vlessEmailField")
+		e.Str(s.VlessEmailField)
 	}
 	{
 		e.FieldStart("vlessUUIDField")
@@ -37,7 +37,7 @@ func (s *ClientCfg) encodeFields(e *jx.Encoder) {
 
 var jsonFieldsNameOfClientCfg = [3]string{
 	0: "template",
-	1: "userNameField",
+	1: "vlessEmailField",
 	2: "vlessUUIDField",
 }
 
@@ -62,17 +62,17 @@ func (s *ClientCfg) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"template\"")
 			}
-		case "userNameField":
+		case "vlessEmailField":
 			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				v, err := d.Str()
-				s.UserNameField = string(v)
+				s.VlessEmailField = string(v)
 				if err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"userNameField\"")
+				return errors.Wrap(err, "decode field \"vlessEmailField\"")
 			}
 		case "vlessUUIDField":
 			requiredBitSet[0] |= 1 << 2
@@ -827,6 +827,10 @@ func (s *User) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *User) encodeFields(e *jx.Encoder) {
 	{
+		e.FieldStart("ID")
+		s.ID.Encode(e)
+	}
+	{
 		e.FieldStart("name")
 		e.Str(s.Name)
 	}
@@ -836,9 +840,10 @@ func (s *User) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfUser = [2]string{
-	0: "name",
-	1: "vlessUUID",
+var jsonFieldsNameOfUser = [3]string{
+	0: "ID",
+	1: "name",
+	2: "vlessUUID",
 }
 
 // Decode decodes User from json.
@@ -850,8 +855,18 @@ func (s *User) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "name":
+		case "ID":
 			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.ID.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"ID\"")
+			}
+		case "name":
+			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				v, err := d.Str()
 				s.Name = string(v)
@@ -863,7 +878,7 @@ func (s *User) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"name\"")
 			}
 		case "vlessUUID":
-			requiredBitSet[0] |= 1 << 1
+			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
 				v, err := d.Str()
 				s.VlessUUID = string(v)
@@ -884,7 +899,7 @@ func (s *User) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000011,
+		0b00000111,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -926,6 +941,46 @@ func (s *User) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *User) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes UserID as json.
+func (s UserID) Encode(e *jx.Encoder) {
+	unwrapped := int(s)
+
+	e.Int(unwrapped)
+}
+
+// Decode decodes UserID from json.
+func (s *UserID) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode UserID to nil")
+	}
+	var unwrapped int
+	if err := func() error {
+		v, err := d.Int()
+		unwrapped = int(v)
+		if err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return errors.Wrap(err, "alias")
+	}
+	*s = UserID(unwrapped)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s UserID) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *UserID) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }

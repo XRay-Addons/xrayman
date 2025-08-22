@@ -143,7 +143,7 @@ func (s *Storage) SetTargetNodeStatus(ctx context.Context,
 
 // UsersStorage impl
 func (s *Storage) NewUser(ctx context.Context, user *models.User) error {
-	user.ID = models.UserID(len(s.users))
+	user.Profile.ID = models.UserID(len(s.users))
 	s.users = append(s.users, *user)
 	for nodeID := range s.syncStatus {
 		s.syncStatus[nodeID] = append(s.syncStatus[nodeID], models.UserStatusDisabled)

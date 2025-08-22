@@ -18,6 +18,7 @@ type XRayService struct {
 
 const serviceName = "xray"
 
+// TODO: WithLogger
 func New(execPath, configPath string, log *zap.Logger) (*XRayService, error) {
 	if log == nil {
 		return nil, errdefs.NewNilCall()

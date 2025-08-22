@@ -157,7 +157,7 @@ func (s *syncer) getUsersPatch(users []models.User) []models.UserStatusPatch {
 	patch := make([]models.UserStatusPatch, 0, len(users))
 	for _, u := range users {
 		patch = append(patch, models.UserStatusPatch{
-			UserID: u.ID,
+			UserID: u.Profile.ID,
 			Status: u.TargetStatus,
 		})
 	}
@@ -236,11 +236,11 @@ func (s *syncer) buildUserUpdate(syncs []models.UserSyncStatus) (
 			update.Remove = append(update.Remove, u.User.Profile)
 		}
 		prePatch = append(prePatch, models.UserStatusPatch{
-			UserID: u.User.ID,
+			UserID: u.User.Profile.ID,
 			Status: models.UserStatusUnknown,
 		})
 		postPatch = append(postPatch, models.UserStatusPatch{
-			UserID: u.User.ID,
+			UserID: u.User.Profile.ID,
 			Status: u.User.TargetStatus,
 		})
 	}

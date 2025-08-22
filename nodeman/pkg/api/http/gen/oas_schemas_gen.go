@@ -15,9 +15,9 @@ func (s *ErrorStatusCode) Error() string {
 
 // Ref: #/components/schemas/ClientConfig
 type ClientConfig struct {
-	Template       string `json:"Template"`
-	UserNameField  string `json:"UserNameField"`
-	VlessUUIDField string `json:"VlessUUIDField"`
+	Template        string `json:"Template"`
+	VlessEmailField string `json:"VlessEmailField"`
+	VlessUUIDField  string `json:"VlessUUIDField"`
 }
 
 // GetTemplate returns the value of Template.
@@ -25,9 +25,9 @@ func (s *ClientConfig) GetTemplate() string {
 	return s.Template
 }
 
-// GetUserNameField returns the value of UserNameField.
-func (s *ClientConfig) GetUserNameField() string {
-	return s.UserNameField
+// GetVlessEmailField returns the value of VlessEmailField.
+func (s *ClientConfig) GetVlessEmailField() string {
+	return s.VlessEmailField
 }
 
 // GetVlessUUIDField returns the value of VlessUUIDField.
@@ -40,9 +40,9 @@ func (s *ClientConfig) SetTemplate(val string) {
 	s.Template = val
 }
 
-// SetUserNameField sets the value of UserNameField.
-func (s *ClientConfig) SetUserNameField(val string) {
-	s.UserNameField = val
+// SetVlessEmailField sets the value of VlessEmailField.
+func (s *ClientConfig) SetVlessEmailField(val string) {
+	s.VlessEmailField = val
 }
 
 // SetVlessUUIDField sets the value of VlessUUIDField.
@@ -540,14 +540,8 @@ func (s *Subscription) init() Subscription {
 
 // Ref: #/components/schemas/User
 type User struct {
-	ID           UserID      `json:"ID"`
 	Profile      UserProfile `json:"Profile"`
 	TargetStatus UserStatus  `json:"TargetStatus"`
-}
-
-// GetID returns the value of ID.
-func (s *User) GetID() UserID {
-	return s.ID
 }
 
 // GetProfile returns the value of Profile.
@@ -558,11 +552,6 @@ func (s *User) GetProfile() UserProfile {
 // GetTargetStatus returns the value of TargetStatus.
 func (s *User) GetTargetStatus() UserStatus {
 	return s.TargetStatus
-}
-
-// SetID sets the value of ID.
-func (s *User) SetID(val UserID) {
-	s.ID = val
 }
 
 // SetProfile sets the value of Profile.
@@ -579,9 +568,15 @@ type UserID int
 
 // Ref: #/components/schemas/UserProfile
 type UserProfile struct {
+	ID          UserID `json:"ID"`
 	Name        string `json:"Name"`
 	VisibleName string `json:"VisibleName"`
 	VlessUUID   string `json:"VlessUUID"`
+}
+
+// GetID returns the value of ID.
+func (s *UserProfile) GetID() UserID {
+	return s.ID
 }
 
 // GetName returns the value of Name.
@@ -597,6 +592,11 @@ func (s *UserProfile) GetVisibleName() string {
 // GetVlessUUID returns the value of VlessUUID.
 func (s *UserProfile) GetVlessUUID() string {
 	return s.VlessUUID
+}
+
+// SetID sets the value of ID.
+func (s *UserProfile) SetID(val UserID) {
+	s.ID = val
 }
 
 // SetName sets the value of Name.

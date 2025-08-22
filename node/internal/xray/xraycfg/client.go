@@ -24,7 +24,7 @@ func NewClientCfg(path string) (*ClientCfg, error) {
 		return nil, errdefs.WrapWithStack(err)
 	}
 
-	nameField, err := extractNameField(cfgTemplate)
+	emailField, err := extractVlessEmailField(cfgTemplate)
 	if err != nil {
 		return nil, err
 	}
@@ -34,9 +34,9 @@ func NewClientCfg(path string) (*ClientCfg, error) {
 	}
 
 	clientCfg := models.ClientCfg{
-		Template:       cfgTemplate,
-		UserNameField:  nameField,
-		VlessUUIDField: vlessUUIdField,
+		Template:        cfgTemplate,
+		VlessEmailField: emailField,
+		VlessUUIDField:  vlessUUIdField,
 	}
 
 	if err = validateClientConfig(&clientCfg); err != nil {
@@ -53,8 +53,8 @@ func validateClientConfig(cfg *models.ClientCfg) error {
 	}
 
 	testTemplateData := map[string]string{
-		cfg.UserNameField:  "field",
-		cfg.VlessUUIDField: "name",
+		cfg.VlessEmailField: "field",
+		cfg.VlessUUIDField:  "name",
 	}
 	var buf bytes.Buffer
 	if err := t.Execute(&buf, &testTemplateData); err != nil {

@@ -155,7 +155,7 @@ func jsonRawMessageListToApiGetUserSubResponse(source []json.RawMessage) (gen.Ge
 func modelsClientConfigToApiClientConfig(source models.ClientConfig) gen.ClientConfig {
 	var apiClientConfig gen.ClientConfig
 	apiClientConfig.Template = source.Template
-	apiClientConfig.UserNameField = source.UserNameField
+	apiClientConfig.VlessEmailField = source.VlessEmailField
 	apiClientConfig.VlessUUIDField = source.VlessUUIDField
 	return apiClientConfig
 }
@@ -181,6 +181,7 @@ func modelsNodeToApiNode(source models.Node) gen.Node {
 }
 func modelsUserProfileToApiUserProfile(source models.UserProfile) gen.UserProfile {
 	var apiUserProfile gen.UserProfile
+	apiUserProfile.ID = ConvertUserID(source.ID)
 	apiUserProfile.Name = source.Name
 	apiUserProfile.VisibleName = source.VisibleName
 	apiUserProfile.VlessUUID = source.VlessUUID
@@ -188,7 +189,6 @@ func modelsUserProfileToApiUserProfile(source models.UserProfile) gen.UserProfil
 }
 func modelsUserToApiUser(source models.User) gen.User {
 	var apiUser gen.User
-	apiUser.ID = ConvertUserID(source.ID)
 	apiUser.Profile = modelsUserProfileToApiUserProfile(source.Profile)
 	apiUser.TargetStatus = ConvertUserStatusResult(source.TargetStatus)
 	return apiUser

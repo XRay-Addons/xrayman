@@ -230,13 +230,13 @@ components:
       properties:
         Template:
           type: string
-        UserNameField:
+        VlessEmailField:
           type: string
         VlessUUIDField:
           type: string
       required:
         - Template
-        - UserNameField
+        - VlessEmailField
         - VlessUUIDField
 
     NodeConnectionInfo:
@@ -351,6 +351,8 @@ components:
     UserProfile:
       type: object
       properties:
+        ID:
+          $ref: '#/components/schemas/UserID'
         Name:
           type: string
         VisibleName:
@@ -358,6 +360,7 @@ components:
         VlessUUID:
           type: string
       required:
+        - ID
         - Name
         - VisibleName
         - VlessUUID
@@ -365,14 +368,11 @@ components:
     User:
       type: object
       properties:
-        ID:
-          $ref: '#/components/schemas/UserID'
         Profile:
           $ref: '#/components/schemas/UserProfile'
         TargetStatus:
           $ref: '#/components/schemas/UserStatus'
       required:
-        - ID
         - Profile
         - TargetStatus
 

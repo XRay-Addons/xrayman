@@ -6,6 +6,7 @@ import (
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/node/internal/http/constants"
+	"github.com/XRay-Addons/xrayman/node/internal/http/handler/converter"
 	"github.com/XRay-Addons/xrayman/node/internal/http/httperr"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
@@ -38,13 +39,13 @@ func (h *Handler) Start(ctx context.Context, req *api.StartRequest) (_ *api.Star
 		return nil, errdefs.NewNilCall()
 	}
 
-	p := ConvertStartRequest(req)
+	p := converter.ConvertStartRequest(req)
 	res, err := h.service.Start(ctx, *p)
 	if err != nil {
 		h.logError(ctx, err)
 		return nil, httperr.ErrInternalServerError
 	}
-	return ConvertStartResult(res), nil
+	return converter.ConvertStartResult(res), nil
 }
 
 func (h *Handler) Stop(ctx context.Context) error {
@@ -68,14 +69,14 @@ func (h *Handler) GetStatus(ctx context.Context) (*api.StatusResponse, error) {
 		h.logError(ctx, err)
 		return nil, httperr.ErrInternalServerError
 	}
-	return ConvertStatusResult(status), nil
+	return converter.ConvertStatusResult(status), nil
 }
 
 func (h *Handler) EditUsers(ctx context.Context, req *api.EditUsersRequest) error {
 	if h == nil || h.service == nil {
 		return errdefs.NewNilCall()
 	}
-	p := ConvertEditUsersRequest(req)
+	p := converter.ConvertEditUsersRequest(req)
 	_, err := h.service.EditUsers(ctx, *p)
 	if err != nil {
 		h.logError(ctx, err)

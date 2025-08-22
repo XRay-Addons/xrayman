@@ -99,13 +99,18 @@ paths:
 
 components:
   schemas:
+    UserID:
+      type: integer
 
     User:
       type: object
       required:
+        - ID
         - name
         - vlessUUID
       properties:
+        ID:
+          $ref: '#/components/schemas/UserID'
         name:
           type: string
         vlessUUID:
@@ -115,12 +120,12 @@ components:
       type: object
       required:
         - template
-        - userNameField
+        - vlessEmailField
         - vlessUUIDField
       properties:
         template:
           type: string
-        userNameField:
+        vlessEmailField:
           type: string
         vlessUUIDField:
           type: string

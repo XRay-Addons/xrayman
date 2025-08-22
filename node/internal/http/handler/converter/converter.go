@@ -1,4 +1,4 @@
-package handler
+package converter
 
 import (
 	"fmt"
@@ -10,6 +10,8 @@ import (
 // goverter:converter
 // goverter:output:format function
 // goverter:output:file ./converter_generated.go
+//
+//go:generate goverter gen .
 type Converter interface {
 	ConvertStartRequest(source *api.StartRequest) *models.StartParams
 	ConvertStartResult(source *models.StartResult) *api.StartResponse

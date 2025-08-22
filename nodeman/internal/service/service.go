@@ -113,9 +113,9 @@ func (s *Service) NewUser(ctx context.Context, p models.NewUserParams) (*models.
 	_ = s.syncAllNodes(ctx)
 
 	return &models.NewUserResult{
-		ID:          user.ID,
+		ID:          user.Profile.ID,
 		VisibleName: user.Profile.VisibleName,
-		UserPageURL: makeUserPageURL(user),
+		UserPageURL: makeUserPageURL(user.Profile),
 	}, nil
 }
 
@@ -171,7 +171,7 @@ func (s *Service) GetUserSub(ctx context.Context, p models.GetUserSubParams) (
 	// get active nodes for user
 	var userNodes []models.Node
 	if err := s.uow.Do(ctx, func(uowctx UoWContext) (err error) {
-		userNodes, err = uowctx.GetUserNodes(ctx, user.ID)
+		userNodes, err = uowctx.GetUserNodes(ctx, user.Profile.ID)
 		return
 	}); err != nil {
 		return nil, false, err
@@ -186,8 +186,8 @@ func (s *Service) GetUserSub(ctx context.Context, p models.GetUserSubParams) (
 		}
 		var buf bytes.Buffer
 		err = tmpl.Execute(&buf, map[string]string{
-			node.Config.ClientConfig.UserNameField:  user.Profile.Name,
-			node.Config.ClientConfig.VlessUUIDField: user.Profile.VlessUUID,
+			node.Config.ClientConfig.VlessEmailField: user.Profile.VlessEmail(),
+			node.Config.ClientConfig.VlessUUIDField:  user.Profile.VlessUUID,
 		})
 		if err != nil {
 			return nil, false, errdefs.WrapWithStack(err)
