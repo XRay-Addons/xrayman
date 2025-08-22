@@ -55,7 +55,7 @@ func New(h api.Handler, sec api.SecurityHandler, options ...Option) (http.Handle
 	// create api handler
 	apiHandler, err := api.NewServer(h, sec)
 	if err != nil {
-		return nil, errdefs.WithStack(err)
+		return nil, errdefs.WrapWithStack(err)
 	}
 
 	// add middleware from chi

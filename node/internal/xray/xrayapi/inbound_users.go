@@ -20,7 +20,8 @@ func getInboundUser(u models.User, in models.InboundType) (*protocol.User, error
 			Account: serial.ToTypedMessage(vlessAccunt),
 		}, nil
 	default:
-		return nil, errdefs.Newf("unsupported inbound: %v", in)
+		return nil, errdefs.New("unsupported inbound",
+			errdefs.Withf("inbound: %v", in))
 	}
 }
 
@@ -38,6 +39,7 @@ func getVlessAccount(u models.User, in models.InboundType) (*vless.Account, erro
 			Encryption: "none",
 		}, nil
 	default:
-		return nil, errdefs.Newf("unsupported inbound: %v", in)
+		return nil, errdefs.New("unsupported inbound",
+			errdefs.Withf("inbound: %v", in))
 	}
 }

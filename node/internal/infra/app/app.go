@@ -54,7 +54,8 @@ func WithSignalCancel() Option {
 				app.log.Info("Press Ctrl+C to stop the server...")
 				signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 				if sig := <-sigCh; sig != nil {
-					return errdefs.Newf("received signal: %s", sig)
+					return errdefs.New("received interript signal",
+						errdefs.WithoutStack())
 				}
 				return nil
 			},

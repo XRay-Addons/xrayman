@@ -28,7 +28,7 @@ func addUser(
 		return nil
 	}
 
-	return errdefs.WithStack(err)
+	return errdefs.WrapWithStack(err)
 }
 
 func removeUser(
@@ -46,7 +46,7 @@ func removeUser(
 	if err != nil && strings.Contains(err.Error(), notFoundErrPattern) {
 		return nil
 	}
-	return errdefs.WithStack(err)
+	return errdefs.WrapWithStack(err)
 }
 
 func ping(
@@ -55,7 +55,7 @@ func ping(
 ) error {
 	_, err := ssClient.GetSysStats(ctx, &statsService.SysStatsRequest{})
 	if err != nil {
-		return errdefs.WithStack(err)
+		return errdefs.WrapWithStack(err)
 	}
 
 	return nil

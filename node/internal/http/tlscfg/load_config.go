@@ -9,7 +9,7 @@ import (
 func Load(nodeCrt, nodeKey []byte) (*tls.Config, error) {
 	cert, err := tls.X509KeyPair(nodeCrt, nodeKey)
 	if err != nil {
-		return nil, errdefs.WithStack(err)
+		return nil, errdefs.WrapWithStack(err)
 	}
 
 	return &tls.Config{

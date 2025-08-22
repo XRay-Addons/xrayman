@@ -84,7 +84,7 @@ func TestApp_Run_InitFailure(t *testing.T) {
 
 	err := app.Run()
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "init app")
+	require.Contains(t, err.Error(), "init error")
 }
 
 func TestApp_Run_RunnerFailure(t *testing.T) {
@@ -103,7 +103,7 @@ func TestApp_Run_RunnerFailure(t *testing.T) {
 
 	err := app.Run()
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "app run")
+	require.Contains(t, err.Error(), "runner error")
 	require.ErrorIs(t, err, runnerErr)
 }
 
@@ -136,7 +136,8 @@ func TestApp_Close_ErrorHandling(t *testing.T) {
 	// Close components (should return aggregated errors)
 	err = app.close()
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "close app error")
+	require.Contains(t, err.Error(), "close error 1")
+	require.Contains(t, err.Error(), "close error 2")
 	require.True(t, strings.Contains(err.Error(), closeErr1.Error()))
 	require.True(t, strings.Contains(err.Error(), closeErr2.Error()))
 }

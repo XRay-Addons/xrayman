@@ -3,6 +3,7 @@ package grpcconn
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net"
 	"testing"
 	"time"
@@ -80,6 +81,7 @@ func TestGRPCConnTimeout(t *testing.T) {
 	}()
 
 	err = conn.Connect(ctx)
+	fmt.Println(err)
 	require.True(t, errors.Is(err, context.DeadlineExceeded))
 
 	err = conn.Disconnect(ctx)

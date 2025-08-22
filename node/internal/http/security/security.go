@@ -27,7 +27,9 @@ func (s *Handler) HandleBearerAuth(ctx context.Context,
 		t.GetToken(),
 		func(t *jwt.Token) (interface{}, error) {
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, errdefs.Newf("unexpected signing method: %v", t.Header["alg"])
+				return nil, errdefs.New("unexpected signing method",
+					errdefs.Withf("method: %v", t.Header["alg"]),
+					errdefs.WithoutStack())
 			}
 			return s.secret[:], nil
 		},

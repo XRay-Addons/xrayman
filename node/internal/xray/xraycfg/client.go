@@ -49,7 +49,7 @@ func NewClientCfg(path string) (*ClientCfg, error) {
 func validateClientConfig(cfg *models.ClientCfg) error {
 	t, err := template.New("json").Parse(cfg.Template)
 	if err != nil {
-		return errdefs.WithStack(err)
+		return errdefs.WrapWithStack(err)
 	}
 
 	testTemplateData := map[string]string{
@@ -58,11 +58,11 @@ func validateClientConfig(cfg *models.ClientCfg) error {
 	}
 	var buf bytes.Buffer
 	if err := t.Execute(&buf, &testTemplateData); err != nil {
-		return errdefs.WithStack(err)
+		return errdefs.WrapWithStack(err)
 	}
 
 	if !gjson.Valid(buf.String()) {
-		return errdefs.WithStack(err)
+		return errdefs.WrapWithStack(err)
 	}
 
 	return nil

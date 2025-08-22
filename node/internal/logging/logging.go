@@ -23,7 +23,7 @@ func New() (*zap.Logger, error) {
 
 	logger, err := cfg.Build()
 	if err != nil {
-		return nil, errdefs.WithStack(err)
+		return nil, errdefs.WrapWithStack(err)
 	}
 	return logger, nil
 }

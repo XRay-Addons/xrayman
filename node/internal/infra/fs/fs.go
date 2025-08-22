@@ -12,7 +12,7 @@ func AccessFile(path string) (bool, error) {
 		if os.IsNotExist(err) {
 			return false, nil
 		}
-		return false, errdefs.NewFileAccess(path, err)
+		return false, errdefs.Wrap(err, errdefs.WithStack(), errdefs.WithFile(path))
 	}
 	return !info.IsDir(), nil
 }
@@ -23,7 +23,7 @@ func AccessDir(path string) (bool, error) {
 		if os.IsNotExist(err) {
 			return false, nil
 		}
-		return false, errdefs.NewFileAccess(path, err)
+		return false, errdefs.Wrap(err, errdefs.WithStack(), errdefs.WithFile(path))
 	}
 	return info.IsDir(), nil
 }

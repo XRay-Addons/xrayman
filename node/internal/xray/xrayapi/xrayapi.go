@@ -60,7 +60,7 @@ func (api *XRayApi) Close(ctx context.Context) error {
 	api.ssClient = nil
 
 	if err := api.apiConn.Close(ctx); err != nil {
-		return errdefs.WithStack(err)
+		return errdefs.WrapWithStack(err)
 	}
 	api.apiConn = nil
 
@@ -76,7 +76,7 @@ func (api *XRayApi) Connect(ctx context.Context) error {
 	defer api.mu.Unlock()
 
 	if err := api.apiConn.Connect(ctx); err != nil {
-		return errdefs.WithStack(err)
+		return errdefs.WrapWithStack(err)
 	}
 	return nil
 }
@@ -90,7 +90,7 @@ func (api *XRayApi) Disconnect(ctx context.Context) error {
 	defer api.mu.Unlock()
 
 	if err := api.apiConn.Disconnect(ctx); err != nil {
-		return errdefs.WithStack(err)
+		return errdefs.WrapWithStack(err)
 	}
 	return nil
 }

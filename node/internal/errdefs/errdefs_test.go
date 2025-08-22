@@ -9,6 +9,17 @@ import (
 	"go.uber.org/zap"
 )
 
+type testError int
+
+const (
+	ErrTestConfig testError = iota + 1
+	ErrTestFileAccess
+)
+
+func (t testError) Error() string {
+	return fmt.Sprintf("test error %d", t)
+}
+
 type anonInner struct {
 	Name string
 }
@@ -20,12 +31,12 @@ func (i *anonInner) privateMethod() error {
 		}()
 	}
 	return func() error {
-		return With(anonFunc(), "detail A")
+		return WrapWith(anonFunc(), "detail A")
 	}()
 }
 
 func (i *anonInner) privatePrivateMethod() error {
-	return WithStack(ErrCmdExec)
+	return WrapWithStack(ErrTestConfig)
 }
 func (i *anonInner) PublicMethod() error {
 	return i.privateMethod()
@@ -36,7 +47,7 @@ type Outer struct{}
 func (o Outer) DoSomething() error {
 	fn := func() error {
 		inner := &anonInner{Name: "anonInner"}
-		return With(inner.PublicMethod(), "detail B")
+		return WrapWith(inner.PublicMethod(), "detail B")
 	}
 	return fn()
 }
@@ -66,7 +77,7 @@ func TestErrorPrinting(t *testing.T) {
 	}
 
 	topAnon := func() error {
-		return With(ErrConfig, "")
+		return New("err config", With("nothing"))
 	}
 
 	err = topAnon()
@@ -78,19 +89,18 @@ func TestErrorPrinting(t *testing.T) {
 func TestErrorAs(t *testing.T) {
 	f := func() error {
 		return func() error {
-			return WithStack(ErrFileAccess)
+			return WrapWithStack(ErrTestFileAccess)
 		}()
 	}()
-	var oe OriginError
-	require.True(t, errors.As(f, &oe))
-	fmt.Printf("%+v\n", oe)
+	var te testError
+	require.True(t, errors.As(f, &te))
 }
 
 func TestErrorIs(t *testing.T) {
 	f := func() error {
 		return func() error {
-			return WithStack(ErrFileAccess)
+			return WrapWithStack(ErrTestFileAccess)
 		}()
 	}()
-	require.True(t, errors.Is(f, ErrFileAccess))
+	require.True(t, errors.Is(f, ErrTestFileAccess))
 }

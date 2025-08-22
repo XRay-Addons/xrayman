@@ -40,7 +40,7 @@ func (s *HttpServer) Listen() error {
 		err = s.server.ListenAndServe()
 	}
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
-		return errdefs.WithStack(err)
+		return errdefs.WrapWithStack(err)
 	}
 	return nil
 }

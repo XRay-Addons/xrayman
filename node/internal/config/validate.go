@@ -9,8 +9,8 @@ import (
 
 func Validate(c Config) error {
 	if _, err := net.ResolveTCPAddr("tcp", c.Endpoint); err != nil {
-		return errdefs.Withf(errdefs.WithStack(err),
-			"invalid endpoint %s", c.Endpoint)
+		return errdefs.Wrap(err, errdefs.WithStack(),
+			errdefs.Withf("invalid endpoint %s", c.Endpoint))
 	}
 	if err := checkExecutable(c.XRayExec()); err != nil {
 		return err
@@ -28,26 +28,27 @@ func Validate(c Config) error {
 func checkExecutable(path string) error {
 	info, err := os.Stat(path)
 	if err != nil {
-		return errdefs.Withf(errdefs.WithStack(err),
-			"invalid executable %s", path)
+		return errdefs.Wrap(err, errdefs.WithStack(), errdefs.WithFile(path))
 	}
 	if !info.Mode().IsRegular() {
-		return errdefs.Newf("exectuable %s is not regular file", path)
+		return errdefs.New("exectuable is not regular file",
+			errdefs.WithFile(path))
 	}
 	perm := info.Mode().Perm()
 	if perm&0111 != 0 {
 		return nil
 	}
-	return errdefs.Newf("file %ы executable for current user", path)
+	return errdefs.New("file is not executable for current user",
+		errdefs.WithFile(path))
 }
 
 func checkFile(path string) error {
 	exists, err := checkFileExists(path)
 	if err != nil {
-		return errdefs.WithStack(err)
+		return errdefs.Wrap(err, errdefs.WithStack(), errdefs.WithFile(path))
 	}
 	if !exists {
-		return errdefs.Newf("file not exists: %v", path)
+		return errdefs.New("file not exists", errdefs.WithFile(path))
 	}
 	return nil
 }
@@ -58,7 +59,7 @@ func checkFileExists(path string) (bool, error) {
 		return false, nil
 	}
 	if !info.Mode().IsRegular() {
-		return false, errdefs.Newf("file %s is not regular file", path)
+		return false, errdefs.New("file is not regular", errdefs.WithFile(path))
 	}
 	return true, nil
 }

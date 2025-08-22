@@ -49,8 +49,8 @@ func (s *XRayService) Start(ctx context.Context, config string) error {
 	}
 	err := os.WriteFile(s.configPath, []byte(config), 0644)
 	if err != nil {
-		return errdefs.Withf(errdefs.WithStack(err),
-			"write file: %s", s.configPath)
+		return errdefs.Wrap(err, errdefs.WithStack(),
+			errdefs.WithFile(s.configPath))
 	}
 	if err := s.supervisor.Start(ctx); err != nil {
 		return err

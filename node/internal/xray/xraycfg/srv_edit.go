@@ -19,7 +19,7 @@ func addSrvUsers(cfg string, ins []models.Inbound, us []models.User) (string, er
 		usersPath := fmt.Sprintf("inbounds.#(tag=%s).settings.clients", inbound.Tag)
 		usersCfg, err = sjson.Set(usersCfg, usersPath, sectionUsers)
 		if err != nil {
-			return "", errdefs.WithStack(err)
+			return "", errdefs.WrapWithStack(err)
 		}
 	}
 
@@ -52,6 +52,7 @@ func makeSectionUser(it models.InboundType, u models.User) (map[string]string, e
 			"id":    u.VlessUUID,
 		}, nil
 	default:
-		return nil, errdefs.Newf("unsupported inbound type: %v", it)
+		return nil, errdefs.New("unsupported inbound type",
+			errdefs.Withf("inbound: %v", it))
 	}
 }

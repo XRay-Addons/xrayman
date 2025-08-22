@@ -70,11 +70,11 @@ type accessKeyWrapper struct {
 func readAccessKey(dir string) (*models.AccessKey, error) {
 	data, err := os.ReadFile(filepath.Join(dir, AccessFile))
 	if err != nil {
-		return nil, errdefs.WithStack(err)
+		return nil, errdefs.WrapWithStack(err)
 	}
 	var wrapper accessKeyWrapper
 	if err := json.Unmarshal(data, &wrapper); err != nil {
-		return nil, errdefs.WithStack(err)
+		return nil, errdefs.WrapWithStack(err)
 	}
 	return &wrapper.AccessKey, nil
 }
@@ -84,10 +84,10 @@ func writeAccessKey(dir string, key models.AccessKey) error {
 
 	data, err := json.MarshalIndent(&wrapper, "", "  ")
 	if err != nil {
-		return errdefs.WithStack(err)
+		return errdefs.WrapWithStack(err)
 	}
 	if err := os.WriteFile(filepath.Join(dir, AccessFile), data, 0600); err != nil {
-		return errdefs.WithStack(err)
+		return errdefs.WrapWithStack(err)
 	}
 	return nil
 }
@@ -95,7 +95,7 @@ func writeAccessKey(dir string, key models.AccessKey) error {
 func generateAccessSecret() (*models.AccessSecret, error) {
 	var secret models.AccessSecret
 	if _, err := rand.Read(secret[:]); err != nil {
-		return nil, errdefs.WithStack(err)
+		return nil, errdefs.WrapWithStack(err)
 	}
 	return &secret, nil
 }

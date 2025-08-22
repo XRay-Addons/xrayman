@@ -51,7 +51,7 @@ func (c *GRPCConn) Connect(ctx context.Context) error {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
-		return errdefs.WithStack(err)
+		return errdefs.WrapWithStack(err)
 	}
 
 	// start connecting
@@ -69,10 +69,10 @@ func (c *GRPCConn) Connect(ctx context.Context) error {
 		}
 		c.log.Warn("grpc connecting", zap.String("state", state.String()))
 		if !conn.WaitForStateChange(ctx, state) {
-			if err := conn.Close(); err != nil {
-				c.log.Warn("grcp connection close", zap.Error(err))
+			if closeErr := conn.Close(); closeErr != nil {
+				c.log.Warn("grcp connection close", zap.Error(closeErr))
 			}
-			return errdefs.WithStack(ctx.Err())
+			return errdefs.WrapWithStack(ctx.Err())
 		}
 		state = conn.GetState()
 	}
@@ -96,7 +96,7 @@ func (c *GRPCConn) Disconnect(ctx context.Context) error {
 		return nil
 	}
 	if err := c.conn.Close(); err != nil {
-		return errdefs.WithStack(err)
+		return errdefs.WrapWithStack(err)
 	}
 	return nil
 }

@@ -21,8 +21,8 @@ func Run(name string, args []string) (stdout, stderr string, err error) {
 
 	if err != nil {
 		fullCmd := name + " " + strings.Join(args, " ")
-		err = errdefs.Withf(errdefs.WithStack(err),
-			"cmd: %s, out: %s", fullCmd, stdout)
+		err = errdefs.Wrap(err, errdefs.WithStack(),
+			errdefs.Withf("cmd: %s, out: %s", fullCmd, stdout))
 	}
 
 	return stdout, stderr, err

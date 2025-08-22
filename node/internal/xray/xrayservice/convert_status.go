@@ -13,6 +13,7 @@ func convertStatus(s supervisorapi.ServiceStatus) (models.ServiceStatus, error) 
 	case supervisorapi.StatusRunning:
 		return models.ServiceRunning, nil
 	default:
-		return models.ServiceStopped, errdefs.Newf("unknown status %v", s)
+		return models.ServiceStopped, errdefs.New("unknown service status",
+			errdefs.Withf("status: %v", s))
 	}
 }

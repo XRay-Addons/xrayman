@@ -55,7 +55,7 @@ xray`)
 (certs, secrets, config to connect to node) should be generated on-demand`)
 
 	if err := fs.Parse(os.Args[1:]); err != nil {
-		return errdefs.WithStack(err)
+		return errdefs.WrapWithStack(err)
 	}
 
 	return nil
@@ -63,7 +63,7 @@ xray`)
 
 func readEnvParams(c *Config) error {
 	if err := env.Parse(c); err != nil {
-		return errdefs.WithStack(err)
+		return errdefs.WrapWithStack(err)
 	}
 	return nil
 }

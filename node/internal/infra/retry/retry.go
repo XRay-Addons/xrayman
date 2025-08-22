@@ -41,7 +41,7 @@ func RetryInfinite(ctx context.Context, fn Fn, delay time.Duration) (err error) 
 				return
 			}
 		case <-ctx.Done():
-			return errdefs.With(err, "retrying cancelled, this is the last error")
+			return errdefs.WrapWith(err, "retrying cancelled, this is the last error")
 		}
 	}
 }

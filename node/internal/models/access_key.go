@@ -15,6 +15,9 @@ type AccessKey struct {
 }
 
 func (k *AccessKey) MarshalText() ([]byte, error) {
+	if k == nil {
+		return nil, errdefs.NewNilCall()
+	}
 	data := append(k.CertHash[:], k.AccessSecret[:]...)
 	encoded := make([]byte, base64.StdEncoding.EncodedLen(len(data)))
 	base64.StdEncoding.Encode(encoded, data)
@@ -22,10 +25,13 @@ func (k *AccessKey) MarshalText() ([]byte, error) {
 }
 
 func (k *AccessKey) UnmarshalText(text []byte) error {
+	if k == nil {
+		return errdefs.NewNilCall()
+	}
 	raw := make([]byte, base64.StdEncoding.DecodedLen(len(text)))
 	n, err := base64.StdEncoding.Decode(raw, text)
 	if err != nil {
-		return errdefs.WithStack(err)
+		return errdefs.WrapWithStack(err)
 	}
 	if n != len(k.CertHash)+len(k.AccessSecret) {
 		return errdefs.New("access key: invalid length")

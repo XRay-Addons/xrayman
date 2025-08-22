@@ -14,6 +14,7 @@ func New(serviceName string, command []string, log *zap.Logger) (supervisorapi.S
 	case "darwin":
 		return launchctl.New(serviceName, command, log)
 	default:
-		return nil, errdefs.Newf("unsupported platform: %v", runtime.GOOS)
+		return nil, errdefs.New("unsupported platform",
+			errdefs.Withf("platform: %v", runtime.GOOS))
 	}
 }

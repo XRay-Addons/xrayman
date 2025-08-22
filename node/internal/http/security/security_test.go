@@ -69,7 +69,7 @@ func TestSecurity(t *testing.T) {
 			tt.mockSetup(mockHandler)
 
 			var s models.AccessSecret
-			copy(s[:], tt.requestSecret)
+			copy(s[:], tt.serverSecret)
 			srv, err := api.NewServer(mockHandler, New(s))
 			require.NoError(t, err)
 

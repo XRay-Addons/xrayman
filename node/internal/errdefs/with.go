@@ -1,41 +1,31 @@
 package errdefs
 
-import (
-	"fmt"
+import "fmt"
 
-	"github.com/go-faster/errors"
-)
-
-func With(err error, w string) error {
-	return &errWith{
-		err:  err,
-		with: w,
+func With(details string) option {
+	return func(e *baseError) {
+		e.with = append(e.with, details)
 	}
 }
 
-func Withf(err error, w string, args ...any) error {
-	return &errWith{
-		err:  err,
-		with: fmt.Sprintf(w, args...),
+func Withf(details string, args ...any) option {
+	return func(e *baseError) {
+		e.with = append(e.with, fmt.Sprintf(details, args...))
 	}
 }
 
-type errWith struct {
-	err  error
-	with string
-}
-
-var _ error = (*errWith)(nil)
-var _ errors.Wrapper = (*errWith)(nil)
-
-func (w *errWith) Error() string {
-	if w.with == "" {
-		return w.err.Error()
+func WithStack() option {
+	return func(e *baseError) {
+		e.stack = getTrace(3)
 	}
-	return fmt.Sprintf("%s\nwith %s",
-		w.err.Error(), w.with)
 }
 
-func (e *errWith) Unwrap() error {
-	return e.err
+func WithoutStack() option {
+	return func(e *baseError) {
+		e.stack = []string{}
+	}
+}
+
+func WithFile(path string) option {
+	return Withf("filepath: %s", path)
 }

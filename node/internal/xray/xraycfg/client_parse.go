@@ -86,7 +86,8 @@ func extractTemplateVar(s string) (string, error) {
 	templateVar := strings.TrimSpace(s)
 	// trim "{{", "}}"
 	if !strings.HasPrefix(templateVar, "{{") || !strings.HasSuffix(templateVar, "}}") {
-		return "", errdefs.Newf("invalid template format: %s", s)
+		return "", errdefs.New("invalid template format",
+			errdefs.Withf("template format: %s", s))
 	}
 	templateVar = templateVar[2 : len(templateVar)-2]
 	// trim spaces again
@@ -104,7 +105,8 @@ func extractTemplateVar(s string) (string, error) {
 
 func getSingleValue(values []string) (string, error) {
 	if len(values) > 1 {
-		return "", errdefs.Newf("multiple name field templates found: %v", values)
+		return "", errdefs.New("multiple name field templates found",
+			errdefs.Withf("name fields: %v", values))
 	}
 	for _, value := range values {
 		return value, nil
