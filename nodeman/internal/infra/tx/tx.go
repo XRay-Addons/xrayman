@@ -55,7 +55,7 @@ func (tx *Tx) Run(ctx context.Context) error {
 		err = errors.Join(err, fmt.Errorf("rollback: %w", rbCombined))
 	}
 
-	return fmt.Errorf("tx run: %w", err)
+	return err
 }
 
 type txItem struct {

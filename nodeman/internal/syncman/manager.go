@@ -2,7 +2,6 @@ package syncman
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"sync"
 	"time"
@@ -87,7 +86,7 @@ func (m *Manager) SyncNodesPool(ctx context.Context) ([]models.NodeSyncResult, e
 	}
 	syncResult, err := m.executor.Invoke(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("pool monitor: sync: %w", err)
+		return nil, err
 	}
 	return *syncResult, nil
 }

@@ -95,13 +95,13 @@ func New(opts ...Option) *App {
 func (app *App) Run() error {
 	// init app components
 	if err := app.init(); err != nil {
-		return fmt.Errorf("app run: %w", err)
+		return err
 	}
 	defer app.close()
 
 	// run runners
 	if err := app.run(); err != nil {
-		return fmt.Errorf("app run: %w", err)
+		return err
 	}
 
 	return nil
@@ -182,7 +182,7 @@ func (app *App) init() error {
 	}
 
 	if err := initTx.Run(context.Background()); err != nil {
-		return fmt.Errorf("init app: %w", err)
+		return err
 	}
 
 	return nil
@@ -204,7 +204,7 @@ func (app *App) close() error {
 		return nil
 	}
 
-	return fmt.Errorf("close app error: %w", errors.Join(closeErrs...))
+	return errors.Join(closeErrs...)
 }
 
 func (app *App) run() error {
@@ -214,7 +214,7 @@ func (app *App) run() error {
 	}
 
 	if err := g.Run(); err != nil {
-		return fmt.Errorf("app run: %w", err)
+		return err
 	}
 
 	return nil

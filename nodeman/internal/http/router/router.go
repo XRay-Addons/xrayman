@@ -1,7 +1,6 @@
 package router
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -53,7 +52,7 @@ func New(h api.Handler, options ...Option) (http.Handler, error) {
 	// create api handler
 	apiHandler, err := api.NewServer(h)
 	if err != nil {
-		return nil, fmt.Errorf("router: init: %w", err)
+		return nil, err
 	}
 
 	// add middleware from chi

@@ -2,12 +2,12 @@ package app
 
 import (
 	"context"
-	"errors"
 	"os"
 	"syscall"
 	"testing"
 	"time"
 
+	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 )
@@ -70,7 +70,7 @@ func TestApp_Run_Success(t *testing.T) {
 func TestApp_Run_InitFailure(t *testing.T) {
 	logger := zaptest.NewLogger(t)
 
-	initErr := errors.New("init error")
+	initErr := errdefs.New("init error")
 	initFn := func() error { return initErr }
 	closeFn := func(ctx context.Context) error { return nil }
 	runnerFn := func() error { return nil }
@@ -89,7 +89,7 @@ func TestApp_Run_InitFailure(t *testing.T) {
 func TestApp_Run_RunnerFailure(t *testing.T) {
 	logger := zaptest.NewLogger(t)
 
-	runnerErr := errors.New("runner error")
+	runnerErr := errdefs.New("runner error")
 	initFn := func() error { return nil }
 	closeFn := func(ctx context.Context) error { return nil }
 	runnerFn := func() error { return runnerErr }
@@ -109,8 +109,8 @@ func TestApp_Run_RunnerFailure(t *testing.T) {
 func TestApp_Close_ErrorHandling(t *testing.T) {
 	logger := zaptest.NewLogger(t)
 
-	closeErr1 := errors.New("close error 1")
-	closeErr2 := errors.New("close error 2")
+	closeErr1 := errdefs.New("close error 1")
+	closeErr2 := errdefs.New("close error 2")
 
 	app := New(
 		WithLogger(logger),

@@ -3,19 +3,20 @@ package tlscfg
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"fmt"
 	"os"
+
+	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 )
 
 func New(crt, key, caCrt string) (*tls.Config, error) {
 	cert, err := tls.LoadX509KeyPair(crt, key)
 	if err != nil {
-		return nil, fmt.Errorf("loading server cert: %w", err)
+		return nil, errdefs.WrapWithStack(err)
 	}
 
 	caCert, err := os.ReadFile(caCrt)
 	if err != nil {
-		return nil, fmt.Errorf("reading ca cert: %w", err)
+		return nil, errdefs.WrapWithStack(err)
 	}
 	caPool := x509.NewCertPool()
 	caPool.AppendCertsFromPEM(caCert)

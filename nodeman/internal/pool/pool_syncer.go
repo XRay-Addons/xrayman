@@ -2,7 +2,6 @@ package pool
 
 import (
 	"context"
-	"fmt"
 	"sync"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
@@ -63,7 +62,7 @@ func listSyncingNodes(ctx context.Context, uow UoW, client Client) ([]syncingNod
 		nodes, err = uow.ListNodes(ctx)
 		return
 	}); err != nil {
-		return nil, fmt.Errorf("list nodes: %w", err)
+		return nil, err
 	}
 
 	syncingNodes := make([]syncingNode, 0, len(nodes))
@@ -74,7 +73,7 @@ func listSyncingNodes(ctx context.Context, uow UoW, client Client) ([]syncingNod
 		}
 		nodeClient, err := client.GetNodeClient(ctx, node.Config.ConnectionInfo)
 		if err != nil {
-			return nil, fmt.Errorf("list syncing nodes: %w", err)
+			return nil, err
 		}
 		syncingNodes = append(syncingNodes, syncingNode{
 			node:   node,

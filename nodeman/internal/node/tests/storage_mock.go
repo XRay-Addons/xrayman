@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand/v2"
 
+	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/pool"
 )
@@ -115,10 +116,10 @@ var _ pool.NodeUoW = (*StorageMock)(nil)
 func (s *StorageMock) Do(ctx context.Context, fn pool.NodeUoWFn) error {
 	uow, err := s.NewUoW()
 	if err != nil {
-		return fmt.Errorf("init uow: %w", err)
+		return err
 	}
 	if err = uow.Do(ctx, fn); err != nil {
-		return fmt.Errorf("do uow: %w", err)
+		return err
 	}
 	return nil
 }
@@ -168,7 +169,7 @@ func (s *StorageMockPatch) UpdateClientConfig(ctx context.Context, cfg models.Cl
 
 func (s *StorageMockPatch) Do(ctx context.Context, fn pool.NodeUoWFn) error {
 	if err := fn(s); err != nil {
-		return fmt.Errorf("patch cfg error: %w", err)
+		return err
 	}
 	return s.parent.apply(s)
 }
@@ -188,7 +189,7 @@ func NewUnstableStorageMock(nUsers int) *UnstableStorageMock {
 func (s *UnstableStorageMock) DoUoW(ctx context.Context, fn pool.NodeUoWFn) error {
 	// some times this method returns error
 	if s.BaseStorage.rand.Float32() < s.Instability {
-		return fmt.Errorf("unstable storage")
+		return errdefs.New("unstable storage")
 	}
 	// some times states changes from external
 	if s.BaseStorage.rand.Float32() < s.Instability {
@@ -197,10 +198,10 @@ func (s *UnstableStorageMock) DoUoW(ctx context.Context, fn pool.NodeUoWFn) erro
 
 	uow, err := s.BaseStorage.NewUoW()
 	if err != nil {
-		return fmt.Errorf("init uow: %w", err)
+		return err
 	}
 	if err = uow.Do(ctx, fn); err != nil {
-		return fmt.Errorf("do uow: %w", err)
+		return err
 	}
 	return nil
 }

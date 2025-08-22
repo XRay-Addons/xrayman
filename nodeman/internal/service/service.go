@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"text/template"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
@@ -47,7 +46,7 @@ func (s *Service) NewNode(ctx context.Context, p models.NewNodeParams) (*models.
 		err = uowctx.NewNode(ctx, &node)
 		return
 	}); err != nil {
-		return nil, fmt.Errorf("service: new node: %w", err)
+		return nil, err
 	}
 
 	_ = s.syncNode(ctx, node.ID)
@@ -60,14 +59,14 @@ func (s *Service) NewNode(ctx context.Context, p models.NewNodeParams) (*models.
 
 func (s *Service) StartNode(ctx context.Context, p models.StartNodeParams) (*models.StartNodeResult, error) {
 	if err := s.setNodeStatus(ctx, p.ID, models.NodeStatusRunning); err != nil {
-		return nil, fmt.Errorf("service: start node: %w", err)
+		return nil, err
 	}
 	return &models.StartNodeResult{}, nil
 }
 
 func (s *Service) StopNode(ctx context.Context, p models.StopNodeParams) (*models.StopNodeResult, error) {
 	if err := s.setNodeStatus(ctx, p.ID, models.NodeStatusStopped); err != nil {
-		return nil, fmt.Errorf("service: stop node: %w", err)
+		return nil, err
 	}
 	return &models.StopNodeResult{}, nil
 }
@@ -81,7 +80,7 @@ func (s *Service) ListNodes(ctx context.Context, p models.ListNodeParams) (*mode
 		nodes, err = uowctx.ListNodes(ctx)
 		return
 	}); err != nil {
-		return nil, fmt.Errorf("list nodes: %w", err)
+		return nil, err
 	}
 	return &models.ListNodeResult{
 		Nodes: nodes,
@@ -94,7 +93,7 @@ func (s *Service) NewUser(ctx context.Context, p models.NewUserParams) (*models.
 	}
 	vlessUUID, err := generateVlessUUID()
 	if err != nil {
-		return nil, fmt.Errorf("service: new user: %w", err)
+		return nil, err
 	}
 	name := makeSlugName(p.VisibleName)
 
@@ -108,7 +107,7 @@ func (s *Service) NewUser(ctx context.Context, p models.NewUserParams) (*models.
 		err = uowctx.NewUser(ctx, &user)
 		return
 	}); err != nil {
-		return nil, fmt.Errorf("service: new node: %w", err)
+		return nil, err
 	}
 
 	_ = s.syncAllNodes(ctx)
@@ -122,14 +121,14 @@ func (s *Service) NewUser(ctx context.Context, p models.NewUserParams) (*models.
 
 func (s *Service) EnableUser(ctx context.Context, p models.EnableUserParams) (*models.EnableUserResult, error) {
 	if err := s.setUserStatus(ctx, p.ID, models.UserStatusEnabled); err != nil {
-		return nil, fmt.Errorf("service: enable user: %w", err)
+		return nil, err
 	}
 	return &models.EnableUserResult{}, nil
 }
 
 func (s *Service) DisableUser(ctx context.Context, p models.DisableUserParams) (*models.DisableUserResult, error) {
 	if err := s.setUserStatus(ctx, p.ID, models.UserStatusDisabled); err != nil {
-		return nil, fmt.Errorf("service: disable user: %w", err)
+		return nil, err
 	}
 	return &models.DisableUserResult{}, nil
 }
@@ -143,7 +142,7 @@ func (s *Service) ListUsers(ctx context.Context, p models.ListUserParams) (*mode
 		users, err = uowctx.ListUsers(ctx)
 		return
 	}); err != nil {
-		return nil, fmt.Errorf("list users: %w", err)
+		return nil, err
 	}
 	return &models.ListUsersResult{
 		Users: users,
@@ -183,7 +182,7 @@ func (s *Service) GetUserSub(ctx context.Context, p models.GetUserSubParams) (
 	for _, node := range userNodes {
 		tmpl, err := template.New("client").Parse(node.Config.ClientConfig.Template)
 		if err != nil {
-			return nil, false, err
+			return nil, false, errdefs.WrapWithStack(err)
 		}
 		var buf bytes.Buffer
 		err = tmpl.Execute(&buf, map[string]string{
@@ -191,7 +190,7 @@ func (s *Service) GetUserSub(ctx context.Context, p models.GetUserSubParams) (
 			node.Config.ClientConfig.VlessUUIDField: user.Profile.VlessUUID,
 		})
 		if err != nil {
-			return nil, false, err
+			return nil, false, errdefs.WrapWithStack(err)
 		}
 		// parse as array or as single subscription
 		var arr []json.RawMessage
@@ -214,7 +213,7 @@ func (s *Service) setNodeStatus(ctx context.Context, id models.NodeID, status mo
 		err = uowctx.SetTargetNodeStatus(ctx, id, status)
 		return
 	}); err != nil {
-		return fmt.Errorf("set node status: %w", err)
+		return err
 	}
 
 	_ = s.syncNode(ctx, id)
@@ -224,7 +223,7 @@ func (s *Service) setNodeStatus(ctx context.Context, id models.NodeID, status mo
 func (s *Service) syncNode(ctx context.Context, id models.NodeID) error {
 	syncResults, err := s.syncman.SyncNodesPool(ctx)
 	if err != nil {
-		return fmt.Errorf("service: sync node: %w", err)
+		return err
 	}
 	for _, syncRes := range syncResults {
 		if syncRes.ID != id {
@@ -233,7 +232,7 @@ func (s *Service) syncNode(ctx context.Context, id models.NodeID) error {
 		if syncRes.Err == nil {
 			return nil
 		}
-		return fmt.Errorf("service: sync node: %w", syncRes.Err)
+		return syncRes.Err
 	}
 	return errdefs.New("sync node not found", errdefs.Withf("node id: %v", id))
 }
@@ -247,7 +246,7 @@ func (s *Service) setUserStatus(ctx context.Context, id models.UserID, status mo
 		err = uowctx.SetTargetUserStatus(ctx, id, status)
 		return
 	}); err != nil {
-		return fmt.Errorf("set user status: %w", err)
+		return err
 	}
 
 	// sync nodes. errors is not a problem, it will updates in background
@@ -259,7 +258,7 @@ func (s *Service) setUserStatus(ctx context.Context, id models.UserID, status mo
 func (s *Service) syncAllNodes(ctx context.Context) error {
 	syncResults, err := s.syncman.SyncNodesPool(ctx)
 	if err != nil {
-		return fmt.Errorf("service: sync all nodes: %w", err)
+		return err
 	}
 	if len(syncResults) == 0 {
 		return nil
@@ -271,5 +270,5 @@ func (s *Service) syncAllNodes(ctx context.Context) error {
 		}
 		errs = append(errs, syncRes.Err)
 	}
-	return fmt.Errorf("servuce: sync all nodes: %w", errors.Join(errs...))
+	return errors.Join(errs...)
 }

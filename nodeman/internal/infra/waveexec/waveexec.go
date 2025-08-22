@@ -3,6 +3,8 @@ package waveexec
 import (
 	"context"
 	"sync"
+
+	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 )
 
 // WaveExecutor coordinates execution of a single function (Fn) in "waves".
@@ -75,7 +77,7 @@ func (we *WaveExecutor[T]) Invoke(ctx context.Context) (*T, error) {
 
 	select {
 	case <-ctx.Done():
-		return nil, ctx.Err()
+		return nil, errdefs.WrapWithStack(ctx.Err())
 	case we.reqCh <- struct{}{}:
 		// schedule next wave, it contains current call
 	default:
@@ -87,7 +89,7 @@ func (we *WaveExecutor[T]) Invoke(ctx context.Context) (*T, error) {
 	case res := <-waveItem.result:
 		return &res.result, res.err
 	case <-ctx.Done():
-		return nil, ctx.Err()
+		return nil, errdefs.WrapWithStack(ctx.Err())
 	}
 }
 

@@ -6,6 +6,7 @@ import (
 	"path"
 	"runtime"
 
+	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/caarlos0/env/v6"
 )
 
@@ -48,14 +49,17 @@ func readCLIParams(c *Config) error {
 should contains nodeman.crt nodeman.key ca.crt`)
 
 	if err := fs.Parse(os.Args[1:]); err != nil {
-		return err
+		return errdefs.WrapWithStack(err)
 	}
 
 	return nil
 }
 
 func readEnvParams(c *Config) error {
-	return env.Parse(c)
+	if err := env.Parse(c); err != nil {
+		return errdefs.WrapWithStack(err)
+	}
+	return nil
 }
 
 func initCertPaths(c *Config) {

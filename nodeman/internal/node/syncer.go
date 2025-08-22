@@ -46,7 +46,7 @@ func (s *syncer) SyncNodeState(ctx context.Context) (err error) {
 	// get current.
 	curr, prev, target, err := s.fetchNodeStatus(ctx)
 	if err != nil {
-		return fmt.Errorf("node: sync state: %w", err)
+		return err
 	}
 
 	// required node and user states
@@ -63,7 +63,7 @@ func (s *syncer) SyncNodeState(ctx context.Context) (err error) {
 	}
 
 	if err != nil {
-		return fmt.Errorf("node: sync state: %w", err)
+		return err
 	}
 
 	return nil
@@ -99,12 +99,12 @@ func (s *syncer) fetchNodeStatus(ctx context.Context) (
 func (s *syncer) startNode(ctx context.Context) (err error) {
 	// safe state-changing stuff
 	if err = s.updateStoredStatus(ctx, models.NodeStatusUnknown); err != nil {
-		return fmt.Errorf("start node: %w", err)
+		return err
 	}
 
 	users, err := s.getUsers(ctx)
 	if err != nil {
-		return fmt.Errorf("start node: %w", err)
+		return err
 	}
 
 	enabledUsers := s.getEnabledUsers(users)
@@ -112,7 +112,7 @@ func (s *syncer) startNode(ctx context.Context) (err error) {
 	// start node
 	clientConfig, err := s.client.Start(ctx, enabledUsers)
 	if err != nil {
-		return fmt.Errorf("start node: %w", err)
+		return err
 	}
 
 	// update stored node state
@@ -128,7 +128,7 @@ func (s *syncer) startNode(ctx context.Context) (err error) {
 		}
 		return
 	}); err != nil {
-		return fmt.Errorf("start node: update state: %w", err)
+		return err
 	}
 
 	return nil
@@ -171,18 +171,18 @@ func (s *syncer) getUsersPatch(users []models.User) []models.UserStatusPatch {
 func (s *syncer) stopNode(ctx context.Context) (err error) {
 	// safe state-changing stuff
 	if err = s.updateStoredStatus(ctx, models.NodeStatusUnknown); err != nil {
-		return fmt.Errorf("stop node: %w", err)
+		return err
 	}
 
 	if err = s.client.Stop(ctx); err != nil {
-		return fmt.Errorf("stop node: %w", err)
+		return err
 	}
 
 	// dont update actual status of users on disabled nodes because it has no matter.
 	// it updates when node started again.
 	// TODO: maybe update?
 	if err = s.updateStoredStatus(ctx, models.NodeStatusStopped); err != nil {
-		return fmt.Errorf("stop node: %w", err)
+		return err
 	}
 	return nil
 }
@@ -204,7 +204,7 @@ func (s *syncer) syncNodeUsers(ctx context.Context, updateNodeStatus bool) error
 	}
 
 	if err := s.client.UpdateUsers(ctx, usersUpdate); err != nil {
-		return fmt.Errorf("edit node users: %w", err)
+		return err
 	}
 
 	if err := s.applyNodeStatePatch(ctx, postPatch); err != nil {
@@ -270,7 +270,7 @@ func (s *syncer) updateStoredStatus(ctx context.Context, status models.NodeStatu
 	if err := s.uow.Do(ctx, func(uowctx pool.NodeUoWContext) error {
 		return uowctx.UpdateCurrentStatus(ctx, status)
 	}); err != nil {
-		return fmt.Errorf("update node status: %w", err)
+		return err
 	}
 	return nil
 }

@@ -2,10 +2,10 @@ package node
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	"github.com/golang-jwt/jwt/v4"
 )
@@ -29,7 +29,7 @@ func (s *NodeSecurity) BearerAuth(ctx context.Context,
 	// secret is [32]byte, but token require []byte
 	signed, err := token.SignedString(s.secret[:])
 	if err != nil {
-		return api.BearerAuth{}, fmt.Errorf("failed to sign JWT: %w", err)
+		return api.BearerAuth{}, errdefs.WrapWithStack(err)
 	}
 
 	return api.BearerAuth{

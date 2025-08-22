@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	stdlog "log"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/app"
@@ -46,10 +45,10 @@ func main() {
 func loadConfig() (*config.Config, error) {
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		return nil, fmt.Errorf("config loading: %v", err)
+		return nil, err
 	}
 	if err = config.Validate(*cfg); err != nil {
-		return nil, fmt.Errorf("config validation: %v", err)
+		return nil, err
 	}
 	return cfg, nil
 }

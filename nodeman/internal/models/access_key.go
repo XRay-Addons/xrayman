@@ -25,7 +25,7 @@ func (k *AccessKey) UnmarshalText(text []byte) error {
 	raw := make([]byte, base64.StdEncoding.DecodedLen(len(text)))
 	n, err := base64.StdEncoding.Decode(raw, text)
 	if err != nil {
-		return err
+		return errdefs.WrapWithStack(err)
 	}
 	if n != len(k.CertHash)+len(k.AccessSecret) {
 		return errdefs.New("invalid access key length")

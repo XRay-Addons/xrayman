@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
 )
@@ -53,7 +54,7 @@ func RConvertNodeID(i api.NodeID) models.NodeID {
 func ConvertAccessKey(s string) (models.AccessKey, error) {
 	var accessKey models.AccessKey
 	if err := accessKey.UnmarshalText([]byte(s)); err != nil {
-		return accessKey, fmt.Errorf("convert access key: %w", err)
+		return accessKey, errdefs.WrapWithStack(err)
 	}
 	return accessKey, nil
 }
@@ -103,7 +104,7 @@ func ConvertUserStatusResult(source models.UserStatus) api.UserStatus {
 func ConvertSubscription(source models.Subscription) (api.Subscription, error) {
 	var s api.Subscription
 	if err := json.Unmarshal([]byte(source), &s); err != nil {
-		return nil, err
+		return nil, errdefs.WrapWithStack(err)
 	}
 	return s, nil
 }

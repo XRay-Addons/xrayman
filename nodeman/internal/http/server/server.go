@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
@@ -33,7 +32,7 @@ func (s *HttpServer) Listen() error {
 
 	err := s.server.ListenAndServe()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
-		return fmt.Errorf("http server: run: %w", err)
+		return errdefs.WrapWithStack(err)
 	}
 	return nil
 }
@@ -47,7 +46,7 @@ func (s *HttpServer) Shutdown(ctx context.Context) error {
 		return nil
 	}
 	if err := s.server.Close(); err != nil {
-		return fmt.Errorf("http server: shutdown: %w", err)
+		return errdefs.WrapWithStack(err)
 	}
 	return nil
 }

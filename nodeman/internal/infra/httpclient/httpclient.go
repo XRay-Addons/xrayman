@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -106,11 +105,11 @@ func (cf *ClientFactory) newHttpClient(certHash CertHash) *http.Client {
 func verifyPeerFn(certHash CertHash) func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
 	return func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
 		if len(rawCerts) == 0 {
-			return errors.New("no certificate provided")
+			return errdefs.New("no certificate provided")
 		}
 		cert, err := x509.ParseCertificate(rawCerts[0])
 		if err != nil {
-			return err
+			return errdefs.WrapWithStack(err)
 		}
 		sum := sha256Sum(cert.Raw)
 		fmt.Println(base64.StdEncoding.EncodeToString(cert.Raw))
@@ -118,7 +117,7 @@ func verifyPeerFn(certHash CertHash) func(rawCerts [][]byte, verifiedChains [][]
 		fmt.Println(base64.StdEncoding.EncodeToString(certHash[:]))
 
 		if sum != certHash {
-			return errors.New("certificate pinning failed")
+			return errdefs.New("certificate pinning failed")
 		}
 		return nil
 	}

@@ -2,7 +2,6 @@ package node
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -63,19 +62,19 @@ func (c *PoolClient) GetNodeClient(ctx context.Context,
 	var httpClient *http.Client
 	if c.httpClient != nil {
 		if httpClient, err = c.httpClient.GetNodeClient(cfg.AccessKey.CertHash); err != nil {
-			return nil, fmt.Errorf("node client factory: get: %w", err)
+			return nil, errdefs.WrapWithStack(err)
 		}
 	}
 
 	nodeSec, err := c.sec.GetNodeSecurity(cfg.AccessKey.AccessSecret)
 	if err != nil {
-		return nil, fmt.Errorf("node client factory: get: %w", err)
+		return nil, err
 	}
 
 	client, err := api.NewClient(cfg.Endpoint,
 		nodeSec, api.WithClient(httpClient))
 	if err != nil {
-		return nil, fmt.Errorf("node client init: %w", err)
+		return nil, errdefs.WrapWithStack(err)
 	}
 	return &NodeClient{
 		client: client,

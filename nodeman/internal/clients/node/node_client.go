@@ -2,7 +2,6 @@ package node
 
 import (
 	"context"
-	"fmt"
 
 	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/clients/node/converter"
@@ -27,7 +26,7 @@ func (c *NodeClient) Start(ctx context.Context, users []models.UserProfile) (
 	startRequest := api.StartRequest{Users: converter.ConvertUsers(users)}
 	startResponse, err := c.client.Start(ctx, &startRequest)
 	if err != nil {
-		return nil, fmt.Errorf("node client: start: %w", err)
+		return nil, errdefs.WrapWithStack(err)
 	}
 
 	clientTemplate := converter.ConvertClientCfg(startResponse.GetClientCfg())
@@ -40,7 +39,7 @@ func (c *NodeClient) Stop(ctx context.Context) error {
 	}
 
 	if err := c.client.Stop(ctx); err != nil {
-		return fmt.Errorf("node client: stop: %w", err)
+		return errdefs.WrapWithStack(err)
 	}
 	return nil
 }
@@ -52,7 +51,7 @@ func (c *NodeClient) CheckStatus(ctx context.Context) (models.NodeStatus, error)
 
 	status, err := c.client.GetStatus(ctx)
 	if err != nil {
-		return models.NodeStatusUnknown, fmt.Errorf("node client: status: %w", err)
+		return models.NodeStatusUnknown, errdefs.WrapWithStack(err)
 	}
 	return converter.ConvertNodeStatus(status.ServiceStatus), nil
 }
@@ -64,7 +63,7 @@ func (c *NodeClient) UpdateUsers(ctx context.Context, update models.NodeUsersUpd
 
 	editRequest := converter.ConvertUsersUpdate(update)
 	if err := c.client.EditUsers(ctx, &editRequest); err != nil {
-		return fmt.Errorf("node client: update users: %w", err)
+		return errdefs.WrapWithStack(err)
 	}
 	return nil
 }
