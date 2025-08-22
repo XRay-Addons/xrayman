@@ -21,7 +21,7 @@ func NewClientCfg(path string) (*ClientCfg, error) {
 	}
 	_, err = template.New("validate").Parse(cfgTemplate)
 	if err != nil {
-		return nil, err
+		return nil, errdefs.WrapWithStack(err)
 	}
 
 	nameField, err := extractNameField(cfgTemplate)

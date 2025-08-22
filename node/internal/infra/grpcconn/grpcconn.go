@@ -24,7 +24,6 @@ type GRPCConn struct {
 var _ grpc.ClientConnInterface = (*GRPCConn)(nil)
 
 func New(target string, log *zap.Logger) (*GRPCConn, error) {
-
 	if log == nil {
 		return nil, errdefs.NewNilArg("log")
 	}
@@ -122,7 +121,10 @@ func (c *GRPCConn) Invoke(
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	return c.conn.Invoke(ctx, method, args, reply, opts...)
+	if err := c.conn.Invoke(ctx, method, args, reply, opts...); err != nil {
+		return errdefs.WrapWithStack(err)
+	}
+	return nil
 }
 
 func (c *GRPCConn) NewStream(
@@ -138,5 +140,9 @@ func (c *GRPCConn) NewStream(
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	return c.conn.NewStream(ctx, desc, method, opts...)
+	stream, err := c.conn.NewStream(ctx, desc, method, opts...)
+	if err != nil {
+		return nil, errdefs.WrapWithStack(err)
+	}
+	return stream, nil
 }

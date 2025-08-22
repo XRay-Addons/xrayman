@@ -12,7 +12,8 @@ func getTrace(skip int) []string {
 }
 
 func getCallstack(skip int) []string {
-	pcs := make([]uintptr, 32)
+	const maxStackDepth = 32
+	pcs := make([]uintptr, maxStackDepth)
 	n := runtime.Callers(skip+1, pcs)
 	callFrames := runtime.CallersFrames(pcs[:n])
 

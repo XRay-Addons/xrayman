@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 )
@@ -12,6 +13,14 @@ import (
 type HttpServer struct {
 	server http.Server
 }
+
+const (
+	defaultReadHeaderTimeout = 5 * time.Second
+	defaultReadTimeout       = 10 * time.Second
+	defaultWriteTimeout      = 10 * time.Second
+	defaultIdleTimeout       = 120 * time.Second
+	defaultMaxHeaderBytes    = 1 << 20 // 1 MB
+)
 
 func New(endpoint string, handler http.Handler, tls *tls.Config) (*HttpServer, error) {
 	if handler == nil {
@@ -23,6 +32,12 @@ func New(endpoint string, handler http.Handler, tls *tls.Config) (*HttpServer, e
 			Addr:      endpoint,
 			Handler:   handler,
 			TLSConfig: tls,
+
+			ReadHeaderTimeout: defaultReadHeaderTimeout,
+			ReadTimeout:       defaultReadTimeout,
+			WriteTimeout:      defaultWriteTimeout,
+			IdleTimeout:       defaultIdleTimeout,
+			MaxHeaderBytes:    defaultMaxHeaderBytes,
 		},
 	}, nil
 }
@@ -54,7 +69,7 @@ func (s *HttpServer) Shutdown(ctx context.Context) error {
 		return nil
 	}
 	if err := s.server.Close(); err != nil {
-		return err
+		return errdefs.WrapWithStack(err)
 	}
 	return nil
 }

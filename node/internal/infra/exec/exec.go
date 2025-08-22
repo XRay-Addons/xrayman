@@ -2,14 +2,15 @@ package exec
 
 import (
 	"bytes"
+	"context"
 	"os/exec"
 	"strings"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 )
 
-func Run(name string, args []string) (stdout, stderr string, err error) {
-	cmd := exec.Command(name, args...)
+func Run(ctx context.Context, name string, args []string) (stdout, stderr string, err error) {
+	cmd := exec.CommandContext(ctx, name, args...)
 	var stdoutBuf, stderrBuf bytes.Buffer
 	cmd.Stdout = &stdoutBuf
 	cmd.Stderr = &stderrBuf

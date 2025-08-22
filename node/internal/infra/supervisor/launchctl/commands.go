@@ -1,6 +1,7 @@
 package launchctl
 
 import (
+	"context"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -11,8 +12,8 @@ import (
 const launchctl = "/bin/launchctl"
 
 // create service
-func createService(domain, plistLocation string) error {
-	_, _, err := exec.Run(launchctl, []string{
+func createService(ctx context.Context, domain, plistLocation string) error {
+	_, _, err := exec.Run(ctx, launchctl, []string{
 		"bootstrap", domain, plistLocation,
 	})
 	if err != nil {
@@ -22,8 +23,8 @@ func createService(domain, plistLocation string) error {
 }
 
 // not exist is not an error
-func removeService(domain, service string) error {
-	_, stderr, err := exec.Run(launchctl, []string{
+func removeService(ctx context.Context, domain, service string) error {
+	_, stderr, err := exec.Run(ctx, launchctl, []string{
 		"bootout", filepath.Join(domain, service),
 	})
 
@@ -34,8 +35,8 @@ func removeService(domain, service string) error {
 	return err
 }
 
-func startService(domain, service string) error {
-	_, _, err := exec.Run(launchctl, []string{
+func startService(ctx context.Context, domain, service string) error {
+	_, _, err := exec.Run(ctx, launchctl, []string{
 		"kickstart", "-k", filepath.Join(domain, service),
 	})
 	if err != nil {
@@ -45,8 +46,8 @@ func startService(domain, service string) error {
 }
 
 // not exist or not running is not an error
-func stopService(domain, service string) error {
-	_, stderr, err := exec.Run(launchctl, []string{
+func stopService(ctx context.Context, domain, service string) error {
+	_, stderr, err := exec.Run(ctx, launchctl, []string{
 		"kill", "TERM", filepath.Join(domain, service),
 	})
 
@@ -58,8 +59,8 @@ func stopService(domain, service string) error {
 }
 
 // not exists is not an error, returns stopped
-func getServiceStatus(domain, service string) (string, error) {
-	stdout, _, err := exec.Run(launchctl, []string{
+func getServiceStatus(ctx context.Context, domain, service string) (string, error) {
+	stdout, _, err := exec.Run(ctx, launchctl, []string{
 		"print", filepath.Join(domain, service),
 	})
 
@@ -76,7 +77,8 @@ const statusRegex = `(?m)^[ \t]*state = (.+?)$`
 func extractStatusString(s string) string {
 	re := regexp.MustCompile(statusRegex)
 	match := re.FindStringSubmatch(s)
-	if len(match) == 2 {
+	const statusParts = 2
+	if len(match) == statusParts {
 		return match[1]
 	}
 	return ""

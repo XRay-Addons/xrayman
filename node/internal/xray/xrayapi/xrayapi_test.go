@@ -71,7 +71,7 @@ func TestXRayAPI(t *testing.T) {
 	require.NoError(t, err)
 
 	// create xray api
-	xrayapi, err := New(testApiURL, testXRayInbounds, log)
+	xrayapi, err := New(testApiURL, testXRayInbounds, WithLogger(log))
 	assert.NoError(t, err)
 	defer func() {
 		err := xrayapi.Close(ctx)
@@ -85,7 +85,7 @@ func TestXRayAPI(t *testing.T) {
 	// write xray config to file,
 	// remove it after execution
 	testCfgPath := filepath.Join(t.TempDir(), "config.json")
-	err = os.WriteFile(testCfgPath, []byte(testXRayCfg), 0o644)
+	err = os.WriteFile(testCfgPath, []byte(testXRayCfg), 0o600)
 	require.NoError(t, err)
 	defer func() {
 		err := os.Remove(testCfgPath)
@@ -93,7 +93,7 @@ func TestXRayAPI(t *testing.T) {
 	}()
 
 	// run xray
-	xrayCmd := exec.Command(testExecPath, "-config", testCfgPath)
+	xrayCmd := exec.CommandContext(t.Context(), testExecPath, "-config", testCfgPath) // #nosec
 	err = xrayCmd.Start()
 	require.NoError(t, err)
 	defer func() {

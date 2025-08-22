@@ -14,7 +14,6 @@ import (
 	"go.uber.org/zap"
 )
 
-// TODO: WithLog
 type XRayApi struct {
 	inbounds []models.Inbound
 	apiConn  *grpcconn.GRPCConn
@@ -24,11 +23,30 @@ type XRayApi struct {
 	mu sync.Mutex
 }
 
-func New(apiURL string, inbounds []models.Inbound, log *zap.Logger) (*XRayApi, error) {
-	if log == nil {
-		return nil, errdefs.NewNilArg("log")
+func WithLogger(logger *zap.Logger) option {
+	return func(o *options) {
+		if logger == nil {
+			return
+		}
+		o.log = logger
 	}
-	apiConn, err := grpcconn.New(apiURL, log)
+}
+
+type option func(o *options)
+
+type options struct {
+	log *zap.Logger
+}
+
+func New(apiURL string, inbounds []models.Inbound, opts ...option) (*XRayApi, error) {
+	o := &options{
+		log: zap.NewNop(),
+	}
+	for _, opt := range opts {
+		opt(o)
+	}
+
+	apiConn, err := grpcconn.New(apiURL, o.log)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +126,6 @@ func (api *XRayApi) EditUsers(
 
 	var editUsersTx tx.Tx
 	for _, in := range api.inbounds {
-		in := in
 		for _, u := range add {
 			inUser, err := getInboundUser(u, in.Type)
 			if err != nil {

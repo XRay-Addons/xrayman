@@ -2,13 +2,12 @@ package app
 
 import (
 	"context"
-	"errors"
 	"os"
-	"strings"
 	"syscall"
 	"testing"
 	"time"
 
+	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 )
@@ -71,7 +70,7 @@ func TestApp_Run_Success(t *testing.T) {
 func TestApp_Run_InitFailure(t *testing.T) {
 	logger := zaptest.NewLogger(t)
 
-	initErr := errors.New("init error")
+	initErr := errdefs.New("init error")
 	initFn := func() error { return initErr }
 	closeFn := func(ctx context.Context) error { return nil }
 	runnerFn := func() error { return nil }
@@ -90,7 +89,7 @@ func TestApp_Run_InitFailure(t *testing.T) {
 func TestApp_Run_RunnerFailure(t *testing.T) {
 	logger := zaptest.NewLogger(t)
 
-	runnerErr := errors.New("runner error")
+	runnerErr := errdefs.New("runner error")
 	initFn := func() error { return nil }
 	closeFn := func(ctx context.Context) error { return nil }
 	runnerFn := func() error { return runnerErr }
@@ -110,8 +109,8 @@ func TestApp_Run_RunnerFailure(t *testing.T) {
 func TestApp_Close_ErrorHandling(t *testing.T) {
 	logger := zaptest.NewLogger(t)
 
-	closeErr1 := errors.New("close error 1")
-	closeErr2 := errors.New("close error 2")
+	closeErr1 := errdefs.New("close error 1")
+	closeErr2 := errdefs.New("close error 2")
 
 	app := New(
 		WithLogger(logger),
@@ -138,8 +137,8 @@ func TestApp_Close_ErrorHandling(t *testing.T) {
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "close error 1")
 	require.Contains(t, err.Error(), "close error 2")
-	require.True(t, strings.Contains(err.Error(), closeErr1.Error()))
-	require.True(t, strings.Contains(err.Error(), closeErr2.Error()))
+	require.Contains(t, err.Error(), closeErr1.Error())
+	require.Contains(t, err.Error(), closeErr2.Error())
 }
 
 func TestApp_Run_ContextCancel(t *testing.T) {
@@ -169,7 +168,7 @@ func TestApp_Run_ContextCancel(t *testing.T) {
 	// Wait for app to finish
 	err := <-errCh
 	require.Error(t, err)
-	require.True(t, errors.Is(err, context.Canceled),
+	require.ErrorIs(t, err, context.Canceled,
 		"expected context.Canceled, got: %v", err)
 }
 

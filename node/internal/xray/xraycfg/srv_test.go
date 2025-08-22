@@ -74,7 +74,7 @@ func TestServiceCfg(t *testing.T) {
 	tmpDir := t.TempDir()
 	filePath := filepath.Join(tmpDir, "service_config.json")
 
-	err := os.WriteFile(filePath, []byte(testServerCfg), 0644)
+	err := os.WriteFile(filePath, []byte(testServerCfg), 0o600)
 	require.NoError(t, err)
 
 	serviceCfg, err := NewServerCfg(filePath)

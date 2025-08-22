@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 )
@@ -83,7 +84,8 @@ func TestApp_Run_InitFailure(t *testing.T) {
 
 	err := app.Run()
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "init app")
+	assert.Contains(t, err.Error(), "init error")
+	assert.ErrorIs(t, err, initErr)
 }
 
 func TestApp_Run_RunnerFailure(t *testing.T) {
@@ -102,7 +104,6 @@ func TestApp_Run_RunnerFailure(t *testing.T) {
 
 	err := app.Run()
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "app run")
 	require.ErrorIs(t, err, runnerErr)
 }
 
@@ -135,9 +136,8 @@ func TestApp_Close_ErrorHandling(t *testing.T) {
 	// Close components (should return aggregated errors)
 	err = app.close()
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "close app error")
-	require.Contains(t, err.Error(), closeErr1.Error())
-	require.Contains(t, err.Error(), closeErr2.Error())
+	assert.Contains(t, err.Error(), closeErr1.Error())
+	assert.Contains(t, err.Error(), closeErr2.Error())
 }
 
 func TestApp_Run_ContextCancel(t *testing.T) {

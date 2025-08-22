@@ -31,7 +31,7 @@ func checkExecutable(path string) error {
 		return errdefs.Wrap(err, errdefs.WithStack(), errdefs.WithFile(path))
 	}
 	if !info.Mode().IsRegular() {
-		return errdefs.New("exectuable is not regular file",
+		return errdefs.New("executable is not regular file",
 			errdefs.WithFile(path))
 	}
 	perm := info.Mode().Perm()

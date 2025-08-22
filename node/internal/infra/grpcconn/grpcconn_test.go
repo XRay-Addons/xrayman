@@ -2,8 +2,6 @@ package grpcconn
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"net"
 	"testing"
 	"time"
@@ -20,7 +18,8 @@ func newTestGRPCServer(t *testing.T, delay time.Duration) (addr string, cancel f
 	grpcServer := grpc.NewServer()
 	grpc_health_v1.RegisterHealthServer(grpcServer, &grpc_health_v1.UnimplementedHealthServer{})
 
-	lis, err := net.Listen("tcp", "127.0.0.1:0")
+	lc := net.ListenConfig{}
+	lis, err := lc.Listen(t.Context(), "tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Logf("failed to listen: %v", err)
 	}
@@ -81,8 +80,7 @@ func TestGRPCConnTimeout(t *testing.T) {
 	}()
 
 	err = conn.Connect(ctx)
-	fmt.Println(err)
-	require.True(t, errors.Is(err, context.DeadlineExceeded))
+	require.ErrorIs(t, err, context.DeadlineExceeded)
 
 	err = conn.Disconnect(ctx)
 	require.NoError(t, err)

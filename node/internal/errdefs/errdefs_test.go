@@ -60,6 +60,7 @@ func Fn() error {
 	}()
 }
 
+//nolint:gocritic
 func getFn() func() error {
 	return func() error {
 		return Fn()

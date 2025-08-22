@@ -44,9 +44,9 @@ func ensureAccessKey(dir string) (*models.AccessKey, error) {
 }
 
 func getCertHash(dir string) (*models.CertHash, error) {
-	certPEM, err := os.ReadFile(filepath.Join(dir, CertFile))
+	certPEM, err := os.ReadFile(filepath.Join(dir, CertFile)) // #nosec
 	if err != nil {
-		return nil, err
+		return nil, errdefs.WrapWithStack(err)
 	}
 	block, _ := pem.Decode(certPEM)
 	if block == nil {
@@ -55,7 +55,7 @@ func getCertHash(dir string) (*models.CertHash, error) {
 
 	cert, err := x509.ParseCertificate(block.Bytes)
 	if err != nil {
-		return nil, err
+		return nil, errdefs.WrapWithStack(err)
 	}
 
 	certHash := sha256.Sum256(cert.Raw)
@@ -68,7 +68,7 @@ type accessKeyWrapper struct {
 }
 
 func readAccessKey(dir string) (*models.AccessKey, error) {
-	data, err := os.ReadFile(filepath.Join(dir, AccessFile))
+	data, err := os.ReadFile(filepath.Join(dir, AccessFile)) // #nosec
 	if err != nil {
 		return nil, errdefs.WrapWithStack(err)
 	}
@@ -86,7 +86,7 @@ func writeAccessKey(dir string, key models.AccessKey) error {
 	if err != nil {
 		return errdefs.WrapWithStack(err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, AccessFile), data, 0600); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, AccessFile), data, 0600); err != nil { //nolint:mnd
 		return errdefs.WrapWithStack(err)
 	}
 	return nil

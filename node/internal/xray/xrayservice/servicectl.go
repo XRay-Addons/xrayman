@@ -23,7 +23,7 @@ func New(execPath, configPath string, log *zap.Logger) (*XRayService, error) {
 		return nil, errdefs.NewNilCall()
 	}
 	command := []string{execPath, "-config", configPath}
-	supervisor, err := supervisor.New(serviceName, command, log)
+	supervisor, err := supervisor.New(serviceName, command, supervisor.WithLogger(log))
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (s *XRayService) Start(ctx context.Context, config string) error {
 	if s == nil || s.supervisor == nil {
 		return errdefs.NewNilCall()
 	}
-	err := os.WriteFile(s.configPath, []byte(config), 0644)
+	err := os.WriteFile(s.configPath, []byte(config), 0o600)
 	if err != nil {
 		return errdefs.Wrap(err, errdefs.WithStack(),
 			errdefs.WithFile(s.configPath))

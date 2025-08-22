@@ -36,12 +36,12 @@ func readTLS(dir string) (cert, key []byte, err error) {
 	certPath := filepath.Join(dir, CertFile)
 	keyPath := filepath.Join(dir, KeyFile)
 
-	cert, err = os.ReadFile(certPath)
+	cert, err = os.ReadFile(certPath) // #nosec
 	if err != nil {
 		return nil, nil, errdefs.WrapWithStack(err)
 	}
 
-	key, err = os.ReadFile(keyPath)
+	key, err = os.ReadFile(keyPath) // #nosec
 	if err != nil {
 		return nil, nil, errdefs.WrapWithStack(err)
 	}
@@ -69,12 +69,13 @@ func writeTLS(dir string, cert, key []byte) error {
 }
 
 func generateTLS(issuer string, exp time.Duration) (certPEM, keyPEM []byte, err error) {
-	priv, err := rsa.GenerateKey(rand.Reader, 2048)
+	const tlsLength = 2048
+	priv, err := rsa.GenerateKey(rand.Reader, tlsLength)
 	if err != nil {
 		return nil, nil, errdefs.WrapWithStack(err)
 	}
 
-	serial, err := rand.Int(rand.Reader, big.NewInt(1<<62))
+	serial, err := rand.Int(rand.Reader, big.NewInt(1<<62)) //nolint:mnd
 	if err != nil {
 		return nil, nil, errdefs.WrapWithStack(err)
 	}

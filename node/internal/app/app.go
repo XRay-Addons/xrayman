@@ -92,7 +92,8 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// xray api
 		a.WithComponent("xray api",
 			func() (err error) {
-				xrayAPI, err = xrayapi.New(srvCfg.GetApiURL(), srvCfg.GetInbounds(), log)
+				xrayAPI, err = xrayapi.New(srvCfg.GetApiURL(), srvCfg.GetInbounds(),
+					xrayapi.WithLogger(log))
 				return
 			},
 			func(ctx context.Context) error {

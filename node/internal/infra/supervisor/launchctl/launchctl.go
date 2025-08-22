@@ -19,11 +19,11 @@ import (
 	"go.uber.org/zap"
 )
 
-// TODO: options
 type XRayCtl struct {
 	serviceName   string
 	userDomain    string // gui/501
 	plistLocation string // /Users/user/<plistLocation>
+	retryDelay    time.Duration
 
 	// for initialization loop
 	initialized atomic.Bool
@@ -31,12 +31,41 @@ type XRayCtl struct {
 	cancel      context.CancelFunc
 }
 
+func WithLogger(logger *zap.Logger) option {
+	return func(o *options) {
+		if logger == nil {
+			return
+		}
+		o.log = logger
+	}
+}
+
+func WithRetryDelay(delay time.Duration) option {
+	return func(o *options) {
+		o.retryDelay = delay
+	}
+}
+
+type option func(o *options)
+
+type options struct {
+	log        *zap.Logger
+	retryDelay time.Duration
+}
+
 const plistDirectory = "/Library/LaunchAgents"
 
-func New(serviceName string, command []string, log *zap.Logger) (*XRayCtl, error) {
-	if log == nil {
-		return nil, errdefs.NewNilArg("log")
+const defaultRetryDelay = 250 * time.Millisecond
+
+func New(serviceName string, command []string, opts ...option) (*XRayCtl, error) {
+	o := &options{
+		log:        zap.NewNop(),
+		retryDelay: defaultRetryDelay,
 	}
+	for _, opt := range opts {
+		opt(o)
+	}
+
 	userDomain, err := userDomain()
 	if err != nil {
 		return nil, err
@@ -52,6 +81,7 @@ func New(serviceName string, command []string, log *zap.Logger) (*XRayCtl, error
 		userDomain:    userDomain,
 		plistLocation: filepath.Join(userHome, plistDirectory, serviceName+".plist"),
 		cancel:        cancel,
+		retryDelay:    o.retryDelay,
 	}
 
 	// init plist
@@ -61,7 +91,7 @@ func New(serviceName string, command []string, log *zap.Logger) (*XRayCtl, error
 
 	// run installing service loop
 	xrayCtl.wg.Add(1)
-	go xrayCtl.createServiceLoop(ctx, log)
+	go xrayCtl.createServiceLoop(ctx, o.log)
 
 	return xrayCtl, nil
 }
@@ -78,10 +108,10 @@ func (ctl *XRayCtl) Close(ctx context.Context) error {
 
 	// stop and remove service, if initialized
 	if ctl.initialized.Load() {
-		if err := stopService(ctl.userDomain, ctl.serviceName); err != nil {
+		if err := stopService(ctx, ctl.userDomain, ctl.serviceName); err != nil {
 			closeErrs = append(closeErrs, err)
 		}
-		if err := removeService(ctl.userDomain, ctl.serviceName); err != nil {
+		if err := removeService(ctx, ctl.userDomain, ctl.serviceName); err != nil {
 			closeErrs = append(closeErrs, err)
 		}
 		ctl.initialized.Store(false)
@@ -104,7 +134,7 @@ func (ctl *XRayCtl) createPlistFile(command []string) error {
 	if err != nil {
 		return err
 	}
-	if err := os.WriteFile(ctl.plistLocation, plistContent, 0644); err != nil {
+	if err := os.WriteFile(ctl.plistLocation, plistContent, 0o600); err != nil {
 		return errdefs.Wrap(err, errdefs.WithStack(), errdefs.WithFile(ctl.plistLocation))
 	}
 	return nil
@@ -158,14 +188,14 @@ func (ctl *XRayCtl) createServiceLoop(ctx context.Context, log *zap.Logger) {
 
 	initFn := func(ctx context.Context) error {
 		// remove existed service
-		err := removeService(ctl.userDomain, ctl.serviceName)
+		err := removeService(ctx, ctl.userDomain, ctl.serviceName)
 		if err != nil {
 			log.Warn("retry: init service", zap.Error(err))
 			return err
 		}
 
 		// create new service
-		err = createService(ctl.userDomain, ctl.plistLocation)
+		err = createService(ctx, ctl.userDomain, ctl.plistLocation)
 		if err != nil {
 			log.Warn("retry: init service", zap.Error(err))
 			return err
@@ -177,7 +207,7 @@ func (ctl *XRayCtl) createServiceLoop(ctx context.Context, log *zap.Logger) {
 		return nil
 	}
 
-	if err := retry.RetryInfinite(ctx, initFn, 250*time.Millisecond); err != nil {
+	if err := retry.RetryInfinite(ctx, initFn, ctl.retryDelay); err != nil {
 		log.Error("retry: init service", zap.Error(err))
 	}
 }
@@ -188,7 +218,7 @@ func (ctl *XRayCtl) Start(ctx context.Context) error {
 	}
 
 	// send start signal to service
-	if err := startService(ctl.userDomain, ctl.serviceName); err != nil {
+	if err := startService(ctx, ctl.userDomain, ctl.serviceName); err != nil {
 		return err
 	}
 
@@ -199,7 +229,7 @@ func (ctl *XRayCtl) Start(ctx context.Context) error {
 		status, err = ctl.Status(ctx)
 		return err
 	}
-	if err := retry.RetryInfinite(ctx, checkStatus, 250*time.Millisecond); err != nil {
+	if err := retry.RetryInfinite(ctx, checkStatus, ctl.retryDelay); err != nil {
 		return err
 	}
 	if status != supervisorapi.StatusRunning {
@@ -214,7 +244,7 @@ func (ctl *XRayCtl) Stop(ctx context.Context) error {
 		return err
 	}
 
-	return stopService(ctl.userDomain, ctl.serviceName)
+	return stopService(ctx, ctl.userDomain, ctl.serviceName)
 }
 
 func (ctl *XRayCtl) Status(ctx context.Context) (supervisorapi.ServiceStatus, error) {
@@ -222,7 +252,7 @@ func (ctl *XRayCtl) Status(ctx context.Context) (supervisorapi.ServiceStatus, er
 		return supervisorapi.StatusUnknown, err
 	}
 
-	statusStr, err := getServiceStatus(ctl.userDomain, ctl.serviceName)
+	statusStr, err := getServiceStatus(ctx, ctl.userDomain, ctl.serviceName)
 	if err != nil {
 		return supervisorapi.StatusUnknown, err
 	}

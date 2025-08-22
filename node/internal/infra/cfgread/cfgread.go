@@ -8,7 +8,7 @@ import (
 )
 
 func ReadJSON(cfgPath string) (string, error) {
-	cfg, err := os.ReadFile(cfgPath)
+	cfg, err := os.ReadFile(cfgPath) // #nosec
 	if err != nil {
 		return "", errdefs.WrapWithStack(err)
 	}

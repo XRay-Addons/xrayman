@@ -38,7 +38,7 @@ func (tx *Tx) AddItem(fn, rb Fn) {
 }
 
 func (tx *Tx) Run(ctx context.Context) error {
-	commited, err := tx.commit(ctx)
+	committed, err := tx.commit(ctx)
 	if err == nil {
 		return nil
 	}
@@ -47,7 +47,7 @@ func (tx *Tx) Run(ctx context.Context) error {
 	rbCtx, cancel := context.WithTimeout(context.Background(), tx.rollbackTimeout)
 	defer cancel()
 
-	rbErrs := tx.rollback(rbCtx, commited)
+	rbErrs := tx.rollback(rbCtx, committed)
 	if len(rbErrs) > 0 {
 		rbCombined := errors.Join(rbErrs...)
 		err = errors.Join(err, rbCombined)
@@ -61,7 +61,7 @@ type txItem struct {
 	rb Fn
 }
 
-func (tx *Tx) commit(ctx context.Context) (commited int, err error) {
+func (tx *Tx) commit(ctx context.Context) (committed int, err error) {
 	for i, item := range tx.items {
 		if err := item.fn(ctx); err != nil {
 			return i, err
@@ -70,8 +70,8 @@ func (tx *Tx) commit(ctx context.Context) (commited int, err error) {
 	return len(tx.items), nil
 }
 
-func (tx *Tx) rollback(ctx context.Context, commited int) (rbErrs []error) {
-	for i := commited - 1; i >= 0; i-- {
+func (tx *Tx) rollback(ctx context.Context, committed int) (rbErrs []error) {
+	for i := committed - 1; i >= 0; i-- {
 		if tx.items[i].rb == nil {
 			continue
 		}

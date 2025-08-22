@@ -125,7 +125,7 @@ func TestValidClientCfg(t *testing.T) {
 	tmpDir := t.TempDir()
 	filePath := filepath.Join(tmpDir, "client_config.json")
 
-	err = os.WriteFile(filePath, []byte(testValidClientCfg), 0644)
+	err = os.WriteFile(filePath, []byte(testValidClientCfg), 0o600)
 	require.NoError(t, err)
 
 	cfg, err := NewClientCfg(filePath)
@@ -147,7 +147,7 @@ func TestInvalidClientCfg(t *testing.T) {
 	tmpDir := t.TempDir()
 	filePath := filepath.Join(tmpDir, "client_config.json")
 
-	err = os.WriteFile(filePath, []byte(testInvalidClientCfg), 0644)
+	err = os.WriteFile(filePath, []byte(testInvalidClientCfg), 0o600)
 	require.NoError(t, err)
 
 	_, err = NewClientCfg(filePath)

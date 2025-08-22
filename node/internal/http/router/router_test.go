@@ -135,7 +135,7 @@ func TestRouter(t *testing.T) {
 			)
 			require.NoError(t, err)
 
-			req, err := http.NewRequest(tt.method, tt.path, bytes.NewReader(tt.body))
+			req, err := http.NewRequestWithContext(context.TODO(), tt.method, tt.path, bytes.NewReader(tt.body))
 			req.Header.Set("Content-Type", "application/json")
 			req.Header.Set("Authorization", "Bearer test")
 			require.NoError(t, err)

@@ -32,7 +32,7 @@ func TestXrayctl(t *testing.T) {
 
 	// write xray config to file,
 	// remove it after execution
-	err := os.WriteFile(testCfgPath, []byte(testXRayCfg), 0o644)
+	err := os.WriteFile(testCfgPath, []byte(testXRayCfg), 0o600)
 	require.NoError(t, err)
 	defer func() {
 		err := os.Remove(testCfgPath)
@@ -43,7 +43,7 @@ func TestXrayctl(t *testing.T) {
 
 	// create xray service
 	command := []string{testExecPath, "-config", testCfgPath}
-	xrayctl, err := New(testServiceName, command, log)
+	xrayctl, err := New(testServiceName, command, WithLogger(log))
 	require.NoError(t, err)
 	defer func() {
 		err := xrayctl.Close(ctx)

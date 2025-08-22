@@ -1,6 +1,7 @@
 package security
 
 import (
+	"context"
 	"mime"
 	"net/http"
 	"net/http/httptest"
@@ -81,7 +82,7 @@ func TestSecurity(t *testing.T) {
 			tokenSign, err := token.SignedString(tt.requestSecret)
 			require.NoError(t, err)
 
-			req, err := http.NewRequest(http.MethodGet, tt.path, nil)
+			req, err := http.NewRequestWithContext(context.TODO(), http.MethodGet, tt.path, nil)
 			req.Header.Set("Content-Type", "application/json")
 			req.Header.Set("Authorization", "Bearer "+tokenSign)
 			require.NoError(t, err)
