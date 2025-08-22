@@ -71,6 +71,22 @@ func (mr *MockServiceMockRecorder) EnableUser(ctx, p any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnableUser", reflect.TypeOf((*MockService)(nil).EnableUser), ctx, p)
 }
 
+// GetUserSub mocks base method.
+func (m *MockService) GetUserSub(ctx context.Context, p models.GetUserSubParams) (*models.GetUserSubResult, bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserSub", ctx, p)
+	ret0, _ := ret[0].(*models.GetUserSubResult)
+	ret1, _ := ret[1].(bool)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetUserSub indicates an expected call of GetUserSub.
+func (mr *MockServiceMockRecorder) GetUserSub(ctx, p any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserSub", reflect.TypeOf((*MockService)(nil).GetUserSub), ctx, p)
+}
+
 // ListNodes mocks base method.
 func (m *MockService) ListNodes(ctx context.Context, p models.ListNodeParams) (*models.ListNodeResult, error) {
 	m.ctrl.T.Helper()

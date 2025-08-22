@@ -57,7 +57,7 @@ func NewClientFactory(opts ...Option) *ClientFactory {
 
 func (cf *ClientFactory) GetNodeClient(certHash CertHash) (*http.Client, error) {
 	if cf == nil {
-		return nil, fmt.Errorf("client factory: node client: %w", errdefs.ErrNilObjectCall)
+		return nil, errdefs.NewNilCall()
 	}
 
 	// fast check with RLock

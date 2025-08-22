@@ -1,8 +1,6 @@
 package logging
 
 import (
-	"fmt"
-
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -25,7 +23,7 @@ func New() (*zap.Logger, error) {
 
 	logger, err := cfg.Build()
 	if err != nil {
-		return nil, fmt.Errorf("logger init: %w: %v", errdefs.ErrIPE, err)
+		return nil, errdefs.WrapWithStack(err)
 	}
 	return logger, nil
 }

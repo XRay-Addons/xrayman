@@ -10,10 +10,10 @@ import (
 
 func Validate(c Config) error {
 	if _, err := net.ResolveTCPAddr("tcp", c.Endpoint); err != nil {
-		return fmt.Errorf("%w: invalid endpoint: %v", errdefs.ErrConfig, err)
+		return errdefs.New("invalid endpoint", errdefs.Withf("endpoint: %s", c.Endpoint))
 	}
 	if err := checkCerts(c); err != nil {
-		return fmt.Errorf("%w: xray certs cfg: %v", errdefs.ErrConfig, err)
+		return err
 	}
 
 	return nil
@@ -25,7 +25,8 @@ func checkFileExists(path string) (bool, error) {
 		return false, nil
 	}
 	if !info.Mode().IsRegular() {
-		return false, fmt.Errorf("%s is not a regular file", path)
+		return false, errdefs.New("file is not regular",
+			errdefs.WithFile(path))
 	}
 	return true, nil
 }
@@ -38,7 +39,7 @@ func checkCerts(c Config) error {
 	for _, f := range []string{c.nodemanCrt, c.nodemanKey, c.rootCrt} {
 		exists, err := checkFileExists(f)
 		if err != nil {
-			return fmt.Errorf("cert file check: %w; ", err)
+			return err
 		}
 		existsDescription += fmt.Sprintf("cert %s: %v", f, exists)
 		if exists {
@@ -50,5 +51,6 @@ func checkCerts(c Config) error {
 		return nil
 	}
 
-	return fmt.Errorf("cert files inconsistency: %s", existsDescription)
+	return errdefs.New("cert files inconsistency",
+		errdefs.Withf("inconsistency: %s", existsDescription))
 }

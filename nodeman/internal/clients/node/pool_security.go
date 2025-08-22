@@ -1,7 +1,6 @@
 package node
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
@@ -15,7 +14,7 @@ type PoolSecurity struct {
 
 func (ps *PoolSecurity) GetNodeSecurity(secret models.AccessSecret) (*NodeSecurity, error) {
 	if ps == nil {
-		return nil, fmt.Errorf("pool security: get node security: %w", errdefs.ErrNilObjectCall)
+		return nil, errdefs.NewNilCall()
 	}
 	return &NodeSecurity{
 		secret:     secret,

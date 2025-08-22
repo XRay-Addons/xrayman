@@ -56,7 +56,7 @@ func (c *PoolClient) GetNodeClient(ctx context.Context,
 	cfg models.NodeConnectionInfo,
 ) (pool.NodeClient, error) {
 	if c == nil {
-		return nil, fmt.Errorf("node client factory: get: %w", errdefs.ErrNilObjectCall)
+		return nil, errdefs.NewNilCall()
 	}
 
 	var err error

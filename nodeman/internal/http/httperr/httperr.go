@@ -17,6 +17,8 @@ var (
 		"invalid auth token", "try another one")
 	ErrUnknown = new(http.StatusInternalServerError,
 		"unknown error", "we really don't know")
+	ErrUserNotFound = new(http.StatusNotFound,
+		"user not found", "try another user")
 )
 
 // error impl containing api.ErrorStatusCode

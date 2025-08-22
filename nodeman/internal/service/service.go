@@ -22,10 +22,10 @@ var _ handler.Service = (*Service)(nil)
 
 func New(syncman SyncMan, uow UoW) (*Service, error) {
 	if syncman == nil {
-		return nil, fmt.Errorf("service init: syncman: %w", errdefs.ErrNilArgPassed)
+		return nil, errdefs.NewNilArg("syncman")
 	}
 	if uow == nil {
-		return nil, fmt.Errorf("service init: uow: %w", errdefs.ErrNilArgPassed)
+		return nil, errdefs.NewNilArg("uow")
 	}
 	return &Service{
 		syncman: syncman,
@@ -35,7 +35,7 @@ func New(syncman SyncMan, uow UoW) (*Service, error) {
 
 func (s *Service) NewNode(ctx context.Context, p models.NewNodeParams) (*models.NewNodeResult, error) {
 	if s == nil {
-		return nil, fmt.Errorf("service: start: %w", errdefs.ErrNilObjectCall)
+		return nil, errdefs.NewNilCall()
 	}
 	var node models.Node
 	node.Config.ConnectionInfo.Endpoint = p.Endpoint
@@ -74,7 +74,7 @@ func (s *Service) StopNode(ctx context.Context, p models.StopNodeParams) (*model
 
 func (s *Service) ListNodes(ctx context.Context, p models.ListNodeParams) (*models.ListNodeResult, error) {
 	if s == nil {
-		return nil, fmt.Errorf("service: list nodes: %w", errdefs.ErrNilObjectCall)
+		return nil, errdefs.NewNilCall()
 	}
 	var nodes []models.Node
 	if err := s.uow.Do(ctx, func(uowctx UoWContext) (err error) {
@@ -90,7 +90,7 @@ func (s *Service) ListNodes(ctx context.Context, p models.ListNodeParams) (*mode
 
 func (s *Service) NewUser(ctx context.Context, p models.NewUserParams) (*models.NewUserResult, error) {
 	if s == nil {
-		return nil, fmt.Errorf("service: new user: %w", errdefs.ErrNilObjectCall)
+		return nil, errdefs.NewNilCall()
 	}
 	vlessUUID, err := generateVlessUUID()
 	if err != nil {
@@ -136,7 +136,7 @@ func (s *Service) DisableUser(ctx context.Context, p models.DisableUserParams) (
 
 func (s *Service) ListUsers(ctx context.Context, p models.ListUserParams) (*models.ListUsersResult, error) {
 	if s == nil {
-		return nil, fmt.Errorf("service: list users: %w", errdefs.ErrNilObjectCall)
+		return nil, errdefs.NewNilCall()
 	}
 	var users []models.User
 	if err := s.uow.Do(ctx, func(uowctx UoWContext) (err error) {
@@ -150,9 +150,11 @@ func (s *Service) ListUsers(ctx context.Context, p models.ListUserParams) (*mode
 	}, nil
 }
 
-func (s *Service) GetUserSub(ctx context.Context, p models.GetUserSubParams) (*models.GetUserSubResult, error) {
+func (s *Service) GetUserSub(ctx context.Context, p models.GetUserSubParams) (
+	_ *models.GetUserSubResult, exists bool, _ error,
+) {
 	if s == nil {
-		return nil, fmt.Errorf("service: get user sub: %w", errdefs.ErrNilObjectCall)
+		return nil, false, errdefs.NewNilCall()
 	}
 
 	// validate user
@@ -161,10 +163,10 @@ func (s *Service) GetUserSub(ctx context.Context, p models.GetUserSubParams) (*m
 		user, err = uowctx.GetUser(ctx, p.ID)
 		return
 	}); err != nil {
-		return nil, fmt.Errorf("service: get user sub: %w", err)
+		return nil, false, err
 	}
 	if p.Name != user.Profile.Name {
-		return nil, fmt.Errorf("service: get user sub: %w", errdefs.ErrNotFound)
+		return nil, false, nil
 	}
 
 	// get active nodes for user
@@ -173,7 +175,7 @@ func (s *Service) GetUserSub(ctx context.Context, p models.GetUserSubParams) (*m
 		userNodes, err = uowctx.GetUserNodes(ctx, user.ID)
 		return
 	}); err != nil {
-		return nil, fmt.Errorf("service: get user sub: %w", err)
+		return nil, false, err
 	}
 
 	// create subscription content
@@ -181,7 +183,7 @@ func (s *Service) GetUserSub(ctx context.Context, p models.GetUserSubParams) (*m
 	for _, node := range userNodes {
 		tmpl, err := template.New("client").Parse(node.Config.ClientConfig.Template)
 		if err != nil {
-			return nil, fmt.Errorf("service: get user sub: node template parsing: %v: %w", err, errdefs.ErrConfig)
+			return nil, false, err
 		}
 		var buf bytes.Buffer
 		err = tmpl.Execute(&buf, map[string]string{
@@ -189,7 +191,7 @@ func (s *Service) GetUserSub(ctx context.Context, p models.GetUserSubParams) (*m
 			node.Config.ClientConfig.VlessUUIDField: user.Profile.VlessUUID,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("service: get user sub: node template filling: %v: %w", err, errdefs.ErrConfig)
+			return nil, false, err
 		}
 		// parse as array or as single subscription
 		var arr []json.RawMessage
@@ -200,12 +202,12 @@ func (s *Service) GetUserSub(ctx context.Context, p models.GetUserSubParams) (*m
 		subscriptions = append(subscriptions, json.RawMessage(buf.Bytes()))
 	}
 
-	return &subscriptions, nil
+	return &subscriptions, true, nil
 }
 
 func (s *Service) setNodeStatus(ctx context.Context, id models.NodeID, status models.NodeStatus) error {
 	if s == nil {
-		return fmt.Errorf("set node status: %w", errdefs.ErrNilObjectCall)
+		return errdefs.NewNilCall()
 	}
 	// set target node state to storage
 	if err := s.uow.Do(ctx, func(uowctx UoWContext) (err error) {
@@ -233,12 +235,12 @@ func (s *Service) syncNode(ctx context.Context, id models.NodeID) error {
 		}
 		return fmt.Errorf("service: sync node: %w", syncRes.Err)
 	}
-	return fmt.Errorf("service: sync node: node not found: %w", errdefs.ErrIPE)
+	return errdefs.New("sync node not found", errdefs.Withf("node id: %v", id))
 }
 
 func (s *Service) setUserStatus(ctx context.Context, id models.UserID, status models.UserStatus) error {
 	if s == nil {
-		return fmt.Errorf("set user status: %w", errdefs.ErrNilObjectCall)
+		return errdefs.NewNilCall()
 	}
 	// set target user state to storage
 	if err := s.uow.Do(ctx, func(uowctx UoWContext) (err error) {

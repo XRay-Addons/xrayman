@@ -4,6 +4,7 @@
 package converter
 
 import (
+	"encoding/json"
 	models "github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	gen "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
 )
@@ -126,16 +127,30 @@ func ConvertUserSubRequest(source *gen.GetUserSubParams) (*models.GetUserSubPara
 	}
 	return pModelsGetUserSubParams, nil
 }
-func ConvertUserSubResult(source *[]models.Subscription) (*gen.GetUserSubResponse, error) {
+func ConvertUserSubResult(source *[]json.RawMessage) (*gen.GetUserSubResponse, error) {
 	var pApiGetUserSubResponse *gen.GetUserSubResponse
 	if source != nil {
-		apiGetUserSubResponse, err := modelsSubscriptionListToApiGetUserSubResponse((*source))
+		apiGetUserSubResponse, err := jsonRawMessageListToApiGetUserSubResponse((*source))
 		if err != nil {
 			return nil, err
 		}
 		pApiGetUserSubResponse = &apiGetUserSubResponse
 	}
 	return pApiGetUserSubResponse, nil
+}
+func jsonRawMessageListToApiGetUserSubResponse(source []json.RawMessage) (gen.GetUserSubResponse, error) {
+	var apiGetUserSubResponse gen.GetUserSubResponse
+	if source != nil {
+		apiGetUserSubResponse = make(gen.GetUserSubResponse, len(source))
+		for i := 0; i < len(source); i++ {
+			apiSubscription, err := ConvertSubscription(source[i])
+			if err != nil {
+				return nil, err
+			}
+			apiGetUserSubResponse[i] = apiSubscription
+		}
+	}
+	return apiGetUserSubResponse, nil
 }
 func modelsClientConfigToApiClientConfig(source models.ClientConfig) gen.ClientConfig {
 	var apiClientConfig gen.ClientConfig
@@ -163,20 +178,6 @@ func modelsNodeToApiNode(source models.Node) gen.Node {
 	apiNode.CurrentStatus = ConvertNodeStatusResult(source.CurrentStatus)
 	apiNode.TargetStatus = ConvertNodeStatusResult(source.TargetStatus)
 	return apiNode
-}
-func modelsSubscriptionListToApiGetUserSubResponse(source []models.Subscription) (gen.GetUserSubResponse, error) {
-	var apiGetUserSubResponse gen.GetUserSubResponse
-	if source != nil {
-		apiGetUserSubResponse = make(gen.GetUserSubResponse, len(source))
-		for i := 0; i < len(source); i++ {
-			apiSubscription, err := ConvertSubscription(source[i])
-			if err != nil {
-				return nil, err
-			}
-			apiGetUserSubResponse[i] = apiSubscription
-		}
-	}
-	return apiGetUserSubResponse, nil
 }
 func modelsUserProfileToApiUserProfile(source models.UserProfile) gen.UserProfile {
 	var apiUserProfile gen.UserProfile

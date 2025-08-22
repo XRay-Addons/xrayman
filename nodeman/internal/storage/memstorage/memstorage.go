@@ -2,7 +2,6 @@ package memstorage
 
 import (
 	"context"
-	"fmt"
 	"sync"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
@@ -41,7 +40,7 @@ func (s *Storage) PoolUoW() pool.UoW {
 
 func (s *Storage) DoService(ctx context.Context, fn service.UoWFn) error {
 	if s == nil {
-		return fmt.Errorf("storage: do service: %w", errdefs.ErrNilObjectCall)
+		return errdefs.NewNilCall()
 	}
 	s.lock.Lock()
 	defer s.lock.Unlock()
@@ -50,7 +49,7 @@ func (s *Storage) DoService(ctx context.Context, fn service.UoWFn) error {
 
 func (s *Storage) DoPoolSync(ctx context.Context, fn pool.UoWFn) error {
 	if s == nil {
-		return fmt.Errorf("storage: do pool sync: %w", errdefs.ErrNilObjectCall)
+		return errdefs.NewNilCall()
 	}
 	s.lock.Lock()
 	defer s.lock.Unlock()

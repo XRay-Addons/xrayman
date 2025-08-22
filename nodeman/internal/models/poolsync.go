@@ -1,8 +1,6 @@
 package models
 
 import (
-	"fmt"
-
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 )
 
@@ -31,5 +29,5 @@ func (r *PoolSyncResult) GetNodeErr(id NodeID) error {
 			return node.Err
 		}
 	}
-	return fmt.Errorf("pool sync result: get node err: node not exists: %w", errdefs.ErrIPE)
+	return errdefs.New("node not found", errdefs.Withf("node id: %v", id))
 }

@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/constants"
@@ -22,12 +21,13 @@ type Handler struct {
 
 var _ api.Handler = (*Handler)(nil)
 
+// TODO: log as option
 func New(s Service, log *zap.Logger) (*Handler, error) {
 	if s == nil {
-		return nil, fmt.Errorf("handler init: service: %w", errdefs.ErrNilArgPassed)
+		return nil, errdefs.NewNilArg("s")
 	}
 	if log == nil {
-		return nil, fmt.Errorf("handler init: logger: %w", errdefs.ErrNilArgPassed)
+		return nil, errdefs.NewNilArg("log")
 	}
 	return &Handler{
 		service: s,
@@ -37,7 +37,7 @@ func New(s Service, log *zap.Logger) (*Handler, error) {
 
 func (h *Handler) NewNode(ctx context.Context, req *api.NewNodeRequest) (*api.NewNodeResponse, error) {
 	if h == nil || h.service == nil {
-		return nil, fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
+		return nil, errdefs.NewNilCall()
 	}
 	p, err := converter.ConvertNewNodeRequest(req)
 	if err != nil {
@@ -53,7 +53,7 @@ func (h *Handler) NewNode(ctx context.Context, req *api.NewNodeRequest) (*api.Ne
 
 func (h *Handler) StartNode(ctx context.Context, req *api.StartNodeRequest) error {
 	if h == nil || h.service == nil {
-		return fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
+		return errdefs.NewNilCall()
 	}
 	p, err := converter.ConvertStartNodeRequest(req)
 	if err != nil {
@@ -69,7 +69,7 @@ func (h *Handler) StartNode(ctx context.Context, req *api.StartNodeRequest) erro
 
 func (h *Handler) StopNode(ctx context.Context, req *api.StopNodeRequest) error {
 	if h == nil || h.service == nil {
-		return fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
+		return errdefs.NewNilCall()
 	}
 	p, err := converter.ConvertStopNodeRequest(req)
 	if err != nil {
@@ -85,7 +85,7 @@ func (h *Handler) StopNode(ctx context.Context, req *api.StopNodeRequest) error 
 
 func (h *Handler) ListNodes(ctx context.Context) (*api.ListNodeResponse, error) {
 	if h == nil || h.service == nil {
-		return nil, fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
+		return nil, errdefs.NewNilCall()
 	}
 	res, err := h.service.ListNodes(ctx, models.ListNodeParams{})
 	if err != nil {
@@ -97,7 +97,7 @@ func (h *Handler) ListNodes(ctx context.Context) (*api.ListNodeResponse, error) 
 
 func (h *Handler) NewUser(ctx context.Context, req *api.NewUserRequest) (*api.NewUserResponse, error) {
 	if h == nil || h.service == nil {
-		return nil, fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
+		return nil, errdefs.NewNilCall()
 	}
 	p, err := converter.ConvertNewUserRequest(req)
 	if err != nil {
@@ -113,7 +113,7 @@ func (h *Handler) NewUser(ctx context.Context, req *api.NewUserRequest) (*api.Ne
 
 func (h *Handler) EnableUser(ctx context.Context, req *api.EnableUserRequest) error {
 	if h == nil || h.service == nil {
-		return fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
+		return errdefs.NewNilCall()
 	}
 	p, err := converter.ConvertEnableUserRequest(req)
 	if err != nil {
@@ -129,7 +129,7 @@ func (h *Handler) EnableUser(ctx context.Context, req *api.EnableUserRequest) er
 
 func (h *Handler) DisableUser(ctx context.Context, req *api.DisableUserRequest) error {
 	if h == nil || h.service == nil {
-		return fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
+		return errdefs.NewNilCall()
 	}
 	p, err := converter.ConvertDisableUserRequest(req)
 	if err != nil {
@@ -145,7 +145,7 @@ func (h *Handler) DisableUser(ctx context.Context, req *api.DisableUserRequest) 
 
 func (h *Handler) ListUsers(ctx context.Context) (*api.ListUsersResponse, error) {
 	if h == nil || h.service == nil {
-		return nil, fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
+		return nil, errdefs.NewNilCall()
 	}
 	res, err := h.service.ListUsers(ctx, models.ListUserParams{})
 	if err != nil {
@@ -157,15 +157,18 @@ func (h *Handler) ListUsers(ctx context.Context) (*api.ListUsersResponse, error)
 
 func (h *Handler) GetUserSub(ctx context.Context, req api.GetUserSubParams) (api.GetUserSubResponse, error) {
 	if h == nil || h.service == nil {
-		return nil, fmt.Errorf("handler impl: %w", errdefs.ErrNilObjectCall)
+		return nil, errdefs.NewNilCall()
 	}
 	p, err := converter.ConvertUserSubRequest(&req)
 	if err != nil {
 		return nil, httperr.ErrInvaildPayload
 	}
-	sub, err := h.service.GetUserSub(ctx, *p)
+	sub, exists, err := h.service.GetUserSub(ctx, *p)
 	if err != nil {
 		return nil, err
+	}
+	if !exists {
+		return nil, httperr.ErrUserNotFound
 	}
 	subResponse, err := converter.ConvertUserSubResult(sub)
 	if err != nil {

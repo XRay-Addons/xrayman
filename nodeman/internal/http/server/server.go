@@ -15,7 +15,7 @@ type HttpServer struct {
 
 func New(endpoint string, handler http.Handler) (*HttpServer, error) {
 	if handler == nil {
-		return nil, fmt.Errorf("http server init: handler: %w", errdefs.ErrNilArgPassed)
+		return nil, errdefs.NewNilArg("handler")
 	}
 
 	return &HttpServer{
@@ -28,7 +28,7 @@ func New(endpoint string, handler http.Handler) (*HttpServer, error) {
 
 func (s *HttpServer) Listen() error {
 	if s == nil {
-		return fmt.Errorf("%w: http server", errdefs.ErrNilObjectCall)
+		return errdefs.NewNilCall()
 	}
 
 	err := s.server.ListenAndServe()

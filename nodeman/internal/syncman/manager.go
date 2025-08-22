@@ -41,7 +41,7 @@ func WithLog(log *zap.Logger) Option {
 
 func New(syncer PoolSyncer, options ...Option) (*Manager, error) {
 	if syncer == nil {
-		return nil, fmt.Errorf("pool monitor: init: %w", errdefs.ErrNilArgPassed)
+		return nil, errdefs.NewNilArg("syncer")
 	}
 	// init default options
 	ctx, cancel := context.WithCancel(context.Background())
@@ -83,7 +83,7 @@ func (m *Manager) Close() error {
 
 func (m *Manager) SyncNodesPool(ctx context.Context) ([]models.NodeSyncResult, error) {
 	if m == nil {
-		return nil, fmt.Errorf("pool monitor: sync: %w", errdefs.ErrNilObjectCall)
+		return nil, errdefs.NewNilCall()
 	}
 	syncResult, err := m.executor.Invoke(ctx)
 	if err != nil {

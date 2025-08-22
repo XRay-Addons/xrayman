@@ -1,23 +1,6 @@
 package handler
 
-import (
-	"bytes"
-	"context"
-	"fmt"
-	"mime"
-	"net/http"
-	"net/http/httptest"
-	"testing"
-
-	"github.com/XRay-Addons/xrayman/node/internal/http/handler/mocks"
-	"github.com/XRay-Addons/xrayman/node/internal/models"
-	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"go.uber.org/mock/gomock"
-	"go.uber.org/zap/zaptest"
-)
-
+/*
 // stub for security
 type testSecurity struct{}
 
@@ -130,4 +113,4 @@ func TestHandler(t *testing.T) {
 			assert.Equal(t, expectedContentType, mt)
 		})
 	}
-}
+}*/

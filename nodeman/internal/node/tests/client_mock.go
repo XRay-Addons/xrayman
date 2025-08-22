@@ -12,13 +12,13 @@ import (
 // implement node emulator for tests
 type ClientMock struct {
 	Status models.NodeStatus
-	Users  map[models.UserID]struct{}
+	Users  map[models.UserProfile]struct{}
 }
 
 func NewClientMock() *ClientMock {
 	return &ClientMock{
 		Status: models.NodeStatusStopped,
-		Users:  make(map[models.UserID]struct{}, 0),
+		Users:  make(map[models.UserProfile]struct{}, 0),
 	}
 }
 
@@ -35,7 +35,7 @@ func (c *ClientMock) Start(ctx context.Context, users []models.UserProfile) (
 		delete(c.Users, u)
 	}
 	for _, u := range users {
-		c.Users[u.ID] = struct{}{}
+		c.Users[u] = struct{}{}
 	}
 	c.Status = models.NodeStatusRunning
 	return &models.ClientConfig{}, nil
@@ -56,10 +56,10 @@ func (c *ClientMock) UpdateUsers(ctx context.Context,
 		return fmt.Errorf("node not running")
 	}
 	for _, u := range upd.Add {
-		c.Users[u.ID] = struct{}{}
+		c.Users[u] = struct{}{}
 	}
 	for _, u := range upd.Remove {
-		delete(c.Users, u.ID)
+		delete(c.Users, u)
 	}
 	return nil
 }

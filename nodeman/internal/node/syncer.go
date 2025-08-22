@@ -40,7 +40,7 @@ type syncer struct {
 //     so it is possible to detect and handle it.
 func (s *syncer) SyncNodeState(ctx context.Context) (err error) {
 	if s == nil || s.uow == nil || s.client == nil {
-		return fmt.Errorf("node: sync state: %w", errdefs.ErrNilObjectCall)
+		return errdefs.NewNilCall()
 	}
 
 	// get current.

@@ -38,7 +38,7 @@ func WithLogger(log *zap.Logger) Option {
 
 func New(h api.Handler, options ...Option) (http.Handler, error) {
 	if h == nil {
-		return nil, fmt.Errorf("router init: handler: %w", errdefs.ErrNilArgPassed)
+		return nil, errdefs.NewNilArg("h")
 	}
 
 	ro := &routerOptions{

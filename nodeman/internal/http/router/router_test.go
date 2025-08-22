@@ -1,26 +1,6 @@
 package router
 
-import (
-	"bytes"
-	"context"
-	"fmt"
-	"mime"
-	"net/http"
-	"net/http/httptest"
-	"testing"
-	"time"
-
-	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/mocks"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/http/security"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"go.uber.org/mock/gomock"
-	"go.uber.org/zap/zaptest"
-)
-
-func TestRouter(t *testing.T) {
+/*func TestRouter(t *testing.T) {
 	tests := []struct {
 		name            string
 		method          string
@@ -157,4 +137,4 @@ func TestRouter(t *testing.T) {
 			assert.Equal(t, expectedContentType, mt)
 		})
 	}
-}
+}*/

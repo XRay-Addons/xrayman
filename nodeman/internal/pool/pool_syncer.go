@@ -20,13 +20,13 @@ var _ syncman.PoolSyncer = (*Syncer)(nil)
 
 func NewSyncer(uow UoW, client Client, syncer NodeSyncer) (*Syncer, error) {
 	if client == nil {
-		return nil, fmt.Errorf("pool syncer init: pool client: %w", errdefs.ErrNilArgPassed)
+		return nil, errdefs.NewNilArg("client")
 	}
 	if uow == nil {
-		return nil, fmt.Errorf("pool syncer init: uow %w", errdefs.ErrNilArgPassed)
+		return nil, errdefs.NewNilArg("uow")
 	}
 	if syncer == nil {
-		return nil, fmt.Errorf("pool syncer init: node syncer %w", errdefs.ErrNilArgPassed)
+		return nil, errdefs.NewNilArg("syncer")
 	}
 
 	return &Syncer{
@@ -36,7 +36,7 @@ func NewSyncer(uow UoW, client Client, syncer NodeSyncer) (*Syncer, error) {
 
 func (s *Syncer) SyncPoolState(ctx context.Context) ([]models.NodeSyncResult, error) {
 	if s == nil {
-		return nil, fmt.Errorf("syncer: sync pool state: %w", errdefs.ErrNilObjectCall)
+		return nil, errdefs.NewNilCall()
 	}
 	return s.fn(ctx)
 }
@@ -45,7 +45,7 @@ func getSyncFn(uow UoW, client Client, syncer NodeSyncer) syncFn {
 	return func(ctx context.Context) ([]models.NodeSyncResult, error) {
 		nodes, err := listSyncingNodes(ctx, uow, client)
 		if err != nil {
-			return nil, fmt.Errorf("sync nodes: %w", err)
+			return nil, err
 		}
 		return syncNodes(ctx, syncer, nodes), nil
 	}
@@ -101,16 +101,12 @@ func syncNodes(ctx context.Context, syncer NodeSyncer, nodes []syncingNode) []mo
 	return nodeSyncResults
 }
 
-func syncNode(ctx context.Context, syncer NodeSyncer, node syncingNode) (res models.NodeSyncResult) {
-	res = models.NodeSyncResult{
+func syncNode(ctx context.Context, syncer NodeSyncer, node syncingNode) models.NodeSyncResult {
+	syncErr := syncer.SyncNodeState(ctx, node.client, node.uow)
+
+	return models.NodeSyncResult{
 		ID:       node.node.ID,
 		Endpoint: node.node.Config.ConnectionInfo.Endpoint,
+		Err:      syncErr,
 	}
-
-	if err := syncer.SyncNodeState(ctx, node.client, node.uow); err != nil {
-		res.Err = fmt.Errorf("pool sync node: %w", err)
-		return
-	}
-
-	return
 }
