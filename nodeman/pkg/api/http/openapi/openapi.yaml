@@ -220,7 +220,6 @@ components:
   schemas:
     NodeID:
       type: integer
-      format: int32
 
     NodeStatus:
       type: string
@@ -344,7 +343,6 @@ components:
 
     UserID:
       type: integer
-      format: int32
 
     UserStatus:
       type: string

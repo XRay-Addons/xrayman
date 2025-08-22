@@ -15,7 +15,7 @@ type AccessKey struct {
 }
 
 func (k *AccessKey) MarshalText() ([]byte, error) {
-	data := append(k.CertHash[:], k.AccessSecret[:]...)
+	data := k.getKeyData()
 	encoded := make([]byte, base64.StdEncoding.EncodedLen(len(data)))
 	base64.StdEncoding.Encode(encoded, data)
 	return encoded, nil
@@ -36,6 +36,12 @@ func (k *AccessKey) UnmarshalText(text []byte) error {
 }
 
 func (k AccessKey) String() string {
-	data := append(k.CertHash[:], k.AccessSecret[:]...)
-	return base64.StdEncoding.EncodeToString(data)
+	return base64.StdEncoding.EncodeToString(k.getKeyData())
+}
+
+func (k AccessKey) getKeyData() []byte {
+	data := make([]byte, len(k.CertHash)+len(k.AccessSecret))
+	copy(data[:len(k.CertHash)], k.CertHash[:])
+	copy(data[len(k.CertHash):], k.AccessSecret[:])
+	return data
 }

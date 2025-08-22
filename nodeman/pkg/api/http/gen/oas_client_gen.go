@@ -337,8 +337,8 @@ func (c *Client) sendGetUserSub(ctx context.Context, params GetUserSubParams) (r
 			Explode: false,
 		})
 		if err := func() error {
-			if unwrapped := int32(params.ID); true {
-				return e.EncodeValue(conv.Int32ToString(unwrapped))
+			if unwrapped := int(params.ID); true {
+				return e.EncodeValue(conv.IntToString(unwrapped))
 			}
 			return nil
 		}(); err != nil {

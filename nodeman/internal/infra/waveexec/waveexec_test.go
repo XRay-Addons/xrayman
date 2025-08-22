@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -29,12 +30,12 @@ func TestWaveExec(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			_, err := waveExec.Invoke(context.Background())
-			require.NoError(t, err)
+			assert.NoError(t, err)
 		}()
 	}
 
 	wg.Wait()
-	require.Greater(t, fnCallsCount, 0)
+	require.Positive(t, fnCallsCount)
 	require.LessOrEqual(t, fnCallsCount, 2)
 }
 
@@ -59,20 +60,20 @@ func TestWaveExec_Cancels(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
 			defer cancel()
 			_, err := waveExec.Invoke(ctx)
-			require.Error(t, err)
+			assert.Error(t, err)
 		}()
 		go func() {
 			defer wg.Done()
 			ctx, cancel := context.WithTimeout(context.Background(), 2500*time.Millisecond)
 			defer cancel()
 			_, err := waveExec.Invoke(ctx)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 		}()
 	}
 
 	wg.Wait()
-	require.Greater(t, fnCallsCount, 0)
-	require.LessOrEqual(t, fnCallsCount, 2)
+	require.Positive(t, fnCallsCount)
+	require.LessOrEqual(t, 2, fnCallsCount)
 }
 
 func TestWaveExec_EarlyClose(t *testing.T) {
@@ -95,14 +96,14 @@ func TestWaveExec_EarlyClose(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
 			defer cancel()
 			_, err := waveExec.Invoke(ctx)
-			require.Error(t, err)
+			assert.Error(t, err)
 		}()
 	}
 
 	wg.Wait()
 	waveExec.Close()
 
-	require.Greater(t, fnCallsCount, 0)
+	require.Positive(t, fnCallsCount)
 	require.LessOrEqual(t, fnCallsCount, 2)
 }
 
@@ -129,12 +130,12 @@ func TestWaveExec_Cancel(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
 			defer cancel()
 			_, err := waveExec.Invoke(ctx)
-			require.Error(t, err)
+			assert.Error(t, err)
 		}()
 	}
 
 	wg.Wait()
 	waveExec.Close()
 
-	require.Equal(t, fnCallsCount, 0)
+	require.Equal(t, 0, fnCallsCount)
 }

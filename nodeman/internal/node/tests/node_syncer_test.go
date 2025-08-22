@@ -2,7 +2,6 @@ package tests
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
@@ -39,7 +38,7 @@ func TestNodeSyncer(t *testing.T) {
 
 		for i, u := range storage.Users {
 			require.Equal(t, u.TargetStatus, storage.CurrentUserStatus[i],
-				fmt.Sprintf("user %s check", u.Profile.Name))
+				"user %s check", u.Profile.Name)
 		}
 	}
 }
@@ -83,7 +82,7 @@ func TestNodeSyncer_UnstableStorage(t *testing.T) {
 
 		for i, u := range baseStorage.Users {
 			require.Equal(t, u.TargetStatus, baseStorage.CurrentUserStatus[i],
-				fmt.Sprintf("user %s check", u.Profile.Name))
+				"user %s check", u.Profile.Name)
 		}
 	}
 }
@@ -130,7 +129,7 @@ func TestNodeSyncer_UnstableStorage_UnstableNode(t *testing.T) {
 
 		for i, u := range baseStorage.Users {
 			require.Equal(t, u.TargetStatus, baseStorage.CurrentUserStatus[i],
-				fmt.Sprintf("user %s check", u.Profile.Name))
+				"user %s check", u.Profile.Name)
 		}
 	}
 }

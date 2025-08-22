@@ -48,16 +48,17 @@ func NewStorageMock(nUsers int) *StorageMock {
 
 // random external operation to turn node on or off, enable or disable user
 func (s *StorageMock) RandomExternalOperation() {
-	if s.rand.IntN(3) == 0 {
+	switch {
+	case s.rand.IntN(3) == 0:
 		// switch node state
 		s.TargetStatus = (models.NodeStatusRunning + models.NodeStatusStopped) - s.TargetStatus
-	} else if s.rand.IntN(2) == 0 {
+	case s.rand.IntN(2) == 0:
 		// switch user state
 		userIdx := s.rand.IntN(len(s.Users))
 		u := s.Users[userIdx]
 		u.TargetStatus = (models.UserStatusEnabled + models.UserStatusDisabled) - u.TargetStatus
 		s.Users[userIdx] = u
-	} else {
+	default:
 		// add new user
 		s.Users = append(s.Users, models.User{
 			ID:           models.UserID(len(s.Users)),

@@ -1604,9 +1604,9 @@ func (s *NodeConnectionInfo) UnmarshalJSON(data []byte) error {
 
 // Encode encodes NodeID as json.
 func (s NodeID) Encode(e *jx.Encoder) {
-	unwrapped := int32(s)
+	unwrapped := int(s)
 
-	e.Int32(unwrapped)
+	e.Int(unwrapped)
 }
 
 // Decode decodes NodeID from json.
@@ -1614,10 +1614,10 @@ func (s *NodeID) Decode(d *jx.Decoder) error {
 	if s == nil {
 		return errors.New("invalid: unable to decode NodeID to nil")
 	}
-	var unwrapped int32
+	var unwrapped int
 	if err := func() error {
-		v, err := d.Int32()
-		unwrapped = int32(v)
+		v, err := d.Int()
+		unwrapped = int(v)
 		if err != nil {
 			return err
 		}
@@ -2195,9 +2195,9 @@ func (s *User) UnmarshalJSON(data []byte) error {
 
 // Encode encodes UserID as json.
 func (s UserID) Encode(e *jx.Encoder) {
-	unwrapped := int32(s)
+	unwrapped := int(s)
 
-	e.Int32(unwrapped)
+	e.Int(unwrapped)
 }
 
 // Decode decodes UserID from json.
@@ -2205,10 +2205,10 @@ func (s *UserID) Decode(d *jx.Decoder) error {
 	if s == nil {
 		return errors.New("invalid: unable to decode UserID to nil")
 	}
-	var unwrapped int32
+	var unwrapped int
 	if err := func() error {
-		v, err := d.Int32()
-		unwrapped = int32(v)
+		v, err := d.Int()
+		unwrapped = int(v)
 		if err != nil {
 			return err
 		}

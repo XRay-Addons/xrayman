@@ -53,10 +53,10 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 				httpClient = httpclient.NewClientFactory()
 				return
 			}, nil,
-			//func(ctx context.Context) error {
+			// func(ctx context.Context) error {
 			//	httpClient.CloseIdleConnections()
 			//	return nil
-			//},
+			// },
 		),
 		// pool client
 		a.WithComponent("pool client",

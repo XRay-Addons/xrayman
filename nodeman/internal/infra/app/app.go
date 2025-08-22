@@ -175,8 +175,6 @@ func (app *App) init() error {
 		tx.WithRollbackTimeout(app.cancelTimeout),
 	)
 	for _, c := range app.components {
-		// love it again
-		c := c
 		initTx.AddItem(
 			func(context.Context) error { return c.init() },
 			func(ctx context.Context) error { return c.close(ctx) },
@@ -210,7 +208,6 @@ func (app *App) close() error {
 }
 
 func (app *App) run() error {
-
 	var g run.Group
 	for _, runner := range app.runners {
 		g.Add(runner.run, runner.close)

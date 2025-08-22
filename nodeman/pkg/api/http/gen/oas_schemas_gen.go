@@ -375,7 +375,7 @@ func (s *NodeConnectionInfo) SetAccessKey(val string) {
 	s.AccessKey = val
 }
 
-type NodeID int32
+type NodeID int
 
 // Ref: #/components/schemas/NodeStatus
 type NodeStatus string
@@ -575,7 +575,7 @@ func (s *User) SetTargetStatus(val UserStatus) {
 	s.TargetStatus = val
 }
 
-type UserID int32
+type UserID int
 
 // Ref: #/components/schemas/UserProfile
 type UserProfile struct {
