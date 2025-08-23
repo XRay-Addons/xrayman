@@ -7,7 +7,7 @@
     "registry": "https://npm.pkg.github.com/"
   },
   "scripts": {
-    "generate": "openapi -i ../pkg/api/http/openapi.yaml -o src --client fetch",
+    "generate": "openapi -i ../pkg/api/http/openapi/openapi.yaml -o src --client fetch",
     "build": "tsc -p tsconfig.json"
   },
   "devDependencies": {
