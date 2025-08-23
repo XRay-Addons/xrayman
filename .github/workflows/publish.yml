@@ -29,6 +29,7 @@ jobs:
 
       - name: Use tag as version
         run: |
+          cd nodeman/api-client
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "Setting package version to $VERSION"
           npm version $VERSION --no-git-tag-version
