@@ -19,6 +19,9 @@ jobs:
           node-version: 20
           registry-url: 'https://npm.pkg.github.com/'
 
+      - name: Authenticate to GitHub Packages
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.STPKPAT }}" > ~/.npmrc
+
       - name: Install dependencies
         run: |
           cd nodeman/api-client
