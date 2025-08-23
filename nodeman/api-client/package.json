@@ -1,0 +1,17 @@
+{
+  "name": "@xrayman/api-client",
+  "version": "0.0.1",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
+  "scripts": {
+    "generate": "openapi -i ../pkg/api/http/openapi.yaml -o src --client fetch",
+    "build": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "openapi-typescript-codegen": "^0.27.0",
+    "typescript": "^5.3.3"
+  }
+}
