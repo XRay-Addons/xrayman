@@ -27,6 +27,12 @@ jobs:
       - name: Authenticate to GitHub Packages
         run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.STPKPAT }}" > ~/.npmrc
 
+      - name: Use tag as version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "Setting package version to $VERSION"
+          npm version $VERSION --no-git-tag-version
+
       - name: Install dependencies
         run: |
           cd nodeman/api-client
