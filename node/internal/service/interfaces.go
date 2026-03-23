@@ -10,8 +10,8 @@ type ServerCfg interface {
 	GetUsersCfg(users []models.User) (string, error)
 }
 
-type ClientCfg interface {
-	Get() (*models.ClientCfg, error)
+type ClientConfig interface {
+	GetTemplate() (*models.ClientConfigTemplate, error)
 }
 
 type XRayService interface {

@@ -25,7 +25,7 @@ import (
 // Notes:
 // - Context passed to Invoke uses only as canceller
 
-type Fn[T any] = func(ctx context.Context) (T, error)
+type Fn[T any] = func(ctx context.Context) (*T, error)
 
 type WaveExecutor[T any] struct {
 	fn       execFn[T]
@@ -38,7 +38,7 @@ type WaveExecutor[T any] struct {
 type execFn[T any] = func(context.Context) execResult[T]
 
 type execResult[T any] struct {
-	result T
+	result *T
 	err    error
 }
 
@@ -47,7 +47,7 @@ type execWaveItem[T any] struct {
 	result chan execResult[T]
 }
 
-func NewWaveExecutor[T any](fn Fn[T]) *WaveExecutor[T] {
+func New[T any](fn Fn[T]) *WaveExecutor[T] {
 	we := &WaveExecutor[T]{
 		fn: func(ctx context.Context) execResult[T] {
 			res, err := fn(ctx)
@@ -87,7 +87,7 @@ func (we *WaveExecutor[T]) Invoke(ctx context.Context) (*T, error) {
 
 	select {
 	case res := <-waveItem.result:
-		return &res.result, res.err
+		return res.result, res.err
 	case <-ctx.Done():
 		return nil, errdefs.WrapWithStack(ctx.Err())
 	}

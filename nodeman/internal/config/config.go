@@ -1,8 +1,8 @@
 package config
 
 type Config struct {
-	Endpoint string `env:"ENDPOINT"`
-
+	Endpoint   string `env:"ENDPOINT"`
+	DBConn     string `env:"DBCONN`
 	certsDir   string `env:"CERTS_DIR"`
 	nodemanCrt string
 	nodemanKey string

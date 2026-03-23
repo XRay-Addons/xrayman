@@ -1,4 +1,4 @@
-package pool
+package poolsyncer
 
 import (
 	"context"
@@ -7,21 +7,27 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
+type UsersStorage interface {
+	ListUsers(ctx context.Context) ([]models.User, error)
+}
+
 type StatesStorage interface {
 	ListNodes(ctx context.Context) (
 		[]models.Node, error)
-	UpdateClientConfig(ctx context.Context, id models.NodeID,
-		cfg models.ClientConfig) error
-	FetchNodeStatus(ctx context.Context, id models.NodeID) (
-		target, current models.NodeStatus, err error)
-	UpdateCurrentStatus(ctx context.Context, id models.NodeID,
+	GetNode(ctx context.Context, id models.NodeID) (
+		*models.Node, bool, error)
+	SetClientConfig(ctx context.Context, id models.NodeID,
+		cfg models.ClientConfigTemplate) error
+	SetCurrentNodeStatus(ctx context.Context, id models.NodeID,
 		s models.NodeStatus) error
 }
 
 type SyncsStorage interface {
 	FindPendingSyncs(ctx context.Context, id models.NodeID) (
 		[]models.UserSyncStatus, error)
-	PatchPendingSyncs(ctx context.Context, id models.NodeID,
+	UpdateNodeUsers(ctx context.Context, id models.NodeID,
+		patch []models.UserStatusPatch) error
+	SetNodeUsers(ctx context.Context, id models.NodeID,
 		patch []models.UserStatusPatch) error
 }
 
@@ -32,5 +38,4 @@ type UoWContext interface {
 }
 
 type UoWFn = uow.Fn[UoWContext]
-
-type UoW = uow.UoW[UoWContext]
+type Storage = uow.Storage[UoWContext]

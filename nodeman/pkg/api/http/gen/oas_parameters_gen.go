@@ -15,15 +15,15 @@ import (
 	"github.com/ogen-go/ogen/validate"
 )
 
-// GetUserSubParams is parameters of GetUserSub operation.
-type GetUserSubParams struct {
+// GetUserParams is parameters of GetUser operation.
+type GetUserParams struct {
 	// User ID.
 	ID UserID
 	// User name.
 	Name string
 }
 
-func unpackGetUserSubParams(packed middleware.Parameters) (params GetUserSubParams) {
+func unpackGetUserParams(packed middleware.Parameters) (params GetUserParams) {
 	{
 		key := middleware.ParameterKey{
 			Name: "ID",
@@ -41,7 +41,134 @@ func unpackGetUserSubParams(packed middleware.Parameters) (params GetUserSubPara
 	return params
 }
 
-func decodeGetUserSubParams(args [2]string, argsEscaped bool, r *http.Request) (params GetUserSubParams, _ error) {
+func decodeGetUserParams(args [2]string, argsEscaped bool, r *http.Request) (params GetUserParams, _ error) {
+	// Decode path: ID.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "ID",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				var paramsDotIDVal int
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToInt(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotIDVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.ID = UserID(paramsDotIDVal)
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "ID",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: Name.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "Name",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.Name = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "Name",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// UserSubParams is parameters of UserSub operation.
+type UserSubParams struct {
+	// User ID.
+	ID UserID
+	// User name.
+	Name string
+}
+
+func unpackUserSubParams(packed middleware.Parameters) (params UserSubParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "ID",
+			In:   "path",
+		}
+		params.ID = packed[key].(UserID)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "Name",
+			In:   "path",
+		}
+		params.Name = packed[key].(string)
+	}
+	return params
+}
+
+func decodeUserSubParams(args [2]string, argsEscaped bool, r *http.Request) (params UserSubParams, _ error) {
 	// Decode path: ID.
 	if err := func() error {
 		param := args[0]

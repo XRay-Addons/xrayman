@@ -4,9 +4,9 @@
 package converter
 
 import (
-	"encoding/json"
 	models "github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	gen "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
+	jx "github.com/go-faster/jx"
 )
 
 func ConvertDisableUserRequest(source *gen.DisableUserRequest) (*models.DisableUserParams, error) {
@@ -26,6 +26,16 @@ func ConvertEnableUserRequest(source *gen.EnableUserRequest) (*models.EnableUser
 		pModelsEnableUserParams = &modelsEnableUserParams
 	}
 	return pModelsEnableUserParams, nil
+}
+func ConvertGetUserRequest(source *gen.GetUserParams) (*models.GetUserParams, error) {
+	var pModelsGetUserParams *models.GetUserParams
+	if source != nil {
+		var modelsGetUserParams models.GetUserParams
+		modelsGetUserParams.ID = RConvertUserID((*source).ID)
+		modelsGetUserParams.Name = (*source).Name
+		pModelsGetUserParams = &modelsGetUserParams
+	}
+	return pModelsGetUserParams, nil
 }
 func ConvertListNodesResult(source *models.ListNodeResult) *gen.ListNodeResponse {
 	var pApiListNodeResponse *gen.ListNodeResponse
@@ -83,21 +93,10 @@ func ConvertNewUserRequest(source *gen.NewUserRequest) (*models.NewUserParams, e
 	var pModelsNewUserParams *models.NewUserParams
 	if source != nil {
 		var modelsNewUserParams models.NewUserParams
-		modelsNewUserParams.VisibleName = (*source).VisibleName
+		modelsNewUserParams.DisplayName = (*source).DisplayName
 		pModelsNewUserParams = &modelsNewUserParams
 	}
 	return pModelsNewUserParams, nil
-}
-func ConvertNewUserResult(source *models.NewUserResult) *gen.NewUserResponse {
-	var pApiNewUserResponse *gen.NewUserResponse
-	if source != nil {
-		var apiNewUserResponse gen.NewUserResponse
-		apiNewUserResponse.ID = ConvertUserID((*source).ID)
-		apiNewUserResponse.VisibleName = (*source).VisibleName
-		apiNewUserResponse.UserPageURL = (*source).UserPageURL
-		pApiNewUserResponse = &apiNewUserResponse
-	}
-	return pApiNewUserResponse
 }
 func ConvertStartNodeRequest(source *gen.StartNodeRequest) (*models.StartNodeParams, error) {
 	var pModelsStartNodeParams *models.StartNodeParams
@@ -117,51 +116,79 @@ func ConvertStopNodeRequest(source *gen.StopNodeRequest) (*models.StopNodeParams
 	}
 	return pModelsStopNodeParams, nil
 }
-func ConvertUserSubRequest(source *gen.GetUserSubParams) (*models.GetUserSubParams, error) {
-	var pModelsGetUserSubParams *models.GetUserSubParams
+func ConvertUser(source *models.User) *gen.User {
+	var pApiUser *gen.User
 	if source != nil {
-		var modelsGetUserSubParams models.GetUserSubParams
-		modelsGetUserSubParams.ID = RConvertUserID((*source).ID)
-		modelsGetUserSubParams.Name = (*source).Name
-		pModelsGetUserSubParams = &modelsGetUserSubParams
+		apiUser := modelsUserToApiUser((*source))
+		pApiUser = &apiUser
 	}
-	return pModelsGetUserSubParams, nil
+	return pApiUser
 }
-func ConvertUserSubResult(source *[]json.RawMessage) (*gen.GetUserSubResponse, error) {
-	var pApiGetUserSubResponse *gen.GetUserSubResponse
+func ConvertUserSubRequest(source *gen.UserSubParams) (*models.UserSubParams, error) {
+	var pModelsUserSubParams *models.UserSubParams
 	if source != nil {
-		apiGetUserSubResponse, err := jsonRawMessageListToApiGetUserSubResponse((*source))
-		if err != nil {
-			return nil, err
-		}
-		pApiGetUserSubResponse = &apiGetUserSubResponse
+		var modelsUserSubParams models.UserSubParams
+		modelsUserSubParams.ID = RConvertUserID((*source).ID)
+		modelsUserSubParams.Name = (*source).Name
+		pModelsUserSubParams = &modelsUserSubParams
 	}
-	return pApiGetUserSubResponse, nil
+	return pModelsUserSubParams, nil
 }
-func jsonRawMessageListToApiGetUserSubResponse(source []json.RawMessage) (gen.GetUserSubResponse, error) {
-	var apiGetUserSubResponse gen.GetUserSubResponse
+func ConvertUserSubResult(source *models.UserSubResult) (*gen.UserSubResponseHeaders, error) {
+	var pApiUserSubResponseHeaders *gen.UserSubResponseHeaders
 	if source != nil {
-		apiGetUserSubResponse = make(gen.GetUserSubResponse, len(source))
+		var apiUserSubResponseHeaders gen.UserSubResponseHeaders
+		apiUserSubResponseHeaders.Expiration = (*source).Expiration
+		apiUserSubResponseHeaders.Response = jxRawListToApiUserSubResponse((*source).ClientConfigs)
+		pApiUserSubResponseHeaders = &apiUserSubResponseHeaders
+	}
+	return pApiUserSubResponseHeaders, nil
+}
+func jxRawListToApiUserSubResponse(source []jx.Raw) gen.UserSubResponse {
+	var apiUserSubResponse gen.UserSubResponse
+	if source != nil {
+		apiUserSubResponse = make(gen.UserSubResponse, len(source))
 		for i := 0; i < len(source); i++ {
-			apiSubscription, err := ConvertSubscription(source[i])
-			if err != nil {
-				return nil, err
-			}
-			apiGetUserSubResponse[i] = apiSubscription
+			apiUserSubResponse[i] = jxRawToApiClientConfigItem(source[i])
 		}
 	}
-	return apiGetUserSubResponse, nil
+	return apiUserSubResponse
 }
-func modelsClientConfigToApiClientConfig(source models.ClientConfig) gen.ClientConfig {
-	var apiClientConfig gen.ClientConfig
-	apiClientConfig.Template = source.Template
-	apiClientConfig.VlessEmailField = source.VlessEmailField
-	apiClientConfig.VlessUUIDField = source.VlessUUIDField
-	return apiClientConfig
+func jxRawToApiClientConfigItem(source jx.Raw) gen.ClientConfigItem {
+	var apiClientConfigItem gen.ClientConfigItem
+	if source != nil {
+		apiClientConfigItem = make(gen.ClientConfigItem, len(source))
+		for i := 0; i < len(source); i++ {
+			apiClientConfigItem[i] = source[i]
+		}
+	}
+	return apiClientConfigItem
+}
+func jxRawToApiClientConfigTemplateItem(source jx.Raw) gen.ClientConfigTemplateItem {
+	var apiClientConfigTemplateItem gen.ClientConfigTemplateItem
+	if source != nil {
+		apiClientConfigTemplateItem = make(gen.ClientConfigTemplateItem, len(source))
+		for i := 0; i < len(source); i++ {
+			apiClientConfigTemplateItem[i] = source[i]
+		}
+	}
+	return apiClientConfigTemplateItem
+}
+func modelsClientConfigTemplateToApiClientConfigTemplate(source models.ClientConfigTemplate) gen.ClientConfigTemplate {
+	var apiClientConfigTemplate gen.ClientConfigTemplate
+	if source.Template != nil {
+		apiClientConfigTemplate.Template = make([]gen.ClientConfigTemplateItem, len(source.Template))
+		for i := 0; i < len(source.Template); i++ {
+			apiClientConfigTemplate.Template[i] = jxRawToApiClientConfigTemplateItem(source.Template[i])
+		}
+	}
+	apiClientConfigTemplate.VlessEmailField = source.VlessEmailField
+	apiClientConfigTemplate.VlessUUIDField = source.VlessUUIDField
+	return apiClientConfigTemplate
 }
 func modelsNodeConfigToApiNodeConfig(source models.NodeConfig) gen.NodeConfig {
 	var apiNodeConfig gen.NodeConfig
-	apiNodeConfig.ClientConfig = modelsClientConfigToApiClientConfig(source.ClientConfig)
+	apiNodeConfig.ClientConfigTemplate = modelsClientConfigTemplateToApiClientConfigTemplate(source.ClientConfigTemplate)
 	apiNodeConfig.ConnectionInfo = modelsNodeConnectionInfoToApiNodeConnectionInfo(source.ConnectionInfo)
 	return apiNodeConfig
 }
@@ -183,7 +210,7 @@ func modelsUserProfileToApiUserProfile(source models.UserProfile) gen.UserProfil
 	var apiUserProfile gen.UserProfile
 	apiUserProfile.ID = ConvertUserID(source.ID)
 	apiUserProfile.Name = source.Name
-	apiUserProfile.VisibleName = source.VisibleName
+	apiUserProfile.DisplayName = source.DisplayName
 	apiUserProfile.VlessUUID = source.VlessUUID
 	return apiUserProfile
 }

@@ -6,8 +6,9 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/pool"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/poolsyncer"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/subscrman"
 )
 
 type Storage struct {
@@ -18,11 +19,15 @@ type Storage struct {
 	syncStatus [][]models.UserStatus
 }
 
-type serviceUoW struct {
+type serviceStorage struct {
 	storage *Storage
 }
 
-type poolsyncUoW struct {
+type poolsyncStorage struct {
+	storage *Storage
+}
+
+type subscrmanStorage struct {
 	storage *Storage
 }
 
@@ -30,43 +35,63 @@ func New() *Storage {
 	return &Storage{}
 }
 
-func (s *Storage) ServiceUoW() service.UoW {
-	return &serviceUoW{storage: s}
+func (s *Storage) ServiceStorage() service.Storage {
+	return &serviceStorage{storage: s}
 }
 
-func (s *Storage) PoolUoW() pool.UoW {
-	return &poolsyncUoW{storage: s}
+func (s *Storage) PoolSyncStorage() poolsyncer.Storage {
+	return &poolsyncStorage{storage: s}
 }
 
-func (s *Storage) DoService(ctx context.Context, fn service.UoWFn) error {
+func (s *Storage) SubscrmanStorage() subscrman.Storage {
+	return &subscrmanStorage{storage: s}
+}
+
+func (s *Storage) doService(ctx context.Context, fn service.UoWFn) error {
+	return s.doLocked(ctx, func() error {
+		return fn(s)
+	})
+}
+
+func (s *Storage) doPoolSync(ctx context.Context, fn poolsyncer.UoWFn) error {
+	return s.doLocked(ctx, func() error {
+		return fn(s)
+	})
+}
+
+func (s *Storage) doSubscrman(ctx context.Context, fn subscrman.UoWFn) error {
+	return s.doLocked(ctx, func() error {
+		return fn(s)
+	})
+}
+
+func (s *Storage) doLocked(ctx context.Context, fn func() error) error {
 	if s == nil {
 		return errdefs.NewNilCall()
 	}
 	s.lock.Lock()
 	defer s.lock.Unlock()
-	return fn(s)
-}
-
-func (s *Storage) DoPoolSync(ctx context.Context, fn pool.UoWFn) error {
-	if s == nil {
-		return errdefs.NewNilCall()
-	}
-	s.lock.Lock()
-	defer s.lock.Unlock()
-	return fn(s)
+	return fn()
 }
 
 var _ service.UoWContext = (*Storage)(nil)
-var _ pool.UoWContext = (*Storage)(nil)
-var _ service.UoW = (*serviceUoW)(nil)
-var _ pool.UoW = (*poolsyncUoW)(nil)
+var _ poolsyncer.UoWContext = (*Storage)(nil)
+var _ subscrman.UoWContext = (*Storage)(nil)
 
-func (s *serviceUoW) Do(ctx context.Context, fn service.UoWFn) error {
-	return s.storage.DoService(ctx, fn)
+var _ service.Storage = (*serviceStorage)(nil)
+var _ poolsyncer.Storage = (*poolsyncStorage)(nil)
+var _ subscrman.Storage = (*subscrmanStorage)(nil)
+
+func (s *serviceStorage) DoUoW(ctx context.Context, fn service.UoWFn) error {
+	return s.storage.doService(ctx, fn)
 }
 
-func (s *poolsyncUoW) Do(ctx context.Context, fn pool.UoWFn) error {
-	return s.storage.DoPoolSync(ctx, fn)
+func (s *poolsyncStorage) DoUoW(ctx context.Context, fn poolsyncer.UoWFn) error {
+	return s.storage.doPoolSync(ctx, fn)
+}
+
+func (s *subscrmanStorage) DoUoW(ctx context.Context, fn subscrman.UoWFn) error {
+	return s.storage.doSubscrman(ctx, fn)
 }
 
 // NodeStatesStorage impl
@@ -76,21 +101,19 @@ func (s *Storage) ListNodes(ctx context.Context) ([]models.Node, error) {
 	return nodes, nil
 }
 
-func (s *Storage) UpdateClientConfig(ctx context.Context,
-	id models.NodeID, cfg models.ClientConfig,
+// GetNode implements poolsyncer.UoWContext.
+func (s *Storage) GetNode(ctx context.Context, id models.NodeID) (*models.Node, bool, error) {
+	return &s.nodes[id], true, nil
+}
+
+func (s *Storage) SetClientConfig(ctx context.Context,
+	id models.NodeID, cfg models.ClientConfigTemplate,
 ) error {
-	s.nodes[id].Config.ClientConfig = cfg
+	s.nodes[id].Config.ClientConfigTemplate = cfg
 	return nil
 }
 
-func (s *Storage) FetchNodeStatus(ctx context.Context, id models.NodeID) (
-	target models.NodeStatus, current models.NodeStatus, err error,
-) {
-	node := s.nodes[id]
-	return node.TargetStatus, node.CurrentStatus, nil
-}
-
-func (s *Storage) UpdateCurrentStatus(ctx context.Context,
+func (s *Storage) SetCurrentNodeStatus(ctx context.Context,
 	id models.NodeID, status models.NodeStatus,
 ) error {
 	s.nodes[id].CurrentStatus = status
@@ -114,9 +137,21 @@ func (s *Storage) FindPendingSyncs(ctx context.Context, id models.NodeID) (
 	return syncStatus, nil
 }
 
-func (s *Storage) PatchPendingSyncs(ctx context.Context,
+func (s *Storage) UpdateNodeUsers(ctx context.Context,
 	id models.NodeID, patch []models.UserStatusPatch,
 ) error {
+	for _, p := range patch {
+		s.syncStatus[id][p.UserID] = p.Status
+	}
+	return nil
+}
+
+func (s *Storage) SetNodeUsers(ctx context.Context,
+	id models.NodeID, patch []models.UserStatusPatch,
+) error {
+	for userID := range s.syncStatus[id] {
+		s.syncStatus[id][userID] = models.UserStatusDisabled
+	}
 	for _, p := range patch {
 		s.syncStatus[id][p.UserID] = p.Status
 	}
@@ -162,8 +197,8 @@ func (s *Storage) ListUsers(ctx context.Context) ([]models.User, error) {
 	return users, nil
 }
 
-func (s *Storage) GetUser(ctx context.Context, id models.UserID) (*models.User, error) {
-	return &s.users[id], nil
+func (s *Storage) GetUser(ctx context.Context, id models.UserID) (*models.User, bool, error) {
+	return &s.users[id], true, nil
 }
 
 func (s *Storage) GetUserNodes(ctx context.Context, id models.UserID) ([]models.Node, error) {

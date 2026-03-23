@@ -7,17 +7,16 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/clients/node/converter"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/pool"
 )
 
 type NodeClient struct {
 	client *api.Client
 }
 
-var _ pool.NodeClient = (*NodeClient)(nil)
+//var _ poolsync.NodeClient = (*NodeClient)(nil)
 
 func (c *NodeClient) Start(ctx context.Context, users []models.UserProfile) (
-	*models.ClientConfig, error,
+	*models.ClientConfigTemplate, error,
 ) {
 	if c == nil || c.client == nil {
 		return nil, errdefs.NewNilCall()
@@ -29,7 +28,7 @@ func (c *NodeClient) Start(ctx context.Context, users []models.UserProfile) (
 		return nil, errdefs.WrapWithStack(err)
 	}
 
-	clientTemplate := converter.ConvertClientCfg(startResponse.GetClientCfg())
+	clientTemplate := converter.ConvertClientConfig(startResponse.GetClientConfigTemplate())
 	return &clientTemplate, nil
 }
 

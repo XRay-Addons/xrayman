@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const testValidClientCfg = `{
+const testValidClientConfig = `[{
   "outbounds": [
     {
       "protocol": "vless",
@@ -17,7 +17,7 @@ const testValidClientCfg = `{
           {
             "users": [
               {
-                "email": "{{ .Name }}",
+                "email": "{{ .VlessEmail }}",
                 "encryption": "none",
                 "flow": "xtls-rprx-vision",
                 "id": "{{ .VlessUUID }}"
@@ -34,7 +34,7 @@ const testValidClientCfg = `{
           {
             "users": [
               {
-                "email": "{{ .Name }}",
+                "email": "{{ .VlessEmail }}",
                 "encryption": "none",
                 "flow": "xtls-rprx-vision",
                 "id": "{{ .VlessUUID }}"
@@ -45,9 +45,9 @@ const testValidClientCfg = `{
       }
     }
   ]
-}`
+}]`
 
-const testInvalidClientCfg = `{
+const testInvalidClientConfig = `[{
   "outbounds": [
     {
       "protocol": "vless",
@@ -56,13 +56,13 @@ const testInvalidClientCfg = `{
           {
             "users": [
               {
-                "email": "{{ .Name }}",
+                "email": "{{ .VlessEmail }}",
                 "encryption": "none",
                 "flow": "xtls-rprx-vision",
                 "id": "{{ .VlessUUIDA }}"
               },
               {
-                "email": "{{ .Name }}",
+                "email": "{{ .VlessEmail }}",
                 "encryption": "none",
                 "flow": "xtls-rprx-vision",
                 "id": "{{ .VlessUUIDA }}"
@@ -72,13 +72,13 @@ const testInvalidClientCfg = `{
           {
             "users": [
               {
-                "email": "{{ .Name }}",
+                "email": "{{ .VlessEmail }}",
                 "encryption": "none",
                 "flow": "xtls-rprx-vision",
                 "id": "{{ .VlessUUIDA }}"
               },
               {
-                "email": "{{ .Name }}",
+                "email": "{{ .VlessEmail }}",
                 "encryption": "none",
                 "flow": "xtls-rprx-vision",
                 "id": "{{ .VlessUUIDA }}"
@@ -95,7 +95,7 @@ const testInvalidClientCfg = `{
           {
             "users": [
               {
-                "email": "{{ .Name }}",
+                "email": "{{ .VlessEmail }}",
                 "encryption": "none",
                 "flow": "xtls-rprx-vision",
                 "id": "{{ .VlessUUIDB }}"
@@ -106,50 +106,50 @@ const testInvalidClientCfg = `{
       }
     }
   ]
-}`
+}]`
 
-const testNameField = "Name"
+const testVlessEmailField = "VlessEmail"
 const testVlessUUIDField = "VlessUUID"
 
-func TestValidClientCfg(t *testing.T) {
+func TestValidClientConfig(t *testing.T) {
 	// test fields extraction
-	uuidField, err := extractVlessUUIDField(testValidClientCfg)
+	uuidField, err := extractVlessUUIDField(testValidClientConfig)
 	require.NoError(t, err)
 	require.Equal(t, testVlessUUIDField, uuidField)
 
-	emailField, err := extractVlessEmailField(testValidClientCfg)
+	emailField, err := extractVlessEmailField(testValidClientConfig)
 	require.NoError(t, err)
-	require.Equal(t, testNameField, emailField)
+	require.Equal(t, testVlessEmailField, emailField)
 
 	// test full config
 	tmpDir := t.TempDir()
 	filePath := filepath.Join(tmpDir, "client_config.json")
 
-	err = os.WriteFile(filePath, []byte(testValidClientCfg), 0o600)
+	err = os.WriteFile(filePath, []byte(testValidClientConfig), 0o600)
 	require.NoError(t, err)
 
-	cfg, err := NewClientCfg(filePath)
+	cfg, err := NewClientConfig(filePath)
 	require.NoError(t, err)
-	require.Equal(t, testNameField, cfg.cfg.UserNameField)
+	require.Equal(t, testVlessEmailField, cfg.cfg.VlessEmailField)
 	require.Equal(t, testVlessUUIDField, cfg.cfg.VlessUUIDField)
 }
 
-func TestInvalidClientCfg(t *testing.T) {
+func TestInvalidClientConfig(t *testing.T) {
 	// test fields extraction
-	_, err := extractVlessUUIDField(testInvalidClientCfg)
+	_, err := extractVlessUUIDField(testInvalidClientConfig)
 	require.Error(t, err)
 
-	nameField, err := extractNameField(testInvalidClientCfg)
+	nameField, err := extractVlessEmailField(testInvalidClientConfig)
 	require.NoError(t, err)
-	require.Equal(t, testNameField, nameField)
+	require.Equal(t, testVlessEmailField, nameField)
 
 	// test full config
 	tmpDir := t.TempDir()
 	filePath := filepath.Join(tmpDir, "client_config.json")
 
-	err = os.WriteFile(filePath, []byte(testInvalidClientCfg), 0o600)
+	err = os.WriteFile(filePath, []byte(testInvalidClientConfig), 0o600)
 	require.NoError(t, err)
 
-	_, err = NewClientCfg(filePath)
+	_, err = NewClientConfig(filePath)
 	require.Error(t, err)
 }

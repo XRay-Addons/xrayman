@@ -1,5 +1,11 @@
 package models
 
+import (
+	"strconv"
+
+	"github.com/go-faster/jx"
+)
+
 type NodeStatus int
 
 const (
@@ -8,8 +14,10 @@ const (
 	NodeStatusRunning
 )
 
-type ClientConfig struct {
-	Template        string
+type ClientConfigTemplateItem = jx.Raw
+
+type ClientConfigTemplate struct {
+	Template        []ClientConfigTemplateItem
 	VlessEmailField string
 	VlessUUIDField  string
 }
@@ -22,8 +30,8 @@ type NodeConnectionInfo struct {
 type NodeID int
 
 type NodeConfig struct {
-	ClientConfig   ClientConfig
-	ConnectionInfo NodeConnectionInfo
+	ClientConfigTemplate ClientConfigTemplate
+	ConnectionInfo       NodeConnectionInfo
 }
 
 type Node struct {
@@ -44,14 +52,18 @@ func (s NodeStatus) String() string {
 	}
 }
 
-/*type NodeClientCfg struct {
+func (s NodeStatus) StringInt() string {
+	return strconv.Itoa(int(s))
+}
+
+/*type NodeClientConfig struct {
 	Template       string
 	UserNameField  string
 	VlessUUIDField string
 }
 
 type NodeProperties struct {
-	ClientCfg NodeClientCfg
+	ClientConfig NodeClientConfig
 }
 
 type Node struct {

@@ -1,12 +1,15 @@
 package models
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 type UserID int
 
 type UserProfile struct {
 	ID          UserID
-	VisibleName string
+	DisplayName string
 	Name        string
 	VlessUUID   string
 }
@@ -52,4 +55,8 @@ func (s UserStatus) String() string {
 	default:
 		return "Unknown"
 	}
+}
+
+func (s UserStatus) StringInt() string {
+	return strconv.Itoa(int(s))
 }

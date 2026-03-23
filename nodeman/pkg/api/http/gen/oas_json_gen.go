@@ -12,57 +12,109 @@ import (
 	"github.com/ogen-go/ogen/validate"
 )
 
+// Encode encodes ClientConfigItem as json.
+func (s ClientConfigItem) Encode(e *jx.Encoder) {
+	unwrapped := jx.Raw(s)
+
+	if len(unwrapped) != 0 {
+		e.Raw(unwrapped)
+	}
+}
+
+// Decode decodes ClientConfigItem from json.
+func (s *ClientConfigItem) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ClientConfigItem to nil")
+	}
+	var unwrapped jx.Raw
+	if err := func() error {
+		v, err := d.RawAppend(nil)
+		unwrapped = jx.Raw(v)
+		if err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return errors.Wrap(err, "alias")
+	}
+	*s = ClientConfigItem(unwrapped)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s ClientConfigItem) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ClientConfigItem) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode implements json.Marshaler.
-func (s *ClientConfig) Encode(e *jx.Encoder) {
+func (s *ClientConfigTemplate) Encode(e *jx.Encoder) {
 	e.ObjStart()
 	s.encodeFields(e)
 	e.ObjEnd()
 }
 
 // encodeFields encodes fields.
-func (s *ClientConfig) encodeFields(e *jx.Encoder) {
+func (s *ClientConfigTemplate) encodeFields(e *jx.Encoder) {
 	{
-		e.FieldStart("Template")
-		e.Str(s.Template)
+		e.FieldStart("template")
+		e.ArrStart()
+		for _, elem := range s.Template {
+			elem.Encode(e)
+		}
+		e.ArrEnd()
 	}
 	{
-		e.FieldStart("VlessEmailField")
+		e.FieldStart("vlessEmailField")
 		e.Str(s.VlessEmailField)
 	}
 	{
-		e.FieldStart("VlessUUIDField")
+		e.FieldStart("vlessUUIDField")
 		e.Str(s.VlessUUIDField)
 	}
 }
 
-var jsonFieldsNameOfClientConfig = [3]string{
-	0: "Template",
-	1: "VlessEmailField",
-	2: "VlessUUIDField",
+var jsonFieldsNameOfClientConfigTemplate = [3]string{
+	0: "template",
+	1: "vlessEmailField",
+	2: "vlessUUIDField",
 }
 
-// Decode decodes ClientConfig from json.
-func (s *ClientConfig) Decode(d *jx.Decoder) error {
+// Decode decodes ClientConfigTemplate from json.
+func (s *ClientConfigTemplate) Decode(d *jx.Decoder) error {
 	if s == nil {
-		return errors.New("invalid: unable to decode ClientConfig to nil")
+		return errors.New("invalid: unable to decode ClientConfigTemplate to nil")
 	}
 	var requiredBitSet [1]uint8
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "Template":
+		case "template":
 			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
-				v, err := d.Str()
-				s.Template = string(v)
-				if err != nil {
+				s.Template = make([]ClientConfigTemplateItem, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem ClientConfigTemplateItem
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.Template = append(s.Template, elem)
+					return nil
+				}); err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"Template\"")
+				return errors.Wrap(err, "decode field \"template\"")
 			}
-		case "VlessEmailField":
+		case "vlessEmailField":
 			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				v, err := d.Str()
@@ -72,9 +124,9 @@ func (s *ClientConfig) Decode(d *jx.Decoder) error {
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"VlessEmailField\"")
+				return errors.Wrap(err, "decode field \"vlessEmailField\"")
 			}
-		case "VlessUUIDField":
+		case "vlessUUIDField":
 			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
 				v, err := d.Str()
@@ -84,14 +136,14 @@ func (s *ClientConfig) Decode(d *jx.Decoder) error {
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"VlessUUIDField\"")
+				return errors.Wrap(err, "decode field \"vlessUUIDField\"")
 			}
 		default:
 			return d.Skip()
 		}
 		return nil
 	}); err != nil {
-		return errors.Wrap(err, "decode ClientConfig")
+		return errors.Wrap(err, "decode ClientConfigTemplate")
 	}
 	// Validate required fields.
 	var failures []validate.FieldError
@@ -108,8 +160,8 @@ func (s *ClientConfig) Decode(d *jx.Decoder) error {
 				bitIdx := bits.TrailingZeros8(result)
 				fieldIdx := i*8 + bitIdx
 				var name string
-				if fieldIdx < len(jsonFieldsNameOfClientConfig) {
-					name = jsonFieldsNameOfClientConfig[fieldIdx]
+				if fieldIdx < len(jsonFieldsNameOfClientConfigTemplate) {
+					name = jsonFieldsNameOfClientConfigTemplate[fieldIdx]
 				} else {
 					name = strconv.Itoa(fieldIdx)
 				}
@@ -130,14 +182,56 @@ func (s *ClientConfig) Decode(d *jx.Decoder) error {
 }
 
 // MarshalJSON implements stdjson.Marshaler.
-func (s *ClientConfig) MarshalJSON() ([]byte, error) {
+func (s *ClientConfigTemplate) MarshalJSON() ([]byte, error) {
 	e := jx.Encoder{}
 	s.Encode(&e)
 	return e.Bytes(), nil
 }
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *ClientConfig) UnmarshalJSON(data []byte) error {
+func (s *ClientConfigTemplate) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes ClientConfigTemplateItem as json.
+func (s ClientConfigTemplateItem) Encode(e *jx.Encoder) {
+	unwrapped := jx.Raw(s)
+
+	if len(unwrapped) != 0 {
+		e.Raw(unwrapped)
+	}
+}
+
+// Decode decodes ClientConfigTemplateItem from json.
+func (s *ClientConfigTemplateItem) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ClientConfigTemplateItem to nil")
+	}
+	var unwrapped jx.Raw
+	if err := func() error {
+		v, err := d.RawAppend(nil)
+		unwrapped = jx.Raw(v)
+		if err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return errors.Wrap(err, "alias")
+	}
+	*s = ClientConfigTemplateItem(unwrapped)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s ClientConfigTemplateItem) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ClientConfigTemplateItem) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -527,56 +621,6 @@ func (s *Error) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *Error) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode encodes GetUserSubResponse as json.
-func (s GetUserSubResponse) Encode(e *jx.Encoder) {
-	unwrapped := []Subscription(s)
-
-	e.ArrStart()
-	for _, elem := range unwrapped {
-		elem.Encode(e)
-	}
-	e.ArrEnd()
-}
-
-// Decode decodes GetUserSubResponse from json.
-func (s *GetUserSubResponse) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode GetUserSubResponse to nil")
-	}
-	var unwrapped []Subscription
-	if err := func() error {
-		unwrapped = make([]Subscription, 0)
-		if err := d.Arr(func(d *jx.Decoder) error {
-			var elem Subscription
-			if err := elem.Decode(d); err != nil {
-				return err
-			}
-			unwrapped = append(unwrapped, elem)
-			return nil
-		}); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		return errors.Wrap(err, "alias")
-	}
-	*s = GetUserSubResponse(unwrapped)
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s GetUserSubResponse) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *GetUserSubResponse) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -1027,13 +1071,13 @@ func (s *NewUserRequest) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *NewUserRequest) encodeFields(e *jx.Encoder) {
 	{
-		e.FieldStart("VisibleName")
-		e.Str(s.VisibleName)
+		e.FieldStart("DisplayName")
+		e.Str(s.DisplayName)
 	}
 }
 
 var jsonFieldsNameOfNewUserRequest = [1]string{
-	0: "VisibleName",
+	0: "DisplayName",
 }
 
 // Decode decodes NewUserRequest from json.
@@ -1045,17 +1089,17 @@ func (s *NewUserRequest) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "VisibleName":
+		case "DisplayName":
 			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
 				v, err := d.Str()
-				s.VisibleName = string(v)
+				s.DisplayName = string(v)
 				if err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"VisibleName\"")
+				return errors.Wrap(err, "decode field \"DisplayName\"")
 			}
 		default:
 			return d.Skip()
@@ -1109,134 +1153,6 @@ func (s *NewUserRequest) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *NewUserRequest) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode implements json.Marshaler.
-func (s *NewUserResponse) Encode(e *jx.Encoder) {
-	e.ObjStart()
-	s.encodeFields(e)
-	e.ObjEnd()
-}
-
-// encodeFields encodes fields.
-func (s *NewUserResponse) encodeFields(e *jx.Encoder) {
-	{
-		e.FieldStart("ID")
-		s.ID.Encode(e)
-	}
-	{
-		e.FieldStart("VisibleName")
-		e.Str(s.VisibleName)
-	}
-	{
-		e.FieldStart("UserPageURL")
-		e.Str(s.UserPageURL)
-	}
-}
-
-var jsonFieldsNameOfNewUserResponse = [3]string{
-	0: "ID",
-	1: "VisibleName",
-	2: "UserPageURL",
-}
-
-// Decode decodes NewUserResponse from json.
-func (s *NewUserResponse) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode NewUserResponse to nil")
-	}
-	var requiredBitSet [1]uint8
-
-	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
-		switch string(k) {
-		case "ID":
-			requiredBitSet[0] |= 1 << 0
-			if err := func() error {
-				if err := s.ID.Decode(d); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"ID\"")
-			}
-		case "VisibleName":
-			requiredBitSet[0] |= 1 << 1
-			if err := func() error {
-				v, err := d.Str()
-				s.VisibleName = string(v)
-				if err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"VisibleName\"")
-			}
-		case "UserPageURL":
-			requiredBitSet[0] |= 1 << 2
-			if err := func() error {
-				v, err := d.Str()
-				s.UserPageURL = string(v)
-				if err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"UserPageURL\"")
-			}
-		default:
-			return d.Skip()
-		}
-		return nil
-	}); err != nil {
-		return errors.Wrap(err, "decode NewUserResponse")
-	}
-	// Validate required fields.
-	var failures []validate.FieldError
-	for i, mask := range [1]uint8{
-		0b00000111,
-	} {
-		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
-			// Mask only required fields and check equality to mask using XOR.
-			//
-			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
-			// Bits of fields which would be set are actually bits of missed fields.
-			missed := bits.OnesCount8(result)
-			for bitN := 0; bitN < missed; bitN++ {
-				bitIdx := bits.TrailingZeros8(result)
-				fieldIdx := i*8 + bitIdx
-				var name string
-				if fieldIdx < len(jsonFieldsNameOfNewUserResponse) {
-					name = jsonFieldsNameOfNewUserResponse[fieldIdx]
-				} else {
-					name = strconv.Itoa(fieldIdx)
-				}
-				failures = append(failures, validate.FieldError{
-					Name:  name,
-					Error: validate.ErrFieldRequired,
-				})
-				// Reset bit.
-				result &^= 1 << bitIdx
-			}
-		}
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s *NewUserResponse) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *NewUserResponse) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -1390,8 +1306,8 @@ func (s *NodeConfig) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *NodeConfig) encodeFields(e *jx.Encoder) {
 	{
-		e.FieldStart("ClientConfig")
-		s.ClientConfig.Encode(e)
+		e.FieldStart("ClientConfigTemplate")
+		s.ClientConfigTemplate.Encode(e)
 	}
 	{
 		e.FieldStart("ConnectionInfo")
@@ -1400,7 +1316,7 @@ func (s *NodeConfig) encodeFields(e *jx.Encoder) {
 }
 
 var jsonFieldsNameOfNodeConfig = [2]string{
-	0: "ClientConfig",
+	0: "ClientConfigTemplate",
 	1: "ConnectionInfo",
 }
 
@@ -1413,15 +1329,15 @@ func (s *NodeConfig) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "ClientConfig":
+		case "ClientConfigTemplate":
 			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
-				if err := s.ClientConfig.Decode(d); err != nil {
+				if err := s.ClientConfigTemplate.Decode(d); err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"ClientConfig\"")
+				return errors.Wrap(err, "decode field \"ClientConfigTemplate\"")
 			}
 		case "ConnectionInfo":
 			requiredBitSet[0] |= 1 << 1
@@ -2012,64 +1928,6 @@ func (s *StopNodeResponse) UnmarshalJSON(data []byte) error {
 }
 
 // Encode implements json.Marshaler.
-func (s Subscription) Encode(e *jx.Encoder) {
-	e.ObjStart()
-	s.encodeFields(e)
-	e.ObjEnd()
-}
-
-// encodeFields implements json.Marshaler.
-func (s Subscription) encodeFields(e *jx.Encoder) {
-	for k, elem := range s {
-		e.FieldStart(k)
-
-		if len(elem) != 0 {
-			e.Raw(elem)
-		}
-	}
-}
-
-// Decode decodes Subscription from json.
-func (s *Subscription) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode Subscription to nil")
-	}
-	m := s.init()
-	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
-		var elem jx.Raw
-		if err := func() error {
-			v, err := d.RawAppend(nil)
-			elem = jx.Raw(v)
-			if err != nil {
-				return err
-			}
-			return nil
-		}(); err != nil {
-			return errors.Wrapf(err, "decode field %q", k)
-		}
-		m[string(k)] = elem
-		return nil
-	}); err != nil {
-		return errors.Wrap(err, "decode Subscription")
-	}
-
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s Subscription) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *Subscription) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode implements json.Marshaler.
 func (s *User) Encode(e *jx.Encoder) {
 	e.ObjStart()
 	s.encodeFields(e)
@@ -2236,8 +2094,8 @@ func (s *UserProfile) encodeFields(e *jx.Encoder) {
 		e.Str(s.Name)
 	}
 	{
-		e.FieldStart("VisibleName")
-		e.Str(s.VisibleName)
+		e.FieldStart("DisplayName")
+		e.Str(s.DisplayName)
 	}
 	{
 		e.FieldStart("VlessUUID")
@@ -2248,7 +2106,7 @@ func (s *UserProfile) encodeFields(e *jx.Encoder) {
 var jsonFieldsNameOfUserProfile = [4]string{
 	0: "ID",
 	1: "Name",
-	2: "VisibleName",
+	2: "DisplayName",
 	3: "VlessUUID",
 }
 
@@ -2283,17 +2141,17 @@ func (s *UserProfile) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"Name\"")
 			}
-		case "VisibleName":
+		case "DisplayName":
 			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
 				v, err := d.Str()
-				s.VisibleName = string(v)
+				s.DisplayName = string(v)
 				if err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"VisibleName\"")
+				return errors.Wrap(err, "decode field \"DisplayName\"")
 			}
 		case "VlessUUID":
 			requiredBitSet[0] |= 1 << 3
@@ -2401,6 +2259,56 @@ func (s UserStatus) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *UserStatus) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes UserSubResponse as json.
+func (s UserSubResponse) Encode(e *jx.Encoder) {
+	unwrapped := []ClientConfigItem(s)
+
+	e.ArrStart()
+	for _, elem := range unwrapped {
+		elem.Encode(e)
+	}
+	e.ArrEnd()
+}
+
+// Decode decodes UserSubResponse from json.
+func (s *UserSubResponse) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode UserSubResponse to nil")
+	}
+	var unwrapped []ClientConfigItem
+	if err := func() error {
+		unwrapped = make([]ClientConfigItem, 0)
+		if err := d.Arr(func(d *jx.Decoder) error {
+			var elem ClientConfigItem
+			if err := elem.Decode(d); err != nil {
+				return err
+			}
+			unwrapped = append(unwrapped, elem)
+			return nil
+		}); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return errors.Wrap(err, "alias")
+	}
+	*s = UserSubResponse(unwrapped)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s UserSubResponse) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *UserSubResponse) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }

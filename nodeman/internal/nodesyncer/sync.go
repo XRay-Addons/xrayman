@@ -1,0 +1,24 @@
+package nodesyncer
+
+import (
+	"context"
+
+	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+)
+
+func SyncState(ctx context.Context, client Client, storage Storage) error {
+	if client == nil {
+		return errdefs.NewNilArg("client")
+	}
+	if storage == nil {
+		return errdefs.NewNilArg("storage")
+	}
+	s := syncer{
+		storage: storage,
+		client:  client,
+	}
+	if err := s.SyncNodeState(ctx); err != nil {
+		return err
+	}
+	return nil
+}

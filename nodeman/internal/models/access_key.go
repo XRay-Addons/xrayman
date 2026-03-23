@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql/driver"
 	"encoding/base64"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
@@ -44,4 +45,25 @@ func (k AccessKey) getKeyData() []byte {
 	copy(data[:len(k.CertHash)], k.CertHash[:])
 	copy(data[len(k.CertHash):], k.AccessSecret[:])
 	return data
+}
+
+func (k AccessKey) Value() (driver.Value, error) {
+	return k.getKeyData(), nil
+}
+
+func (k *AccessKey) Scan(src any) error {
+	if src == nil {
+		*k = AccessKey{}
+		return nil
+	}
+	b, ok := src.([]byte)
+	if !ok {
+		return errdefs.New("invalid type for AccessKey")
+	}
+	if len(b) != 64 {
+		return errdefs.New("invalid length for AccessKey")
+	}
+	copy(k.CertHash[:], b[:len(k.CertHash)])
+	copy(k.AccessSecret[:], b[len(k.CertHash):])
+	return nil
 }

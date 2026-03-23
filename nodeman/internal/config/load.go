@@ -47,6 +47,8 @@ func readCLIParams(c *Config) error {
 	fs.StringVar(&c.certsDir, "x", c.certsDir,
 		`nodeman<->node connection encryption certificates dir.
 should contains nodeman.crt nodeman.key ca.crt`)
+	fs.StringVar(&c.DBConn, "db", c.DBConn,
+		`db connection string`)
 
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		return errdefs.WrapWithStack(err)

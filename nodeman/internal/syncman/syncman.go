@@ -7,13 +7,12 @@ import (
 	"time"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/waveexec"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	"go.uber.org/zap"
 )
 
-type Manager struct {
-	executor *waveexec.WaveExecutor[[]models.NodeSyncResult]
+type SyncMan struct {
+	syncer PoolSyncer
 
 	interval time.Duration
 	cancel   context.CancelFunc
@@ -22,16 +21,16 @@ type Manager struct {
 	log *zap.Logger
 }
 
-type Option func(m *Manager)
+type Option func(m *SyncMan)
 
 func WithSyncInterval(interval time.Duration) Option {
-	return func(m *Manager) {
+	return func(m *SyncMan) {
 		m.interval = interval
 	}
 }
 
 func WithLog(log *zap.Logger) Option {
-	return func(m *Manager) {
+	return func(m *SyncMan) {
 		if log != nil {
 			m.log = log
 		}
@@ -39,16 +38,17 @@ func WithLog(log *zap.Logger) Option {
 }
 
 const (
-	defaultSyncInterval = 5 * time.Second
+	defaultSyncInterval = 60 * time.Second
 )
 
-func New(syncer PoolSyncer, options ...Option) (*Manager, error) {
+func New(syncer PoolSyncer, options ...Option) (*SyncMan, error) {
 	if syncer == nil {
 		return nil, errdefs.NewNilArg("syncer")
 	}
 	// init default options
 	ctx, cancel := context.WithCancel(context.Background())
-	m := &Manager{
+	m := &SyncMan{
+		syncer:   syncer,
 		interval: defaultSyncInterval,
 		cancel:   cancel,
 		log:      zap.NewNop(),
@@ -57,9 +57,6 @@ func New(syncer PoolSyncer, options ...Option) (*Manager, error) {
 	for _, o := range options {
 		o(m)
 	}
-	// add sync loop
-	syncFn := m.syncFn(syncer)
-	m.executor = waveexec.NewWaveExecutor(syncFn)
 
 	// run sync loop
 	m.wg.Add(1)
@@ -71,7 +68,7 @@ func New(syncer PoolSyncer, options ...Option) (*Manager, error) {
 	return m, nil
 }
 
-func (m *Manager) Close() error {
+func (m *SyncMan) Close() error {
 	if m == nil {
 		return nil
 	}
@@ -80,35 +77,10 @@ func (m *Manager) Close() error {
 		m.cancel = nil
 	}
 	m.wg.Wait()
-	m.executor.Close()
 	return nil
 }
 
-func (m *Manager) SyncNodesPool(ctx context.Context) ([]models.NodeSyncResult, error) {
-	if m == nil {
-		return nil, errdefs.NewNilCall()
-	}
-	syncResult, err := m.executor.Invoke(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return *syncResult, nil
-}
-
-func (m *Manager) syncFn(ps PoolSyncer) waveexec.Fn[[]models.NodeSyncResult] {
-	return func(ctx context.Context) ([]models.NodeSyncResult, error) {
-		syncResult, err := ps.SyncPoolState(ctx)
-		if err == nil {
-			m.logSyncResult(syncResult)
-		} else {
-			m.log.Error("pool sync", zap.Error(err))
-		}
-
-		return syncResult, err
-	}
-}
-
-func (m *Manager) syncLoop(ctx context.Context) {
+func (m *SyncMan) syncLoop(ctx context.Context) {
 	ticker := time.NewTicker(m.interval)
 	defer ticker.Stop()
 
@@ -117,16 +89,22 @@ func (m *Manager) syncLoop(ctx context.Context) {
 		case <-ticker.C:
 			// set sync time limit to m.interval
 			syncCtx, cancel := context.WithTimeout(ctx, m.interval)
-			_, _ = m.SyncNodesPool(syncCtx)
+			syncRes, err := m.syncer.SyncPoolState(syncCtx)
 			cancel()
+
+			m.logSyncResult(syncRes, err)
 		case <-ctx.Done():
 			return
 		}
 	}
 }
 
-func (m *Manager) logSyncResult(r []models.NodeSyncResult) {
-	for _, n := range r {
+func (m *SyncMan) logSyncResult(r *models.PoolSyncResult, err error) {
+	if err != nil {
+		m.log.Error("background node sync", zap.Error(err))
+		return
+	}
+	for _, n := range r.Nodes {
 		if n.Err == nil {
 			m.log.Info("background node sync OK",
 				zap.String("nodeID", strconv.Itoa(int(n.ID))),

@@ -12,15 +12,8 @@ type NodeSyncResult struct {
 
 type PoolSyncStatus int
 
-const (
-	PoolSyncFailed PoolSyncStatus = iota + 1
-	PoolSyncPartially
-	PoolSyncOk
-)
-
 type PoolSyncResult struct {
-	Status PoolSyncStatus
-	Nodes  []NodeSyncResult
+	Nodes []NodeSyncResult
 }
 
 func (r *PoolSyncResult) GetNodeErr(id NodeID) error {

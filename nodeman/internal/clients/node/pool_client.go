@@ -8,7 +8,8 @@ import (
 	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/pool"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/nodesyncer"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/poolsyncer"
 )
 
 type PoolClient struct {
@@ -16,7 +17,7 @@ type PoolClient struct {
 	httpClient HTTPClientFactory
 }
 
-var _ pool.Client = (*PoolClient)(nil)
+var _ poolsyncer.Client = (*PoolClient)(nil)
 
 type Option = func(pc *PoolClient)
 
@@ -57,7 +58,7 @@ func NewPoolClient(opts ...Option) (*PoolClient, error) {
 
 func (c *PoolClient) GetNodeClient(ctx context.Context,
 	cfg models.NodeConnectionInfo,
-) (pool.NodeClient, error) {
+) (nodesyncer.Client, error) {
 	if c == nil {
 		return nil, errdefs.NewNilCall()
 	}

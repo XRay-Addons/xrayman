@@ -5,7 +5,7 @@ type StartParams struct {
 }
 
 type StartResult struct {
-	ClientCfg ClientCfg
+	ClientConfigTemplate ClientConfigTemplate
 }
 
 type StopParams struct {

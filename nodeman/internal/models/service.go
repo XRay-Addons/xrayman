@@ -1,6 +1,8 @@
 package models
 
-import "encoding/json"
+import (
+	"github.com/go-faster/jx"
+)
 
 type NewNodeParams struct {
 	Endpoint  string
@@ -34,13 +36,12 @@ type ListNodeResult struct {
 }
 
 type NewUserParams struct {
-	VisibleName string
+	DisplayName string
 }
 
-type NewUserResult struct {
-	ID          UserID
-	VisibleName string
-	UserPageURL string
+type GetUserParams struct {
+	ID   UserID
+	Name string
 }
 
 type EnableUserParams struct {
@@ -64,11 +65,14 @@ type ListUsersResult struct {
 	Users []User
 }
 
-type GetUserSubParams struct {
+type UserSubParams struct {
 	ID   UserID
 	Name string
 }
 
-type Subscription = json.RawMessage
+type ClientConfigItem = jx.Raw
 
-type GetUserSubResult = []Subscription
+type UserSubResult struct {
+	Expiration    int
+	ClientConfigs []ClientConfigItem
+}

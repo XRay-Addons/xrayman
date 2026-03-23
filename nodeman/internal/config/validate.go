@@ -15,6 +15,9 @@ func Validate(c Config) error {
 	if err := checkCerts(c); err != nil {
 		return err
 	}
+	if err := checkDBConn(c); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -53,4 +56,11 @@ func checkCerts(c Config) error {
 
 	return errdefs.New("cert files inconsistency",
 		errdefs.Withf("inconsistency: %s", existsDescription))
+}
+
+func checkDBConn(c Config) error {
+	if len(c.DBConn) == 0 {
+		return errdefs.New("dbconn string invalid")
+	}
+	return nil
 }

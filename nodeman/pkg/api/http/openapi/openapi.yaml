@@ -13,20 +13,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NewNodeRequest'
+              $ref: "#/components/schemas/NewNodeRequest"
       responses:
-        '200':
+        "200":
           description: Created node
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NewNodeResponse'
-        'default':
+                $ref: "#/components/schemas/NewNodeResponse"
+        "default":
           description: General Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /nodes/start:
     post:
@@ -37,20 +37,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StartNodeRequest'
+              $ref: "#/components/schemas/StartNodeRequest"
       responses:
-        '200':
+        "200":
           description: Start result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StartNodeResponse'
-        'default':
+                $ref: "#/components/schemas/StartNodeResponse"
+        "default":
           description: General Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /nodes/stop:
     post:
@@ -61,20 +61,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StopNodeRequest'
+              $ref: "#/components/schemas/StopNodeRequest"
       responses:
-        '200':
+        "200":
           description: Stop result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StopNodeResponse'
-        'default':
+                $ref: "#/components/schemas/StopNodeResponse"
+        "default":
           description: General Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /nodes:
     get:
@@ -82,18 +82,18 @@ paths:
       operationId: ListNodes
       parameters: []
       responses:
-        '200':
+        "200":
           description: List of nodes
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ListNodeResponse'
-        'default':
+                $ref: "#/components/schemas/ListNodeResponse"
+        "default":
           description: General Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /user/new:
     post:
@@ -104,20 +104,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NewUserRequest'
+              $ref: "#/components/schemas/NewUserRequest"
       responses:
-        '200':
+        "200":
           description: Created user
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NewUserResponse'
-        'default':
+                $ref: "#/components/schemas/NewUserResponse"
+        "default":
           description: General Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /user/enable:
     post:
@@ -128,20 +128,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EnableUserRequest'
+              $ref: "#/components/schemas/EnableUserRequest"
       responses:
-        '200':
+        "200":
           description: User enabled
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EnableUserResponse'
-        'default':
+                $ref: "#/components/schemas/EnableUserResponse"
+        "default":
           description: General Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /user/disable:
     post:
@@ -152,50 +152,32 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DisableUserRequest'
+              $ref: "#/components/schemas/DisableUserRequest"
       responses:
-        '200':
+        "200":
           description: User disabled
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DisableUserResponse'
-        'default':
+                $ref: "#/components/schemas/DisableUserResponse"
+        "default":
           description: General Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
-  /users:
+  /user/{ID}-{Name}:
     get:
-      summary: List all users
-      operationId: ListUsers
-      responses:
-        '200':
-          description: List of users
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ListUsersResponse'
-        'default':
-          description: General Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /sub/{ID}-{Name}:
-    get:
-      summary: Get subscription by user
-      operationId: GetUserSub
+      summary: Get user properties
+      operationId: GetUser
       parameters:
         - name: ID
           in: path
           required: true
           description: User ID
           schema:
-            $ref: '#/components/schemas/UserID'
+            $ref: "#/components/schemas/UserID"
         - name: Name
           in: path
           required: true
@@ -203,18 +185,63 @@ paths:
           schema:
             type: string
       responses:
-        '200':
-          description: List of subscription
+        "200":
+          description: User properties
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetUserSubResponse'
-        'default':
+                $ref: "#/components/schemas/GetUserResponse"
+        "default":
           description: General Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
+
+  /users:
+    get:
+      summary: List all users
+      operationId: ListUsers
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListUsersResponse"
+        "default":
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /sub/{ID}-{Name}:
+    get:
+      summary: Get subscription by user
+      operationId: UserSub
+      parameters:
+        - name: ID
+          in: path
+          required: true
+          description: User ID
+          schema:
+            $ref: "#/components/schemas/UserID"
+        - name: Name
+          in: path
+          required: true
+          description: User name
+          schema:
+            type: string
+      responses:
+        "200":
+          $ref: "#/components/responses/UserSubResponse"
+        "default":
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
 components:
   schemas:
@@ -225,19 +252,24 @@ components:
       type: string
       enum: [unknown, stopped, running]
 
-    ClientConfig:
+    ClientConfigTemplateItem:
+      description: "client config json template"
+
+    ClientConfigTemplate:
       type: object
-      properties:
-        Template:
-          type: string
-        VlessEmailField:
-          type: string
-        VlessUUIDField:
-          type: string
       required:
-        - Template
-        - VlessEmailField
-        - VlessUUIDField
+        - template
+        - vlessEmailField
+        - vlessUUIDField
+      properties:
+        template:
+          type: array
+          items:
+            $ref: "#/components/schemas/ClientConfigTemplateItem"
+        vlessEmailField:
+          type: string
+        vlessUUIDField:
+          type: string
 
     NodeConnectionInfo:
       type: object
@@ -253,25 +285,25 @@ components:
     NodeConfig:
       type: object
       properties:
-        ClientConfig:
-          $ref: '#/components/schemas/ClientConfig'
+        ClientConfigTemplate:
+          $ref: "#/components/schemas/ClientConfigTemplate"
         ConnectionInfo:
-          $ref: '#/components/schemas/NodeConnectionInfo'
+          $ref: "#/components/schemas/NodeConnectionInfo"
       required:
-        - ClientConfig
+        - ClientConfigTemplate
         - ConnectionInfo
 
     Node:
       type: object
       properties:
         ID:
-          $ref: '#/components/schemas/NodeID'
+          $ref: "#/components/schemas/NodeID"
         Config:
-          $ref: '#/components/schemas/NodeConfig'
+          $ref: "#/components/schemas/NodeConfig"
         CurrentStatus:
-          $ref: '#/components/schemas/NodeStatus'
+          $ref: "#/components/schemas/NodeStatus"
         TargetStatus:
-          $ref: '#/components/schemas/NodeStatus'
+          $ref: "#/components/schemas/NodeStatus"
       required:
         - ID
         - Config
@@ -296,7 +328,7 @@ components:
       type: object
       properties:
         ID:
-          $ref: '#/components/schemas/NodeID'
+          $ref: "#/components/schemas/NodeID"
         Endpoint:
           type: string
       required:
@@ -307,7 +339,7 @@ components:
       type: object
       properties:
         ID:
-          $ref: '#/components/schemas/NodeID'
+          $ref: "#/components/schemas/NodeID"
       required:
         - ID
 
@@ -319,7 +351,7 @@ components:
       type: object
       properties:
         ID:
-          $ref: '#/components/schemas/NodeID'
+          $ref: "#/components/schemas/NodeID"
       required:
         - ID
 
@@ -337,7 +369,7 @@ components:
         Nodes:
           type: array
           items:
-            $ref: '#/components/schemas/Node'
+            $ref: "#/components/schemas/Node"
       required:
         - Nodes
 
@@ -352,26 +384,26 @@ components:
       type: object
       properties:
         ID:
-          $ref: '#/components/schemas/UserID'
+          $ref: "#/components/schemas/UserID"
         Name:
           type: string
-        VisibleName:
+        DisplayName:
           type: string
         VlessUUID:
           type: string
       required:
         - ID
         - Name
-        - VisibleName
+        - DisplayName
         - VlessUUID
 
     User:
       type: object
       properties:
         Profile:
-          $ref: '#/components/schemas/UserProfile'
+          $ref: "#/components/schemas/UserProfile"
         TargetStatus:
-          $ref: '#/components/schemas/UserStatus'
+          $ref: "#/components/schemas/UserStatus"
       required:
         - Profile
         - TargetStatus
@@ -379,30 +411,43 @@ components:
     NewUserRequest:
       type: object
       properties:
-        VisibleName:
+        DisplayName:
           type: string
       required:
-        - VisibleName
+        - DisplayName
 
     NewUserResponse:
+      $ref: "#/components/schemas/User"
+
+    GetUserRequest:
       type: object
       properties:
         ID:
-          $ref: '#/components/schemas/UserID'
-        VisibleName:
-          type: string
-        UserPageURL:
+          $ref: "#/components/schemas/UserID"
+        Name:
           type: string
       required:
         - ID
-        - VisibleName
-        - UserPageURL
+        - Name
+
+    GetUserResponse:
+      $ref: "#/components/schemas/User"
+
+    ListUsersResponse:
+      type: object
+      properties:
+        Users:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+      required:
+        - Users
 
     EnableUserRequest:
       type: object
       properties:
         ID:
-          $ref: '#/components/schemas/UserID'
+          $ref: "#/components/schemas/UserID"
       required:
         - ID
 
@@ -414,7 +459,7 @@ components:
       type: object
       properties:
         ID:
-          $ref: '#/components/schemas/UserID'
+          $ref: "#/components/schemas/UserID"
       required:
         - ID
 
@@ -422,25 +467,13 @@ components:
       type: object
       properties: {}
 
-    ListUsersResponse:
-      type: object
-      properties:
-        Users:
-          type: array
-          items:
-            $ref: '#/components/schemas/User'
-      required:
-        - Users
-
-    Subscription:
-      type: object
+    ClientConfigItem:
       description: "subscription json object"
-      additionalProperties: true
 
-    GetUserSubResponse:
+    UserSubResponse:
       type: array
       items:
-        $ref: '#/components/schemas/Subscription'
+        $ref: "#/components/schemas/ClientConfigItem"
 
     Error:
       type: object
@@ -452,3 +485,21 @@ components:
           nullable: true
       required:
         - Message
+
+  headers:
+    Expiration:
+      description: "Subscription lifetime, hours"
+      schema:
+        type: integer
+      required: true
+
+  responses:
+    UserSubResponse:
+      description: List of subscription
+      headers:
+        Expiration:
+          $ref: "#/components/headers/Expiration"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UserSubResponse"

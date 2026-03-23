@@ -10,7 +10,9 @@ import (
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 
+	"github.com/ogen-go/ogen/conv"
 	ht "github.com/ogen-go/ogen/http"
+	"github.com/ogen-go/ogen/uri"
 )
 
 func encodeDisableUserResponse(response *DisableUserResponse, w http.ResponseWriter, span trace.Span) error {
@@ -41,7 +43,7 @@ func encodeEnableUserResponse(response *EnableUserResponse, w http.ResponseWrite
 	return nil
 }
 
-func encodeGetUserSubResponse(response GetUserSubResponse, w http.ResponseWriter, span trace.Span) error {
+func encodeGetUserResponse(response *User, w http.ResponseWriter, span trace.Span) error {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(200)
 	span.SetStatus(codes.Ok, http.StatusText(200))
@@ -97,7 +99,7 @@ func encodeNewNodeResponse(response *NewNodeResponse, w http.ResponseWriter, spa
 	return nil
 }
 
-func encodeNewUserResponse(response *NewUserResponse, w http.ResponseWriter, span trace.Span) error {
+func encodeNewUserResponse(response *User, w http.ResponseWriter, span trace.Span) error {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(200)
 	span.SetStatus(codes.Ok, http.StatusText(200))
@@ -132,6 +134,36 @@ func encodeStopNodeResponse(response *StopNodeResponse, w http.ResponseWriter, s
 
 	e := new(jx.Encoder)
 	response.Encode(e)
+	if _, err := e.WriteTo(w); err != nil {
+		return errors.Wrap(err, "write")
+	}
+
+	return nil
+}
+
+func encodeUserSubResponse(response *UserSubResponseHeaders, w http.ResponseWriter, span trace.Span) error {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	// Encoding response headers.
+	{
+		h := uri.NewHeaderEncoder(w.Header())
+		// Encode "Expiration" header.
+		{
+			cfg := uri.HeaderParameterEncodingConfig{
+				Name:    "Expiration",
+				Explode: false,
+			}
+			if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+				return e.EncodeValue(conv.IntToString(response.Expiration))
+			}); err != nil {
+				return errors.Wrap(err, "encode Expiration header")
+			}
+		}
+	}
+	w.WriteHeader(200)
+	span.SetStatus(codes.Ok, http.StatusText(200))
+
+	e := new(jx.Encoder)
+	response.Response.Encode(e)
 	if _, err := e.WriteTo(w); err != nil {
 		return errors.Wrap(err, "write")
 	}

@@ -106,7 +106,7 @@ func (h *Handler) ListNodes(ctx context.Context) (*api.ListNodeResponse, error) 
 	return converter.ConvertListNodesResult(res), nil
 }
 
-func (h *Handler) NewUser(ctx context.Context, req *api.NewUserRequest) (*api.NewUserResponse, error) {
+func (h *Handler) NewUser(ctx context.Context, req *api.NewUserRequest) (*api.User, error) {
 	if h == nil || h.service == nil {
 		return nil, errdefs.NewNilCall()
 	}
@@ -119,7 +119,38 @@ func (h *Handler) NewUser(ctx context.Context, req *api.NewUserRequest) (*api.Ne
 		h.logError(ctx, err)
 		return nil, httperr.ErrInternalServerError
 	}
-	return converter.ConvertNewUserResult(res), nil
+	return converter.ConvertUser(res), nil
+}
+
+func (h *Handler) GetUser(ctx context.Context, req api.GetUserParams) (*api.User, error) {
+	if h == nil || h.service == nil {
+		return nil, errdefs.NewNilCall()
+	}
+	p, err := converter.ConvertGetUserRequest(&req)
+	if err != nil {
+		return nil, httperr.ErrInvaildPayload
+	}
+	user, exists, err := h.service.GetUser(ctx, *p)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return nil, httperr.ErrUserNotFound
+	}
+	userResponse := converter.ConvertUser(user)
+	return userResponse, nil
+}
+
+func (h *Handler) ListUsers(ctx context.Context) (*api.ListUsersResponse, error) {
+	if h == nil || h.service == nil {
+		return nil, errdefs.NewNilCall()
+	}
+	res, err := h.service.ListUsers(ctx, models.ListUserParams{})
+	if err != nil {
+		h.logError(ctx, err)
+		return nil, httperr.ErrInternalServerError
+	}
+	return converter.ConvertListUsersResult(res), nil
 }
 
 func (h *Handler) EnableUser(ctx context.Context, req *api.EnableUserRequest) error {
@@ -154,19 +185,7 @@ func (h *Handler) DisableUser(ctx context.Context, req *api.DisableUserRequest) 
 	return nil
 }
 
-func (h *Handler) ListUsers(ctx context.Context) (*api.ListUsersResponse, error) {
-	if h == nil || h.service == nil {
-		return nil, errdefs.NewNilCall()
-	}
-	res, err := h.service.ListUsers(ctx, models.ListUserParams{})
-	if err != nil {
-		h.logError(ctx, err)
-		return nil, httperr.ErrInternalServerError
-	}
-	return converter.ConvertListUsersResult(res), nil
-}
-
-func (h *Handler) GetUserSub(ctx context.Context, req api.GetUserSubParams) (api.GetUserSubResponse, error) {
+func (h *Handler) UserSub(ctx context.Context, req api.UserSubParams) (*api.UserSubResponseHeaders, error) {
 	if h == nil || h.service == nil {
 		return nil, errdefs.NewNilCall()
 	}
@@ -185,7 +204,7 @@ func (h *Handler) GetUserSub(ctx context.Context, req api.GetUserSubParams) (api
 	if err != nil {
 		return nil, err
 	}
-	return *subResponse, nil
+	return subResponse, nil
 }
 
 func (h *Handler) NewError(ctx context.Context, err error) *api.ErrorStatusCode {

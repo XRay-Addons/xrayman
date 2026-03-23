@@ -20,12 +20,12 @@ type Handler interface {
 	//
 	// POST /user/enable
 	EnableUser(ctx context.Context, req *EnableUserRequest) error
-	// GetUserSub implements GetUserSub operation.
+	// GetUser implements GetUser operation.
 	//
-	// Get subscription by user.
+	// Get user properties.
 	//
-	// GET /sub/{ID}-{Name}
-	GetUserSub(ctx context.Context, params GetUserSubParams) (GetUserSubResponse, error)
+	// GET /user/{ID}-{Name}
+	GetUser(ctx context.Context, params GetUserParams) (*User, error)
 	// ListNodes implements ListNodes operation.
 	//
 	// List all nodes.
@@ -49,7 +49,7 @@ type Handler interface {
 	// Create a new user.
 	//
 	// POST /user/new
-	NewUser(ctx context.Context, req *NewUserRequest) (*NewUserResponse, error)
+	NewUser(ctx context.Context, req *NewUserRequest) (*User, error)
 	// StartNode implements StartNode operation.
 	//
 	// Start a node.
@@ -62,6 +62,12 @@ type Handler interface {
 	//
 	// POST /nodes/stop
 	StopNode(ctx context.Context, req *StopNodeRequest) error
+	// UserSub implements UserSub operation.
+	//
+	// Get subscription by user.
+	//
+	// GET /sub/{ID}-{Name}
+	UserSub(ctx context.Context, params UserSubParams) (*UserSubResponseHeaders, error)
 	// NewError creates *ErrorStatusCode from error returned by handler.
 	//
 	// Used for common default response.

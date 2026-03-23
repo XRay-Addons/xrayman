@@ -5,11 +5,28 @@ import (
 	"strings"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/node/internal/models"
+	"github.com/go-faster/jx"
 	"github.com/tidwall/gjson"
 )
 
+func parseClientConfig(in string) ([]models.ClientConfigTemplateItem, error) {
+	var out []models.ClientConfigTemplateItem
+	if err := jx.DecodeStr(in).Arr(func(d *jx.Decoder) error {
+		cfgItem, err := d.Raw()
+		if err != nil {
+			return errdefs.WrapWithStack(err)
+		}
+		out = append(out, cfgItem)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func extractVlessEmailField(cfg string) (string, error) {
-	users := getUsers(gjson.Get(cfg, `outbounds`))
+	users := getUsers(gjson.Parse(cfg))
 	userIDs, err := extractFields(users, "email")
 	if err != nil {
 		return "", err
@@ -22,7 +39,7 @@ func extractVlessEmailField(cfg string) (string, error) {
 }
 
 func extractVlessUUIDField(cfg string) (string, error) {
-	users := getUsers(gjson.Get(cfg, `outbounds.#(protocol=="vless")#`))
+	users := getUsers(gjson.Parse(cfg))
 	userIDs, err := extractFields(users, "id")
 	if err != nil {
 		return "", err
@@ -35,12 +52,15 @@ func extractVlessUUIDField(cfg string) (string, error) {
 }
 
 // get outbounds users
-func getUsers(outs gjson.Result) []gjson.Result {
+func getUsers(cfgs gjson.Result) []gjson.Result {
 	users := make([]gjson.Result, 0)
-	outs.ForEach(func(_, o gjson.Result) bool {
-		o.Get("settings.vnext").ForEach(func(_, v gjson.Result) bool {
-			v.Get("users").ForEach(func(_, u gjson.Result) bool {
-				users = append(users, u)
+	cfgs.ForEach(func(_, cfg gjson.Result) bool {
+		cfg.Get(`outbounds.#(protocol=="vless")#`).ForEach(func(_, o gjson.Result) bool {
+			o.Get("settings.vnext").ForEach(func(_, v gjson.Result) bool {
+				v.Get("users").ForEach(func(_, u gjson.Result) bool {
+					users = append(users, u)
+					return true
+				})
 				return true
 			})
 			return true

@@ -12,10 +12,10 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/server"
 	a "github.com/XRay-Addons/xrayman/nodeman/internal/infra/app"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/httpclient"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/node"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/pool"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/poolsyncer"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/storage/memstorage"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/storage/dbstorage"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/subscrman"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/syncman"
 
 	"go.uber.org/zap"
@@ -30,14 +30,16 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		return nil, errdefs.NewNilArg("log")
 	}
 
-	var storage *memstorage.Storage
+	var storage *dbstorage.Storage
 
 	var httpClient *httpclient.ClientFactory
 	var poolClient *client.PoolClient
 
-	var nodeSyncer *node.Syncer
-	var poolSyncer *pool.Syncer
-	var syncMan *syncman.Manager
+	var poolSyncer poolsyncer.Syncer
+
+	var syncJob *syncman.SyncMan
+
+	var subscrMan subscrman.SubscrMan
 
 	var s *service.Service
 
@@ -51,11 +53,11 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 			func() (err error) {
 				httpClient = httpclient.NewClientFactory()
 				return
-			}, nil,
-			// func(ctx context.Context) error {
-			//	httpClient.CloseIdleConnections()
-			//	return nil
-			// },
+			},
+			func(ctx context.Context) error {
+				httpClient.Close()
+				return nil
+			},
 		),
 		// pool client
 		a.WithComponent("pool client",
@@ -67,42 +69,44 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 
 		// storage
 		a.WithComponent("storage",
-			func() error {
-				storage = memstorage.New()
-				return nil
+			func() (err error) {
+				storage, err = dbstorage.New(cfg.DBConn)
+				return
 			}, nil,
 		),
 
-		// node syncer
-		a.WithComponent("node syncer",
-			func() error {
-				nodeSyncer = node.NewSyncer()
-				return nil
-			}, nil,
-		),
 		// pool syncer
 		a.WithComponent("pool syncer",
 			func() (err error) {
-				poolSyncer, err = pool.NewSyncer(storage.PoolUoW(), poolClient, nodeSyncer)
+				poolSyncer, err = poolsyncer.New(poolClient, storage.PoolSyncStorage())
 				return
 			}, nil,
 		),
-		// sync manager
-		a.WithComponent("sync man",
+
+		// background syncer
+		a.WithComponent("background sync job",
 			func() (err error) {
-				syncMan, err = syncman.New(poolSyncer, syncman.WithLog(log))
+				syncJob, err = syncman.New(poolSyncer, syncman.WithLog(log))
 				return
 			},
 			func(ctx context.Context) (err error) {
-				err = syncMan.Close()
+				err = syncJob.Close()
 				return
 			},
+		),
+
+		// subscr manager
+		a.WithComponent("subscr manager",
+			func() (err error) {
+				subscrMan, err = subscrman.New(storage.SubscrmanStorage(), subscrman.WithLog(log))
+				return
+			}, nil,
 		),
 
 		// service
 		a.WithComponent("service",
 			func() (err error) {
-				s, err = service.New(syncMan, storage.ServiceUoW())
+				s, err = service.New(poolSyncer, subscrMan, storage.ServiceStorage())
 				return
 			}, nil,
 		),

@@ -13,42 +13,46 @@ func (s *ErrorStatusCode) Error() string {
 	return fmt.Sprintf("code %d: %+v", s.StatusCode, s.Response)
 }
 
-// Ref: #/components/schemas/ClientConfig
-type ClientConfig struct {
-	Template        string `json:"Template"`
-	VlessEmailField string `json:"VlessEmailField"`
-	VlessUUIDField  string `json:"VlessUUIDField"`
+type ClientConfigItem jx.Raw
+
+// Ref: #/components/schemas/ClientConfigTemplate
+type ClientConfigTemplate struct {
+	Template        []ClientConfigTemplateItem `json:"template"`
+	VlessEmailField string                     `json:"vlessEmailField"`
+	VlessUUIDField  string                     `json:"vlessUUIDField"`
 }
 
 // GetTemplate returns the value of Template.
-func (s *ClientConfig) GetTemplate() string {
+func (s *ClientConfigTemplate) GetTemplate() []ClientConfigTemplateItem {
 	return s.Template
 }
 
 // GetVlessEmailField returns the value of VlessEmailField.
-func (s *ClientConfig) GetVlessEmailField() string {
+func (s *ClientConfigTemplate) GetVlessEmailField() string {
 	return s.VlessEmailField
 }
 
 // GetVlessUUIDField returns the value of VlessUUIDField.
-func (s *ClientConfig) GetVlessUUIDField() string {
+func (s *ClientConfigTemplate) GetVlessUUIDField() string {
 	return s.VlessUUIDField
 }
 
 // SetTemplate sets the value of Template.
-func (s *ClientConfig) SetTemplate(val string) {
+func (s *ClientConfigTemplate) SetTemplate(val []ClientConfigTemplateItem) {
 	s.Template = val
 }
 
 // SetVlessEmailField sets the value of VlessEmailField.
-func (s *ClientConfig) SetVlessEmailField(val string) {
+func (s *ClientConfigTemplate) SetVlessEmailField(val string) {
 	s.VlessEmailField = val
 }
 
 // SetVlessUUIDField sets the value of VlessUUIDField.
-func (s *ClientConfig) SetVlessUUIDField(val string) {
+func (s *ClientConfigTemplate) SetVlessUUIDField(val string) {
 	s.VlessUUIDField = val
 }
+
+type ClientConfigTemplateItem jx.Raw
 
 // Ref: #/components/schemas/DisableUserRequest
 type DisableUserRequest struct {
@@ -138,8 +142,6 @@ func (s *ErrorStatusCode) SetResponse(val Error) {
 	s.Response = val
 }
 
-type GetUserSubResponse []Subscription
-
 // Ref: #/components/schemas/ListNodeResponse
 type ListNodeResponse struct {
 	Nodes []Node `json:"Nodes"`
@@ -225,54 +227,17 @@ func (s *NewNodeResponse) SetEndpoint(val string) {
 
 // Ref: #/components/schemas/NewUserRequest
 type NewUserRequest struct {
-	VisibleName string `json:"VisibleName"`
+	DisplayName string `json:"DisplayName"`
 }
 
-// GetVisibleName returns the value of VisibleName.
-func (s *NewUserRequest) GetVisibleName() string {
-	return s.VisibleName
+// GetDisplayName returns the value of DisplayName.
+func (s *NewUserRequest) GetDisplayName() string {
+	return s.DisplayName
 }
 
-// SetVisibleName sets the value of VisibleName.
-func (s *NewUserRequest) SetVisibleName(val string) {
-	s.VisibleName = val
-}
-
-// Ref: #/components/schemas/NewUserResponse
-type NewUserResponse struct {
-	ID          UserID `json:"ID"`
-	VisibleName string `json:"VisibleName"`
-	UserPageURL string `json:"UserPageURL"`
-}
-
-// GetID returns the value of ID.
-func (s *NewUserResponse) GetID() UserID {
-	return s.ID
-}
-
-// GetVisibleName returns the value of VisibleName.
-func (s *NewUserResponse) GetVisibleName() string {
-	return s.VisibleName
-}
-
-// GetUserPageURL returns the value of UserPageURL.
-func (s *NewUserResponse) GetUserPageURL() string {
-	return s.UserPageURL
-}
-
-// SetID sets the value of ID.
-func (s *NewUserResponse) SetID(val UserID) {
-	s.ID = val
-}
-
-// SetVisibleName sets the value of VisibleName.
-func (s *NewUserResponse) SetVisibleName(val string) {
-	s.VisibleName = val
-}
-
-// SetUserPageURL sets the value of UserPageURL.
-func (s *NewUserResponse) SetUserPageURL(val string) {
-	s.UserPageURL = val
+// SetDisplayName sets the value of DisplayName.
+func (s *NewUserRequest) SetDisplayName(val string) {
+	s.DisplayName = val
 }
 
 // Ref: #/components/schemas/Node
@@ -325,13 +290,13 @@ func (s *Node) SetTargetStatus(val NodeStatus) {
 
 // Ref: #/components/schemas/NodeConfig
 type NodeConfig struct {
-	ClientConfig   ClientConfig       `json:"ClientConfig"`
-	ConnectionInfo NodeConnectionInfo `json:"ConnectionInfo"`
+	ClientConfigTemplate ClientConfigTemplate `json:"ClientConfigTemplate"`
+	ConnectionInfo       NodeConnectionInfo   `json:"ConnectionInfo"`
 }
 
-// GetClientConfig returns the value of ClientConfig.
-func (s *NodeConfig) GetClientConfig() ClientConfig {
-	return s.ClientConfig
+// GetClientConfigTemplate returns the value of ClientConfigTemplate.
+func (s *NodeConfig) GetClientConfigTemplate() ClientConfigTemplate {
+	return s.ClientConfigTemplate
 }
 
 // GetConnectionInfo returns the value of ConnectionInfo.
@@ -339,9 +304,9 @@ func (s *NodeConfig) GetConnectionInfo() NodeConnectionInfo {
 	return s.ConnectionInfo
 }
 
-// SetClientConfig sets the value of ClientConfig.
-func (s *NodeConfig) SetClientConfig(val ClientConfig) {
-	s.ClientConfig = val
+// SetClientConfigTemplate sets the value of ClientConfigTemplate.
+func (s *NodeConfig) SetClientConfigTemplate(val ClientConfigTemplate) {
+	s.ClientConfigTemplate = val
 }
 
 // SetConnectionInfo sets the value of ConnectionInfo.
@@ -525,19 +490,6 @@ func (s *StopNodeRequest) SetID(val NodeID) {
 // Ref: #/components/schemas/StopNodeResponse
 type StopNodeResponse struct{}
 
-// Subscription json object.
-// Ref: #/components/schemas/Subscription
-type Subscription map[string]jx.Raw
-
-func (s *Subscription) init() Subscription {
-	m := *s
-	if m == nil {
-		m = map[string]jx.Raw{}
-		*s = m
-	}
-	return m
-}
-
 // Ref: #/components/schemas/User
 type User struct {
 	Profile      UserProfile `json:"Profile"`
@@ -570,7 +522,7 @@ type UserID int
 type UserProfile struct {
 	ID          UserID `json:"ID"`
 	Name        string `json:"Name"`
-	VisibleName string `json:"VisibleName"`
+	DisplayName string `json:"DisplayName"`
 	VlessUUID   string `json:"VlessUUID"`
 }
 
@@ -584,9 +536,9 @@ func (s *UserProfile) GetName() string {
 	return s.Name
 }
 
-// GetVisibleName returns the value of VisibleName.
-func (s *UserProfile) GetVisibleName() string {
-	return s.VisibleName
+// GetDisplayName returns the value of DisplayName.
+func (s *UserProfile) GetDisplayName() string {
+	return s.DisplayName
 }
 
 // GetVlessUUID returns the value of VlessUUID.
@@ -604,9 +556,9 @@ func (s *UserProfile) SetName(val string) {
 	s.Name = val
 }
 
-// SetVisibleName sets the value of VisibleName.
-func (s *UserProfile) SetVisibleName(val string) {
-	s.VisibleName = val
+// SetDisplayName sets the value of DisplayName.
+func (s *UserProfile) SetDisplayName(val string) {
+	s.DisplayName = val
 }
 
 // SetVlessUUID sets the value of VlessUUID.
@@ -661,4 +613,32 @@ func (s *UserStatus) UnmarshalText(data []byte) error {
 	default:
 		return errors.Errorf("invalid value: %q", data)
 	}
+}
+
+type UserSubResponse []ClientConfigItem
+
+// UserSubResponseHeaders wraps UserSubResponse with response headers.
+type UserSubResponseHeaders struct {
+	Expiration int
+	Response   UserSubResponse
+}
+
+// GetExpiration returns the value of Expiration.
+func (s *UserSubResponseHeaders) GetExpiration() int {
+	return s.Expiration
+}
+
+// GetResponse returns the value of Response.
+func (s *UserSubResponseHeaders) GetResponse() UserSubResponse {
+	return s.Response
+}
+
+// SetExpiration sets the value of Expiration.
+func (s *UserSubResponseHeaders) SetExpiration(val int) {
+	s.Expiration = val
+}
+
+// SetResponse sets the value of Response.
+func (s *UserSubResponseHeaders) SetResponse(val UserSubResponse) {
+	s.Response = val
 }

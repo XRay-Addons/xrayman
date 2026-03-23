@@ -6,6 +6,7 @@ package converter
 import (
 	models "github.com/XRay-Addons/xrayman/node/internal/models"
 	gen "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
+	jx "github.com/go-faster/jx"
 )
 
 func ConvertEditUsersRequest(source *gen.EditUsersRequest) *models.EditUsersParams {
@@ -46,7 +47,7 @@ func ConvertStartResult(source *models.StartResult) *gen.StartResponse {
 	var pApiStartResponse *gen.StartResponse
 	if source != nil {
 		var apiStartResponse gen.StartResponse
-		apiStartResponse.ClientCfg = modelsClientCfgToApiClientCfg((*source).ClientCfg)
+		apiStartResponse.ClientConfigTemplate = modelsClientConfigTemplateToApiClientConfigTemplate((*source).ClientConfigTemplate)
 		pApiStartResponse = &apiStartResponse
 	}
 	return pApiStartResponse
@@ -58,10 +59,25 @@ func apiUserToModelsUser(source gen.User) models.User {
 	modelsUser.VlessUUID = source.VlessUUID
 	return modelsUser
 }
-func modelsClientCfgToApiClientCfg(source models.ClientCfg) gen.ClientCfg {
-	var apiClientCfg gen.ClientCfg
-	apiClientCfg.Template = source.Template
-	apiClientCfg.VlessEmailField = source.VlessEmailField
-	apiClientCfg.VlessUUIDField = source.VlessUUIDField
-	return apiClientCfg
+func jxRawToApiClientConfigTemplateItem(source jx.Raw) gen.ClientConfigTemplateItem {
+	var apiClientConfigTemplateItem gen.ClientConfigTemplateItem
+	if source != nil {
+		apiClientConfigTemplateItem = make(gen.ClientConfigTemplateItem, len(source))
+		for i := 0; i < len(source); i++ {
+			apiClientConfigTemplateItem[i] = source[i]
+		}
+	}
+	return apiClientConfigTemplateItem
+}
+func modelsClientConfigTemplateToApiClientConfigTemplate(source models.ClientConfigTemplate) gen.ClientConfigTemplate {
+	var apiClientConfigTemplate gen.ClientConfigTemplate
+	if source.Template != nil {
+		apiClientConfigTemplate.Template = make([]gen.ClientConfigTemplateItem, len(source.Template))
+		for i := 0; i < len(source.Template); i++ {
+			apiClientConfigTemplate.Template[i] = jxRawToApiClientConfigTemplateItem(source.Template[i])
+		}
+	}
+	apiClientConfigTemplate.VlessEmailField = source.VlessEmailField
+	apiClientConfigTemplate.VlessUUIDField = source.VlessUUIDField
+	return apiClientConfigTemplate
 }

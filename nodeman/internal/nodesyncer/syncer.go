@@ -1,16 +1,15 @@
-package node
+package nodesyncer
 
 import (
 	"context"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/pool"
 )
 
 type syncer struct {
-	uow    pool.NodeUoW
-	client pool.NodeClient
+	storage Storage
+	client  Client
 }
 
 // sync node state between node (available via client) and uow.
@@ -38,7 +37,7 @@ type syncer struct {
 //     but now invalid values are explicitly marked as 'Unknown' in uow,
 //     so it is possible to detect and handle it.
 func (s *syncer) SyncNodeState(ctx context.Context) (err error) {
-	if s == nil || s.uow == nil || s.client == nil {
+	if s == nil || s.storage == nil || s.client == nil {
 		return errdefs.NewNilCall()
 	}
 
@@ -72,8 +71,8 @@ func (s *syncer) fetchNodeStatus(ctx context.Context) (
 	curr, prev, target models.NodeStatus, err error,
 ) {
 	// fetch stored node status
-	if err = s.uow.Do(ctx, func(uowctx pool.NodeUoWContext) (err error) {
-		target, prev, err = uowctx.FetchNodeStatus(ctx)
+	if err = s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
+		target, prev, err = uowctx.GetNodeStatus(ctx)
 		return
 	}); err != nil {
 		return
@@ -104,23 +103,22 @@ func (s *syncer) startNode(ctx context.Context) (err error) {
 		return err
 	}
 
-	enabledUsers := s.getEnabledUsers(users)
-
 	// start node
+	enabledUsers := s.getEnabledUsers(users)
 	clientConfig, err := s.client.Start(ctx, enabledUsers)
 	if err != nil {
 		return err
 	}
 
 	// update stored node state
-	if err := s.uow.Do(ctx, func(uowctx pool.NodeUoWContext) (err error) {
-		if err = uowctx.PatchPendingSyncs(ctx, s.getUsersPatch(users)); err != nil {
+	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
+		if err = uowctx.SetNodeUsers(ctx, s.getUsersPatch(users)); err != nil {
 			return
 		}
-		if err = uowctx.UpdateCurrentStatus(ctx, models.NodeStatusRunning); err != nil {
+		if err = uowctx.SetCurrentNodeStatus(ctx, models.NodeStatusRunning); err != nil {
 			return
 		}
-		if err = uowctx.UpdateClientConfig(ctx, *clientConfig); err != nil {
+		if err = uowctx.SetClientConfig(ctx, *clientConfig); err != nil {
 			return
 		}
 		return
@@ -133,7 +131,7 @@ func (s *syncer) startNode(ctx context.Context) (err error) {
 
 func (s *syncer) getUsers(ctx context.Context) (users []models.User, err error) {
 	// get all users
-	if err = s.uow.Do(ctx, func(uowctx pool.NodeUoWContext) (err error) {
+	if err = s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
 		users, err = uowctx.ListUsers(ctx)
 		return
 	}); err != nil {
@@ -174,12 +172,19 @@ func (s *syncer) stopNode(ctx context.Context) (err error) {
 		return err
 	}
 
-	// dont update actual status of users on disabled nodes because it has no matter.
-	// it updates when node started again.
-	// TODO: maybe update?
-	if err = s.updateStoredStatus(ctx, models.NodeStatusStopped); err != nil {
+	// update stored node state and remove all users
+	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
+		if err = uowctx.SetCurrentNodeStatus(ctx, models.NodeStatusStopped); err != nil {
+			return
+		}
+		if err = uowctx.SetNodeUsers(ctx, []models.UserStatusPatch{}); err != nil {
+			return
+		}
+		return
+	}); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -211,7 +216,7 @@ func (s *syncer) syncNodeUsers(ctx context.Context, updateNodeStatus bool) error
 }
 
 func (s *syncer) getPendingSyncs(ctx context.Context) (pending []models.UserSyncStatus, err error) {
-	if err = s.uow.Do(ctx, func(uowctx pool.NodeUoWContext) (err error) {
+	if err = s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
 		pending, err = uowctx.FindPendingSyncs(ctx)
 		return err
 	}); err != nil {
@@ -250,11 +255,11 @@ func (s *syncer) buildUserUpdate(syncs []models.UserSyncStatus) (
 func (s *syncer) applyNodeStatePatch(ctx context.Context,
 	patch []models.UserStatusPatch,
 ) error {
-	return s.uow.Do(ctx, func(uowctx pool.NodeUoWContext) error {
-		if err := uowctx.PatchPendingSyncs(ctx, patch); err != nil {
+	return s.storage.DoUoW(ctx, func(uowctx UoWContext) error {
+		if err := uowctx.UpdateNodeUsers(ctx, patch); err != nil {
 			return err
 		}
-		if err := uowctx.UpdateCurrentStatus(ctx, models.NodeStatusRunning); err != nil {
+		if err := uowctx.SetCurrentNodeStatus(ctx, models.NodeStatusRunning); err != nil {
 			return err
 		}
 		return nil
@@ -262,8 +267,8 @@ func (s *syncer) applyNodeStatePatch(ctx context.Context,
 }
 
 func (s *syncer) updateStoredStatus(ctx context.Context, status models.NodeStatus) error {
-	if err := s.uow.Do(ctx, func(uowctx pool.NodeUoWContext) error {
-		return uowctx.UpdateCurrentStatus(ctx, status)
+	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) error {
+		return uowctx.SetCurrentNodeStatus(ctx, status)
 	}); err != nil {
 		return err
 	}

@@ -8,5 +8,5 @@ import (
 
 //go:generate mockgen -source=pool_syncer.go -destination=./mocks/mock_pool_syncer.go -package=mocks PoolSyncer
 type PoolSyncer interface {
-	SyncPoolState(ctx context.Context) ([]models.NodeSyncResult, error)
+	SyncPoolState(ctx context.Context) (*models.PoolSyncResult, error)
 }

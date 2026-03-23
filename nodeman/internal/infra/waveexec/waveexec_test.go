@@ -13,13 +13,13 @@ import (
 func TestWaveExec(t *testing.T) {
 	fnCallsCount := 0
 
-	fn := func(ctx context.Context) (any, error) {
+	fn := func(ctx context.Context) (*any, error) {
 		time.Sleep(1 * time.Second)
 		fnCallsCount++
 		return nil, nil
 	}
 
-	waveExec := NewWaveExecutor(fn)
+	waveExec := New(fn)
 	defer waveExec.Close()
 
 	// run 100 calls at the same time, fnCallsCount expected to be
@@ -42,13 +42,13 @@ func TestWaveExec(t *testing.T) {
 func TestWaveExec_Cancels(t *testing.T) {
 	fnCallsCount := 0
 
-	fn := func(ctx context.Context) (any, error) {
+	fn := func(ctx context.Context) (*any, error) {
 		time.Sleep(1 * time.Second)
 		fnCallsCount++
 		return nil, nil
 	}
 
-	waveExec := NewWaveExecutor(fn)
+	waveExec := New(fn)
 	defer waveExec.Close()
 
 	// run 100 calls with different timeouts
@@ -79,13 +79,13 @@ func TestWaveExec_Cancels(t *testing.T) {
 func TestWaveExec_EarlyClose(t *testing.T) {
 	fnCallsCount := 0
 
-	fn := func(ctx context.Context) (any, error) {
+	fn := func(ctx context.Context) (*any, error) {
 		time.Sleep(1 * time.Second)
 		fnCallsCount++
 		return nil, nil
 	}
 
-	waveExec := NewWaveExecutor(fn)
+	waveExec := New(fn)
 
 	// run 100 calls with early timeouts
 	var wg sync.WaitGroup
@@ -109,7 +109,7 @@ func TestWaveExec_EarlyClose(t *testing.T) {
 
 func TestWaveExec_Cancel(t *testing.T) {
 	fnCallsCount := 0
-	fn := func(ctx context.Context) (any, error) {
+	fn := func(ctx context.Context) (*any, error) {
 		select {
 		case <-ctx.Done():
 			return nil, ctx.Err()
@@ -119,7 +119,7 @@ func TestWaveExec_Cancel(t *testing.T) {
 		}
 	}
 
-	waveExec := NewWaveExecutor(fn)
+	waveExec := New(fn)
 
 	// run 100 calls with early timeouts
 	var wg sync.WaitGroup

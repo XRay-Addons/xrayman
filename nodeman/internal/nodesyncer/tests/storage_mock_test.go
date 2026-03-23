@@ -7,7 +7,7 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/pool"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/nodesyncer"
 )
 
 // simple storage mock with random extrnal operations emulation
@@ -27,8 +27,10 @@ func NewStorageMock(nUsers int) *StorageMock {
 
 	for i := range nUsers {
 		u := models.User{
-			ID:           models.UserID(i),
-			Profile:      models.UserProfile{Name: fmt.Sprintf("user %d", i)},
+			Profile: models.UserProfile{
+				ID:   models.UserID(i),
+				Name: fmt.Sprintf("user %d", i),
+			},
 			TargetStatus: models.UserStatusDisabled,
 		}
 		if rnd.IntN(2) == 1 {
@@ -62,8 +64,10 @@ func (s *StorageMock) RandomExternalOperation() {
 	default:
 		// add new user
 		s.Users = append(s.Users, models.User{
-			ID:           models.UserID(len(s.Users)),
-			Profile:      models.UserProfile{Name: fmt.Sprintf("user %d", len(s.Users))},
+			Profile: models.UserProfile{
+				ID:   models.UserID(len(s.Users)),
+				Name: fmt.Sprintf("user %d", len(s.Users)),
+			},
 			TargetStatus: models.UserStatusEnabled,
 		})
 		s.CurrentUserStatus = append(s.CurrentUserStatus, models.UserStatusUnknown)
@@ -103,6 +107,14 @@ func (s *StorageMock) apply(patch *StorageMockPatch) error {
 	if patch.statePatch != nil {
 		s.CurrentStatus = *patch.statePatch
 	}
+	if patch.usersReplace != nil {
+		for userID := range s.CurrentUserStatus {
+			s.CurrentUserStatus[userID] = models.UserStatusDisabled
+		}
+		for _, u := range *patch.usersReplace {
+			s.CurrentUserStatus[u.UserID] = u.Status
+		}
+	}
 	if patch.usersPatch != nil {
 		for _, u := range patch.usersPatch {
 			s.CurrentUserStatus[u.UserID] = u.Status
@@ -111,42 +123,35 @@ func (s *StorageMock) apply(patch *StorageMockPatch) error {
 	return nil
 }
 
-var _ pool.NodeUoW = (*StorageMock)(nil)
+var _ nodesyncer.Storage = (*StorageMock)(nil)
 
-func (s *StorageMock) Do(ctx context.Context, fn pool.NodeUoWFn) error {
-	uow, err := s.NewUoW()
-	if err != nil {
-		return err
+func (s *StorageMock) DoUoW(ctx context.Context, fn nodesyncer.UoWFn) error {
+	uow := &StorageMockPatch{
+		parent: s,
 	}
-	if err = uow.Do(ctx, fn); err != nil {
+	if err := uow.Do(ctx, fn); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *StorageMock) NewUoW() (pool.NodeUoW, error) {
-	return &StorageMockPatch{
-		parent: s,
-	}, nil
-}
-
 type StorageMockPatch struct {
-	parent     *StorageMock
-	statePatch *models.NodeStatus
-	usersPatch []models.UserStatusPatch
+	parent       *StorageMock
+	statePatch   *models.NodeStatus
+	usersPatch   []models.UserStatusPatch
+	usersReplace *[]models.UserStatusPatch
 }
 
-var _ pool.NodeUoWContext = (*StorageMockPatch)(nil)
-var _ pool.NodeUoW = (*StorageMockPatch)(nil)
+var _ nodesyncer.UoWContext = (*StorageMockPatch)(nil)
 
-func (s *StorageMockPatch) FetchNodeStatus(ctx context.Context) (
+func (s *StorageMockPatch) GetNodeStatus(ctx context.Context) (
 	target models.NodeStatus, current models.NodeStatus, err error,
 ) {
 	return s.parent.fetchNodeStatus()
 }
 
-func (s *StorageMockPatch) UpdateCurrentStatus(ctx context.Context, su models.NodeStatus) error {
-	s.statePatch = &su
+func (s *StorageMockPatch) SetCurrentNodeStatus(ctx context.Context, nodeStatus models.NodeStatus) error {
+	s.statePatch = &nodeStatus
 	return nil
 }
 
@@ -154,8 +159,15 @@ func (s *StorageMockPatch) FindPendingSyncs(ctx context.Context) ([]models.UserS
 	return s.parent.findPendingSyncs()
 }
 
-func (s *StorageMockPatch) PatchPendingSyncs(ctx context.Context, patch []models.UserStatusPatch) error {
+func (s *StorageMockPatch) UpdateNodeUsers(ctx context.Context, patch []models.UserStatusPatch) error {
 	s.usersPatch = append(s.usersPatch, patch...)
+	return nil
+}
+
+func (s *StorageMockPatch) SetNodeUsers(ctx context.Context, patch []models.UserStatusPatch) error {
+	var r []models.UserStatusPatch
+	r = append(r, patch...)
+	s.usersReplace = &r
 	return nil
 }
 
@@ -163,15 +175,16 @@ func (s *StorageMockPatch) ListUsers(ctx context.Context) ([]models.User, error)
 	return s.parent.listUsers()
 }
 
-func (s *StorageMockPatch) UpdateClientConfig(ctx context.Context, cfg models.ClientConfig) error {
+func (s *StorageMockPatch) SetClientConfig(ctx context.Context, cfg models.ClientConfigTemplate) error {
 	return nil
 }
 
-func (s *StorageMockPatch) Do(ctx context.Context, fn pool.NodeUoWFn) error {
+func (s *StorageMockPatch) Do(ctx context.Context, fn nodesyncer.UoWFn) error {
 	if err := fn(s); err != nil {
 		return err
 	}
-	return s.parent.apply(s)
+	err := s.parent.apply(s)
+	return err
 }
 
 // storage mock with external faults or edit state modifications
@@ -186,7 +199,7 @@ func NewUnstableStorageMock(nUsers int) *UnstableStorageMock {
 	}
 }
 
-func (s *UnstableStorageMock) DoUoW(ctx context.Context, fn pool.NodeUoWFn) error {
+func (s *UnstableStorageMock) DoUoW(ctx context.Context, fn nodesyncer.UoWFn) error {
 	// some times this method returns error
 	if s.BaseStorage.rand.Float32() < s.Instability {
 		return errdefs.New("unstable storage")
@@ -196,20 +209,13 @@ func (s *UnstableStorageMock) DoUoW(ctx context.Context, fn pool.NodeUoWFn) erro
 		s.RandomExternalOperation()
 	}
 
-	uow, err := s.BaseStorage.NewUoW()
-	if err != nil {
-		return err
+	uow := &StorageMockPatch{
+		parent: s.BaseStorage,
 	}
-	if err = uow.Do(ctx, fn); err != nil {
+	if err := uow.Do(ctx, fn); err != nil {
 		return err
 	}
 	return nil
-}
-
-func (s *UnstableStorageMock) NewUoW() (pool.NodeUoW, error) {
-	return &StorageMockPatch{
-		parent: s.BaseStorage,
-	}, nil
 }
 
 func (s *UnstableStorageMock) RandomExternalOperation() {

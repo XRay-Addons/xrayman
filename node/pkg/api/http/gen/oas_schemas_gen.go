@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/go-faster/errors"
+	"github.com/go-faster/jx"
 )
 
 func (s *ErrorStatusCode) Error() string {
@@ -37,42 +38,44 @@ func (s *BearerAuth) SetRoles(val []string) {
 	s.Roles = val
 }
 
-// Ref: #/components/schemas/ClientCfg
-type ClientCfg struct {
-	Template        string `json:"template"`
-	VlessEmailField string `json:"vlessEmailField"`
-	VlessUUIDField  string `json:"vlessUUIDField"`
+// Ref: #/components/schemas/ClientConfigTemplate
+type ClientConfigTemplate struct {
+	Template        []ClientConfigTemplateItem `json:"template"`
+	VlessEmailField string                     `json:"vlessEmailField"`
+	VlessUUIDField  string                     `json:"vlessUUIDField"`
 }
 
 // GetTemplate returns the value of Template.
-func (s *ClientCfg) GetTemplate() string {
+func (s *ClientConfigTemplate) GetTemplate() []ClientConfigTemplateItem {
 	return s.Template
 }
 
 // GetVlessEmailField returns the value of VlessEmailField.
-func (s *ClientCfg) GetVlessEmailField() string {
+func (s *ClientConfigTemplate) GetVlessEmailField() string {
 	return s.VlessEmailField
 }
 
 // GetVlessUUIDField returns the value of VlessUUIDField.
-func (s *ClientCfg) GetVlessUUIDField() string {
+func (s *ClientConfigTemplate) GetVlessUUIDField() string {
 	return s.VlessUUIDField
 }
 
 // SetTemplate sets the value of Template.
-func (s *ClientCfg) SetTemplate(val string) {
+func (s *ClientConfigTemplate) SetTemplate(val []ClientConfigTemplateItem) {
 	s.Template = val
 }
 
 // SetVlessEmailField sets the value of VlessEmailField.
-func (s *ClientCfg) SetVlessEmailField(val string) {
+func (s *ClientConfigTemplate) SetVlessEmailField(val string) {
 	s.VlessEmailField = val
 }
 
 // SetVlessUUIDField sets the value of VlessUUIDField.
-func (s *ClientCfg) SetVlessUUIDField(val string) {
+func (s *ClientConfigTemplate) SetVlessUUIDField(val string) {
 	s.VlessUUIDField = val
 }
+
+type ClientConfigTemplateItem jx.Raw
 
 // Ref: #/components/schemas/EditUsersRequest
 type EditUsersRequest struct {
@@ -279,17 +282,17 @@ func (s *StartRequest) SetUsers(val []User) {
 
 // Ref: #/components/schemas/StartResponse
 type StartResponse struct {
-	ClientCfg ClientCfg `json:"clientCfg"`
+	ClientConfigTemplate ClientConfigTemplate `json:"clientConfigTemplate"`
 }
 
-// GetClientCfg returns the value of ClientCfg.
-func (s *StartResponse) GetClientCfg() ClientCfg {
-	return s.ClientCfg
+// GetClientConfigTemplate returns the value of ClientConfigTemplate.
+func (s *StartResponse) GetClientConfigTemplate() ClientConfigTemplate {
+	return s.ClientConfigTemplate
 }
 
-// SetClientCfg sets the value of ClientCfg.
-func (s *StartResponse) SetClientCfg(val ClientCfg) {
-	s.ClientCfg = val
+// SetClientConfigTemplate sets the value of ClientConfigTemplate.
+func (s *StartResponse) SetClientConfigTemplate(val ClientConfigTemplate) {
+	s.ClientConfigTemplate = val
 }
 
 // Ref: #/components/schemas/StatusResponse

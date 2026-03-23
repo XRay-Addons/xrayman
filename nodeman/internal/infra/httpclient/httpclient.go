@@ -4,8 +4,6 @@ import (
 	"crypto/sha256"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/base64"
-	"fmt"
 	"net"
 	"net/http"
 	"sync"
@@ -59,6 +57,15 @@ func NewClientFactory(opts ...Option) *ClientFactory {
 			KeepAlive: cfg.keepAlive,
 		},
 		clientsPool: make(map[CertHash]*http.Client),
+	}
+}
+
+func (cf *ClientFactory) Close() {
+	if cf == nil {
+		return
+	}
+	for _, c := range cf.clientsPool {
+		c.CloseIdleConnections()
 	}
 }
 
@@ -119,10 +126,6 @@ func verifyPeerFn(certHash CertHash) func(rawCerts [][]byte, verifiedChains [][]
 			return errdefs.WrapWithStack(err)
 		}
 		sum := sha256Sum(cert.Raw)
-		fmt.Println(base64.StdEncoding.EncodeToString(cert.Raw))
-		fmt.Println(base64.StdEncoding.EncodeToString(sum[:]))
-		fmt.Println(base64.StdEncoding.EncodeToString(certHash[:]))
-
 		if sum != certHash {
 			return errdefs.New("certificate pinning failed")
 		}

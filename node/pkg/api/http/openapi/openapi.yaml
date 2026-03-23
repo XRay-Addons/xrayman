@@ -116,7 +116,10 @@ components:
         vlessUUID:
           type: string
 
-    ClientCfg:
+    ClientConfigTemplateItem:
+      description: "client config json template"
+
+    ClientConfigTemplate:
       type: object
       required:
         - template
@@ -124,7 +127,10 @@ components:
         - vlessUUIDField
       properties:
         template:
-          type: string
+          type: array
+          items:
+            $ref: '#/components/schemas/ClientConfigTemplateItem'
+
         vlessEmailField:
           type: string
         vlessUUIDField:
@@ -151,10 +157,10 @@ components:
     StartResponse:
       type: object
       required:
-        - clientCfg
+        - clientConfigTemplate
       properties:
-        clientCfg:
-          $ref: '#/components/schemas/ClientCfg'
+        clientConfigTemplate:
+          $ref: '#/components/schemas/ClientConfigTemplate'
 
     StatusResponse:
       type: object

@@ -42,10 +42,10 @@ func (m *MockPoolSyncer) EXPECT() *MockPoolSyncerMockRecorder {
 }
 
 // SyncPoolState mocks base method.
-func (m *MockPoolSyncer) SyncPoolState(ctx context.Context) ([]models.NodeSyncResult, error) {
+func (m *MockPoolSyncer) SyncPoolState(ctx context.Context) (*models.PoolSyncResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SyncPoolState", ctx)
-	ret0, _ := ret[0].([]models.NodeSyncResult)
+	ret0, _ := ret[0].(*models.PoolSyncResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

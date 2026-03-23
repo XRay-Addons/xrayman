@@ -6,7 +6,7 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/pool"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/nodesyncer"
 )
 
 // implement node emulator for tests
@@ -22,14 +22,14 @@ func NewClientMock() *ClientMock {
 	}
 }
 
-var _ pool.NodeClient = (*ClientMock)(nil)
+var _ nodesyncer.Client = (*ClientMock)(nil)
 
 func (c *ClientMock) CheckStatus(ctx context.Context) (models.NodeStatus, error) {
 	return c.Status, nil
 }
 
 func (c *ClientMock) Start(ctx context.Context, users []models.UserProfile) (
-	*models.ClientConfig, error,
+	*models.ClientConfigTemplate, error,
 ) {
 	for u := range c.Users {
 		delete(c.Users, u)
@@ -38,7 +38,7 @@ func (c *ClientMock) Start(ctx context.Context, users []models.UserProfile) (
 		c.Users[u] = struct{}{}
 	}
 	c.Status = models.NodeStatusRunning
-	return &models.ClientConfig{}, nil
+	return &models.ClientConfigTemplate{}, nil
 }
 
 func (c *ClientMock) Stop(ctx context.Context) error {
@@ -89,7 +89,7 @@ func (c *UnstableClientMock) CheckStatus(ctx context.Context) (models.NodeStatus
 }
 
 func (c *UnstableClientMock) Start(ctx context.Context, users []models.UserProfile) (
-	*models.ClientConfig, error,
+	*models.ClientConfigTemplate, error,
 ) {
 	if c.rand.Float32() < c.Instability {
 		return nil, errdefs.New("random client fail")

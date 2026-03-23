@@ -8,11 +8,12 @@ type OperationName = string
 const (
 	DisableUserOperation OperationName = "DisableUser"
 	EnableUserOperation  OperationName = "EnableUser"
-	GetUserSubOperation  OperationName = "GetUserSub"
+	GetUserOperation     OperationName = "GetUser"
 	ListNodesOperation   OperationName = "ListNodes"
 	ListUsersOperation   OperationName = "ListUsers"
 	NewNodeOperation     OperationName = "NewNode"
 	NewUserOperation     OperationName = "NewUser"
 	StartNodeOperation   OperationName = "StartNode"
 	StopNodeOperation    OperationName = "StopNode"
+	UserSubOperation     OperationName = "UserSub"
 )

@@ -31,12 +31,12 @@ func (UnimplementedHandler) EnableUser(ctx context.Context, req *EnableUserReque
 	return ht.ErrNotImplemented
 }
 
-// GetUserSub implements GetUserSub operation.
+// GetUser implements GetUser operation.
 //
-// Get subscription by user.
+// Get user properties.
 //
-// GET /sub/{ID}-{Name}
-func (UnimplementedHandler) GetUserSub(ctx context.Context, params GetUserSubParams) (r GetUserSubResponse, _ error) {
+// GET /user/{ID}-{Name}
+func (UnimplementedHandler) GetUser(ctx context.Context, params GetUserParams) (r *User, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
@@ -72,7 +72,7 @@ func (UnimplementedHandler) NewNode(ctx context.Context, req *NewNodeRequest) (r
 // Create a new user.
 //
 // POST /user/new
-func (UnimplementedHandler) NewUser(ctx context.Context, req *NewUserRequest) (r *NewUserResponse, _ error) {
+func (UnimplementedHandler) NewUser(ctx context.Context, req *NewUserRequest) (r *User, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
@@ -92,6 +92,15 @@ func (UnimplementedHandler) StartNode(ctx context.Context, req *StartNodeRequest
 // POST /nodes/stop
 func (UnimplementedHandler) StopNode(ctx context.Context, req *StopNodeRequest) error {
 	return ht.ErrNotImplemented
+}
+
+// UserSub implements UserSub operation.
+//
+// Get subscription by user.
+//
+// GET /sub/{ID}-{Name}
+func (UnimplementedHandler) UserSub(ctx context.Context, params UserSubParams) (r *UserSubResponseHeaders, _ error) {
+	return r, ht.ErrNotImplemented
 }
 
 // NewError creates *ErrorStatusCode from error returned by handler.

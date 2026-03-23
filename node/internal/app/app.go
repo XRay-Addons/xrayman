@@ -34,7 +34,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 
 	var sec *secrets.Secrets
 	var srvCfg *xraycfg.ServerCfg
-	var clientCfg *xraycfg.ClientCfg
+	var clientCfg *xraycfg.ClientConfig
 	var tlsCfg *tls.Config
 	var xrayService *xrayservice.XRayService
 	var xrayAPI *xrayapi.XRayApi
@@ -68,7 +68,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// client config
 		a.WithComponent("client cfg",
 			func() (err error) {
-				clientCfg, err = xraycfg.NewClientCfg(cfg.XRayClient())
+				clientCfg, err = xraycfg.NewClientConfig(cfg.XRayClient())
 				return
 			}, nil,
 		),

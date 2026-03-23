@@ -71,11 +71,27 @@ func (mr *MockServiceMockRecorder) EnableUser(ctx, p any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnableUser", reflect.TypeOf((*MockService)(nil).EnableUser), ctx, p)
 }
 
+// GetUser mocks base method.
+func (m *MockService) GetUser(ctx context.Context, p models.GetUserParams) (*models.User, bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUser", ctx, p)
+	ret0, _ := ret[0].(*models.User)
+	ret1, _ := ret[1].(bool)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetUser indicates an expected call of GetUser.
+func (mr *MockServiceMockRecorder) GetUser(ctx, p any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockService)(nil).GetUser), ctx, p)
+}
+
 // GetUserSub mocks base method.
-func (m *MockService) GetUserSub(ctx context.Context, p models.GetUserSubParams) (*models.GetUserSubResult, bool, error) {
+func (m *MockService) GetUserSub(ctx context.Context, p models.UserSubParams) (*models.UserSubResult, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserSub", ctx, p)
-	ret0, _ := ret[0].(*models.GetUserSubResult)
+	ret0, _ := ret[0].(*models.UserSubResult)
 	ret1, _ := ret[1].(bool)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
@@ -133,10 +149,10 @@ func (mr *MockServiceMockRecorder) NewNode(ctx, p any) *gomock.Call {
 }
 
 // NewUser mocks base method.
-func (m *MockService) NewUser(ctx context.Context, p models.NewUserParams) (*models.NewUserResult, error) {
+func (m *MockService) NewUser(ctx context.Context, p models.NewUserParams) (*models.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NewUser", ctx, p)
-	ret0, _ := ret[0].(*models.NewUserResult)
+	ret0, _ := ret[0].(*models.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

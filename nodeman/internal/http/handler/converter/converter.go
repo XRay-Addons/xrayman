@@ -1,7 +1,6 @@
 package converter
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
@@ -17,7 +16,6 @@ import (
 // goverter:extend ConvertAccessKey RConvertAccessKey
 // goverter:extend ConvertUserID RConvertUserID
 // goverter:extend ConvertUserStatusResult
-// goverter:extend ConvertSubscription
 //
 //go:generate goverter gen .
 type Converter interface {
@@ -31,7 +29,10 @@ type Converter interface {
 	ConvertListNodesResult(r *models.ListNodeResult) *api.ListNodeResponse
 
 	ConvertNewUserRequest(r *api.NewUserRequest) (*models.NewUserParams, error)
-	ConvertNewUserResult(r *models.NewUserResult) *api.NewUserResponse
+
+	ConvertUser(r *models.User) *api.User
+
+	ConvertGetUserRequest(r *api.GetUserParams) (*models.GetUserParams, error)
 
 	ConvertEnableUserRequest(r *api.EnableUserRequest) (*models.EnableUserParams, error)
 
@@ -39,8 +40,9 @@ type Converter interface {
 
 	ConvertListUsersResult(r *models.ListUsersResult) *api.ListUsersResponse
 
-	ConvertUserSubRequest(r *api.GetUserSubParams) (*models.GetUserSubParams, error)
-	ConvertUserSubResult(r *models.GetUserSubResult) (*api.GetUserSubResponse, error)
+	ConvertUserSubRequest(r *api.UserSubParams) (*models.UserSubParams, error)
+	// goverter:map ClientConfigs Response
+	ConvertUserSubResult(r *models.UserSubResult) (*api.UserSubResponseHeaders, error)
 }
 
 func ConvertNodeID(i models.NodeID) api.NodeID {
@@ -101,10 +103,10 @@ func ConvertUserStatusResult(source models.UserStatus) api.UserStatus {
 	return response
 }
 
-func ConvertSubscription(source models.Subscription) (api.Subscription, error) {
+/*func ConvertClientConfig(source models.Subscription) (api.Subscription, error) {
 	var s api.Subscription
 	if err := json.Unmarshal([]byte(source), &s); err != nil {
 		return nil, errdefs.WrapWithStack(err)
 	}
 	return s, nil
-}
+}*/

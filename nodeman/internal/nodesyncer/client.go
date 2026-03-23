@@ -1,4 +1,4 @@
-package pool
+package nodesyncer
 
 import (
 	"context"
@@ -6,8 +6,8 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
-type NodeClient interface {
-	Start(ctx context.Context, users []models.UserProfile) (*models.ClientConfig, error)
+type Client interface {
+	Start(ctx context.Context, users []models.UserProfile) (*models.ClientConfigTemplate, error)
 	Stop(ctx context.Context) error
 	CheckStatus(ctx context.Context) (models.NodeStatus, error)
 	UpdateUsers(ctx context.Context, upd models.NodeUsersUpdate) error

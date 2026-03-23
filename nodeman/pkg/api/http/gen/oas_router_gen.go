@@ -212,7 +212,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 						// Leaf node.
 						switch r.Method {
 						case "GET":
-							s.handleGetUserSubRequest([2]string{
+							s.handleUserSubRequest([2]string{
 								args[0],
 								args[1],
 							}, elemIsEscaped, w, r)
@@ -250,7 +250,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					}
 					switch elem[0] {
 					case 'd': // Prefix: "disable"
-
+						origElem := elem
 						if l := len("disable"); len(elem) >= l && elem[0:l] == "disable" {
 							elem = elem[l:]
 						} else {
@@ -269,8 +269,9 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 							return
 						}
 
+						elem = origElem
 					case 'e': // Prefix: "enable"
-
+						origElem := elem
 						if l := len("enable"); len(elem) >= l && elem[0:l] == "enable" {
 							elem = elem[l:]
 						} else {
@@ -289,8 +290,9 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 							return
 						}
 
+						elem = origElem
 					case 'n': // Prefix: "new"
-
+						origElem := elem
 						if l := len("new"); len(elem) >= l && elem[0:l] == "new" {
 							elem = elem[l:]
 						} else {
@@ -304,6 +306,53 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 								s.handleNewUserRequest([0]string{}, elemIsEscaped, w, r)
 							default:
 								s.notAllowed(w, r, "POST")
+							}
+
+							return
+						}
+
+						elem = origElem
+					}
+					// Param: "ID"
+					// Match until "-"
+					idx := strings.IndexByte(elem, '-')
+					if idx < 0 {
+						idx = len(elem)
+					}
+					args[0] = elem[:idx]
+					elem = elem[idx:]
+
+					if len(elem) == 0 {
+						break
+					}
+					switch elem[0] {
+					case '-': // Prefix: "-"
+
+						if l := len("-"); len(elem) >= l && elem[0:l] == "-" {
+							elem = elem[l:]
+						} else {
+							break
+						}
+
+						// Param: "Name"
+						// Leaf parameter, slashes are prohibited
+						idx := strings.IndexByte(elem, '/')
+						if idx >= 0 {
+							break
+						}
+						args[1] = elem
+						elem = ""
+
+						if len(elem) == 0 {
+							// Leaf node.
+							switch r.Method {
+							case "GET":
+								s.handleGetUserRequest([2]string{
+									args[0],
+									args[1],
+								}, elemIsEscaped, w, r)
+							default:
+								s.notAllowed(w, r, "GET")
 							}
 
 							return
@@ -594,9 +643,9 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 						// Leaf node.
 						switch method {
 						case "GET":
-							r.name = GetUserSubOperation
+							r.name = UserSubOperation
 							r.summary = "Get subscription by user"
-							r.operationID = "GetUserSub"
+							r.operationID = "UserSub"
 							r.pathPattern = "/sub/{ID}-{Name}"
 							r.args = args
 							r.count = 2
@@ -633,7 +682,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 					}
 					switch elem[0] {
 					case 'd': // Prefix: "disable"
-
+						origElem := elem
 						if l := len("disable"); len(elem) >= l && elem[0:l] == "disable" {
 							elem = elem[l:]
 						} else {
@@ -656,8 +705,9 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 							}
 						}
 
+						elem = origElem
 					case 'e': // Prefix: "enable"
-
+						origElem := elem
 						if l := len("enable"); len(elem) >= l && elem[0:l] == "enable" {
 							elem = elem[l:]
 						} else {
@@ -680,8 +730,9 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 							}
 						}
 
+						elem = origElem
 					case 'n': // Prefix: "new"
-
+						origElem := elem
 						if l := len("new"); len(elem) >= l && elem[0:l] == "new" {
 							elem = elem[l:]
 						} else {
@@ -698,6 +749,54 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 								r.pathPattern = "/user/new"
 								r.args = args
 								r.count = 0
+								return r, true
+							default:
+								return
+							}
+						}
+
+						elem = origElem
+					}
+					// Param: "ID"
+					// Match until "-"
+					idx := strings.IndexByte(elem, '-')
+					if idx < 0 {
+						idx = len(elem)
+					}
+					args[0] = elem[:idx]
+					elem = elem[idx:]
+
+					if len(elem) == 0 {
+						break
+					}
+					switch elem[0] {
+					case '-': // Prefix: "-"
+
+						if l := len("-"); len(elem) >= l && elem[0:l] == "-" {
+							elem = elem[l:]
+						} else {
+							break
+						}
+
+						// Param: "Name"
+						// Leaf parameter, slashes are prohibited
+						idx := strings.IndexByte(elem, '/')
+						if idx >= 0 {
+							break
+						}
+						args[1] = elem
+						elem = ""
+
+						if len(elem) == 0 {
+							// Leaf node.
+							switch method {
+							case "GET":
+								r.name = GetUserOperation
+								r.summary = "Get user properties"
+								r.operationID = "GetUser"
+								r.pathPattern = "/user/{ID}-{Name}"
+								r.args = args
+								r.count = 2
 								return r, true
 							default:
 								return

@@ -1,74 +1,50 @@
 package xraycfg
 
 import (
-	"bytes"
 	"text/template"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/node/internal/infra/cfgread"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
-	"github.com/tidwall/gjson"
 )
 
-type ClientCfg struct {
-	cfg models.ClientCfg
+type ClientConfig struct {
+	cfg models.ClientConfigTemplate
 }
 
-func NewClientCfg(path string) (*ClientCfg, error) {
-	cfgTemplate, err := cfgread.ReadJSON(path)
+func NewClientConfig(path string) (*ClientConfig, error) {
+	rawTemplate, err := cfgread.ReadJSON(path)
 	if err != nil {
 		return nil, err
 	}
-	_, err = template.New("validate").Parse(cfgTemplate)
+	_, err = template.New("validate").Parse(rawTemplate)
 	if err != nil {
 		return nil, errdefs.WrapWithStack(err)
 	}
 
-	emailField, err := extractVlessEmailField(cfgTemplate)
+	cfgTemplate, err := parseClientConfig(rawTemplate)
 	if err != nil {
 		return nil, err
 	}
-	vlessUUIdField, err := extractVlessUUIDField(cfgTemplate)
+	emailField, err := extractVlessEmailField(rawTemplate)
+	if err != nil {
+		return nil, err
+	}
+	vlessUUIdField, err := extractVlessUUIDField(rawTemplate)
 	if err != nil {
 		return nil, err
 	}
 
-	clientCfg := models.ClientCfg{
+	clientCfg := models.ClientConfigTemplate{
 		Template:        cfgTemplate,
 		VlessEmailField: emailField,
 		VlessUUIDField:  vlessUUIdField,
 	}
 
-	if err = validateClientConfig(&clientCfg); err != nil {
-		return nil, err
-	}
-
-	return &ClientCfg{cfg: clientCfg}, nil
+	return &ClientConfig{cfg: clientCfg}, nil
 }
 
-func validateClientConfig(cfg *models.ClientCfg) error {
-	t, err := template.New("json").Parse(cfg.Template)
-	if err != nil {
-		return errdefs.WrapWithStack(err)
-	}
-
-	testTemplateData := map[string]string{
-		cfg.VlessEmailField: "field",
-		cfg.VlessUUIDField:  "name",
-	}
-	var buf bytes.Buffer
-	if err := t.Execute(&buf, &testTemplateData); err != nil {
-		return errdefs.WrapWithStack(err)
-	}
-
-	if !gjson.Valid(buf.String()) {
-		return errdefs.WrapWithStack(err)
-	}
-
-	return nil
-}
-
-func (cfg *ClientCfg) Get() (*models.ClientCfg, error) {
+func (cfg *ClientConfig) GetTemplate() (*models.ClientConfigTemplate, error) {
 	if cfg == nil {
 		return nil, errdefs.NewNilCall()
 	}
