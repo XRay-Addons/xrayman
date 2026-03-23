@@ -1,0 +1,14 @@
+---
+const { class: extraClass = "", id = "", part = "", ...rest } = Astro.props;
+---
+
+<button
+  type="button"
+  id={id}
+  part={part}
+  class={`ui-reset-button noselect w-100 h-100 text-md p-2 d-flex align-items-center justify-content-center
+${extraClass}`}
+  {...rest}
+>
+  <slot />
+</button>

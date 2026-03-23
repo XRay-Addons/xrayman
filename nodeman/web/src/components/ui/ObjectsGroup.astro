@@ -1,0 +1,66 @@
+---
+const { class: extraClass, ...rest } = Astro.props;
+---
+
+<objects-group
+  class:list={[
+    "app-objects-group",
+    "d-flex",
+    "flex-wrap",
+    "justify-content-center",
+    extraClass,
+  ]}
+  {...rest}
+>
+  <div
+    class="col-12 col-md-10 col-lg-8 row g-0 justify-content-center eq-height-block"
+  >
+    <slot />
+  </div>
+</objects-group>
+
+<style>
+  objects-group {
+    display: contents;
+  }
+</style>
+
+<script>
+  class ObjectsGroup extends HTMLElement {
+    connectedCallback() {
+      const block = this.querySelector(".eq-height-block") as HTMLElement;
+      const children = Array.from(block.children) as HTMLElement[];
+      if (children.length < 2) return;
+
+      function equalize() {
+        let max = 0;
+
+        children.forEach((el) => {
+          el.style.height = "auto";
+        });
+
+        children.forEach((el) => {
+          max = Math.max(max, el.offsetHeight);
+        });
+
+        children.forEach((el) => {
+          el.style.height = max + "px";
+        });
+      }
+
+      const update = () => equalize();
+
+      const ro = new ResizeObserver(update);
+      const mo = new MutationObserver(update);
+
+      ro.observe(block);
+
+      mo.observe(block, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+      });
+    }
+  }
+  customElements.define("objects-group", ObjectsGroup);
+</script>

@@ -1,0 +1,18 @@
+.ui-reset-input,
+.ui-reset-button {
+  border: none;
+  background: none;
+  outline: none;
+  color: inherit;
+}
+
+.ui-reset-button {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ui-reset-button:focus,
+.ui-reset-button:focus-visible {
+  outline: none;
+  box-shadow: none;
+}

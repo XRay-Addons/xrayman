@@ -1,0 +1,23 @@
+---
+const { class: extraClass = "", ...rest } = Astro.props;
+---
+
+<div
+  class:list={[
+    "app-page d-flex align-items-center justify-content-center p-2",
+    extraClass,
+  ]}
+  {...rest}
+>
+  <div class="app-page__content col-sm-12 col-md-8 col-lg-6 col-xl-4 mx-auto">
+    <slot />
+  </div>
+</div>
+
+<style>
+  .app-page {
+    min-height: 100vh;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+</style>

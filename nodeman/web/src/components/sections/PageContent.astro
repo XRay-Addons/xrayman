@@ -1,0 +1,146 @@
+---
+import Page from "../ui/Page.astro";
+import TitleLoggedIn from "./TitleLoggedIn.astro";
+import TitleLoggedOut from "./TitleLoggedOut.astro";
+import ChooseNameCard from "./ChooseNameCard.astro";
+import UserPageCard from "./UserPageCard.astro";
+import InstallAppCard from "./InstallAppCard.astro";
+import OpenAppCard from "./OpenAppCard.astro";
+import ServerError from "./ServerError.astro";
+---
+
+<page-content>
+  <Page>
+    <div part="logged-out-page" hidden>
+      <TitleLoggedOut />
+      <ChooseNameCard />
+    </div>
+
+    <div part="logged-in-page" hidden>
+      <TitleLoggedIn />
+      <UserPageCard />
+      <InstallAppCard />
+      <OpenAppCard />
+    </div>
+
+    <div part="server-error-page" hidden>
+      <ServerError />
+    </div>
+  </Page>
+</page-content>
+
+<style>
+  page-content {
+    display: contents;
+  }
+</style>
+
+<script>
+  import { User, UserID, UserAPIData } from "../../lib/types";
+  import { userStore } from "../../lib/user-store";
+  import { makeURL, parseURL, setURL, resetURL } from "../../lib/user-url";
+  import { setCookie, resetCookie, parseCookie } from "../../lib/user-cookie";
+  import { newUser, getUser, API_REASON } from "../../api/client";
+  import { deriveUser } from "../../lib/user-service";
+  import { UsernameCreateDetail } from "../../lib/events";
+  import { onUsernameCreate } from "../../lib/events";
+
+  class PageContent extends HTMLElement {
+    private off?: () => void;
+    private loggedInEl: HTMLElement | null;
+    private loggedOutEl: HTMLElement | null;
+    private serverErrorEl: HTMLElement | null;
+
+    private setLoggedOut() {
+      resetURL();
+      resetCookie();
+      userStore.set(null);
+      this.loggedInEl?.toggleAttribute("hidden", true);
+      this.serverErrorEl?.toggleAttribute("hidden", true);
+      this.loggedOutEl?.toggleAttribute("hidden", false);
+    }
+
+    private setLoggedIn(user: User) {
+      setURL(user.userPageURL);
+      setCookie(user.id, user.name);
+      userStore.set(user);
+      this.loggedOutEl?.toggleAttribute("hidden", true);
+      this.serverErrorEl?.toggleAttribute("hidden", true);
+      this.loggedInEl?.toggleAttribute("hidden", false);
+    }
+
+    private setError() {
+      this.loggedOutEl?.toggleAttribute("hidden", true);
+      this.loggedInEl?.toggleAttribute("hidden", true);
+      this.serverErrorEl?.toggleAttribute("hidden", false);
+    }
+
+    private parseUserID(): UserID | null {
+      const fromURL = parseURL();
+      if (fromURL) return fromURL;
+
+      const fromCookie = parseCookie();
+      if (fromCookie) return fromCookie;
+
+      return null;
+    }
+
+    private async onUsernameCreated(detail: UsernameCreateDetail) {
+      const userResponse = await newUser(detail.displayName);
+      if (userResponse.ok) {
+        const user = deriveUser(userResponse.data);
+        this.setLoggedIn(user);
+        return;
+      }
+      this.setError();
+    }
+
+    private async initUser() {
+      let userID = this.parseUserID();
+      if (!userID) {
+        this.setLoggedOut();
+        return;
+      }
+
+      const userResponse = await getUser(userID);
+      if (userResponse.ok) {
+        const user = deriveUser(userResponse.data);
+        this.setLoggedIn(user);
+        return;
+      }
+      if (userResponse.reason == API_REASON.NOT_FOUND) {
+        this.setLoggedOut();
+        return;
+      }
+      this.setError();
+    }
+
+    private async initEventsHandlers() {
+      onUsernameCreate(this, async (e) => {
+        await this.onUsernameCreated(e.detail);
+      });
+    }
+
+    connectedCallback() {
+      this.loggedInEl = this.querySelector<HTMLElement>(
+        '[part="logged-in-page"]',
+      );
+      this.loggedOutEl = this.querySelector<HTMLElement>(
+        '[part="logged-out-page"]',
+      );
+      this.serverErrorEl = this.querySelector<HTMLElement>(
+        '[part="server-error-page"]',
+      );
+      if (!this.loggedInEl || !this.loggedOutEl || !this.serverErrorEl) return;
+
+      this.initUser();
+      this.initEventsHandlers();
+    }
+
+    disconnectedCallback() {
+      this.off?.();
+    }
+  }
+
+  customElements.define("page-content", PageContent);
+</script>

@@ -1,0 +1,29 @@
+---
+import "../styles/colors.css";
+import "../styles/depths.css";
+import "../styles/typography.css";
+import "../styles/globals.css";
+import "../styles/uireset.css";
+import "../styles/noselect.css";
+---
+
+<html>
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+    />
+
+    <title data-i18n="title.main"></title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/css/bootstrap.min.css"
+    />
+  </head>
+  <body>
+    <slot />
+    <script type="module" src="/src/lib/i18n.ts"></script>
+  </body>
+</html>

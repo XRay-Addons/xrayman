@@ -1,0 +1,26 @@
+{
+  "title.main": "Оттепелль",
+
+  "title.hello": "Привет",
+  "title.name.placeholder": "『Неизвестное Имя』",
+
+  "choosename.info": "Придумайте себе имя пользователя",
+  "choosename.placeholder": "Например, Олег",
+  "choosename.btntext": "Go",
+
+  "userurl.info": "Сохраните адрес этого сайта — здесь всегда будет инструкция по подключению.",
+  "userurl.btntext": "Copy",
+
+  "installapp.info": "Установите приложение <strong>Happ</strong> и вернитесь на эту страницу",
+
+  "runapp.info": "Нажмите на кнопку <strong>Open HAPP</strong> - откроется приложение. Выберите в нём один из серверов и нажмите БОЛЬШУЮ КРАСИВУЮ КНОПКУ.",
+  "runapp.btn": "Open HAPP",
+  "runapp.ps": "Если интернет не работает - попробуйте выбрать другой сервер :/",
+
+  "btn.install.gplay": "Google Play",
+  "btn.install.appstore.ru": "AppStore-RU",
+  "btn.install.appstore.global": "AppStore",
+  "btn.install.win": "Download .exe",
+
+  "servererror.main": "Ошибка сервера, зайдите позже"
+}

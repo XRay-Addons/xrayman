@@ -1,0 +1,4 @@
+{
+  "API_URL": "http://localhost:80",
+  "HAPP_INTENT": "happ://add/"
+}

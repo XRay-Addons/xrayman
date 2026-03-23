@@ -1,0 +1,58 @@
+---
+import Card from "../ui/Card.astro";
+import Info from "../ui/Info.astro";
+import InputGroup from "../ui/InputGroup.astro";
+import InputText from "../ui/InputText.astro";
+import InputButton from "../ui/InputButton.astro";
+---
+
+<user-page-card>
+  <Card class="mb-2">
+    <Info>
+      <strong>1.</strong>
+      <span data-i18n="userurl.info"></span>
+    </Info>
+    <InputGroup>
+      <InputText slot="input" part="user-url-input" readonly />
+      <InputButton
+        slot="button"
+        part="user-url-btn"
+        data-i18n="userurl.btntext"
+      />
+    </InputGroup>
+  </Card>
+</user-page-card>
+
+<script>
+  import { userStore } from "../../lib/user-store";
+
+  class UserPageCard extends HTMLElement {
+    private off?: () => void;
+
+    connectedCallback() {
+      const inputEl = this.querySelector<HTMLInputElement>(
+        '[part="user-url-input"]',
+      );
+      const btnEl = this.querySelector<HTMLButtonElement>(
+        '[part="user-url-btn"]',
+      );
+      if (!inputEl || !btnEl) return;
+
+      btnEl.addEventListener("click", async (e: Event) => {
+        e.preventDefault();
+        navigator.clipboard.writeText(inputEl.value);
+      });
+      const update = () => {
+        inputEl.value = userStore.get()?.userPageURL ?? "";
+      };
+      update();
+      this.off = userStore.subscribe(update);
+    }
+
+    disconnectedCallback() {
+      this.off?.();
+    }
+  }
+
+  customElements.define("user-page-card", UserPageCard);
+</script>

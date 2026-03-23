@@ -1,0 +1,42 @@
+---
+import Title from "../ui/Title.astro";
+import { userStore } from "../../lib/user-store";
+---
+
+<title-logged-in>
+  <Title class="mb-2">
+    <span data-i18n="title.hello"></span>
+    <span part="username"></span>
+  </Title>
+</title-logged-in>
+
+<style>
+  title-logged-in {
+    display: contents;
+  }
+</style>
+
+<script>
+  import { userStore } from "../../lib/user-store";
+
+  class TitleLoggedIn extends HTMLElement {
+    private off?: () => void;
+
+    connectedCallback() {
+      const usernameEl = this.querySelector<HTMLElement>('[part="username"]');
+      if (!usernameEl) return;
+
+      const update = () => {
+        usernameEl.textContent = userStore.get()?.displayName ?? "";
+      };
+      this.off = userStore.subscribe(update);
+      update();
+    }
+
+    disconnectedCallback() {
+      this.off?.();
+    }
+  }
+
+  customElements.define("title-logged-in", TitleLoggedIn);
+</script>

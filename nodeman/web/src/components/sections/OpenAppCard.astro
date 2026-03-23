@@ -1,0 +1,54 @@
+---
+import Card from "../ui/Card.astro";
+import Info from "../ui/Info.astro";
+import ObjectsGroup from "../ui/ObjectsGroup.astro";
+import Button from "../ui/Button.astro";
+---
+
+<open-app-card>
+  <Card class="mb-2">
+    <Info>
+      <strong>3.</strong>
+      <span data-i18n="runapp.info"></span>
+    </Info>
+    <ObjectsGroup>
+      <Button part="run-app-btn">
+        <span data-i18n="runapp.btn"></span>
+      </Button>
+    </ObjectsGroup>
+    <Info>
+      <strong>PS.</strong>
+      <span data-i18n="runapp.ps"></span>
+    </Info>
+  </Card>
+</open-app-card>
+
+<script>
+  import { userStore } from "../../lib/user-store";
+  import { HAPP_INTENT } from "../../config/config.json";
+
+  class OpenAppCard extends HTMLElement {
+    makeHappSubLink(subscriptionURL: string) {
+      return `${HAPP_INTENT}${subscriptionURL}`;
+    }
+
+    connectedCallback() {
+      const btnEl = this.querySelector<HTMLButtonElement>(
+        '[part="run-app-btn"]',
+      );
+      if (!btnEl) return;
+
+      btnEl.addEventListener("click", () => {
+        const subscriptionURL = userStore.get()?.subscriptionURL;
+        if (!subscriptionURL) return;
+
+        window.open(
+          this.makeHappSubLink(subscriptionURL),
+          "_blank",
+          "noopener",
+        );
+      });
+    }
+  }
+  customElements.define("open-app-card", OpenAppCard);
+</script>

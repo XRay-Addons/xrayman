@@ -1,0 +1,61 @@
+---
+import Card from "../ui/Card.astro";
+import Info from "../ui/Info.astro";
+import InputGroup from "../ui/InputGroup.astro";
+import InputText from "../ui/InputText.astro";
+import InputButton from "../ui/InputButton.astro";
+---
+
+<choose-name-card>
+  <Card class="mb-2">
+    <Info data-i18n="choosename.info" />
+    <InputGroup>
+      <InputText
+        slot="input"
+        data-i18n-placeholder="choosename.placeholder"
+        part="name-input"
+      />
+      <InputButton
+        slot="button"
+        part="name-input-btn"
+        data-i18n="choosename.btntext"
+      />
+    </InputGroup>
+  </Card>
+</choose-name-card>
+
+<style>
+  title-logged-in {
+    display: contents;
+  }
+</style>
+
+<script>
+  import { emitUsernameCreate } from "../../lib/events";
+
+  class ChooseNameCard extends HTMLElement {
+    connectedCallback() {
+      const inputEl = this.querySelector<HTMLInputElement>(
+        '[part="name-input"]',
+      );
+      const btnEl = this.querySelector<HTMLButtonElement>(
+        '[part="name-input-btn"]',
+      );
+      if (!inputEl || !btnEl) return;
+
+      const onSubmit = () => {
+        const displayName = inputEl.value.trim();
+        if (!displayName) return;
+        emitUsernameCreate(this, { displayName });
+      };
+
+      btnEl.addEventListener("click", onSubmit);
+      inputEl.addEventListener(
+        "keydown",
+        (e) => e.key === "Enter" && onSubmit(),
+      );
+    }
+  }
+
+  customElements.define("choose-name-card", ChooseNameCard);
+</script>
