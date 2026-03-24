@@ -40,7 +40,8 @@ function applyI18n(root: ParentNode = document) {
   });
 }
 
-function startI18nObserver() {
+export function startI18nObserver() {
+  applyI18n();
   const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
@@ -55,11 +56,3 @@ function startI18nObserver() {
     subtree: true,
   });
 }
-
-function setLang(lang: Lang) {
-  currentLang = lang;
-  applyI18n();
-}
-
-setLang("ru");
-startI18nObserver();

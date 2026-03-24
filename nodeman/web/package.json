@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "astro": "^5.17.1",
+    "astro-relative-links": "^0.4.2",
     "axios": "^1.13.6"
   },
   "devDependencies": {

@@ -3,7 +3,7 @@ import { UserID, UserAPIData } from "../lib/types";
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: "http://localhost:80",
+  baseURL: "http://localhost:80/api",
 });
 
 export const nodeApi = getNodeManagementAPI(api);

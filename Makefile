@@ -1,9 +1,11 @@
 BIN_DIR := $(CURDIR)/bin
 INSTALL_PREFIX := /usr/local/bin/xrayman
 
-NODE_SRC := ./node/cmd
-NODEMAN_SRC := ./nodeman/cmd
+NODEMAN_WEB_SRC := $(CURDIR)/nodeman/web
+NODE_SRC := $(CURDIR)/node/cmd
+NODEMAN_SRC := $(CURDIR)/nodeman/cmd
 
+NODEMAN_WEB_DIST := $(NODEMAN_SRC)/../internal/http/statichandler/dist
 NODE_BIN := $(BIN_DIR)/node
 NODEMAN_BIN := $(BIN_DIR)/nodeman
 XRAY_BIN := $(BIN_DIR)/xray
@@ -12,7 +14,12 @@ XRAY_BIN := $(BIN_DIR)/xray
 
 all: build
 
-build: $(NODE_BIN) $(NODEMAN_BIN) $(XRAY_BIN) 
+build: $(NODE_vBIN) $(NODEMAN_BIN) $(XRAY_BIN) 
+
+nodeman-frontend:
+	cd $(NODEMAN_WEB_SRC) && \
+	NODEMAN_WEB_DIST=$(NODEMAN_WEB_DIST) npm ci && \
+	NODEMAN_WEB_DIST=$(NODEMAN_WEB_DIST) npm run build
 
 $(NODE_BIN):
 	@echo "Building node..."
@@ -20,7 +27,7 @@ $(NODE_BIN):
 	go build -o $(NODE_BIN) $(NODE_SRC)
 	@echo "Node built."
 
-$(NODEMAN_BIN):
+$(NODEMAN_BIN): nodeman-frontend
 	@echo "Building nodeman..."
 	mkdir -p $(BIN_DIR)
 	go build -o $(NODEMAN_BIN) $(NODEMAN_SRC)
@@ -54,6 +61,7 @@ install: build
 clean:
 	@echo "Cleaning up build files..."
 	rm -rf $(BIN_DIR)
+	rm -rf $(NODEMAN_WEB_DIST)
 
 	make -C xray \
 		BIN_DIR=$(BIN_DIR) \

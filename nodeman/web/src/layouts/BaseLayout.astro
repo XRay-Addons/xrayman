@@ -9,6 +9,7 @@ import "../styles/noselect.css";
 
 <html>
   <head>
+    <base href="/u/">
     <meta charset="UTF-8" />
 
     <meta
@@ -24,6 +25,9 @@ import "../styles/noselect.css";
   </head>
   <body>
     <slot />
-    <script type="module" src="/src/lib/i18n.ts"></script>
+    <script>
+      import { startI18nObserver } from "../lib/i18n.ts";
+      startI18nObserver();
+    </script>
   </body>
 </html>

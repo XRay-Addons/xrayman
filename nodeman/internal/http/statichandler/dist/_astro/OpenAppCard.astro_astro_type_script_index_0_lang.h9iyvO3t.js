@@ -1,0 +1,1 @@
+import{u as t}from"./user-store.C3Dq0oyx.js";const p="happ://add/";class r extends HTMLElement{makeHappSubLink(e){return`${p}${e}`}connectedCallback(){const e=this.querySelector('[part="run-app-btn"]');e&&e.addEventListener("click",()=>{const n=t.get()?.subscriptionURL;n&&window.open(this.makeHappSubLink(n),"_blank","noopener")})}}customElements.define("open-app-card",r);

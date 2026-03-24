@@ -6,8 +6,7 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	mw "github.com/XRay-Addons/xrayman/nodeman/internal/http/middleware"
-	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
 	"go.uber.org/zap"
 )
@@ -35,9 +34,12 @@ func WithLogger(log *zap.Logger) Option {
 	}
 }
 
-func New(h api.Handler, options ...Option) (http.Handler, error) {
-	if h == nil {
-		return nil, errdefs.NewNilArg("h")
+func New(apiHandler, staticHandler http.Handler, options ...Option) (http.Handler, error) {
+	if apiHandler == nil {
+		return nil, errdefs.NewNilArg("apiHandler")
+	}
+	if staticHandler == nil {
+		return nil, errdefs.NewNilArg("staticHandler")
 	}
 
 	ro := &routerOptions{
@@ -49,22 +51,18 @@ func New(h api.Handler, options ...Option) (http.Handler, error) {
 		o(ro)
 	}
 
-	// create api handler
-	apiHandler, err := api.NewServer(h)
-	if err != nil {
-		return nil, err
-	}
-
 	// add middleware from chi
 	r := chi.NewRouter()
+
 	r.Use(chimw.RequestID)
 	r.Use(mw.Logger(ro.log))
 	r.Use(chimw.Timeout(ro.requestTimeout))
 	r.Use(chimw.Recoverer)
 	r.Use(chimw.NewCompressor(ro.compressionLvl).Handler)
-
+	
 	// add handler after middlewares
-	r.Mount("/", apiHandler)
+	chiMount(r, "/api", apiHandler)
+	chiMount(r, "/u", staticHandler)
 
 	return r, nil
 }
@@ -76,3 +74,12 @@ type routerOptions struct {
 }
 
 type Option func(*routerOptions)
+
+// Golang myass
+func chiMount(r chi.Router, prefix string, handler http.Handler) {
+	if _, ok := handler.(*chi.Mux); ok {
+		r.Mount(prefix, handler)
+		return
+	}
+	r.Mount(prefix, http.StripPrefix(prefix, handler))
+}

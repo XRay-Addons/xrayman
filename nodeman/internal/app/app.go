@@ -8,6 +8,8 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/config"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/apihandler"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/statichandler"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/router"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/server"
 	a "github.com/XRay-Addons/xrayman/nodeman/internal/infra/app"
@@ -44,6 +46,8 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 	var s *service.Service
 
 	var h *handler.Handler
+	var ah http.Handler
+	var sh http.Handler
 	var r http.Handler
 	var httpServer *server.HttpServer
 
@@ -119,10 +123,26 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 			}, nil,
 		),
 
+		// api handler
+		a.WithComponent("api handler",
+			func() (err error) {
+				ah, err = apihandler.New(h)
+				return
+			}, nil,
+		),
+
+		// static handler
+		a.WithComponent("static handler",
+			func() (err error) {
+				sh, err = statichandler.New()
+				return
+			}, nil,
+		),
+
 		// router
 		a.WithComponent("router",
 			func() (err error) {
-				r, err = router.New(h, router.WithLogger(log))
+				r, err = router.New(ah, sh, router.WithLogger(log))
 				return
 			}, nil,
 		),

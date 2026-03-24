@@ -7,7 +7,7 @@ import (
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 	mw "github.com/XRay-Addons/xrayman/node/internal/http/middleware"
 	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
 	"go.uber.org/zap"
 )

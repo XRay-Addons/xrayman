@@ -12,12 +12,12 @@ import ServerError from "./ServerError.astro";
 <page-content>
   <Page>
     <div part="logged-out-page" hidden>
-      <TitleLoggedOut />
+      <TitleLoggedOut/>
       <ChooseNameCard />
     </div>
 
     <div part="logged-in-page" hidden>
-      <TitleLoggedIn />
+      <TitleLoggedIn/>
       <UserPageCard />
       <InstallAppCard />
       <OpenAppCard />
@@ -44,6 +44,7 @@ import ServerError from "./ServerError.astro";
   import { deriveUser } from "../../lib/user-service";
   import { UsernameCreateDetail } from "../../lib/events";
   import { onUsernameCreate } from "../../lib/events";
+  import { startI18nObserver } from "../../lib/i18n";
 
   class PageContent extends HTMLElement {
     private off?: () => void;
@@ -55,18 +56,18 @@ import ServerError from "./ServerError.astro";
       resetURL();
       resetCookie();
       userStore.set(null);
-      this.loggedInEl?.toggleAttribute("hidden", true);
+      this.loggedInEl?.toggleAttribute("hidden", false);
+      this.loggedOutEl?.toggleAttribute("hidden", true);
       this.serverErrorEl?.toggleAttribute("hidden", true);
-      this.loggedOutEl?.toggleAttribute("hidden", false);
     }
 
     private setLoggedIn(user: User) {
       setURL(user.userPageURL);
       setCookie(user.id, user.name);
       userStore.set(user);
-      this.loggedOutEl?.toggleAttribute("hidden", true);
+      this.loggedInEl?.toggleAttribute("hidden", true);
+      this.loggedOutEl?.toggleAttribute("hidden", false);
       this.serverErrorEl?.toggleAttribute("hidden", true);
-      this.loggedInEl?.toggleAttribute("hidden", false);
     }
 
     private setError() {

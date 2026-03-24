@@ -1,0 +1,1 @@
+class t{constructor(){this.user=null,this.listeners=new Set}get(){return this.user}set(e){this.user=e,this.listeners.forEach(s=>s())}subscribe(e){return this.listeners.add(e),()=>this.listeners.delete(e)}}const r=new t;window.userStore=r;export{r as u};
