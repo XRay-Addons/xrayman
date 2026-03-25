@@ -38,10 +38,10 @@ import ServerError from "./ServerError.astro";
 <script>
   import { User, UserID, UserAPIData } from "../../lib/types";
   import { userStore } from "../../lib/user-store";
-  import { makeURL, parseURL, setURL, resetURL } from "../../lib/user-url";
+  import { setURL, resetURL } from "../../lib/user-url";
+  import { UserUtils } from "../../lib/user-utils";
   import { setCookie, resetCookie, parseCookie } from "../../lib/user-cookie";
   import { newUser, getUser, API_REASON } from "../../api/client";
-  import { deriveUser } from "../../lib/user-service";
   import { UsernameCreateDetail } from "../../lib/events";
   import { onUsernameCreate } from "../../lib/events";
   import { startI18nObserver } from "../../lib/i18n";
@@ -56,8 +56,8 @@ import ServerError from "./ServerError.astro";
       resetURL();
       resetCookie();
       userStore.set(null);
-      this.loggedInEl?.toggleAttribute("hidden", false);
-      this.loggedOutEl?.toggleAttribute("hidden", true);
+      this.loggedInEl?.toggleAttribute("hidden", true);
+      this.loggedOutEl?.toggleAttribute("hidden", false);
       this.serverErrorEl?.toggleAttribute("hidden", true);
     }
 
@@ -65,8 +65,8 @@ import ServerError from "./ServerError.astro";
       setURL(user.userPageURL);
       setCookie(user.id, user.name);
       userStore.set(user);
-      this.loggedInEl?.toggleAttribute("hidden", true);
-      this.loggedOutEl?.toggleAttribute("hidden", false);
+      this.loggedInEl?.toggleAttribute("hidden", false);
+      this.loggedOutEl?.toggleAttribute("hidden", true);
       this.serverErrorEl?.toggleAttribute("hidden", true);
     }
 
@@ -76,8 +76,8 @@ import ServerError from "./ServerError.astro";
       this.serverErrorEl?.toggleAttribute("hidden", false);
     }
 
-    private parseUserID(): UserID | null {
-      const fromURL = parseURL();
+    private getUserID(): UserID | null {
+      const fromURL = UserUtils.parseProfileURL();
       if (fromURL) return fromURL;
 
       const fromCookie = parseCookie();
@@ -89,7 +89,7 @@ import ServerError from "./ServerError.astro";
     private async onUsernameCreated(detail: UsernameCreateDetail) {
       const userResponse = await newUser(detail.displayName);
       if (userResponse.ok) {
-        const user = deriveUser(userResponse.data);
+        const user = UserUtils.makeUser(userResponse.data);
         this.setLoggedIn(user);
         return;
       }
@@ -97,7 +97,7 @@ import ServerError from "./ServerError.astro";
     }
 
     private async initUser() {
-      let userID = this.parseUserID();
+      let userID = this.getUserID();
       if (!userID) {
         this.setLoggedOut();
         return;
@@ -105,7 +105,7 @@ import ServerError from "./ServerError.astro";
 
       const userResponse = await getUser(userID);
       if (userResponse.ok) {
-        const user = deriveUser(userResponse.data);
+        const user = UserUtils.makeUser(userResponse.data);
         this.setLoggedIn(user);
         return;
       }

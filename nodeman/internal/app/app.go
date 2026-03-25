@@ -9,7 +9,7 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/apihandler"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/http/statichandler"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/spahandler"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/router"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/server"
 	a "github.com/XRay-Addons/xrayman/nodeman/internal/infra/app"
@@ -131,10 +131,10 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 			}, nil,
 		),
 
-		// static handler
-		a.WithComponent("static handler",
+		// spa handler
+		a.WithComponent("spa handler",
 			func() (err error) {
-				sh, err = statichandler.New()
+				sh, err = spahandler.New()
 				return
 			}, nil,
 		),

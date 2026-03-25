@@ -25,11 +25,12 @@ import Button from "../ui/Button.astro";
 
 <script>
   import { userStore } from "../../lib/user-store";
-  import { HAPP_INTENT } from "../../config/config.json";
+  import { UserUtils } from "../../lib/user-utils";
+  import { config } from "../../config/config";
 
   class OpenAppCard extends HTMLElement {
     makeHappSubLink(subscriptionURL: string) {
-      return `${HAPP_INTENT}${subscriptionURL}`;
+      return `${config.HAPP_INTENT}${subscriptionURL}`;
     }
 
     connectedCallback() {
@@ -39,14 +40,14 @@ import Button from "../ui/Button.astro";
       if (!btnEl) return;
 
       btnEl.addEventListener("click", () => {
-        const subscriptionURL = userStore.get()?.subscriptionURL;
-        if (!subscriptionURL) return;
+        const user = userStore.get();
+        if( !user ) {
+          return;
+        }
 
-        window.open(
-          this.makeHappSubLink(subscriptionURL),
-          "_blank",
-          "noopener",
-        );
+        const subscriptionURL = UserUtils.subscriptionURL(user);
+        const happSubLink = this.makeHappSubLink(subscriptionURL);
+        window.open(happSubLink, "_blank", "noopener");
       });
     }
   }

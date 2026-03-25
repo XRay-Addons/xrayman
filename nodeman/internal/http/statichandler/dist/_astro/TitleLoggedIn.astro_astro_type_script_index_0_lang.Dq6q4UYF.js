@@ -1,1 +1,0 @@
-import{u as s}from"./user-store.C3Dq0oyx.js";class n extends HTMLElement{connectedCallback(){const e=this.querySelector('[part="username"]');if(!e)return;const t=()=>{e.textContent=s.get()?.displayName??""};this.off=s.subscribe(t),t()}disconnectedCallback(){this.off?.()}}customElements.define("title-logged-in",n);

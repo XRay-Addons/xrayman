@@ -25,6 +25,7 @@ import InputButton from "../ui/InputButton.astro";
 
 <script>
   import { userStore } from "../../lib/user-store";
+  import { UserUtils } from "../../lib/user-utils"; 
 
   class UserPageCard extends HTMLElement {
     private off?: () => void;
@@ -43,7 +44,12 @@ import InputButton from "../ui/InputButton.astro";
         navigator.clipboard.writeText(inputEl.value);
       });
       const update = () => {
-        inputEl.value = userStore.get()?.userPageURL ?? "";
+        const user = userStore.get();
+        if( !user ) {
+          inputEl.value = "";
+          return;
+        }
+        inputEl.value = UserUtils.profileURL(user);
       };
       update();
       this.off = userStore.subscribe(update);

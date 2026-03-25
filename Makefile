@@ -5,7 +5,7 @@ NODEMAN_WEB_SRC := $(CURDIR)/nodeman/web
 NODE_SRC := $(CURDIR)/node/cmd
 NODEMAN_SRC := $(CURDIR)/nodeman/cmd
 
-NODEMAN_WEB_DIST := $(NODEMAN_SRC)/../internal/http/statichandler/dist
+NODEMAN_WEB_DIST := $(NODEMAN_SRC)/../internal/http/spahandler/dist
 NODE_BIN := $(BIN_DIR)/node
 NODEMAN_BIN := $(BIN_DIR)/nodeman
 XRAY_BIN := $(BIN_DIR)/xray
