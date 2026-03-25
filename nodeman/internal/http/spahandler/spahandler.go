@@ -6,35 +6,48 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"io/fs"
 	"strings"
-	"fmt"
 )
 
 //go:embed dist/*
 var distFS embed.FS
 
-
-func New() (http.Handler, error) {
+func New() (http.Handler, error) {    
     distSub, err := fs.Sub(distFS, "dist")
     if err != nil {
         return nil, errdefs.WrapWithStack(err)
     }
 
-	// read index.html
     indexHTML, err := fs.ReadFile(distSub, "index.html")
     if err != nil {
         return nil, errdefs.WrapWithStack(err)
     }
 
-	fileServer := http.FileServer(http.FS(distSub))
+    fileServer := http.FileServer(http.FS(distSub))
+
+	basePath := "/u"
 
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Printf(r.URL.Path)
-        path := strings.TrimPrefix(r.URL.Path, "/")
-        if _, err := fs.Stat(distSub, path); err == nil {
+        path := r.URL.Path
+       	
+        if path != "" && !strings.HasPrefix(path, "/") {
+            http.NotFound(w, r)
+            return
+        }
+
+		if path == "" {
+			http.Redirect(w, r, basePath+"/", http.StatusMovedPermanently)
+			return;
+		}
+
+        cleanPath := strings.TrimPrefix(path, "/")
+
+        if info, err := fs.Stat(distSub, cleanPath); err == nil && !info.IsDir() {
+            r.URL.Path = path
             fileServer.ServeHTTP(w, r)
             return
         }
 
+        // SPA fallback
         w.Header().Set("Content-Type", "text/html; charset=utf-8")
         w.WriteHeader(http.StatusOK)
         w.Write(indexHTML)

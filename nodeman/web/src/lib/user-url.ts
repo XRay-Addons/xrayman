@@ -10,7 +10,8 @@ export function parseURL(): UserID | null {
 }
 
 export function setURL(url: string) {
-  history.pushState(null, "", `/${url}`);
+  console.log("push url state:", `${url}`);
+  history.pushState(null, "", `${url}`);
 }
 
 export function resetURL() {

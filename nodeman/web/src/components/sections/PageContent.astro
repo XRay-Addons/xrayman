@@ -62,7 +62,7 @@ import ServerError from "./ServerError.astro";
     }
 
     private setLoggedIn(user: User) {
-      setURL(user.userPageURL);
+      setURL(UserUtils.profilePath(user));
       setCookie(user.id, user.name);
       userStore.set(user);
       this.loggedInEl?.toggleAttribute("hidden", false);
