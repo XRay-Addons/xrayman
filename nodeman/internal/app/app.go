@@ -51,9 +51,6 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 	var r http.Handler
 	var httpServer *server.HttpServer
 
-			userSpaPrefix := "/user"
-		apiPrefix := "/appii"
-
 	app := a.New(
 		// http client
 		a.WithComponent("http client",
@@ -137,7 +134,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// user spa handler
 		a.WithComponent("spa handler",
 			func() (err error) {
-				userHandler, err = spa.NewHandler(userSpaPrefix, apiPrefix)
+				userHandler, err = spa.NewHandler(cfg.UserSPAPrefix, cfg.APIPrefix)
 				return
 			}, nil,
 		),
@@ -146,8 +143,8 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		a.WithComponent("router",
 			func() (err error) {
 				r, err = router.New(
-					router.WithHandler(apiPrefix, apiHandler),
-					router.WithHandler(userSpaPrefix, userHandler),
+					router.WithHandler(cfg.APIPrefix, apiHandler),
+					router.WithHandler(cfg.UserSPAPrefix, userHandler),
 					router.WithLogger(log))
 				return
 			}, nil,

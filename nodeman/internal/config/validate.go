@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 )
@@ -16,6 +17,9 @@ func Validate(c Config) error {
 		return err
 	}
 	if err := checkDBConn(c); err != nil {
+		return err
+	}
+	if err := checkPaths(c); err != nil {
 		return err
 	}
 
@@ -61,6 +65,16 @@ func checkCerts(c Config) error {
 func checkDBConn(c Config) error {
 	if len(c.DBConn) == 0 {
 		return errdefs.New("dbconn string invalid")
+	}
+	return nil
+}
+
+func checkPaths(c Config) error {
+	if( !strings.HasPrefix(c.APIPrefix, "/" ) ) {
+		return errdefs.New("api prefix invalid")
+	}
+	if( !strings.HasPrefix(c.UserSPAPrefix, "/" ) ) {
+		return errdefs.New("user spa prefix invalid")
 	}
 	return nil
 }

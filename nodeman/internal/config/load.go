@@ -27,6 +27,8 @@ func defaultConfig() *Config {
 	return &Config{
 		Endpoint: "localhost:80",
 		certsDir: defaultCertsDir(),
+		UserSPAPrefix: "/u",
+		APIPrefix: "/api",
 	}
 }
 
@@ -49,6 +51,10 @@ func readCLIParams(c *Config) error {
 should contains nodeman.crt nodeman.key ca.crt`)
 	fs.StringVar(&c.DBConn, "db", c.DBConn,
 		`db connection string`)
+	fs.StringVar(&c.UserSPAPrefix, "userpref", c.UserSPAPrefix,
+		`user SPA path prefix`)
+	fs.StringVar(&c.APIPrefix, "apipref", c.APIPrefix,
+		`api path prefix`)
 
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		return errdefs.WrapWithStack(err)
