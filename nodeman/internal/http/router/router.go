@@ -1,6 +1,7 @@
 package router
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -13,6 +14,17 @@ import (
 
 const DefaultRequestTimeout = 10 * time.Second
 const DefaultCompressionLevel = 2
+
+func WithHandler(path string, h http.Handler) Option {
+	return func(r *routerOptions) {
+		r.handlers = append( r.handlers,
+			handler{ 
+				path: path,
+				handler: h,
+			},
+		)
+	}
+}
 
 func WithTimeout(d time.Duration) Option {
 	return func(r *routerOptions) {
@@ -34,14 +46,7 @@ func WithLogger(log *zap.Logger) Option {
 	}
 }
 
-func New(apiHandler, staticHandler http.Handler, options ...Option) (http.Handler, error) {
-	if apiHandler == nil {
-		return nil, errdefs.NewNilArg("apiHandler")
-	}
-	if staticHandler == nil {
-		return nil, errdefs.NewNilArg("staticHandler")
-	}
-
+func New(options ...Option) (http.Handler, error) {
 	ro := &routerOptions{
 		requestTimeout: DefaultRequestTimeout,
 		compressionLvl: DefaultCompressionLevel,
@@ -61,16 +66,26 @@ func New(apiHandler, staticHandler http.Handler, options ...Option) (http.Handle
 	r.Use(chimw.NewCompressor(ro.compressionLvl).Handler)
 	
 	// add handler after middlewares
-	chiMount(r, "/api", apiHandler)
-	chiMount(r, "/u", staticHandler)
+	for _, h :=  range ro.handlers {
+		if h.handler == nil {
+			return nil, errdefs.NewNilArg(fmt.Sprintf("%s handler", h.path))
+		}
+		chiMount(r, h.path, h.handler)
+	}
 
 	return r, nil
 }
 
+type handler struct {
+    path    string
+    handler http.Handler
+}
+
 type routerOptions struct {
+    handlers []handler
 	requestTimeout time.Duration
 	compressionLvl int
-	log            *zap.Logger
+	log            *zap.Logger	
 }
 
 type Option func(*routerOptions)

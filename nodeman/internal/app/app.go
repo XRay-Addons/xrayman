@@ -7,11 +7,11 @@ import (
 	client "github.com/XRay-Addons/xrayman/nodeman/internal/clients/node"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/config"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/api"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/http/apihandler"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/http/spahandler"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/router"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/server"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/spa"
 	a "github.com/XRay-Addons/xrayman/nodeman/internal/infra/app"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/httpclient"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/poolsyncer"
@@ -46,10 +46,13 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 	var s *service.Service
 
 	var h *handler.Handler
-	var ah http.Handler
-	var sh http.Handler
+	var apiHandler http.Handler
+	var userHandler http.Handler
 	var r http.Handler
 	var httpServer *server.HttpServer
+
+			userSpaPrefix := "/user"
+		apiPrefix := "/appii"
 
 	app := a.New(
 		// http client
@@ -126,15 +129,15 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// api handler
 		a.WithComponent("api handler",
 			func() (err error) {
-				ah, err = apihandler.New(h)
+				apiHandler, err = api.NewHandler(h)
 				return
 			}, nil,
 		),
 
-		// spa handler
+		// user spa handler
 		a.WithComponent("spa handler",
 			func() (err error) {
-				sh, err = spahandler.New()
+				userHandler, err = spa.NewHandler(userSpaPrefix, apiPrefix)
 				return
 			}, nil,
 		),
@@ -142,7 +145,10 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// router
 		a.WithComponent("router",
 			func() (err error) {
-				r, err = router.New(ah, sh, router.WithLogger(log))
+				r, err = router.New(
+					router.WithHandler(apiPrefix, apiHandler),
+					router.WithHandler(userSpaPrefix, userHandler),
+					router.WithLogger(log))
 				return
 			}, nil,
 		),

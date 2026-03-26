@@ -20,4 +20,4 @@ class UserStore {
 }
 
 export const userStore = new UserStore();
-window.userStore = userStore;
+//window.userStore = userStore;
