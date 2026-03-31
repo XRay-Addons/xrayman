@@ -56,24 +56,27 @@ import ServerError from "./ServerError.astro";
       resetURL();
       resetCookie();
       userStore.set(null);
-      this.loggedInEl?.toggleAttribute("hidden", true);
-      this.loggedOutEl?.toggleAttribute("hidden", false);
-      this.serverErrorEl?.toggleAttribute("hidden", true);
+      this.showEl(this.loggedOutEl);
     }
 
     private setLoggedIn(user: User) {
       setURL(UserUtils.profilePath(user));
       setCookie(user.id, user.name);
       userStore.set(user);
-      this.loggedInEl?.toggleAttribute("hidden", false);
-      this.loggedOutEl?.toggleAttribute("hidden", true);
-      this.serverErrorEl?.toggleAttribute("hidden", true);
+      this.showEl(this.loggedInEl);
     }
 
     private setError() {
-      this.loggedOutEl?.toggleAttribute("hidden", true);
-      this.loggedInEl?.toggleAttribute("hidden", true);
-      this.serverErrorEl?.toggleAttribute("hidden", false);
+      this.showEl(this.serverErrorEl);
+    }
+
+    private showEl(el) {
+      const els = [this.loggedInEl, this.loggedOutEl, this.serverErrorEl];
+      const showAll = import.meta.env.PUBLIC_DEBUG_SHOW_ALL === 'true';
+      console.log('Show all?', showAll);
+      els.forEach(element => {
+        element?.toggleAttribute("hidden", !(showAll || element == el));
+      });
     }
 
     private getUserID(): UserID | null {
@@ -103,6 +106,7 @@ import ServerError from "./ServerError.astro";
         return;
       }
 
+      this.showEl(null);
       const userResponse = await getUser(userID);
       if (userResponse.ok) {
         const user = UserUtils.makeUser(userResponse.data);

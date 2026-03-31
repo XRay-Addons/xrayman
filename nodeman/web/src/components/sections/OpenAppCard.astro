@@ -1,7 +1,7 @@
 ---
 import Card from "../ui/Card.astro";
 import Info from "../ui/Info.astro";
-import ObjectsGroup from "../ui/ObjectsGroup.astro";
+import ButtonsGroup from "../ui/ButtonsGroup.astro";
 import Button from "../ui/Button.astro";
 ---
 
@@ -11,11 +11,11 @@ import Button from "../ui/Button.astro";
       <strong>3.</strong>
       <span data-i18n="runapp.info"></span>
     </Info>
-    <ObjectsGroup>
+    <ButtonsGroup>
       <Button part="run-app-btn">
         <span data-i18n="runapp.btn"></span>
       </Button>
-    </ObjectsGroup>
+    </ButtonsGroup>
     <Info>
       <strong>PS.</strong>
       <span data-i18n="runapp.ps"></span>
@@ -41,7 +41,7 @@ import Button from "../ui/Button.astro";
 
       btnEl.addEventListener("click", () => {
         const user = userStore.get();
-        if( !user ) {
+        if (!user) {
           return;
         }
 

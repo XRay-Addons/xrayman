@@ -80,4 +80,8 @@ const styleVars = {
       transition: none;
     }
   }
+
+  :global(.surface input) {
+    background-color: color-mix(in srgb, var(--surface-color) 25%, white 75%);
+  }
 </style>

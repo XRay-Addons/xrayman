@@ -1,0 +1,21 @@
+---
+const { class: extraClass, ...rest } = Astro.props;
+import EqHeight from "./EqHeight.astro";
+---
+
+<div
+  class:list={[
+    "app-buttons",
+    "d-flex",
+    "flex-wrap",
+    "justify-content-center",
+    extraClass,
+  ]}
+  {...rest}
+>
+  <div class="app-buttons__layout col-12 col-md-10 col-lg-8 row">
+    <EqHeight class="app-buttons__field row g-0 justify-content-center">
+      <slot />
+    </EqHeight>
+  </div>
+</div>

@@ -1,5 +1,5 @@
 ---
-import ObjectsGroup from "../ui/ObjectsGroup.astro";
+import ButtonsGroup from "../ui/ButtonsGroup.astro";
 import Card from "../ui/Card.astro";
 import Info from "../ui/Info.astro";
 import Button from "../ui/Button.astro";
@@ -14,13 +14,13 @@ const buttonsJson = JSON.stringify(PLATFORM_BUTTONS);
       <strong>2.</strong>
       <span data-i18n="installapp.info"></span>
     </Info>
-    <ObjectsGroup part="install-app-btns">
+    <ButtonsGroup part="install-app-btns">
       <template part="install-app-btn-template">
         <Button part="install-app-btn">
           <span part="install-app-btn-text"></span>
         </Button>
       </template>
-    </ObjectsGroup>
+    </ButtonsGroup>
   </Card>
 </install-app-card>
 

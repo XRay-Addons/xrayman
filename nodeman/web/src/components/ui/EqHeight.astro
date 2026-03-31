@@ -1,0 +1,59 @@
+---
+const { ...rest } = Astro.props;
+---
+
+<eq-height>
+  <div {...rest} data-eq-height>
+    <slot />
+  </div>
+</eq-height>
+
+<style>
+  eq-height {
+    display: contents;
+  }
+</style>
+
+<script>
+  class EqHeight extends HTMLElement {
+    mo: MutationObserver | null;
+    ro: ResizeObserver | null;
+
+    connectedCallback() {
+      const container = this.querySelector("[data-eq-height]");
+      if (!container) return;
+
+      const equalize = () => {
+        const children = Array.from(container.children) as HTMLElement[];
+        if (children.length < 2) return;
+
+        let max = 0;
+
+        children.forEach((el) => (el.style.height = "auto"));
+        children.forEach((el) => (max = Math.max(max, el.offsetHeight)));
+        children.forEach((el) => (el.style.height = `${max}px`));
+      };
+
+      this.ro = new ResizeObserver(equalize);
+      this.mo = new MutationObserver(equalize);
+
+      this.ro.observe(container);
+      this.mo.observe(container, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+      });
+
+      equalize();
+    }
+
+    disconnectedCallback() {
+      this.ro?.disconnect();
+      this.mo?.disconnect();
+      this.ro = null;
+      this.mo = null;
+    }
+  }
+
+  customElements.define("eq-height", EqHeight);
+</script>

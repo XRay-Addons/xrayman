@@ -2,17 +2,19 @@
 const { class: extraClass = "", ...rest } = Astro.props;
 ---
 
-<div
-  class:list={[
-    "app-page d-flex align-items-center justify-content-center p-2",
-    extraClass,
-  ]}
-  {...rest}
->
-  <div class="app-page__content col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4">
-    <slot />
+<app-page>
+  <div
+    class:list={[
+      "app-page d-flex align-items-center justify-content-center p-2",
+      extraClass,
+    ]}
+    {...rest}
+  >
+    <div class="app-page__content col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4">
+      <slot />
+    </div>
   </div>
-</div>
+</app-page>
 
 <style>
   .app-page {
@@ -21,3 +23,61 @@ const { class: extraClass = "", ...rest } = Astro.props;
     -webkit-tap-highlight-color: transparent;
   }
 </style>
+
+<script>
+  import palettes from "../../data/palettes/palettes.json";
+
+  const COLOR_VARS = [
+    "--bg-color",
+    "--card-color",
+    "--title-color",
+    "--button-color",
+    "--input-color",
+  ];
+
+  function shuffle(arr) {
+    return [...arr].sort(() => Math.random() - 0.5);
+  }
+
+  function applyPalette(palette) {
+    const shuffled = shuffle(palette);
+    const root = document.documentElement;
+
+    COLOR_VARS.forEach((v, i) => {
+      root.style.setProperty(v, shuffled[i % shuffled.length]);
+    });
+  }
+
+  class AppPage extends HTMLElement {
+    lastTap = 0;
+
+    connectedCallback() {
+      this.style.touchAction = "manipulation";
+      this.style.webkitTapHighlightColor = "transparent";
+
+      this.addEventListener("click", this.onActivate);
+      this.addEventListener("touchend", this.onActivate);
+    }
+
+    disconnectedCallback() {
+      this.removeEventListener("click", this.onActivate);
+      this.removeEventListener("touchend", this.onActivate);
+    }
+
+    onActivate = () => {
+      const now = Date.now();
+      if (now - this.lastTap < 300) {
+        this.applyRandomPalette();
+      }
+      this.lastTap = now;
+    };
+
+    applyRandomPalette() {
+      const palette =
+        palettes[Math.floor(Math.random() * palettes.length)];
+      applyPalette(palette);
+    }
+  }
+
+  customElements.define("app-page", AppPage);
+</script>
