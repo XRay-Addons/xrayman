@@ -22,5 +22,7 @@
   "btn.install.appstore.global": "AppStore",
   "btn.install.win": "Download .exe",
 
-  "servererror.main": "Ошибка сервера, зайдите позже"
+  "servererror.main": "Ошибка сервера, зайдите позже",
+
+  "servererror.reason.not_found": "Страница не найдена"
 }

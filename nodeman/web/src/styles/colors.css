@@ -1,8 +1,7 @@
 :root {
-  --bg-color: #ffffe3;
-  --card-color: #f2e2ff;
-  --title-color: #e2eeff;
-  --button-color: #ffdef2;
-  --input-color: #ddfffc;
-  --error-color: #ff0000;
+  --bg-color: #feffa3;
+  --card-color: #d4ffea;
+  --title-color: #ffd4e5;
+  --button-color: #eecbff;
+  --input-color: #dbdcff;
 }

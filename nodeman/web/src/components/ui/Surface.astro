@@ -32,7 +32,15 @@ const styleVars = {
     border-style: solid;
     border-color: color-mix(in srgb, var(--surface-color) 50%, black 50%);
     background-color: var(--surface-color);
-    color: color-mix(in srgb, var(--surface-color) 25%, black 75%);
+
+    --contrast-color: lch(
+      from var(--surface-color) calc((49.44 - l) * infinity) 0 0
+    );
+    color: color-mix(
+      in srgb,
+      var(--surface-color) 25%,
+      var(--contrast-color) 75%
+    );
   }
 
   .surface__wrap {
@@ -83,5 +91,6 @@ const styleVars = {
 
   :global(.surface input) {
     background-color: color-mix(in srgb, var(--surface-color) 25%, white 75%);
+    color: color-mix(in srgb, var(--surface-color) 25%, black 75%);
   }
 </style>

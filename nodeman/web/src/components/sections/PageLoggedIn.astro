@@ -1,0 +1,33 @@
+---
+import TitleLoggedIn from "./TitleLoggedIn.astro";
+import UserPageCard from "./UserPageCard.astro";
+import InstallAppCard from "./InstallAppCard.astro";
+import OpenAppCard from "./OpenAppCard.astro";
+---
+
+<page-logged-in hidden>
+  <TitleLoggedIn />
+  <UserPageCard />
+  <InstallAppCard />
+  <OpenAppCard />
+</page-logged-in>
+
+<script>
+  import { stateSignal } from "../../lib/state-signals";
+
+  class PageLoggedIn extends HTMLElement {
+    private unsub?: () => void;
+
+    connectedCallback() {
+      stateSignal.subscribe((state) => {
+        this.hidden = !(state.status === "logged-in");
+      });
+    }
+
+    disconnectedCallback() {
+      this.unsub?.();
+    }
+  }
+
+  customElements.define("page-logged-in", PageLoggedIn);
+</script>

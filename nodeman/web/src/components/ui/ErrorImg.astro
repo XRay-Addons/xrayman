@@ -1,0 +1,47 @@
+---
+const {
+  imgSrc = "",
+  color = "white",
+  class: extraClass = "",
+  ...rest
+} = Astro.props;
+
+const styleVars = {
+  ...(color && { "--text-color": color }),
+};
+---
+
+<div
+  class="error-img__wrap w-100 d-flex justify-content-center"
+  style={styleVars}
+>
+  <div class="col-10">
+    <img class="error-img__img w-100 noselect" src={imgSrc} />
+    <div class="error-img__text noselect">
+      <slot />
+    </div>
+  </div>
+</div>
+
+<style>
+  .error-img__wrap {
+    position: relative;
+    display: inline-block;
+  }
+
+  .error-img__wrap img {
+    display: block;
+    height: auto;
+  }
+
+  .error-img__text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--text-color);
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.7);
+  }
+</style>

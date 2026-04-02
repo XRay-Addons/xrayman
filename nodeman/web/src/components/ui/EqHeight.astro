@@ -24,14 +24,16 @@ const { ...rest } = Astro.props;
       if (!container) return;
 
       const equalize = () => {
-        const children = Array.from(container.children) as HTMLElement[];
-        if (children.length < 2) return;
+        requestAnimationFrame(() => {
+          const children = Array.from(container.children) as HTMLElement[];
+          if (children.length < 2) return;
 
-        let max = 0;
+          let max = 0;
 
-        children.forEach((el) => (el.style.height = "auto"));
-        children.forEach((el) => (max = Math.max(max, el.offsetHeight)));
-        children.forEach((el) => (el.style.height = `${max}px`));
+          children.forEach((el) => (el.style.height = "auto"));
+          children.forEach((el) => (max = Math.max(max, el.offsetHeight)));
+          children.forEach((el) => (el.style.height = `${max}px`));
+        });
       };
 
       this.ro = new ResizeObserver(equalize);

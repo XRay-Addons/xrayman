@@ -31,7 +31,9 @@ import InputButton from "../ui/InputButton.astro";
 </style>
 
 <script>
-  import { emitUsernameCreate } from "../../lib/events";
+  import { newUser } from "../../api/client";
+  import { UserUtils } from "../../lib/user-utils";
+  import { apiSignal } from "../../stores/api-signal";
 
   class ChooseNameCard extends HTMLElement {
     connectedCallback() {
@@ -43,10 +45,21 @@ import InputButton from "../ui/InputButton.astro";
       );
       if (!inputEl || !btnEl) return;
 
-      const onSubmit = () => {
+      const onSubmit = async () => {
         const displayName = inputEl.value.trim();
         if (!displayName) return;
-        emitUsernameCreate(this, { displayName });
+
+        const userResponse = await newUser(displayName);
+        if (userResponse.ok) {
+          const user = UserUtils.makeUser(userResponse.data);
+          apiSignal.set({ status: "logged-in", data: user });
+        } else if (userResponse.ok == false) {
+          // WTF typescript conditions
+          apiSignal.set({
+            status: "server-error",
+            reason: userResponse.reason,
+          });
+        }
       };
 
       btnEl.addEventListener("click", onSubmit);

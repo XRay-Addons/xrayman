@@ -24,11 +24,11 @@ import InputButton from "../ui/InputButton.astro";
 </user-page-card>
 
 <script>
-  import { userStore } from "../../lib/user-store";
-  import { UserUtils } from "../../lib/user-utils"; 
+  import { ProfileURL } from "../../lib/user-utils";
+  import { apiSignal } from "../../stores/api-signal";
 
   class UserPageCard extends HTMLElement {
-    private off?: () => void;
+    private unsub?: () => void;
 
     connectedCallback() {
       const inputEl = this.querySelector<HTMLInputElement>(
@@ -39,24 +39,22 @@ import InputButton from "../ui/InputButton.astro";
       );
       if (!inputEl || !btnEl) return;
 
+      this.unsub = apiSignal.subscribe((state) => {
+        if (state.status === "logged-in") {
+          inputEl.value = ProfileURL.make(state.data);
+        } else {
+          inputEl.value = "";
+        }
+      });
+
       btnEl.addEventListener("click", async (e: Event) => {
         e.preventDefault();
         navigator.clipboard.writeText(inputEl.value);
       });
-      const update = () => {
-        const user = userStore.get();
-        if( !user ) {
-          inputEl.value = "";
-          return;
-        }
-        inputEl.value = UserUtils.profileURL(user);
-      };
-      update();
-      this.off = userStore.subscribe(update);
     }
 
     disconnectedCallback() {
-      this.off?.();
+      this.unsub?.();
     }
   }
 

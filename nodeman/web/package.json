@@ -13,7 +13,8 @@
   "dependencies": {
     "astro": "^5.17.1",
     "astro-relative-links": "^0.4.2",
-    "axios": "^1.13.6"
+    "axios": "^1.14.0",
+    "nanostores": "^1.2.0"
   },
   "devDependencies": {
     "openapi-typescript": "^7.13.0",

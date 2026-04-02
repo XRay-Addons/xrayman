@@ -22,5 +22,7 @@
   "btn.install.appstore.global": "AppStore",
   "btn.install.win": "Download .exe",
 
-  "servererror.main": "Server Error, Zajdite Pozze"
+  "servererror.main": "Server Error, Zajdite Pozze",
+
+  "servererror.reason.not_found": "Stranica ne naidena"
 }

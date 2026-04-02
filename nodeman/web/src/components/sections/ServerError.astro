@@ -1,7 +1,49 @@
 ---
-import Error from "../ui/Error.astro";
+import ErrorImg from "../ui/ErrorImg.astro";
+
+import errorGif from "../../assets/error.gif";
+const errorGifSrc = errorGif.src;
+const errorColor = "white";
 ---
 
-<Error class="mb-2">
-  <span data-i18n="servererror.main"></span>
-</Error>
+<server-error>
+  <ErrorImg imgSrc={errorGifSrc} color={errorColor}>
+    <div data-i18n="servererror.main"></div>
+    <div part="servererror.reason"></div>
+  </ErrorImg>
+</server-error>
+
+<style>
+  server-error {
+    display: contents;
+  }
+</style>
+
+<script>
+  import { apiSignal } from "../../stores/api-signal";
+
+  class ServerError extends HTMLElement {
+    private unsub?: () => void;
+
+    connectedCallback() {
+      const reasonSpan = this.querySelector<HTMLSpanElement>(
+        '[part="servererror.reason"]',
+      );
+      if (!reasonSpan) return;
+
+      this.unsub = apiSignal.subscribe((state) => {
+        if (state.status === "server-error") {
+          const i18nReason = `servererror.reason.${state.reason}`;
+          reasonSpan.setAttribute("data-i18n", i18nReason);
+          return;
+        }
+      });
+    }
+
+    disconnectedCallback() {
+      this.unsub?.();
+    }
+  }
+
+  customElements.define("server-error", ServerError);
+</script>

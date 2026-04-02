@@ -18,35 +18,50 @@ function isSpecialAttr(attr: string) {
   return attr == "placeholder" || attr == "value";
 }
 
-function applyI18n(root: ParentNode = document) {
-  root.querySelectorAll<HTMLElement>("*").forEach((el) => {
-    for (const attr of Array.from(el.attributes)) {
-      if (!attr.name.startsWith(I18N_PREFIX)) continue;
+function applyI18nEl(el: HTMLElement) {
+  for (const attr of Array.from(el.attributes)) {
+    if (!attr.name.startsWith(I18N_PREFIX)) continue;
 
-      const key = attr.value as I18nKey;
-      const value = t(key);
+    const key = attr.value as I18nKey;
+    const value = t(key);
 
-      if (attr.name == I18N_PREFIX) {
-        el.innerHTML = value;
-        continue;
-      }
-
-      const target = attr.name.replace(`${I18N_PREFIX}-`, "");
-      const targetAttr = isSpecialAttr(target)
-        ? target
-        : `${DATA_PREFIX}-${target}`;
-      el.setAttribute(targetAttr, value);
+    if (attr.name == I18N_PREFIX) {
+      el.innerHTML = value;
+      continue;
     }
-  });
+
+    const target = attr.name.replace(`${I18N_PREFIX}-`, "");
+    const targetAttr = isSpecialAttr(target)
+      ? target
+      : `${DATA_PREFIX}-${target}`;
+    el.setAttribute(targetAttr, value);
+  }
+}
+
+function applyI18nTree(root: Node) {
+  if (root instanceof HTMLElement) {
+    applyI18nEl(root);
+    root.querySelectorAll<HTMLElement>("*").forEach(applyI18nEl);
+  }
 }
 
 export function startI18nObserver() {
-  applyI18n();
+  applyI18nTree(document.body);
+
   const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
-      for (const node of mutation.addedNodes) {
-        if (!(node instanceof HTMLElement)) continue;
-        applyI18n(node);
+      if (mutation.type === "childList") {
+        for (const node of mutation.addedNodes) {
+          applyI18nTree(node);
+        }
+      }
+
+      if (
+        mutation.type === "attributes" &&
+        mutation.oldValue == null &&
+        mutation.target instanceof HTMLElement
+      ) {
+        applyI18nEl(mutation.target);
       }
     }
   });
@@ -54,5 +69,7 @@ export function startI18nObserver() {
   observer.observe(document.body, {
     childList: true,
     subtree: true,
+    attributes: true,
+    attributeOldValue: true,
   });
 }

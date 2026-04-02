@@ -1,0 +1,29 @@
+---
+import TitleLoggedOut from "./TitleLoggedOut.astro";
+import ChooseNameCard from "./ChooseNameCard.astro";
+---
+
+<page-logged-out hidden>
+  <TitleLoggedOut />
+  <ChooseNameCard />
+</page-logged-out>
+
+<script>
+  import { stateSignal } from "../../lib/state-signals";
+
+  class PageLoggedOut extends HTMLElement {
+    private unsub?: () => void;
+
+    connectedCallback() {
+      this.unsub = stateSignal.subscribe((state) => {
+        this.hidden = !(state.status === "logged-out");
+      });
+    }
+
+    disconnectedCallback() {
+      this.unsub?.();
+    }
+  }
+
+  customElements.define("page-logged-out", PageLoggedOut);
+</script>

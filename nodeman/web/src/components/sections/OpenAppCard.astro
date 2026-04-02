@@ -24,11 +24,14 @@ import Button from "../ui/Button.astro";
 </open-app-card>
 
 <script>
-  import { userStore } from "../../lib/user-store";
   import { UserUtils } from "../../lib/user-utils";
   import { config } from "../../config/config";
+  import { apiSignal } from "../../stores/api-signal";
 
   class OpenAppCard extends HTMLElement {
+    private unsub?: () => void;
+    private openHappFn: () => void;
+
     makeHappSubLink(subscriptionURL: string) {
       return `${config.HAPP_INTENT}${subscriptionURL}`;
     }
@@ -39,17 +42,27 @@ import Button from "../ui/Button.astro";
       );
       if (!btnEl) return;
 
-      btnEl.addEventListener("click", () => {
-        const user = userStore.get();
-        if (!user) {
+      this.unsub = apiSignal.subscribe((state) => {
+        if (state.status !== "logged-in") {
+          this.openHappFn = () => {};
           return;
         }
-
-        const subscriptionURL = UserUtils.subscriptionURL(user);
+        const subscriptionURL = UserUtils.subscriptionURL(state.data);
         const happSubLink = this.makeHappSubLink(subscriptionURL);
-        window.open(happSubLink, "_blank", "noopener");
+        this.openHappFn = () => {
+          window.open(happSubLink, "_blank", "noopener");
+        };
+      });
+
+      btnEl.addEventListener("click", () => {
+        this.openHappFn?.();
       });
     }
+
+    disconnectedCallback() {
+      this.unsub?.();
+    }
   }
+
   customElements.define("open-app-card", OpenAppCard);
 </script>

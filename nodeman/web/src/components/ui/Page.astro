@@ -43,9 +43,12 @@ const { class: extraClass = "", ...rest } = Astro.props;
     const shuffled = shuffle(palette);
     const root = document.documentElement;
 
+    var t = "";
     COLOR_VARS.forEach((v, i) => {
       root.style.setProperty(v, shuffled[i % shuffled.length]);
+      t += v + ": " + shuffled[i % shuffled.length] + "\n";
     });
+    console.log(t);
   }
 
   class AppPage extends HTMLElement {
@@ -53,15 +56,11 @@ const { class: extraClass = "", ...rest } = Astro.props;
 
     connectedCallback() {
       this.style.touchAction = "manipulation";
-      this.style.webkitTapHighlightColor = "transparent";
-
       this.addEventListener("click", this.onActivate);
-      this.addEventListener("touchend", this.onActivate);
     }
 
     disconnectedCallback() {
       this.removeEventListener("click", this.onActivate);
-      this.removeEventListener("touchend", this.onActivate);
     }
 
     onActivate = () => {
@@ -73,8 +72,7 @@ const { class: extraClass = "", ...rest } = Astro.props;
     };
 
     applyRandomPalette() {
-      const palette =
-        palettes[Math.floor(Math.random() * palettes.length)];
+      const palette = palettes[Math.floor(Math.random() * palettes.length)];
       applyPalette(palette);
     }
   }

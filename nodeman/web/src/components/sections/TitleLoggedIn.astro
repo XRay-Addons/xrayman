@@ -1,6 +1,5 @@
 ---
 import Title from "../ui/Title.astro";
-import { userStore } from "../../lib/user-store";
 ---
 
 <title-logged-in>
@@ -17,24 +16,26 @@ import { userStore } from "../../lib/user-store";
 </style>
 
 <script>
-  import { userStore } from "../../lib/user-store";
+  import { apiSignal } from "../../stores/api-signal";
 
   class TitleLoggedIn extends HTMLElement {
-    private off?: () => void;
+    private unsub?: () => void;
 
     connectedCallback() {
       const usernameEl = this.querySelector<HTMLElement>('[part="username"]');
       if (!usernameEl) return;
 
-      const update = () => {
-        usernameEl.textContent = userStore.get()?.displayName ?? "";
-      };
-      this.off = userStore.subscribe(update);
-      update();
+      this.unsub = apiSignal.subscribe((state) => {
+        if (state.status === "logged-in") {
+          usernameEl.textContent = state.data.displayName;
+        } else {
+          usernameEl.textContent = "";
+        }
+      });
     }
 
     disconnectedCallback() {
-      this.off?.();
+      this.unsub?.();
     }
   }
 

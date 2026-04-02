@@ -1,31 +1,17 @@
 ---
 import Page from "../ui/Page.astro";
-import TitleLoggedIn from "./TitleLoggedIn.astro";
-import TitleLoggedOut from "./TitleLoggedOut.astro";
-import ChooseNameCard from "./ChooseNameCard.astro";
-import UserPageCard from "./UserPageCard.astro";
-import InstallAppCard from "./InstallAppCard.astro";
-import OpenAppCard from "./OpenAppCard.astro";
-import ServerError from "./ServerError.astro";
+import PageLoggedIn from "./PageLoggedIn.astro";
+import PageLoggedOut from "./PageLoggedOut.astro";
+import PageServerError from "./PageServerError.astro";
+import UserController from "./UserController.astro";
 ---
 
 <page-content>
+  <UserController />
   <Page>
-    <div part="logged-out-page" hidden>
-      <TitleLoggedOut/>
-      <ChooseNameCard />
-    </div>
-
-    <div part="logged-in-page" hidden>
-      <TitleLoggedIn/>
-      <UserPageCard />
-      <InstallAppCard />
-      <OpenAppCard />
-    </div>
-
-    <div part="server-error-page" hidden>
-      <ServerError />
-    </div>
+    <PageLoggedOut />
+    <PageLoggedIn />
+    <PageServerError />
   </Page>
 </page-content>
 
@@ -34,118 +20,3 @@ import ServerError from "./ServerError.astro";
     display: contents;
   }
 </style>
-
-<script>
-  import { User, UserID, UserAPIData } from "../../lib/types";
-  import { userStore } from "../../lib/user-store";
-  import { setURL, resetURL } from "../../lib/user-url";
-  import { UserUtils } from "../../lib/user-utils";
-  import { setCookie, resetCookie, parseCookie } from "../../lib/user-cookie";
-  import { newUser, getUser, API_REASON } from "../../api/client";
-  import { UsernameCreateDetail } from "../../lib/events";
-  import { onUsernameCreate } from "../../lib/events";
-  import { startI18nObserver } from "../../lib/i18n";
-
-  class PageContent extends HTMLElement {
-    private off?: () => void;
-    private loggedInEl: HTMLElement | null;
-    private loggedOutEl: HTMLElement | null;
-    private serverErrorEl: HTMLElement | null;
-
-    private setLoggedOut() {
-      resetURL();
-      resetCookie();
-      userStore.set(null);
-      this.showEl(this.loggedOutEl);
-    }
-
-    private setLoggedIn(user: User) {
-      setURL(UserUtils.profilePath(user));
-      setCookie(user.id, user.name);
-      userStore.set(user);
-      this.showEl(this.loggedInEl);
-    }
-
-    private setError() {
-      this.showEl(this.serverErrorEl);
-    }
-
-    private showEl(el) {
-      const els = [this.loggedInEl, this.loggedOutEl, this.serverErrorEl];
-      const showAll = import.meta.env.PUBLIC_DEBUG_SHOW_ALL === 'true';
-      console.log('Show all?', showAll);
-      els.forEach(element => {
-        element?.toggleAttribute("hidden", !(showAll || element == el));
-      });
-    }
-
-    private getUserID(): UserID | null {
-      const fromURL = UserUtils.parseProfileURL();
-      if (fromURL) return fromURL;
-
-      const fromCookie = parseCookie();
-      if (fromCookie) return fromCookie;
-
-      return null;
-    }
-
-    private async onUsernameCreated(detail: UsernameCreateDetail) {
-      const userResponse = await newUser(detail.displayName);
-      if (userResponse.ok) {
-        const user = UserUtils.makeUser(userResponse.data);
-        this.setLoggedIn(user);
-        return;
-      }
-      this.setError();
-    }
-
-    private async initUser() {
-      let userID = this.getUserID();
-      if (!userID) {
-        this.setLoggedOut();
-        return;
-      }
-
-      this.showEl(null);
-      const userResponse = await getUser(userID);
-      if (userResponse.ok) {
-        const user = UserUtils.makeUser(userResponse.data);
-        this.setLoggedIn(user);
-        return;
-      }
-      if (userResponse.reason == API_REASON.NOT_FOUND) {
-        this.setLoggedOut();
-        return;
-      }
-      this.setError();
-    }
-
-    private async initEventsHandlers() {
-      onUsernameCreate(this, async (e) => {
-        await this.onUsernameCreated(e.detail);
-      });
-    }
-
-    connectedCallback() {
-      this.loggedInEl = this.querySelector<HTMLElement>(
-        '[part="logged-in-page"]',
-      );
-      this.loggedOutEl = this.querySelector<HTMLElement>(
-        '[part="logged-out-page"]',
-      );
-      this.serverErrorEl = this.querySelector<HTMLElement>(
-        '[part="server-error-page"]',
-      );
-      if (!this.loggedInEl || !this.loggedOutEl || !this.serverErrorEl) return;
-
-      this.initUser();
-      this.initEventsHandlers();
-    }
-
-    disconnectedCallback() {
-      this.off?.();
-    }
-  }
-
-  customElements.define("page-content", PageContent);
-</script>
