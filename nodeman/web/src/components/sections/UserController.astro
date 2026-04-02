@@ -12,7 +12,7 @@
 
 <script>
   import { ProfileURL, ProfileStorage, UserUtils } from "../../lib/user-utils";
-  import { apiSignal } from "../../stores/api-signal";
+  import { stateSignal } from "../../lib/state-signals";
   import { getUser } from "../../api/client";
   import { API_REASON } from "../../lib/types";
 
@@ -23,25 +23,25 @@
       // url user priority
       const userID = ProfileURL.parse() || ProfileStorage.parse();
       if (!userID) {
-        apiSignal.set({ status: "logged-out" });
+        stateSignal.set({ status: "logged-out" });
         return;
       }
       const userResponse = await getUser(userID);
       if (userResponse.ok) {
         const user = UserUtils.makeUser(userResponse.data);
-        apiSignal.set({ status: "logged-in", data: user });
+        stateSignal.set({ status: "logged-in", data: user });
       } else if (
         userResponse.ok == false &&
         userResponse.reason == API_REASON.NOT_FOUND
       ) {
-        apiSignal.set({ status: "logged-out" });
+        stateSignal.set({ status: "logged-out" });
       } else if (userResponse.ok == false) {
-        apiSignal.set({ status: "server-error", error: userResponse.reason });
+        stateSignal.set({ status: "server-error", error: userResponse.reason });
       }
     }
 
     connectedCallback() {
-      this.unsub = apiSignal.subscribe((state) => {
+      this.unsub = stateSignal.subscribe((state) => {
         if (state.status === "logged-in") {
           ProfileURL.set(state.data);
           ProfileStorage.set(state.data);

@@ -26,7 +26,7 @@ import Button from "../ui/Button.astro";
 <script>
   import { UserUtils } from "../../lib/user-utils";
   import { config } from "../../config/config";
-  import { apiSignal } from "../../stores/api-signal";
+  import { stateSignal } from "../../lib/state-signals";
 
   class OpenAppCard extends HTMLElement {
     private unsub?: () => void;
@@ -42,7 +42,7 @@ import Button from "../ui/Button.astro";
       );
       if (!btnEl) return;
 
-      this.unsub = apiSignal.subscribe((state) => {
+      this.unsub = stateSignal.subscribe((state) => {
         if (state.status !== "logged-in") {
           this.openHappFn = () => {};
           return;

@@ -25,7 +25,7 @@ import InputButton from "../ui/InputButton.astro";
 
 <script>
   import { ProfileURL } from "../../lib/user-utils";
-  import { apiSignal } from "../../stores/api-signal";
+  import { stateSignal } from "../../lib/state-signals";
 
   class UserPageCard extends HTMLElement {
     private unsub?: () => void;
@@ -39,7 +39,7 @@ import InputButton from "../ui/InputButton.astro";
       );
       if (!inputEl || !btnEl) return;
 
-      this.unsub = apiSignal.subscribe((state) => {
+      this.unsub = stateSignal.subscribe((state) => {
         if (state.status === "logged-in") {
           inputEl.value = ProfileURL.make(state.data);
         } else {

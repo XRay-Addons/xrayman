@@ -33,7 +33,7 @@ import InputButton from "../ui/InputButton.astro";
 <script>
   import { newUser } from "../../api/client";
   import { UserUtils } from "../../lib/user-utils";
-  import { apiSignal } from "../../stores/api-signal";
+  import { stateSignal } from "../../lib/state-signals";
 
   class ChooseNameCard extends HTMLElement {
     connectedCallback() {
@@ -52,10 +52,10 @@ import InputButton from "../ui/InputButton.astro";
         const userResponse = await newUser(displayName);
         if (userResponse.ok) {
           const user = UserUtils.makeUser(userResponse.data);
-          apiSignal.set({ status: "logged-in", data: user });
+          stateSignal.set({ status: "logged-in", data: user });
         } else if (userResponse.ok == false) {
           // WTF typescript conditions
-          apiSignal.set({
+          stateSignal.set({
             status: "server-error",
             reason: userResponse.reason,
           });
