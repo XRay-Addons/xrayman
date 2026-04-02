@@ -16,7 +16,7 @@ import Title from "../ui/Title.astro";
 </style>
 
 <script>
-  import { apiSignal } from "../../stores/api-signal";
+  import { stateSignal } from "../../lib/state-signals";
 
   class TitleLoggedIn extends HTMLElement {
     private unsub?: () => void;
@@ -25,7 +25,7 @@ import Title from "../ui/Title.astro";
       const usernameEl = this.querySelector<HTMLElement>('[part="username"]');
       if (!usernameEl) return;
 
-      this.unsub = apiSignal.subscribe((state) => {
+      this.unsub = stateSignal.subscribe((state) => {
         if (state.status === "logged-in") {
           usernameEl.textContent = state.data.displayName;
         } else {
