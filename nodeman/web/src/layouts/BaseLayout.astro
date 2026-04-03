@@ -27,7 +27,9 @@ import "../styles/noselect.css";
     <slot />
     <script>
       import { startI18nObserver } from "../lib/i18n";
+      import { fixIOSActive } from "../lib/ios-active-fix";
       startI18nObserver();
+      fixIOSActive();
     </script>
   </body>
 </html>
