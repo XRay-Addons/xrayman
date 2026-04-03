@@ -48,7 +48,6 @@ const { class: extraClass = "", ...rest } = Astro.props;
       root.style.setProperty(v, shuffled[i % shuffled.length]);
       t += v + ": " + shuffled[i % shuffled.length] + "\n";
     });
-    console.log(t);
   }
 
   class AppPage extends HTMLElement {

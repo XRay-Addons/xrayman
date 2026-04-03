@@ -2,17 +2,9 @@
 const { ...rest } = Astro.props;
 ---
 
-<eq-height>
-  <div {...rest} data-eq-height>
-    <slot />
-  </div>
+<eq-height {...rest}>
+  <slot />
 </eq-height>
-
-<style>
-  eq-height {
-    display: contents;
-  }
-</style>
 
 <script>
   class EqHeight extends HTMLElement {
@@ -20,12 +12,9 @@ const { ...rest } = Astro.props;
     ro: ResizeObserver | null;
 
     connectedCallback() {
-      const container = this.querySelector("[data-eq-height]");
-      if (!container) return;
-
       const equalize = () => {
         requestAnimationFrame(() => {
-          const children = Array.from(container.children) as HTMLElement[];
+          const children = Array.from(this.children) as HTMLElement[];
           if (children.length < 2) return;
 
           let max = 0;
@@ -39,8 +28,8 @@ const { ...rest } = Astro.props;
       this.ro = new ResizeObserver(equalize);
       this.mo = new MutationObserver(equalize);
 
-      this.ro.observe(container);
-      this.mo.observe(container, {
+      this.ro.observe(this);
+      this.mo.observe(this, {
         childList: true,
         subtree: true,
         characterData: true,
