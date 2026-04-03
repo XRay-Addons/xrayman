@@ -14,7 +14,7 @@ XRAY_BIN := $(BIN_DIR)/xray
 
 all: build
 
-build: $(NODE_vBIN) $(NODEMAN_BIN) $(XRAY_BIN) 
+build: $(NODE_BIN) $(NODEMAN_BIN) $(XRAY_BIN) 
 
 nodeman-frontend:
 	cd $(NODEMAN_WEB_SRC) && \
