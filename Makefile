@@ -18,7 +18,7 @@ build: $(NODE_vBIN) $(NODEMAN_BIN) $(XRAY_BIN)
 
 nodeman-frontend:
 	cd $(NODEMAN_WEB_SRC) && \
-	NODEMAN_WEB_DIST=$(NODEMAN_WEB_DIST) npm ci && \
+	NODEMAN_WEB_DIST=$(NODEMAN_WEB_DIST) npm install && \
 	NODEMAN_WEB_DIST=$(NODEMAN_WEB_DIST) npm run build
 
 $(NODE_BIN):
