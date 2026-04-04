@@ -4,28 +4,24 @@ import Surface from "./Surface.astro";
 const { class: extraClass = "", ...rest } = Astro.props;
 ---
 
-<div
-  class:list={[
-    "app-input",
-    "d-flex",
-    "flex-wrap",
-    "justify-content-center",
-    extraClass,
-  ]}
-  {...rest}
->
+<div class:list={["app-input", "h-center", extraClass]} {...rest}>
   <div class="app-input__layout col-12 col-md-10 col-lg-8 row p-1 g-0">
-    <div class="app-input__field">
-      <Surface depth="var(--input-depth)" color="var(--input-color)">
-        <slot name="input" />
-      </Surface>
-    </div>
+    <Surface
+      class="app-input__field"
+      depth="var(--input-depth)"
+      color="var(--input-color)"
+    >
+      <slot name="input" />
+    </Surface>
 
-    <div class="app-input__button">
-      <Surface dynamic depth="var(--input-depth)" color="var(--input-color)">
-        <slot name="button" />
-      </Surface>
-    </div>
+    <Surface
+      class="app-input__button"
+      dynamic
+      depth="var(--input-depth)"
+      color="var(--input-color)"
+    >
+      <slot name="button" />
+    </Surface>
   </div>
 </div>
 

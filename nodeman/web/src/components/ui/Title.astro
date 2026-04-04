@@ -4,15 +4,14 @@ import Surface from "./Surface.astro";
 const { class: extraClass = "", ...rest } = Astro.props;
 ---
 
-<div
-  class:list={["app-title d-flex justify-content-center", extraClass]}
-  {...rest}
->
-  <div class="col-10 col-md-10 col-lg-8">
-    <Surface depth="var(--title-depth)" color="var(--title-color)">
-      <div class="text-lg text-center p-2">
-        <slot />
-      </div>
-    </Surface>
-  </div>
+<div class:list={["app-title h-center", extraClass]} {...rest}>
+  <Surface
+    depth="var(--title-depth)"
+    color="var(--title-color)"
+    class="col-10 col-lg-8"
+  >
+    <div class="text-lg text-center p-2">
+      <slot />
+    </div>
+  </Surface>
 </div>

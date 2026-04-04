@@ -2,17 +2,17 @@
 const { src = "", class: extraClass = "", ...rest } = Astro.props;
 ---
 
-<lazy-image>
+<lazy-img>
   <img
     class:list={["app-lazy-image", extraClass]}
     {...rest}
     data-src={src}
     part="image"
   />
-</lazy-image>
+</lazy-img>
 
 <style>
-  image {
+  lazy-img {
     display: contents;
   }
 </style>
@@ -20,7 +20,7 @@ const { src = "", class: extraClass = "", ...rest } = Astro.props;
 <script>
   import { PathTools } from "../../lib/path-utils";
 
-  class LazyImage extends HTMLElement {
+  class LazyImg extends HTMLElement {
     obs: IntersectionObserver | null;
 
     connectedCallback() {
@@ -43,5 +43,5 @@ const { src = "", class: extraClass = "", ...rest } = Astro.props;
     }
   }
 
-  customElements.define("lazy-image", LazyImage);
+  customElements.define("lazy-img", LazyImg);
 </script>
