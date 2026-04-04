@@ -2,7 +2,7 @@
 const { class: extraClass = "", ...rest } = Astro.props;
 ---
 
-<app-page class:list={["app-page v-center h-center p-2", extraClass]} {...rest}>
+<app-page class:list={["app-page hv-center p-2", extraClass]} {...rest}>
   <div class="app-page__content col-12 col-md-8 col-lg-6 col-xl-4">
     <slot />
   </div>

@@ -14,23 +14,30 @@ const styleVars = {
 ---
 
 <div
-  class:list={["d-flex justify-content-center", extraClass]}
+  class:list={["app-error-img__wrap h-center", extraClass]}
   {...rest}
   style={styleVars}
 >
-  <div class="position-relative col-10">
-    <LazyImg class="w-100" src={src} />
+  <div class="app-error-img col-10">
+    <LazyImg class="app-error-img__image w-100" src={src} />
 
-    <div class="position-absolute error-text v-center h-center flex-column">
+    <div
+      class="app-error-img__text d-flex flex-column align-items-left justify-content-center p-2"
+    >
       <slot />
     </div>
   </div>
 </div>
 
 <style>
-  .error-text {
+  .app-error-img {
+    position: relative;
+  }
+  .app-error-img__text {
+    position: absolute;
     inset: 0;
     color: var(--text-color);
+    text-align: left;
     font-size: 24px;
     font-weight: bold;
     text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.7);
