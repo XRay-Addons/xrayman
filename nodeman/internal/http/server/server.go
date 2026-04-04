@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
-	"github.com/rs/cors"
 )
 
 type HttpServer struct {
@@ -26,14 +25,6 @@ func New(endpoint string, handler http.Handler) (*HttpServer, error) {
 	if handler == nil {
 		return nil, errdefs.NewNilArg("handler")
 	}
-
-	// middleware for CORS
-	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"*"},
-		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders: []string{"Content-Type", "Authorization"},
-	})
-	handler = c.Handler(handler)
 
 	return &HttpServer{
 		server: http.Server{
