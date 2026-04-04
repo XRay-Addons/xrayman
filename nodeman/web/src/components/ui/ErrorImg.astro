@@ -2,7 +2,7 @@
 import LazyImage from "./LazyImage.astro";
 
 const {
-  imgSrc = "",
+  src = "",
   color = "white",
   class: extraClass = "",
   ...rest
@@ -18,7 +18,7 @@ const styleVars = {
   style={styleVars}
 >
   <div class="col-10">
-    <LazyImage class="error-img__img w-100" src={imgSrc} />
+    <LazyImage class="error-img__img w-100" src={src} />
     <div class="error-img__text">
       <slot />
     </div>

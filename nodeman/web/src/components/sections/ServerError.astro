@@ -1,13 +1,12 @@
 ---
 import ErrorImg from "../ui/ErrorImg.astro";
 
-import errorGif from "../../assets/error.gif";
-const errorGifSrc = errorGif.src;
+const errorImg = "./error.gif";
 const errorColor = "white";
 ---
 
 <server-error>
-  <ErrorImg imgSrc={errorGifSrc} color={errorColor}>
+  <ErrorImg src={errorImg} color={errorColor}>
     <div data-i18n="servererror.main"></div>
     <div part="servererror.reason"></div>
   </ErrorImg>

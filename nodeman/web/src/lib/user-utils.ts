@@ -1,28 +1,21 @@
 import { User, UserAPIData, UserID } from "./types";
-import { config } from "../config/config";
-
-function toAbsoluteUrl(url: string): string {
-  return new URL(url, window.location.href).toString();
-}
+import { PathTools } from "./path-utils";
 
 export const ProfileURL = {
   make(user: User): string {
-    const path = `${config.USERPAGE_URLPATH}/${user.id}-${user.name}`;
-    const absPath = toAbsoluteUrl(path);
-    return absPath;
+    return PathTools.userpagePath(`./${user.id}-${user.name}`);
   },
   set(user: User): void {
     history.pushState(null, "", this.make(user));
   },
   reset() {
-    const path = `${config.USERPAGE_URLPATH}`;
-    const absPath = toAbsoluteUrl(path);
+    const absPath = PathTools.userpagePath(`./`);
     history.pushState(null, "", absPath);
   },
   parse(): UserID | null {
-    const prefix = toAbsoluteUrl(config.USERPAGE_URLPATH);
+    const prefix = PathTools.userpagePath(`./`);
     const path = window.location.href;
-    const match = path.match(new RegExp(`${prefix}/(\\d+)-(.+)$`));
+    const match = path.match(new RegExp(`${prefix}(\\d+)-(.+)$`));
     if (!match) return null;
     const [, idStr, name] = match;
     return { id: Number(idStr), name };
@@ -58,8 +51,7 @@ export const ProfileStorage = {
 
 export const UserUtils = {
   subscriptionURL(user: User): string {
-    const subPath = `${config.API_URLPATH}/sub/${user.id}-${user.name}`;
-    return toAbsoluteUrl(subPath);
+    return PathTools.apiPath(`./sub/${user.id}-${user.name}`);
   },
 
   makeUser(userData: UserAPIData): User {

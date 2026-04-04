@@ -18,6 +18,8 @@ const { src = "", class: extraClass = "", ...rest } = Astro.props;
 </style>
 
 <script>
+  import { PathTools } from "../../lib/path-utils";
+
   class LazyImage extends HTMLElement {
     obs: IntersectionObserver | null;
 
@@ -27,7 +29,7 @@ const { src = "", class: extraClass = "", ...rest } = Astro.props;
 
       this.obs = new IntersectionObserver(([entry], obs) => {
         if (entry.isIntersecting) {
-          imageEl.src = imageEl.dataset.src;
+          imageEl.src = PathTools.userpagePath(imageEl.dataset.src);
           obs.disconnect();
         }
       });
