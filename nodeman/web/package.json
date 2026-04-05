@@ -3,25 +3,36 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "npm run generate:watch & astro dev",
+    "generate": "openapi-ts",
+    "predev": "npm run generate",
+    "dev": "astro dev",
+    "prebuild": "npm run generate",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro",
-    "generate": "orval",
-    "generate:watch": "orval --watch"
+    "astro": "astro"
   },
   "dependencies": {
+    "@hey-api/client-fetch": "^0.13.1",
+    "@zokki/astro-purgecss": "^1.0.4",
     "astro": "^5.17.1",
     "astro-relative-links": "^0.4.2",
+    "autoprefixer": "^10.4.27",
     "axios": "^1.14.0",
     "bootstrap": "^5.3.8",
-    "nanostores": "^1.2.0"
+    "cssnano": "^7.1.4",
+    "nanostores": "^1.2.0",
+    "openapi-fetch": "^0.17.0",
+    "postcss-import": "^16.1.1",
+    "postcss-url": "^8.0.0"
   },
   "devDependencies": {
+    "@fullhuman/postcss-purgecss": "^8.0.0",
+    "@hey-api/openapi-ts": "0.95.0",
     "openapi-typescript": "^7.13.0",
     "postcss-html": "^1.8.1",
     "stylelint": "^16.26.1",
     "stylelint-config-standard": "^36.0.1",
-    "stylelint-selector-bem-pattern": "^4.0.1"
+    "stylelint-selector-bem-pattern": "^4.0.1",
+    "typescript": "^5.9.3"
   }
 }

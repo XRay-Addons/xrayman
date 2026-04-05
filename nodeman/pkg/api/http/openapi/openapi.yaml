@@ -99,6 +99,8 @@ paths:
     post:
       summary: Create a new user
       operationId: NewUser
+      tags:
+        - userpage
       requestBody:
         required: true
         content:
@@ -171,6 +173,8 @@ paths:
     get:
       summary: Get user properties
       operationId: GetUser
+      tags:
+        - userpage
       parameters:
         - name: ID
           in: path
