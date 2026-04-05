@@ -2,9 +2,21 @@ import { defineConfig } from "astro/config";
 import { purgecss } from "@zokki/astro-purgecss";
 import relativeLinks from "astro-relative-links";
 import process from "process";
+import compress from "astro-compress";
 
 export default defineConfig({
   output: "static",
-  integrations: [relativeLinks(), purgecss()],
+  integrations: [
+    relativeLinks(),
+    purgecss(),
+    compress({
+      JavaScript: true,
+      CSS: true,
+      HTML: true,
+    }),
+  ],
   outDir: process.env.NODEMAN_WEB_DIST || "./dist",
+  build: {
+    minify: true,
+  },
 });
