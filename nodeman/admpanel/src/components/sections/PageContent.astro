@@ -11,3 +11,23 @@ import UsersTable from "../vue/UsersTable.vue";
     <UsersTable client:only="vue" class="col-md-6 col-12 p-1" />
   </div>
 </Page>
+
+<script>
+  /*import { changeColor, Colors } from "../vue/Globals";
+  changeColor(Colors.Background, "#00ff00");
+
+  setTimeout(() => {
+    changeColor(Colors.Background, "#00ff00");
+  }, 2000);*/
+
+  import emitter, { Colors, Events } from "../vue/Globals";
+
+  setTimeout(() => {
+    emitter.emit(Events.SetColor, {
+      color: Colors.Background,
+      value: "red",
+    });
+  }, 2000);
+
+  //}
+</script>

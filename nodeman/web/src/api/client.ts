@@ -12,30 +12,6 @@ export type ApiResult<T> =
   | { ok: true; data: T }
   | { ok: false; reason: ApiReason };
 
-export async function newUser(
-  displayName: string,
-): Promise<ApiResult<UserAPIData>> {
-  return handleAPI(
-    () => _newUser({ body: { DisplayName: displayName } }),
-    (data) => ({
-      id: data.Profile.ID,
-      name: data.Profile.Name,
-      displayName: data.Profile.DisplayName,
-    }),
-  );
-}
-
-export async function getUser(userID: UserID): Promise<ApiResult<UserAPIData>> {
-  return handleAPI(
-    () => _getUser({ path: { ID: userID.id, Name: userID.name } }),
-    (data) => ({
-      id: data.Profile.ID,
-      name: data.Profile.Name,
-      displayName: data.Profile.DisplayName,
-    }),
-  );
-}
-
 type ApiResponse<T> = (
   | { data: T; error: undefined }
   | { data: undefined; error: Error }

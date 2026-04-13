@@ -1,13 +1,11 @@
 ---
 const { class: extraClass = "", ...rest } = Astro.props;
-import ThemeMan from "./ThemeMan.astro";
 ---
 
 <app-page class:list={["app-page hv-center p-2", extraClass]} {...rest}>
   <div class="app-page__content col-8">
     <slot />
   </div>
-  <ThemeMan />
 </app-page>
 
 <style>
@@ -19,7 +17,7 @@ import ThemeMan from "./ThemeMan.astro";
 </style>
 
 <script>
-  import palettes from "../../data/palettes/palettes.json";
+  /*import palettes from "../../data/palettes/palettes.json";
 
   const COLOR_VARS = [
     "--bg-color",
@@ -42,7 +40,7 @@ import ThemeMan from "./ThemeMan.astro";
       root.style.setProperty(v, shuffled[i % shuffled.length]);
       t += v + ": " + shuffled[i % shuffled.length] + "\n";
     });
-  }*/
+  }
 
   class AppPage extends HTMLElement {
     //lastTap = 0;
@@ -67,8 +65,8 @@ import ThemeMan from "./ThemeMan.astro";
     applyRandomPalette() {
       const palette = palettes[Math.floor(Math.random() * palettes.length)];
       applyPalette(palette);
-    }*/
+    }
   }
 
-  customElements.define("app-page", AppPage);
+  customElements.define("app-page", AppPage);*/
 </script>

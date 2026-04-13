@@ -1,7 +1,8 @@
 ---
-import ThemeManager from "../components/vue/ThemeManager.vue";
+import Globals from "../components/vue/Globals.vue";
+import GlobalsToCSS from "../components/vue/GlobalsToCSS.vue";
 ---
 
-<ThemeManager client:load>
+<Globals client:only="vue">
   <slot />
-</ThemeManager>/>
+</Globals>

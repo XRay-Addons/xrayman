@@ -21,6 +21,7 @@
     "datatables.net-buttons-dt": "^3.2.6",
     "datatables.net-dt": "^2.3.7",
     "datatables.net-responsive-dt": "^3.0.8",
+    "mitt": "^3.0.1",
     "simple-datatables": "^10.2.0",
     "vanilla-datatables": "^1.6.16",
     "vue": "^3.5.32"
