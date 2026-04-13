@@ -2,6 +2,7 @@ package nodesyncer
 
 import (
 	"context"
+	"errors"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
@@ -41,17 +42,21 @@ func (s *syncer) SyncNodeState(ctx context.Context) (err error) {
 		return errdefs.NewNilCall()
 	}
 
-	// get current.
+	// get current node state
 	curr, prev, target, err := s.fetchNodeStatus(ctx)
-	if err != nil {
-		return err
-	}
 
 	// required node and user states
-	// we have 3 options: start/stop node, sync out of sync users.
+	// we have 4 options:
+	//  - mark node as unavailable
+	//  - start/stop node
+	//  - sync out of sync users.
 	// when sync node users, change node state if it differs
-	// from current stored state
+	// from current stored state.
+	// be careful: state when current status is unknown and
+	// target status is stopped ignored (but node may work)
 	switch {
+	case err != nil && prev != models.NodeStatusUnknown:
+		err = errors.Join(err, s.markAsUnavailable(ctx))
 	case target == models.NodeStatusRunning && curr == models.NodeStatusStopped:
 		err = s.startNode(ctx)
 	case target == models.NodeStatusStopped && curr == models.NodeStatusRunning:
@@ -90,6 +95,10 @@ func (s *syncer) fetchNodeStatus(ctx context.Context) (
 		}
 	}
 	return
+}
+
+func (s *syncer) markAsUnavailable(ctx context.Context) (err error) {
+	return s.updateStoredStatus(ctx, models.NodeStatusUnknown)
 }
 
 func (s *syncer) startNode(ctx context.Context) (err error) {

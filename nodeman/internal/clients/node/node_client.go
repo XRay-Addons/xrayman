@@ -7,13 +7,14 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/clients/node/converter"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/nodesyncer"
 )
 
 type NodeClient struct {
 	client *api.Client
 }
 
-//var _ poolsync.NodeClient = (*NodeClient)(nil)
+var _ nodesyncer.Client = (*NodeClient)(nil)
 
 func (c *NodeClient) Start(ctx context.Context, users []models.UserProfile) (
 	*models.ClientConfigTemplate, error,
@@ -25,9 +26,8 @@ func (c *NodeClient) Start(ctx context.Context, users []models.UserProfile) (
 	startRequest := api.StartRequest{Users: converter.ConvertUsers(users)}
 	startResponse, err := c.client.Start(ctx, &startRequest)
 	if err != nil {
-		return nil, errdefs.WrapWithStack(err)
+		return nil, wrapOgenErr(err)
 	}
-
 	clientTemplate := converter.ConvertClientConfig(startResponse.GetClientConfigTemplate())
 	return &clientTemplate, nil
 }
@@ -38,7 +38,7 @@ func (c *NodeClient) Stop(ctx context.Context) error {
 	}
 
 	if err := c.client.Stop(ctx); err != nil {
-		return errdefs.WrapWithStack(err)
+		return wrapOgenErr(err)
 	}
 	return nil
 }
@@ -50,7 +50,7 @@ func (c *NodeClient) CheckStatus(ctx context.Context) (models.NodeStatus, error)
 
 	status, err := c.client.GetStatus(ctx)
 	if err != nil {
-		return models.NodeStatusUnknown, errdefs.WrapWithStack(err)
+		return models.NodeStatusUnknown, wrapOgenErr(err)
 	}
 	return converter.ConvertNodeStatus(status.ServiceStatus), nil
 }
@@ -62,7 +62,11 @@ func (c *NodeClient) UpdateUsers(ctx context.Context, update models.NodeUsersUpd
 
 	editRequest := converter.ConvertUsersUpdate(update)
 	if err := c.client.EditUsers(ctx, &editRequest); err != nil {
-		return errdefs.WrapWithStack(err)
+		return wrapOgenErr(err)
 	}
 	return nil
+}
+
+func wrapOgenErr(err error) error {
+	return errdefs.Wrap(err, errdefs.WithOgen(), errdefs.WithStack())
 }

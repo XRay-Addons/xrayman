@@ -83,7 +83,9 @@ func (c *UnstableClientMock) CheckStatus(ctx context.Context) (models.NodeStatus
 		return models.NodeStatusUnknown, errdefs.New("random client fail")
 	}
 	if c.rand.Float32() < c.Instability {
-		return models.NodeStatusUnknown, nil
+		if err := c.Stop(ctx); err != nil {
+			return models.NodeStatusUnknown, err
+		}
 	}
 	return c.BaseClient.CheckStatus(ctx)
 }

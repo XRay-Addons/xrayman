@@ -1,0 +1,35 @@
+<script>
+  import palettes from "../../data/palettes/palettes.json";
+
+  let lastTap = 0;
+  //  let pendingPalette = null;
+
+  function getRandomPalette() {
+    return palettes[Math.floor(Math.random() * palettes.length)];
+  }
+
+  // Слушаем событие от Vue компонента
+  window.addEventListener("theme-manager-ready", (e) => {
+    console.log("ThemeManager is ready!");
+    /*if (pendingPalette) {
+      e.detail.changeColorTheme(pendingPalette);
+      pendingPalette = null;
+    }*/
+  });
+
+  document.addEventListener("click", (e) => {
+    const now = Date.now();
+    if (now - lastTap < 300) {
+      console.log(now - lastTap);
+      const palette = getRandomPalette();
+
+      if (window.changeColorTheme) {
+        window.changeColorTheme(palette);
+      } else {
+        console.log("Waiting for ThemeManager...");
+        //pendingPalette = palette;
+      }
+    }
+    lastTap = now;
+  });
+</script>

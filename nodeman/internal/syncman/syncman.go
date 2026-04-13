@@ -85,14 +85,15 @@ func (m *SyncMan) syncLoop(ctx context.Context) {
 	defer ticker.Stop()
 
 	for {
-		select {
-		case <-ticker.C:
-			// set sync time limit to m.interval
-			syncCtx, cancel := context.WithTimeout(ctx, m.interval)
-			syncRes, err := m.syncer.SyncPoolState(syncCtx)
-			cancel()
+		// set sync time limit to m.interval
+		syncCtx, cancel := context.WithTimeout(ctx, m.interval)
+		syncRes, err := m.syncer.SyncPoolState(syncCtx)
+		cancel()
+		m.logSyncResult(syncRes, err)
 
-			m.logSyncResult(syncRes, err)
+		select {
+		case <-time.After(m.interval):
+			continue
 		case <-ctx.Done():
 			return
 		}

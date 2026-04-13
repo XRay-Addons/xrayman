@@ -1,0 +1,124 @@
+<script>
+  /*
+import DataTable from "datatables.net"; // JS DataTables
+import "datatables.net-dt/css/dataTables.dataTables.css";
+
+interface Props {
+  headers?: string[];
+  datacells?: string[];
+}
+const { headers = [], datacells = [], ...rest } = Astro.props;
+---
+
+<table part="table" class="app-props-table w-100" {...rest}>
+  <thead part="thead">
+    <tr>
+      {headers.map((h) => <th>{h}</th>)}
+    </tr>
+  </thead>
+
+  <tbody part="tbody">
+    <template part="row-template">
+      <tr>
+        {datacells.map((c) => <td data-cell={c} />)}
+      </tr>
+    </template>
+  </tbody>
+</table>
+
+<style>
+  props-table {
+    display: contents;
+  }
+</style>
+
+<link
+  rel="stylesheet"
+  href="https://cdn.datatables.net/2.3.7/css/dataTables.dataTables.css"
+/>
+
+<script>
+  import DataTable from "https://cdn.datatables.net/2.3.7/js/dataTables.js";
+
+  function getValue(data: unknown, path: string): unknown {
+    for (const key of path.split(".")) {
+      if (typeof data !== "object" || data === null) return undefined;
+      data = (data as Record<string, unknown>)[key];
+    }
+    return data;
+  }
+  function fillByData(el: DocumentFragment, data: unknown) {
+    const cells = el.querySelectorAll<HTMLElement>("[data-cell]");
+
+    for (const el of cells) {
+      const path = el.getAttribute("data-cell");
+      if (!path) continue;
+
+      const value = getValue(data, path);
+      if (value != undefined) {
+        el.textContent = String(value);
+      }
+    }
+  }
+
+  function initTable(tableEl: HTMLTableElement) {
+    const template = tableEl.querySelector<HTMLTemplateElement>(
+      '[part="row-template"]',
+    );
+    if (!template) return;
+
+    const parent = template.parentElement;
+    if (!parent) return;
+
+    const frag = document.createDocumentFragment();
+    var dataObject: undefined;
+
+    const rows: unknown[] = [
+      {
+        id: "node-1",
+        status: "running",
+        stats: {
+          cpu: {
+            usage: 37,
+          },
+        },
+      },
+      {
+        id: "node-2",
+        status: "stopped",
+        stats: {
+          cpu: {
+            usage: 0,
+          },
+        },
+      },
+      {
+        id: "node-3",
+        status: "running",
+        stats: {
+          cpu: {
+            usage: 82,
+          },
+        },
+      },
+    ];
+
+    for (var i = 0; i < 3; i++) {
+      const fragment = template.content.cloneNode(true) as DocumentFragment;
+      fillByData(fragment, rows[i]);
+      frag.appendChild(fragment);
+    }
+    parent.replaceChildren(frag);
+    tableEl.classList.add("dataTable");
+
+    //const table = tableEl.querySelector<HTMLTableElement>('[part="table"]');
+    //if (!table) return;
+
+    new DataTable(tableEl, {});
+  }
+
+  const tableEl = document.querySelector<HTMLTableElement>("table");
+  if (tableEl) {
+    initTable(tableEl);
+  }*/
+</script>

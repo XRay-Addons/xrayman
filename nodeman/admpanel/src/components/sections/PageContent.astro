@@ -1,0 +1,13 @@
+---
+import Page from "../ui/Page.astro";
+import Title from "../ui/Title.astro";
+import UsersTable from "../vue/UsersTable.vue";
+---
+
+<Page>
+  <Title class="mb-2">Hellp, world</Title>
+  <div class="row">
+    <UsersTable client:only="vue" class="col-md-6 col-12 p-1" />
+    <UsersTable client:only="vue" class="col-md-6 col-12 p-1" />
+  </div>
+</Page>

@@ -1,0 +1,15 @@
+---
+import ApiTable from "./ApiTable.vue";
+---
+
+<h1>Servers</h1>
+
+<ApiTable
+  client:load
+  url="/api/servers"
+  :columns="[
+    { title: 'ID', dataIndex: 'id' },
+    { title: 'Host', dataIndex: 'host' },
+    { title: 'Status', dataIndex: 'status' },
+  ]"
+/>
