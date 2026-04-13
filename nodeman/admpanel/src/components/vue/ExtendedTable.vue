@@ -31,11 +31,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, h, ref } from "vue";
+import { computed, h, ref, inject } from "vue";
 import type { VNode } from "vue";
 import type { ColumnType } from "ant-design-vue/es/table";
 import { Table } from "ant-design-vue";
-import { colors } from "./colors.ts";
+import { colors, Colors } from "./Colors.ts";
+//import { Colors } from "./Globals.ts";
 
 export type ExtendedColumn<T = Record<string, any>> = ColumnType<T> & {
   extended?: boolean;
@@ -81,7 +82,7 @@ const theme = ref(themeData);*/
 
 const theme = computed(() => ({
   token: {
-    colorBgContainer: colors.value.cardColor,
+    colorBgContainer: colors.value[Colors.Card],
     algorythm: true,
     algorithm: true,
     colorText: "white",

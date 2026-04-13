@@ -20,14 +20,38 @@ import UsersTable from "../vue/UsersTable.vue";
     changeColor(Colors.Background, "#00ff00");
   }, 2000);*/
 
-  import emitter, { Colors, Events } from "../vue/Globals";
+  import { Colors, setColors } from "../vue/Colors";
 
-  setTimeout(() => {
-    emitter.emit(Events.SetColor, {
-      color: Colors.Background,
+  //colors.value.BG = "green";
+
+  //setTimeout(() => {
+  /*setColors([
+    {
+      color: Colors.BG,
       value: "red",
-    });
-  }, 2000);
+    },
+    {
+      color: Colors.Card,
+      value: "yellow",
+    },
+    {
+      color: Colors.Title,
+      value: "magenta",
+    },
+    {
+      color: Colors.Button,
+      value: "green",
+    },
+    {
+      color: Colors.Input,
+      value: "orange",
+    },
+    {
+      color: Colors.Table,
+      value: "orange",
+    },
+  ]);*/
+  //}, 2000);
 
   //}
 </script>

@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { watch, onMounted, inject } from "vue";
-import { Colors } from "./Globals.ts";
-import type { SetColorDetail } from "./Globals.ts";
-
-const colors = inject("colors");
+import { colors, Colors } from "./Colors.ts";
 
 function colorsToCSS(root: HTMLRootElement) {
-  root.style.setProperty("--bg-color", colors.value[Colors.Background]);
-  root.style.setProperty("--foreground-color", colors.value[Colors.Foreground]);
+  root.style.setProperty("--bg-color", colors.value[Colors.BG]);
+  root.style.setProperty("--card-color", colors.value[Colors.Card]);
+  root.style.setProperty("--title-color", colors.value[Colors.Title]);
+  root.style.setProperty("--button-color", colors.value[Colors.Button]);
+  root.style.setProperty("--input-color", colors.value[Colors.Input]);
+  root.style.setProperty("--table-color", colors.value[Colors.Table]);
 }
 
 function globalsToCSS() {
