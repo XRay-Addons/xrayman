@@ -36,7 +36,10 @@
       ) {
         stateSignal.set({ status: "logged-out" });
       } else if (userResponse.ok == false) {
-        stateSignal.set({ status: "server-error", error: userResponse.reason });
+        stateSignal.set({
+          status: "server-error",
+          reason: userResponse.reason,
+        });
       }
     }
 

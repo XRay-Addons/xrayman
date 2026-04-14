@@ -20,6 +20,30 @@ type ApiResponse<T> = (
   response: Response;
 };
 
+export async function newUser(
+  displayName: string,
+): Promise<ApiResult<UserAPIData>> {
+  return handleAPI(
+    () => _newUser({ body: { DisplayName: displayName } }),
+    (data) => ({
+      id: data.Profile.ID,
+      name: data.Profile.Name,
+      displayName: data.Profile.DisplayName,
+    }),
+  );
+}
+
+export async function getUser(userID: UserID): Promise<ApiResult<UserAPIData>> {
+  return handleAPI(
+    () => _getUser({ path: { ID: userID.id, Name: userID.name } }),
+    (data) => ({
+      id: data.Profile.ID,
+      name: data.Profile.Name,
+      displayName: data.Profile.DisplayName,
+    }),
+  );
+}
+
 async function handleAPI<T, R>(
   apiCall: () => Promise<ApiResponse<T>>,
   transform: (data: T) => R,

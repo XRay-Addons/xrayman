@@ -31,15 +31,19 @@
   </a-config-provider>
 </template>
 
-<script setup lang="ts">
-import { computed, h, ref, inject } from "vue";
+<script setup lang="ts" generic="T">
+import { computed, h } from "vue";
 import type { VNode } from "vue";
 import type { ColumnType } from "ant-design-vue/es/table";
 import { Table } from "ant-design-vue";
-import { colors, Colors } from "./Colors.ts";
+import { colors, Colors } from "./Colors";
 import Color from "colorjs.io";
 
-export type ExtendedColumn<T = Record<string, any>> = ColumnType<T> & {
+/* =======================
+   Types
+   ======================= */
+
+export type ExtendedColumn<T> = ColumnType<T> & {
   extended?: boolean;
 };
 
@@ -48,7 +52,7 @@ interface ExtendedRow<T> {
   columnIndex: number;
 }
 
-interface Props<T = Record<string, any>> {
+interface Props<T> {
   dataSource: T[];
   rowKey: string | ((record: T) => string);
   columns: ExtendedColumn<T>[];
@@ -56,12 +60,20 @@ interface Props<T = Record<string, any>> {
   i18nPrefix: string;
 }
 
-const props = defineProps<Props>();
+/* =======================
+   Props + Template param T
+   ======================= */
+
+const props = defineProps<Props<T>>();
+
+/* =======================
+   Theme
+   ======================= */
 
 const theme = computed(() => {
   const mainColor = new Color(colors.value[Colors.Card]);
 
-  const bgColor = mainColor;
+  const bgColor = mainColor.clone();
   bgColor.alpha = 0.5;
 
   const black = new Color("black");
@@ -91,19 +103,27 @@ const theme = computed(() => {
   };
 });
 
-const mainColumns = computed<ExtendedColumn[]>(() =>
+/* =======================
+   Columns
+   ======================= */
+
+const mainColumns = computed<ExtendedColumn<T>[]>(() =>
   props.columns.filter((col) => !col.extended),
 );
 
-const extendedColumns = computed<ExtendedColumn[]>(() =>
+const extendedColumns = computed<ExtendedColumn<T>[]>(() =>
   props.columns.filter((col) => col.extended),
 );
 
-const extendedTableColumns = computed<ColumnType<ExtendedRow<any>>[]>(() => [
+/* =======================
+   Expanded columns
+   ======================= */
+
+const extendedTableColumns = computed<ColumnType<ExtendedRow<T>>[]>(() => [
   {
     key: "key",
     width: "16ch",
-    customRender: function ({ record }): VNode {
+    customRender: ({ record }): VNode => {
       const column = extendedColumns.value[record.columnIndex];
       return h("span", {
         "data-i18n": `${props.i18nPrefix}.${column.key}`,
@@ -125,7 +145,11 @@ const extendedTableColumns = computed<ColumnType<ExtendedRow<any>>[]>(() => [
   },
 ]);
 
-function extendedDataSource<T>(record: T): ExtendedRow<T>[] {
+/* =======================
+   Expanded data
+   ======================= */
+
+function extendedDataSource(record: T): ExtendedRow<T>[] {
   return extendedColumns.value.map((_, index) => ({
     originalRecord: record,
     columnIndex: index,

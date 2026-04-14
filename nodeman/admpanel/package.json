@@ -1,12 +1,15 @@
 {
-  "name": "",
+  "name": "xrayman-admpanel",
   "type": "module",
   "version": "0.0.1",
   "engines": {
     "node": ">=22.12.0"
   },
   "scripts": {
+    "generate": "openapi-ts",
+    "predev": "npm run generate",
     "dev": "astro dev",
+    "prebuild": "npm run generate",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro"
@@ -27,6 +30,7 @@
     "vue": "^3.5.32"
   },
   "devDependencies": {
+    "@hey-api/openapi-ts": "^0.96.0",
     "@vitejs/plugin-vue-jsx": "^5.1.5",
     "@zokki/astro-purgecss": "^1.0.4",
     "astro-compress": "^2.4.0",

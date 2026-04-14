@@ -7,7 +7,7 @@ export default defineConfig({
   parser: {
     filters: {
       tags: {
-        include: ["userpage"],
+        include: ["admpage"],
       },
     },
   },

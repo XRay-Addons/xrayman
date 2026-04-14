@@ -9,6 +9,7 @@ import (
 	mw "github.com/XRay-Addons/xrayman/nodeman/internal/http/middleware"
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"go.uber.org/zap"
 )
 
@@ -58,6 +59,16 @@ func New(options ...Option) (http.Handler, error) {
 
 	// add middleware from chi
 	r := chi.NewRouter()
+
+		// CORS middleware - разрешаем все
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"*"}, // разрешаем все домены
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
+		AllowedHeaders:   []string{"*"}, // разрешаем все заголовки
+		ExposedHeaders:   []string{"*"},
+		AllowCredentials: false, // при AllowedOrigins: ["*"] должен быть false
+		MaxAge:           300,   // кэширование preflight запросов на 5 минут
+	}))
 
 	r.Use(chimw.RequestID)
 	r.Use(mw.Logger(ro.log))

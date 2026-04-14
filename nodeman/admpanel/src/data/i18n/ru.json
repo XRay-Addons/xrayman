@@ -21,6 +21,6 @@
   "table.users.actions.delete": "Delete",
   "table.users.actions.delete-confirn-header": "Delete user?",
   "table.users.actions.delete-confirn-body": "Are you sure?",
-  "table.users.actions.delete-confirn-yes": "Yes",
-  "table.users.actions.delete-confirn-no": "No"
+  "table.users.actions.delete-confirn-yes": "Da",
+  "table.users.actions.delete-confirn-no": "Net"
 }

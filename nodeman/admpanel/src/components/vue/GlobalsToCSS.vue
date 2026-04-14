@@ -2,7 +2,7 @@
 import { watch, onMounted, inject } from "vue";
 import { colors, Colors } from "./Colors.ts";
 
-function colorsToCSS(root: HTMLRootElement) {
+function colorsToCSS(root: HTMLElement) {
   root.style.setProperty("--bg-color", colors.value[Colors.BG]);
   root.style.setProperty("--card-color", colors.value[Colors.Card]);
   root.style.setProperty("--title-color", colors.value[Colors.Title]);

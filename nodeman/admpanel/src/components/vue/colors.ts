@@ -18,6 +18,9 @@ export const colors = ref({
   [Colors.Table]: "#d4ffea",
 });
 
+function foo(x) {
+  return "a";
+}
 export interface SetColorPayload {
   color: (typeof Colors)[keyof typeof Colors];
   value: string;

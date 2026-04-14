@@ -2,7 +2,8 @@
   <ExtendedTable
     :data-source="users"
     :columns="userColumns"
-    :rowKey="rowKey"
+    :row-key="rowKey"
+    :loading="usersLoading"
     i18n-prefix="table.users"
     color="#ff0000b5"
     v-bind="$attrs"
@@ -11,61 +12,59 @@
 
 <script setup lang="ts">
 import ExtendedTable from "./ExtendedTable.vue";
-import { h, ref, onMounted, onBeforeUnmount } from "vue";
+import { h, ref, onMounted } from "vue";
+import type { VNode } from "vue";
 import { Tag, Button, Space, Popconfirm } from "ant-design-vue";
+import type { ColumnType } from "ant-design-vue/es/table";
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   ExclamationCircleOutlined,
 } from "@ant-design/icons-vue";
+import type { User as APIUser } from "../../api/generated/types.gen";
+import { listUsers } from "../../api/client";
+import type { ExtendedColumn } from "./ExtendedTable.vue";
 
-interface User {
-  Profile: Profile;
-  TargetStatus: "enabled" | "disabled" | "unknown";
-}
+/* =======================
+   state
+======================= */
 
-interface Profile {
-  ID: number;
-  Name: string;
-  DisplayName: string;
-  VlessUUID: string;
-}
+const users = ref<APIUser[]>([]);
+const usersLoading = ref(false);
 
-const data: User[] = [
-  {
-    Profile: {
-      ID: 1,
-      Name: "alice",
-      DisplayName: "Alice Johnson",
-      VlessUUID: "123e4567-e89b-12d3-a456-426614174000",
-    },
-    TargetStatus: "enabled",
-  },
-  {
-    Profile: {
-      ID: 2,
-      Name: "bob",
-      DisplayName: "Bob Smith",
-      VlessUUID: "223e4567-e89b-12d3-a456-426614174001",
-    },
-    TargetStatus: "disabled",
-  },
-  {
-    Profile: {
-      ID: 3,
-      Name: "charlie",
-      DisplayName: "Charlie Brown",
-      VlessUUID: "323e4567-e89b-12d3-a456-426614174002",
-    },
-    TargetStatus: "unknown",
-  },
-];
+/* =======================
+   data loading
+======================= */
 
-const users = ref(data);
+const loadUsers = async () => {
+  usersLoading.value = true;
+  try {
+    const result = await listUsers();
+    if (result.ok) {
+      users.value = result.data;
+    } else {
+      console.error("Loading users error:", result.reason);
+    }
+  } catch (error) {
+    console.error("Loading users error:", error);
+  } finally {
+    usersLoading.value = false;
+  }
+};
 
-const rowKey = (record) => record.Profile.ID;
+onMounted(loadUsers);
 
-const userColumns = [
+/* =======================
+   row key
+======================= */
+
+const rowKey = (record: APIUser): string => String(record.Profile.ID);
+
+/* =======================
+   columns (IMPORTANT FIX)
+======================= */
+
+const userColumns: ExtendedColumn<APIUser>[] = [
   {
     key: "id",
     dataIndex: ["Profile", "ID"],
@@ -79,10 +78,7 @@ const userColumns = [
   {
     key: "target-status",
     dataIndex: ["TargetStatus"],
-
-    customRender: ({ text }) => {
-      return renderTag(text);
-    },
+    customRender: ({ text }) => renderTag(text),
   },
   {
     key: "name",
@@ -92,21 +88,25 @@ const userColumns = [
   {
     key: "vless-uuid",
     dataIndex: ["Profile", "VlessUUID"],
-    extended: true,
     ellipsis: true,
     width: "8ch",
+    customRender: ({ text }) =>
+      h("span", { style: { fontFamily: "monospace" } }, text),
+    extended: true,
   },
   {
     key: "actions",
     dataIndex: ["TargetStatus"],
-    customRender: ({ text }) => {
-      return renderBtns(text);
-    },
+    customRender: ({ text }) => renderBtns(text),
     extended: true,
   },
 ];
 
-function renderTag(text) {
+/* =======================
+   helpers
+======================= */
+
+function renderTag(text: string) {
   if (text === "enabled") {
     return makeTag(
       "success",
@@ -124,20 +124,19 @@ function renderTag(text) {
   }
 }
 
-function makeTag(color: string, i18n: string, icon) {
+function makeTag(color: string, i18n: string, icon: any) {
   return h(
     Tag,
-    {
-      color: color,
-    },
+    { color },
     {
       default: () => [h(icon), h("span", { "data-i18n": i18n })],
     },
   );
 }
 
-function renderBtns(text) {
-  const actions = [];
+function renderBtns(text: string) {
+  const actions: VNode[] = [];
+
   if (text === "enabled") {
     actions.push(disableBtn());
   } else if (text === "disabled") {
@@ -145,7 +144,9 @@ function renderBtns(text) {
   } else {
     actions.push(enableBtn(), disableBtn());
   }
+
   actions.push(deleteBtn());
+
   return h(Space, { size: "small" }, () => actions);
 }
 
@@ -172,12 +173,6 @@ function deleteBtn() {
   return h(
     Popconfirm,
     {
-      title: h("span", {
-        "data-i18n": "table.users.actions.delete-confirn-header",
-      }),
-      description: h("span", {
-        "data-i18n": "table.users.actions.delete-confirn-body",
-      }),
       okText: h("span", {
         "data-i18n": "table.users.actions.delete-confirn-yes",
       }),
@@ -186,15 +181,22 @@ function deleteBtn() {
       }),
     },
     {
-      default: () => {
-        return h(Button, {
+      default: () =>
+        h(Button, {
           danger: true,
           size: "small",
           type: "primary",
           style: { boxShadow: "none" },
           "data-i18n": "table.users.actions.delete",
-        });
-      },
+        }),
+      title: () =>
+        h("span", {
+          "data-i18n": "table.users.actions.delete-confirn-header",
+        }),
+      description: () =>
+        h("span", {
+          "data-i18n": "table.users.actions.delete-confirn-body",
+        }),
     },
   );
 }

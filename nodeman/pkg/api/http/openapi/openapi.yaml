@@ -219,6 +219,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+      tags:
+        - admpage
 
   /sub/{ID}-{Name}:
     get:
