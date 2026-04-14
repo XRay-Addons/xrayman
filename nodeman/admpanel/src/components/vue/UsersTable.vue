@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import ExtendedTable from "./ExtendedTable.vue";
+import ExtendedTable from "../ui/ExtendedTable.vue";
 import { h, ref, onMounted } from "vue";
 import type { VNode } from "vue";
 import { Tag, Button, Space, Popconfirm } from "ant-design-vue";
@@ -23,7 +23,7 @@ import {
 } from "@ant-design/icons-vue";
 import type { User as APIUser } from "../../api/generated/types.gen";
 import { listUsers } from "../../api/client";
-import type { ExtendedColumn } from "./ExtendedTable.vue";
+import type { ExtendedColumn } from "../ui/ExtendedTable.vue";
 
 /* =======================
    state
