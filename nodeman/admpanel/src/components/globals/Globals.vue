@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import GlobalsToCSS from "./GlobalsToCSS.vue";
+import Sync from "./Sync.vue";
 </script>
 
 <template>
-  <GlobalsToCSS>
+  <Sync>
     <slot />
-  </GlobalsToCSS>
+  </Sync>
 </template>

@@ -10,12 +10,12 @@ export enum Colors {
 }
 
 export const colors = ref({
-  [Colors.BG]: "#feffa3",
-  [Colors.Card]: "#d4ffea",
-  [Colors.Title]: "#ffd4e5",
-  [Colors.Button]: "#eecbff",
-  [Colors.Input]: "#dbdcff",
-  [Colors.Table]: "#d4ffea",
+  [Colors.BG]: "undefined",
+  [Colors.Card]: "undefined",
+  [Colors.Title]: "undefined",
+  [Colors.Button]: "undefined",
+  [Colors.Input]: "undefined",
+  [Colors.Table]: "undefined",
 });
 
 export interface SetColorPayload {
