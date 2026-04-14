@@ -1,0 +1,14 @@
+---
+import Title from "../ui/Title.astro";
+import UsersTable from "../vue/UsersTable.vue";
+import Card from "../ui/Card.astro";
+---
+
+<div class="col-sm-12 col-lg-6">
+  <Card>
+    <Title class="mb-2">
+      <span data-i18n="title.users-card"></span>
+    </Title>
+    <UsersTable client:only="vue" />
+  </Card>
+</div>
