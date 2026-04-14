@@ -26,11 +26,7 @@ import VueLayout from "./VueLayout.astro";
       <slot />
     </VueLayout>
     <script>
-      import { startI18nObserver } from "../lib/i18n";
-      import { fixIOSActive } from "../lib/ios-active-fix";
-
-      startI18nObserver();
-      fixIOSActive();
+      import "@/runtime/init/init-runtime";
     </script>
   </body>
 </html>

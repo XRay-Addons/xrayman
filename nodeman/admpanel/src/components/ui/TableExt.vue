@@ -36,7 +36,7 @@ import { computed, h } from "vue";
 import type { VNode } from "vue";
 import type { ColumnType } from "ant-design-vue/es/table";
 import { Table } from "ant-design-vue";
-import { Colors, colors } from "../globals/colors";
+import { Colors, colors } from "../../state/colors";
 import Color from "colorjs.io";
 
 /* =======================

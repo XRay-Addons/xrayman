@@ -11,13 +11,14 @@
 </template>
 
 <script setup lang="ts">
-import ExtendedTable, { type ExtendedColumn } from "../ui/TableExt.vue";
+import ExtendedTable, {
+  type ExtendedColumn,
+} from "@/components/ui/TableExt.vue";
 import type {
   User as APIUser,
   UserStatus as APIUserStatus,
-} from "../../api/generated/types.gen";
-import { listUsers } from "../../api/client";
-import { ref, onMounted, type VNode } from "vue";
+} from "@/api/generated/types.gen";
+import { onMounted, type VNode } from "vue";
 import {
   makeMonospace,
   enabledTag,
@@ -27,36 +28,10 @@ import {
   disableBtn,
   ensureDeleteBtn,
   mergeActionBtns,
-} from "../../lib/table-ext-elements";
+} from "@/lib/table-ext-elements";
+import { users, usersLoading, reloadUsers } from "@/state/users";
 
-/* =======================
-   state
-======================= */
-
-const users = ref<APIUser[]>([]);
-const usersLoading = ref(false);
-
-/* =======================
-   data loading
-======================= */
-
-const loadUsers = async () => {
-  usersLoading.value = true;
-  try {
-    const result = await listUsers();
-    if (result.ok) {
-      users.value = result.data;
-    } else {
-      console.error("Loading users error:", result.reason);
-    }
-  } catch (error) {
-    console.error("Loading users error:", error);
-  } finally {
-    usersLoading.value = false;
-  }
-};
-
-onMounted(loadUsers);
+onMounted(reloadUsers);
 
 /* =======================
    row key
@@ -65,7 +40,7 @@ onMounted(loadUsers);
 const rowKey = (record: APIUser): string => String(record.Profile.ID);
 
 /* =======================
-   columns (IMPORTANT FIX)
+   columns 
 ======================= */
 
 const userColumns: ExtendedColumn<APIUser>[] = [

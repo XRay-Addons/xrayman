@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import { watch, onMounted, inject } from "vue";
-import { colors, Colors } from "./colors";
+import { watch, onMounted } from "vue";
+import { colors, Colors } from "../../state/colors";
 
-/* ========================================
-  global colors. css is initial data source
-  ====================================== */
+// map CSS <-> state
 const map = {
   [Colors.BG]: "--bg-color",
   [Colors.Card]: "--card-color",
@@ -14,18 +12,21 @@ const map = {
   [Colors.Table]: "--table-color",
 } as const;
 
+// sync CSS → state
 function colorsFromCSS(root: HTMLElement) {
   const styles = getComputedStyle(root);
 
   for (const key in map) {
     const cssVar = map[key as Colors];
     const value = styles.getPropertyValue(cssVar).trim();
+
     if (value) {
       colors.value[key as Colors] = value;
     }
   }
 }
 
+// sync: state → CSS
 function colorsToCSS(root: HTMLElement) {
   for (const key in map) {
     const cssVar = map[key as Colors];
@@ -33,22 +34,21 @@ function colorsToCSS(root: HTMLElement) {
   }
 }
 
-/* ========================================
-  init globals by CSS, apply globals changes to CSS
-  ====================================== */
+// css values are source of initial values.
+// reactive color updates leads to css updates
+function getRoot() {
+  return document.documentElement;
+}
+
 function initGlobals() {
-  const root = document.documentElement;
-  if (!root) {
-    console.warn("globals init from CSS fiasco");
-  } // too early, init order fiasco
+  const root = getRoot();
+  if (!root) return;
   colorsFromCSS(root);
 }
 
 function applyGlobals() {
-  const root = document.documentElement;
-  if (!root) {
-    return;
-  } // too early, init order fiasco
+  const root = getRoot();
+  if (!root) return;
   colorsToCSS(root);
 }
 
@@ -57,7 +57,7 @@ watch(
   () => {
     applyGlobals();
   },
-  { deep: true, immediate: false },
+  { deep: true },
 );
 
 onMounted(() => {

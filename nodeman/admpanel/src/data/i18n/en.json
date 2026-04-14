@@ -1,3 +1,26 @@
 {
-  "title.main": "Ottepell - Admin'"
+  "title.main": "Ottepell - Admin'",
+
+  "title.main-page": "Смотри, Таблички!",
+
+  "title.users-card": "Пользователи",
+
+  "table.users.id": "ID",
+  "table.users.display-name": "Display Name",
+  "table.users.name": "Username",
+  "table.users.vless-uuid": "VLESS UUID",
+  "table.users.target-status": "Target Status",
+  "table.users.actions": "Actions",
+
+  "table.users.status.enabled": "enabled",
+  "table.users.status.disabled": "disabled",
+  "table.users.status.unknown": "unknown",
+
+  "table.users.actions.enable": "Enable",
+  "table.users.actions.disable": "Disable",
+  "table.users.actions.delete": "Delete",
+  "table.users.actions.delete-confirn-header": "Delete user?",
+  "table.users.actions.delete-confirn-body": "Are you sure?",
+  "table.users.actions.delete-confirn-yes": "Da",
+  "table.users.actions.delete-confirn-no": "Net"
 }

@@ -1,7 +1,7 @@
-import ru from "../data/i18n/ru.json";
-import en from "../data/i18n/en.json";
+import ru from "@/data/i18n/ru.json";
+//import en from "@/data/i18n/en.json";
 
-export const messages = { ru, en } as const;
+export const messages = { ru } as const;
 export type Lang = keyof typeof messages;
 export type I18nKey = keyof typeof ru;
 

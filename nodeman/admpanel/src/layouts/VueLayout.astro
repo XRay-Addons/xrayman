@@ -1,7 +1,7 @@
 ---
-import Globals from "../components/globals/Globals.vue";
+import SyncCSS from "../runtime/sync/SyncCSS.vue";
 ---
 
-<Globals client:only="vue">
+<SyncCSS client:only="vue">
   <slot />
-</Globals>
+</SyncCSS>
