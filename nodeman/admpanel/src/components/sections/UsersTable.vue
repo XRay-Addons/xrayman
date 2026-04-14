@@ -12,7 +12,10 @@
 
 <script setup lang="ts">
 import ExtendedTable, { type ExtendedColumn } from "../ui/TableExt.vue";
-import type { User as APIUser } from "../../api/generated/types.gen";
+import type {
+  User as APIUser,
+  UserStatus as APIUserStatus,
+} from "../../api/generated/types.gen";
 import { listUsers } from "../../api/client";
 import { ref, onMounted, type VNode } from "vue";
 import {
@@ -79,7 +82,7 @@ const userColumns: ExtendedColumn<APIUser>[] = [
   {
     key: "target-status",
     dataIndex: ["TargetStatus"],
-    customRender: ({ text }) => renderTag(text),
+    customRender: ({ value }) => renderTag(value),
   },
   {
     key: "name",
@@ -97,7 +100,7 @@ const userColumns: ExtendedColumn<APIUser>[] = [
   {
     key: "actions",
     dataIndex: ["TargetStatus"],
-    customRender: ({ text }) => renderBtns(text),
+    customRender: ({ value }) => renderActions(value),
     extended: true,
   },
 ];
@@ -106,23 +109,23 @@ const userColumns: ExtendedColumn<APIUser>[] = [
    helpers
 ======================= */
 
-function renderTag(text: string) {
-  if (text === "enabled") {
+function renderTag(status: APIUserStatus) {
+  if (status === "enabled") {
     return enabledTag("table.users.status.enabled");
-  } else if (text === "disabled") {
+  } else if (status === "disabled") {
     return disabledTag("table.users.status.disabled");
   } else {
     return unknownTag("table.users.status.unknown");
   }
 }
 
-function renderBtns(text: string) {
+function renderActions(status: APIUserStatus) {
   const actions: VNode[] = [];
 
-  if (text !== "enabled") {
+  if (status !== "enabled") {
     actions.push(enableBtn("table.users.actions.enable"));
   }
-  if (text !== "disabled") {
+  if (status !== "disabled") {
     actions.push(disableBtn("table.users.actions.disable"));
   }
   actions.push(ensureDeleteBtn("table.users.actions"));
