@@ -14,7 +14,7 @@
 import ExtendedTable, { type ExtendedColumn } from "../ui/TableExt.vue";
 import type { User as APIUser } from "../../api/generated/types.gen";
 import { listUsers } from "../../api/client";
-import { h, ref, onMounted, type VNode } from "vue";
+import { ref, onMounted, type VNode } from "vue";
 import {
   makeMonospace,
   enabledTag,
