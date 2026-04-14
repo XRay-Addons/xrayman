@@ -12,7 +12,7 @@
 <script setup lang="ts">
 import ExtendedTable from "./ExtendedTable.vue";
 import { h, ref, onMounted, onBeforeUnmount } from "vue";
-import { Tag, Button, Space } from "ant-design-vue";
+import { Tag, Button, Space, Popconfirm } from "ant-design-vue";
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
@@ -169,12 +169,33 @@ function disableBtn() {
 }
 
 function deleteBtn() {
-  return h(Button, {
-    danger: true,
-    size: "small",
-    type: "primary",
-    style: { boxShadow: "none" },
-    "data-i18n": "table.users.actions.delete",
-  });
+  return h(
+    Popconfirm,
+    {
+      title: h("span", {
+        "data-i18n": "table.users.actions.delete-confirn-header",
+      }),
+      description: h("span", {
+        "data-i18n": "table.users.actions.delete-confirn-body",
+      }),
+      okText: h("span", {
+        "data-i18n": "table.users.actions.delete-confirn-yes",
+      }),
+      cancelText: h("span", {
+        "data-i18n": "table.users.actions.delete-confirn-no",
+      }),
+    },
+    {
+      default: () => {
+        return h(Button, {
+          danger: true,
+          size: "small",
+          type: "primary",
+          style: { boxShadow: "none" },
+          "data-i18n": "table.users.actions.delete",
+        });
+      },
+    },
+  );
 }
 </script>

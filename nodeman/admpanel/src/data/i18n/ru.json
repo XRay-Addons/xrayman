@@ -4,6 +4,7 @@
   "title.main-page": "Смотри, Таблички!",
 
   "title.users-card": "Пользователи",
+
   "table.users.id": "ID",
   "table.users.display-name": "Display Name",
   "table.users.name": "Username",
@@ -17,5 +18,9 @@
 
   "table.users.actions.enable": "Enable",
   "table.users.actions.disable": "Disable",
-  "table.users.actions.delete": "Delete"
+  "table.users.actions.delete": "Delete",
+  "table.users.actions.delete-confirn-header": "Delete user?",
+  "table.users.actions.delete-confirn-body": "Are you sure?",
+  "table.users.actions.delete-confirn-yes": "Yes",
+  "table.users.actions.delete-confirn-no": "No"
 }
