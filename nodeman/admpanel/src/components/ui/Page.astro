@@ -1,15 +1,17 @@
 ---
+import type { $brand } from "astro:schema";
+
 const { class: extraClass = "", ...rest } = Astro.props;
 ---
 
-<app-page class:list={["app-page hv-center p-2", extraClass]} {...rest}>
-  <div class="app-page__content col-8">
+<app-page class="app-page__wrap hv-center p-2">
+  <div class:list={["app-page", extraClass]} {...rest}>
     <slot />
   </div>
 </app-page>
 
 <style>
-  .app-page {
+  .app-page__wrap {
     min-height: 100vh;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;

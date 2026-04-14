@@ -7,6 +7,7 @@
       :scroll="{ x: 'max-width' }"
       size="medium"
       class="table-extended"
+      v-bind="$attrs"
     >
       <!-- Header -->
       <template #headerCell="{ column }">
@@ -36,7 +37,7 @@ import type { VNode } from "vue";
 import type { ColumnType } from "ant-design-vue/es/table";
 import { Table } from "ant-design-vue";
 import { colors, Colors } from "./Colors.ts";
-//import { Colors } from "./Globals.ts";
+import Color from "colorjs.io";
 
 export type ExtendedColumn<T = Record<string, any>> = ColumnType<T> & {
   extended?: boolean;
@@ -57,80 +58,39 @@ interface Props<T = Record<string, any>> {
 
 const props = defineProps<Props>();
 
-/*const themeData = computed(() => ({
-  token: {
-    colorBgContainer: "red",
-    algorythm: true,
-    algorithm: true,
-  },
-  components: {
-    Table: {
-      borderRadiusSM: 0,
-      borderRadiusMD: 0,
-      borderRadiusLG: 0,
+const theme = computed(() => {
+  const mainColor = new Color(colors.value[Colors.Card]);
+
+  const bgColor = mainColor;
+  bgColor.alpha = 0.5;
+
+  const black = new Color("black");
+  const white = new Color("white");
+
+  const contrastBlack = bgColor.contrast(black, "WCAG21");
+  const contrastWhite = bgColor.contrast(white, "WCAG21");
+  const contrastColor = contrastBlack > contrastWhite ? black : white;
+
+  const textColor = mainColor.mix(contrastColor, 0.75, { space: "srgb" });
+
+  return {
+    token: {
+      colorBgContainer: bgColor.toString(),
+      colorTextHeading: textColor.toString(),
+      colorText: textColor.toString(),
       algorithm: true,
     },
-    Button: {
-      borderRadiusSM: 4,
-      borderRadiusMD: 4,
-      borderRadiusLG: 4,
-    },
-  },
-}));
-
-const theme = ref(themeData);*/
-
-const theme = computed(() => ({
-  token: {
-    colorBgContainer: colors.value[Colors.Card],
-    algorythm: true,
-    algorithm: true,
-    colorText: "white",
-  },
-  components: {
-    Table: {
-      borderRadiusSM: 0,
-      borderRadiusMD: 0,
-      borderRadiusLG: 0,
-      algorithm: true,
-      headerColor: "white",
-    },
-    Button: {
-      borderRadiusSM: 4,
-      borderRadiusMD: 4,
-      borderRadiusLG: 4,
-    },
-  },
-}));
-
-/*setTimeout(() => {
-  theme.value.token.colorBgContainer = "#ff000080";
-}, 2000);
-
-setTimeout(() => {
-  theme.value.token.colorBgContainer = "#33ff0080";
-  console.log(theme.value);
-}, 2000);*/
-
-/*const theme = computed(() => ({
-token: {
-        colorBgContainer: props.color,
+    components: {
+      Table: {
+        borderRadiusSM: 0,
+        borderRadiusMD: 0,
+        borderRadiusLG: 0,
+        algorithm: true,
       },
-      components: {
-        Table: {
-          borderRadiusSM: 0,
-          borderRadiusMD: 0,
-          borderRadiusLG: 0,
-          algorithm: true,
-        },
-        Button: {
-          borderRadiusSM: 4,
-          borderRadiusMD: 4,
-          borderRadiusLG: 4,
-        },
-      },
-    }"
-}));*/
+    },
+  };
+});
+
 const mainColumns = computed<ExtendedColumn[]>(() =>
   props.columns.filter((col) => !col.extended),
 );

@@ -1,5 +1,9 @@
 {
   "title.main": "Оттепелль - Админ",
+
+  "title.main-page": "Смотри, Таблички!",
+
+  "title.users-card": "Пользователи",
   "table.users.id": "ID",
   "table.users.display-name": "Display Name",
   "table.users.name": "Username",

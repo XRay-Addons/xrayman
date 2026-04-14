@@ -1,37 +1,63 @@
+<theme-man> </theme-man>
+
+<style>
+  theme-man {
+    display: contents;
+  }
+</style>
+
 <script>
-  // listen backgroundColor and sync with css
+  import palettes from "../../data/palettes/palettes.json";
+  import { Colors, setColors, type SetColorPayload } from "../vue/Colors";
 
-  /*import palettes from "../../data/palettes/palettes.json";
+  class ThemeMan extends HTMLElement {
+    doubleTapTimeout: number = 300;
+    lastTap = 0;
 
-  let lastTap = 0;
-  //  let pendingPalette = null;
+    connectedCallback() {
+      document.addEventListener("click", this.onClick);
+    }
 
-  function getRandomPalette() {
-    return palettes[Math.floor(Math.random() * palettes.length)];
+    disconnectedCallback() {
+      document.removeEventListener("click", this.onClick);
+    }
+
+    onClick = () => {
+      const now = Date.now();
+      if (now - this.lastTap < this.doubleTapTimeout) {
+        console.log("set colors");
+        setColors(this.getRandomTheme());
+      }
+      this.lastTap = now;
+    };
+
+    getRandomTheme(): SetColorPayload[] {
+      const palette = this.getRandomPalette();
+      this.randomShuffle(palette);
+
+      const n = palette.length;
+      if (n == 0) {
+        return [];
+      }
+
+      return [
+        { color: Colors.BG, value: palette[0 % n] },
+        { color: Colors.Card, value: palette[1 % n] },
+        { color: Colors.Title, value: palette[2 % n] },
+        { color: Colors.Button, value: palette[3 % n] },
+        { color: Colors.Input, value: palette[4 % n] },
+        { color: Colors.Table, value: palette[5 % n] },
+      ];
+    }
+
+    getRandomPalette(): string[] {
+      return palettes[Math.floor(Math.random() * palettes.length)];
+    }
+
+    randomShuffle(palette: string[]) {
+      palette.sort(() => Math.random() - 0.5);
+    }
   }
 
-  // Слушаем событие от Vue компонента
-  window.addEventListener("theme-manager-ready", (e) => {
-    console.log("ThemeManager is ready!");
-    /*if (pendingPalette) {
-      e.detail.changeColorTheme(pendingPalette);
-      pendingPalette = null;
-    }
-  });
-
-  document.addEventListener("click", (e) => {
-    const now = Date.now();
-    if (now - lastTap < 300) {
-      console.log(now - lastTap);
-      const palette = getRandomPalette();
-
-      if (window.changeColorTheme) {
-        window.changeColorTheme(palette);
-      } else {
-        console.log("Waiting for ThemeManager...");
-        //pendingPalette = palette;
-      }
-    }
-    lastTap = now;
-  });*/
+  customElements.define("theme-man", ThemeMan);
 </script>

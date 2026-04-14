@@ -127,7 +127,7 @@ function disabledTag() {
 
 function unknownTag() {
   return h(Tag, {
-    color: "default",
+    color: "warning",
     "data-i18n": "table.users.status.unknown",
   });
 }

@@ -13,12 +13,8 @@ const styleVars = {
 };
 ---
 
-<div
-  class:list={["surface__wrap h-100", extraClass]}
-  style={styleVars}
-  {...rest}
->
-  <div class:list={["surface h-100", { "surface--dynamic": dynamic }]}>
+<div class:list={["surface__wrap", extraClass]} style={styleVars} {...rest}>
+  <div class:list={["surface", { "surface--dynamic": dynamic }]}>
     <slot />
   </div>
 </div>
@@ -47,6 +43,7 @@ const styleVars = {
     isolation: isolate;
     position: relative;
 
+    padding-left: 0;
     padding-right: var(--surface-depth);
     padding-bottom: var(--surface-depth);
   }

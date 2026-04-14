@@ -1,57 +1,13 @@
 ---
-import Page from "../ui/Page.astro";
-import Title from "../ui/Title.astro";
-import UsersTable from "../vue/UsersTable.vue";
+import Page from "./Page.astro";
+import ThemeMan from "../ui/ThemeMan.astro";
+import PageTitle from "./PageTitle.astro";
+import PageCards from "./PageCards.astro";
 ---
 
 <Page>
-  <Title class="mb-2">Hellp, world</Title>
-  <div class="row">
-    <UsersTable client:only="vue" class="col-md-6 col-12 p-1" />
-    <UsersTable client:only="vue" class="col-md-6 col-12 p-1" />
-  </div>
+  <ThemeMan />
+  <PageTitle />
+
+  <PageCards />
 </Page>
-
-<script>
-  /*import { changeColor, Colors } from "../vue/Globals";
-  changeColor(Colors.Background, "#00ff00");
-
-  setTimeout(() => {
-    changeColor(Colors.Background, "#00ff00");
-  }, 2000);*/
-
-  import { Colors, setColors } from "../vue/Colors";
-
-  //colors.value.BG = "green";
-
-  //setTimeout(() => {
-  /*setColors([
-    {
-      color: Colors.BG,
-      value: "red",
-    },
-    {
-      color: Colors.Card,
-      value: "yellow",
-    },
-    {
-      color: Colors.Title,
-      value: "magenta",
-    },
-    {
-      color: Colors.Button,
-      value: "green",
-    },
-    {
-      color: Colors.Input,
-      value: "orange",
-    },
-    {
-      color: Colors.Table,
-      value: "orange",
-    },
-  ]);*/
-  //}, 2000);
-
-  //}
-</script>
