@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { watch, onMounted, inject } from "vue";
-import { colors, Colors } from "./Colors.ts";
+import { colors, Colors } from "./colors";
 
 function colorsToCSS(root: HTMLElement) {
   root.style.setProperty("--bg-color", colors.value[Colors.BG]);
