@@ -6,15 +6,19 @@ import {
   ExclamationCircleOutlined,
 } from "@ant-design/icons-vue";
 
-export function enabledTag(i18n: string) {
+export function makeMonospace(text: string): VNode {
+  return h("span", { style: { fontFamily: "monospace" } }, text);
+}
+
+export function enabledTag(i18n: string): VNode {
   return makeTag("success", i18n, CheckCircleOutlined);
 }
 
-export function disabledTag(i18n: string) {
+export function disabledTag(i18n: string): VNode {
   return makeTag("error", i18n, CloseCircleOutlined);
 }
 
-export function unknownTag(i18n: string) {
+export function unknownTag(i18n: string): VNode {
   return makeTag("warning", i18n, ExclamationCircleOutlined);
 }
 

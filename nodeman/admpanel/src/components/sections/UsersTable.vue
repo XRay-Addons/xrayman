@@ -16,6 +16,7 @@ import type { User as APIUser } from "../../api/generated/types.gen";
 import { listUsers } from "../../api/client";
 import { h, ref, onMounted, type VNode } from "vue";
 import {
+  makeMonospace,
   enabledTag,
   disabledTag,
   unknownTag,
@@ -90,8 +91,7 @@ const userColumns: ExtendedColumn<APIUser>[] = [
     dataIndex: ["Profile", "VlessUUID"],
     ellipsis: true,
     width: "8ch",
-    customRender: ({ text }) =>
-      h("span", { style: { fontFamily: "monospace" } }, text),
+    customRender: ({ text }) => makeMonospace(text),
     extended: true,
   },
   {
