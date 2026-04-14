@@ -33,16 +33,10 @@ import { users, usersLoading, reloadUsers } from "@/state/users";
 
 onMounted(reloadUsers);
 
-/* =======================
-   row key
-======================= */
-
+// row key
 const rowKey = (record: APIUser): string => String(record.Profile.ID);
 
-/* =======================
-   columns 
-======================= */
-
+// columns
 const userColumns: ExtendedColumn<APIUser>[] = [
   {
     key: "id",
@@ -80,10 +74,7 @@ const userColumns: ExtendedColumn<APIUser>[] = [
   },
 ];
 
-/* =======================
-   helpers
-======================= */
-
+// value rendering
 function renderTag(status: APIUserStatus) {
   if (status === "enabled") {
     return enabledTag("table.users.status.enabled");

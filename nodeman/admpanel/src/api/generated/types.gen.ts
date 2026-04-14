@@ -29,6 +29,67 @@ export type User = {
     TargetStatus: UserStatus;
 };
 
+export type ListNodeResponse = {
+    Nodes: Array<Node>;
+};
+
+export type NodeStatus = 'unknown' | 'stopped' | 'running';
+
+export type NodeConnectionInfo = {
+    Endpoint: string;
+    AccessKey: string;
+};
+
+/**
+ * client config json template
+ */
+export type ClientConfigTemplateItem = unknown;
+
+export type ClientConfigTemplate = {
+    template: Array<ClientConfigTemplateItem>;
+    vlessEmailField: string;
+    vlessUUIDField: string;
+};
+
+export type NodeConfig = {
+    ClientConfigTemplate: ClientConfigTemplate;
+    ConnectionInfo: NodeConnectionInfo;
+};
+
+export type NodeId = number;
+
+export type Node = {
+    ID: NodeId;
+    Config: NodeConfig;
+    CurrentStatus: NodeStatus;
+    TargetStatus: NodeStatus;
+};
+
+export type ListNodesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/nodes';
+};
+
+export type ListNodesErrors = {
+    /**
+     * General Error
+     */
+    default: Error;
+};
+
+export type ListNodesError = ListNodesErrors[keyof ListNodesErrors];
+
+export type ListNodesResponses = {
+    /**
+     * List of nodes
+     */
+    200: ListNodeResponse;
+};
+
+export type ListNodesResponse = ListNodesResponses[keyof ListNodesResponses];
+
 export type ListUsersData = {
     body?: never;
     path?: never;

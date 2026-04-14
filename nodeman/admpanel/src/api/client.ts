@@ -2,8 +2,15 @@ import type { UserID, UserAPIData, ApiReason } from "../lib/types";
 import { API_REASON } from "../lib/types";
 import { config } from "../config/config";
 import { client } from "./generated/client.gen";
-import { listUsers as _listUsers } from "./generated/sdk.gen";
-import type { Error, User as APIUser } from "./generated/types.gen";
+import {
+  listUsers as _listUsers,
+  listNodes as _listNodes,
+} from "./generated/sdk.gen";
+import type {
+  Error,
+  User as APIUser,
+  Node as APINode,
+} from "./generated/types.gen";
 
 client.setConfig({
   baseUrl: "http://localhost:80/api", //config.API_URLPATH,
@@ -27,6 +34,14 @@ export async function listUsers(): Promise<ApiResult<Array<APIUser>>> {
     (data) => data.Users,
   );
 }
+
+export async function listNodes(): Promise<ApiResult<Array<APINode>>> {
+  return handleAPI(
+    () => _listNodes(),
+    (data) => data.Nodes,
+  );
+}
+
 async function handleAPI<T, R>(
   apiCall: () => Promise<ApiResponse<T>>,
   transform: (data: T) => R,

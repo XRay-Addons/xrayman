@@ -2,18 +2,12 @@ import { ref } from "vue";
 import type { User as APIUser } from "../api/generated/types.gen";
 import { listUsers } from "../api/client";
 
-/* =======================
-   state
-======================= */
-
+// state
 export const users = ref<APIUser[]>([]);
 export const usersLoading = ref(false);
 export const usersError = ref<string | null>(null);
 
-/* =======================
-   actions
-======================= */
-
+// actions
 export async function reloadUsers() {
   usersLoading.value = true;
   usersError.value = null;

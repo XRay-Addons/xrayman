@@ -22,5 +22,27 @@
   "table.users.actions.delete-confirn-header": "Delete user?",
   "table.users.actions.delete-confirn-body": "Are you sure?",
   "table.users.actions.delete-confirn-yes": "Da",
-  "table.users.actions.delete-confirn-no": "Net"
+  "table.users.actions.delete-confirn-no": "Net",
+
+  "title.nodes-card": "Ноды",
+
+  "table.nodes.id": "ID",
+  "table.nodes.endpoint": "Endpoint",
+  "table.nodes.current-status": "Current Status",
+  "table.nodes.target-status": "Target Status",
+  "table.nodes.access-key": "Access Key",
+  "table.nodes.client-config": "Client Config",
+  "table.nodes.actions": "Actions",
+
+  "table.nodes.status.running": "running",
+  "table.nodes.status.stopped": "stopped",
+  "table.nodes.status.unknown": "unknown",
+
+  "table.nodes.actions.start": "Start",
+  "table.nodes.actions.stop": "Stop",
+  "table.nodes.actions.delete": "Delete",
+  "table.nodes.actions.delete-confirn-header": "Delete node?",
+  "table.nodes.actions.delete-confirn-body": "Are you sure?",
+  "table.nodes.actions.delete-confirn-yes": "Da",
+  "table.nodes.actions.delete-confirn-no": "Net"
 }
