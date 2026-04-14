@@ -13,6 +13,11 @@
 import ExtendedTable from "./ExtendedTable.vue";
 import { h, ref, onMounted, onBeforeUnmount } from "vue";
 import { Tag, Button, Space } from "ant-design-vue";
+import {
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  ExclamationCircleOutlined,
+} from "@ant-design/icons-vue";
 
 interface User {
   Profile: Profile;
@@ -103,33 +108,32 @@ const userColumns = [
 
 function renderTag(text) {
   if (text === "enabled") {
-    return enabledTag();
+    return makeTag(
+      "success",
+      "table.users.status.enabled",
+      CheckCircleOutlined,
+    );
   } else if (text === "disabled") {
-    return disabledTag();
+    return makeTag("error", "table.users.status.disabled", CloseCircleOutlined);
   } else {
-    return unknownTag();
+    return makeTag(
+      "warning",
+      "table.users.status.unknown",
+      ExclamationCircleOutlined,
+    );
   }
 }
 
-function enabledTag() {
-  return h(Tag, {
-    color: "success",
-    "data-i18n": "table.users.status.enabled",
-  });
-}
-
-function disabledTag() {
-  return h(Tag, {
-    color: "error",
-    "data-i18n": "table.users.status.disabled",
-  });
-}
-
-function unknownTag() {
-  return h(Tag, {
-    color: "warning",
-    "data-i18n": "table.users.status.unknown",
-  });
+function makeTag(color: string, i18n: string, icon) {
+  return h(
+    Tag,
+    {
+      color: color,
+    },
+    {
+      default: () => [h(icon), h("span", { "data-i18n": i18n })],
+    },
+  );
 }
 
 function renderBtns(text) {
