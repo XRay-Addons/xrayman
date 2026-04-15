@@ -56,11 +56,13 @@ const nodesColumns = computed(() => {
       key: "current-status",
       dataIndex: ["CurrentStatus"],
       customRender: ({ value }) => renderTag(value),
+      width: "16ch",
     },
     {
       key: "target-status",
       dataIndex: ["TargetStatus"],
       customRender: ({ value }) => renderTag(value),
+      width: "16ch",
     },
     {
       key: "access-key",

@@ -10,7 +10,7 @@ export default defineConfig({
   output: "static",
   integrations: [
     relativeLinks(),
-    purgecss(),
+    // purgecss(),
     compress({
       JavaScript: true,
       CSS: true,
