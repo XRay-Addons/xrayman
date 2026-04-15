@@ -1,4 +1,3 @@
-<script setup lang="ts">
 import { watch, onMounted } from "vue";
 import { colors, Colors, type ColorsType } from "../../state/colors";
 
@@ -33,7 +32,7 @@ function colorsToCSS(colors: ColorsType, root: HTMLElement) {
 
 // css values are source of initial values.
 // reactive color updates leads to css updates
-function initFromCSS() {
+export function initFromCSS() {
   const root = document.documentElement;
   if (!root) return;
   colorsFromCSS(root);
@@ -52,12 +51,3 @@ watch(
   },
   { deep: true },
 );
-
-onMounted(() => {
-  initFromCSS();
-});
-</script>
-
-<template>
-  <slot />
-</template>

@@ -1,7 +1,7 @@
 ---
-import SyncCSS from "../runtime/sync/SyncCSS.vue";
+import SyncVue from "@/runtime/sync/Sync.vue";
 ---
 
-<SyncCSS client:only="vue">
+<SyncVue client:only="vue">
   <slot />
-</SyncCSS>
+</SyncVue>

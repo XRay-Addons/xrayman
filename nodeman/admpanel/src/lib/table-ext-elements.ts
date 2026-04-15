@@ -11,7 +11,6 @@ import { i18n } from "@/runtime/i18n/i18n";
 function t(text: string) {
   return {
     default: () => {
-      console.log("translate", text);
       return i18n.global.t(text);
     },
   };
