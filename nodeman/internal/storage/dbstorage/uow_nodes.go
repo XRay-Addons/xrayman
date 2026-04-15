@@ -85,6 +85,7 @@ func (uow *uowctx) ListNodes(ctx context.Context) ([]models.Node, error) {
 			{node_current_status},
 			{node_target_status}
 		FROM {nodes}
+		ORDER BY {node_id} ASC
 	`)
 
 	rows, err := uow.tx.QueryContext(ctx, query)

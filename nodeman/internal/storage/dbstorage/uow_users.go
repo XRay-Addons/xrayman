@@ -75,6 +75,7 @@ func (uow *uowctx) ListUsers(ctx context.Context) ([]models.User, error) {
 			{vless_uuid},
 			{user_target_status}
 		FROM {users}
+		ORDER BY {user_id} ASC
 	`)
 
 	rows, err := uow.tx.QueryContext(ctx, query)
