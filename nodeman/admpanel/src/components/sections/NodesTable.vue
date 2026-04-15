@@ -29,7 +29,7 @@ import {
   mergeActionBtns,
 } from "@/lib/table-ext-elements";
 import { nodes, nodesLoading, reloadNodes } from "@/state/nodes";
-import { enableUser, disableUser } from "@/api/client";
+import { startNode, stopNode } from "@/api/client";
 
 onMounted(reloadNodes);
 
@@ -79,7 +79,7 @@ const nodesColumns = computed(() => {
     {
       key: "actions",
       dataIndex: ["TargetStatus"],
-      customRender: ({ value }) => renderActions(value),
+      customRender: ({ value, record }) => renderActions(value, record),
       extended: true,
     },
   ];
@@ -100,7 +100,7 @@ function renderTag(status: APINodeStatus) {
 
 function startNodeFn(node: APINode): BtnAction {
   return async () => {
-    const r = await enableUser(-1);
+    const r = await startNode(node.ID);
     if (r.ok) {
       reloadNodes();
     } else {
@@ -111,7 +111,7 @@ function startNodeFn(node: APINode): BtnAction {
 
 function stopNodeFn(node: APINode): BtnAction {
   return async () => {
-    const r = await disableUser(-1);
+    const r = await stopNode(node.ID);
     if (r.ok) {
       reloadNodes();
     } else {

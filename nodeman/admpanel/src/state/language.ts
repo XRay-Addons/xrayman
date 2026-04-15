@@ -1,7 +1,7 @@
 import { ref, watch } from "vue";
 import { i18n } from "@/runtime/i18n/i18n";
 
-export const language = ref<"en" | "ru">("en");
+export const language = ref<"en" | "ru">("ru");
 
 watch(
   language,
