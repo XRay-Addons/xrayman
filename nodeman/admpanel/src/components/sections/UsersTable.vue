@@ -4,8 +4,6 @@
     :columns="userColumns"
     :row-key="rowKey"
     :loading="usersLoading"
-    i18n-prefix="table.users"
-    color="#ff0000b5"
     v-bind="$attrs"
   />
 </template>
@@ -18,8 +16,9 @@ import type {
   User as APIUser,
   UserStatus as APIUserStatus,
 } from "@/api/generated/types.gen";
-import { onMounted, type VNode } from "vue";
+import { onMounted, type VNode, computed } from "vue";
 import {
+  i18nateColumns,
   makeMonospace,
   enabledTag,
   disabledTag,
@@ -32,50 +31,55 @@ import {
 } from "@/lib/table-ext-elements";
 import { users, usersLoading, reloadUsers } from "@/state/users";
 import { enableUser, disableUser } from "@/api/client";
-import { useI18n } from "vue-i18n";
 
 onMounted(reloadUsers);
 
 // row key
 const rowKey = (record: APIUser): string => String(record.Profile.ID);
 
+// i18n prefix
+const i18nPrefix = "table.users";
+
 // columns
-const userColumns: ExtendedColumn<APIUser>[] = [
-  {
-    key: "id",
-    dataIndex: ["Profile", "ID"],
-    width: "8ch",
-  },
-  {
-    key: "display-name",
-    dataIndex: ["Profile", "DisplayName"],
-    width: "20ch",
-  },
-  {
-    key: "target-status",
-    dataIndex: ["TargetStatus"],
-    customRender: ({ value }) => renderTag(value),
-  },
-  {
-    key: "name",
-    dataIndex: ["Profile", "Name"],
-    extended: true,
-  },
-  {
-    key: "vless-uuid",
-    dataIndex: ["Profile", "VlessUUID"],
-    ellipsis: true,
-    width: "8ch",
-    customRender: ({ text }) => makeMonospace(text),
-    extended: true,
-  },
-  {
-    key: "actions",
-    dataIndex: ["TargetStatus"],
-    customRender: ({ value, record }) => renderActions(value, record),
-    extended: true,
-  },
-];
+const userColumns = computed(() => {
+  const columns: ExtendedColumn<APIUser>[] = [
+    {
+      key: "id",
+      dataIndex: ["Profile", "ID"],
+      width: "8ch",
+    },
+    {
+      key: "display-name",
+      dataIndex: ["Profile", "DisplayName"],
+      width: "20ch",
+    },
+    {
+      key: "target-status",
+      dataIndex: ["TargetStatus"],
+      customRender: ({ value }) => renderTag(value),
+    },
+    {
+      key: "name",
+      dataIndex: ["Profile", "Name"],
+      extended: true,
+    },
+    {
+      key: "vless-uuid",
+      dataIndex: ["Profile", "VlessUUID"],
+      ellipsis: true,
+      width: "8ch",
+      customRender: ({ text }) => makeMonospace(text),
+      extended: true,
+    },
+    {
+      key: "actions",
+      dataIndex: ["TargetStatus"],
+      customRender: ({ value, record }) => renderActions(value, record),
+      extended: true,
+    },
+  ];
+  return i18nateColumns<APIUser>(i18nPrefix, columns);
+});
 
 // value rendering
 function renderTag(status: APIUserStatus) {

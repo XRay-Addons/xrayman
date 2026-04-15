@@ -9,13 +9,6 @@
       class="table-extended"
       v-bind="$attrs"
     >
-      <!-- Header -->
-      <template #headerCell="{ column }">
-        <span v-if="column.key" :data-i18n="`${i18nPrefix}.${column.key}`">
-          {{ column.key }}
-        </span>
-      </template>
-
       <!-- Expanded row -->
       <template #expandedRowRender="{ record }">
         <a-table
@@ -39,10 +32,7 @@ import { Table } from "ant-design-vue";
 import { Colors, colors } from "../../state/colors";
 import Color from "colorjs.io";
 
-/* =======================
-   Types
-   ======================= */
-
+// template types
 export type ExtendedColumn<T> = ColumnType<T> & {
   extended?: boolean;
 };
@@ -56,20 +46,12 @@ interface Props<T> {
   dataSource: T[];
   rowKey: string | ((record: T) => string);
   columns: ExtendedColumn<T>[];
-  color: string;
-  i18nPrefix: string;
 }
 
-/* =======================
-   Props + Template param T
-   ======================= */
-
+// props + template params
 const props = defineProps<Props<T>>();
 
-/* =======================
-   Theme
-   ======================= */
-
+// theme
 const theme = computed(() => {
   const mainColor = new Color(colors.value[Colors.Card]);
 
@@ -103,10 +85,7 @@ const theme = computed(() => {
   };
 });
 
-/* =======================
-   Columns
-   ======================= */
-
+// columns
 const mainColumns = computed<ExtendedColumn<T>[]>(() =>
   props.columns.filter((col) => !col.extended),
 );
@@ -115,39 +94,38 @@ const extendedColumns = computed<ExtendedColumn<T>[]>(() =>
   props.columns.filter((col) => col.extended),
 );
 
-/* =======================
-   Expanded columns
-   ======================= */
-
+// expanded columns as rows
 const extendedTableColumns = computed<ColumnType<ExtendedRow<T>>[]>(() => [
   {
     key: "key",
     width: "16ch",
     customRender: ({ record }): VNode => {
-      const column = extendedColumns.value[record.columnIndex];
-      return h("span", {
-        "data-i18n": `${props.i18nPrefix}.${column.key}`,
+      return h(Table, {
+        class: "table-extension-key-cell no-body-table",
+        columns: [extendedColumns.value[record.columnIndex]],
+        dataSource: [],
+        showHeader: true,
+        bordered: true,
+        pagination: false,
+        size: "small",
       });
     },
   },
   {
     key: "value",
-    customRender: ({ record }): VNode =>
-      h(Table, {
-        class: "table-extension-cell",
+    customRender: ({ record }): VNode => {
+      return h(Table, {
+        class: "table-extension-value-cell",
         columns: [extendedColumns.value[record.columnIndex]],
         dataSource: [record.originalRecord],
         pagination: false,
         showHeader: false,
         bordered: false,
         size: "small",
-      }),
+      });
+    },
   },
 ]);
-
-/* =======================
-   Expanded data
-   ======================= */
 
 function extendedDataSource(record: T): ExtendedRow<T>[] {
   return extendedColumns.value.map((_, index) => ({
@@ -156,3 +134,9 @@ function extendedDataSource(record: T): ExtendedRow<T>[] {
   }));
 }
 </script>
+
+<style>
+.no-body-table tbody {
+  display: none;
+}
+</style>

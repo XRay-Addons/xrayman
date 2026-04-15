@@ -5,7 +5,6 @@
     :row-key="rowKey"
     :loading="nodesLoading"
     i18n-prefix="table.nodes"
-    color="#ff0000b5"
     v-bind="$attrs"
   />
 </template>

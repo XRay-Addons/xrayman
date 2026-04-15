@@ -5,6 +5,25 @@ import {
   CloseCircleOutlined,
   ExclamationCircleOutlined,
 } from "@ant-design/icons-vue";
+import { type ExtendedColumn } from "@/components/ui/TableExt.vue";
+
+function t(text: string) {
+  return {
+    default: () => {
+      return text;
+    },
+  };
+}
+
+export function i18nateColumns<T>(
+  i18nPrefix: string,
+  columns: ExtendedColumn<T>[],
+): ExtendedColumn<T>[] {
+  return columns.map((col) => ({
+    ...col,
+    title: col.title || `${i18nPrefix}.${col.key}`,
+  }));
+}
 
 export function makeMonospace(text: string): VNode {
   return h("span", { style: { fontFamily: "monospace" } }, text);
@@ -23,65 +42,58 @@ export function unknownTag(i18n: string): VNode {
 }
 
 function makeTag(color: string, i18n: string, icon: any): VNode {
-  return h(
-    Tag,
-    { color },
-    {
-      default: () => [h(icon), h("span", { "data-i18n": i18n })],
-    },
-  );
+  return h(Tag, { color }, t(i18n));
 }
 export type BtnAction = () => void | Promise<void>;
 
 export function enableBtn(i18n: string, onClick?: BtnAction): VNode {
-  return h(Button, {
-    ghost: true,
-    size: "small",
-    type: "primary",
-    "data-i18n": i18n,
-    onClick: onClick,
-  });
+  return h(
+    Button,
+    {
+      ghost: true,
+      size: "small",
+      type: "primary",
+      onClick: onClick,
+    },
+    t(i18n),
+  );
 }
 
 export function disableBtn(i18n: string, onClick?: BtnAction): VNode {
-  return h(Button, {
-    danger: true,
-    ghost: true,
-    size: "small",
-    type: "primary",
-    "data-i18n": i18n,
-    onClick: onClick,
-  });
+  return h(
+    Button,
+    {
+      danger: true,
+      ghost: true,
+      size: "small",
+      type: "primary",
+      onClick: onClick,
+    },
+    t(i18n),
+  );
 }
 
 export function ensureDeleteBtn(i18nPrefix: string): VNode {
   return h(
     Popconfirm,
     {
-      okText: h("span", {
-        "data-i18n": `${i18nPrefix}.delete-confirn-yes`,
-      }),
-      cancelText: h("span", {
-        "data-i18n": `${i18nPrefix}.delete-confirn-no`,
-      }),
+      okText: h("span", {}, t(`${i18nPrefix}.delete-confirn-yes`)),
+      cancelText: h("span", {}, t(`${i18nPrefix}.delete-confirn-no`)),
     },
     {
       default: () =>
-        h(Button, {
-          danger: true,
-          size: "small",
-          type: "primary",
-          style: { boxShadow: "none" },
-          "data-i18n": `${i18nPrefix}.delete`,
-        }),
-      title: () =>
-        h("span", {
-          "data-i18n": `${i18nPrefix}.delete-confirn-header`,
-        }),
-      description: () =>
-        h("span", {
-          "data-i18n": `${i18nPrefix}.delete-confirn-body`,
-        }),
+        h(
+          Button,
+          {
+            danger: true,
+            size: "small",
+            type: "primary",
+            style: { boxShadow: "none" },
+          },
+          t(`${i18nPrefix}.delete`),
+        ),
+      title: () => h("span", {}, t(`${i18nPrefix}.delete-confirn-header`)),
+      description: () => h("span", {}, t(`${i18nPrefix}.delete-confirn-body`)),
     },
   );
 }
