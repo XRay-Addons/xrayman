@@ -31,23 +31,26 @@ function makeTag(color: string, i18n: string, icon: any): VNode {
     },
   );
 }
+export type BtnAction = () => void | Promise<void>;
 
-export function enableBtn(i18n: string): VNode {
+export function enableBtn(i18n: string, onClick?: BtnAction): VNode {
   return h(Button, {
     ghost: true,
     size: "small",
     type: "primary",
     "data-i18n": i18n,
+    onClick: onClick,
   });
 }
 
-export function disableBtn(i18n: string): VNode {
+export function disableBtn(i18n: string, onClick?: BtnAction): VNode {
   return h(Button, {
     danger: true,
     ghost: true,
     size: "small",
     type: "primary",
     "data-i18n": i18n,
+    onClick: onClick,
   });
 }
 

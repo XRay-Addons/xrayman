@@ -83,9 +83,9 @@ const nodesColumns: ExtendedColumn<APINode>[] = [
 // value rendering
 function renderTag(status: APINodeStatus) {
   if (status === "stopped") {
-    return enabledTag("table.nodes.status.stopped");
+    return disabledTag("table.nodes.status.stopped");
   } else if (status === "running") {
-    return disabledTag("table.nodes.status.running");
+    return enabledTag("table.nodes.status.running");
   } else {
     return unknownTag("table.nodes.status.unknown");
   }

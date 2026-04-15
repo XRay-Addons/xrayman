@@ -4,7 +4,11 @@ import { config } from "../config/config";
 import { client } from "./generated/client.gen";
 import {
   listUsers as _listUsers,
+  enableUser as _enableUser,
+  disableUser as _disableUser,
   listNodes as _listNodes,
+  startNode as _startNode,
+  stopNode as _stopNode,
 } from "./generated/sdk.gen";
 import type {
   Error,
@@ -35,10 +39,38 @@ export async function listUsers(): Promise<ApiResult<Array<APIUser>>> {
   );
 }
 
+export async function enableUser(id: number): Promise<ApiResult<void>> {
+  return handleAPI(
+    () => _enableUser({ body: { ID: id } }),
+    (data) => {},
+  );
+}
+
+export async function disableUser(id: number): Promise<ApiResult<void>> {
+  return handleAPI(
+    () => _disableUser({ body: { ID: id } }),
+    (data) => {},
+  );
+}
+
 export async function listNodes(): Promise<ApiResult<Array<APINode>>> {
   return handleAPI(
     () => _listNodes(),
     (data) => data.Nodes,
+  );
+}
+
+export async function startNode(id: number): Promise<ApiResult<void>> {
+  return handleAPI(
+    () => _startNode({ body: { ID: id } }),
+    (data) => {},
+  );
+}
+
+export async function stopNode(id: number): Promise<ApiResult<void>> {
+  return handleAPI(
+    () => _stopNode({ body: { ID: id } }),
+    (data) => {},
   );
 }
 

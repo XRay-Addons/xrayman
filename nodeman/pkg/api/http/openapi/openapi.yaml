@@ -51,6 +51,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+      tags:
+        - admpage
 
   /nodes/stop:
     post:
@@ -75,6 +77,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+      tags:
+        - admpage
 
   /nodes:
     get:
@@ -146,6 +150,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+      tags:
+        - admpage
 
   /user/disable:
     post:
@@ -170,6 +176,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+      tags:
+        - admpage
 
   /user/{ID}-{Name}:
     get:

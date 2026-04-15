@@ -28,8 +28,11 @@ import {
   disableBtn,
   ensureDeleteBtn,
   mergeActionBtns,
+  type BtnAction,
 } from "@/lib/table-ext-elements";
 import { users, usersLoading, reloadUsers } from "@/state/users";
+import { enableUser, disableUser } from "@/api/client";
+import { useI18n } from "vue-i18n";
 
 onMounted(reloadUsers);
 
@@ -69,7 +72,7 @@ const userColumns: ExtendedColumn<APIUser>[] = [
   {
     key: "actions",
     dataIndex: ["TargetStatus"],
-    customRender: ({ value }) => renderActions(value),
+    customRender: ({ value, record }) => renderActions(value, record),
     extended: true,
   },
 ];
@@ -85,14 +88,38 @@ function renderTag(status: APIUserStatus) {
   }
 }
 
-function renderActions(status: APIUserStatus) {
+function enableUserFn(user: APIUser): BtnAction {
+  return async () => {
+    const r = await enableUser(user.Profile.ID);
+    if (r.ok) {
+      reloadUsers();
+    } else {
+      console.log(r.reason);
+    }
+  };
+}
+
+function disableUserFn(user: APIUser): BtnAction {
+  return async () => {
+    const r = await disableUser(user.Profile.ID);
+    if (r.ok) {
+      reloadUsers();
+    } else {
+      console.log(r.reason);
+    }
+  };
+}
+
+function renderActions(status: APIUserStatus, user: APIUser) {
   const actions: VNode[] = [];
 
   if (status !== "enabled") {
-    actions.push(enableBtn("table.users.actions.enable"));
+    actions.push(enableBtn("table.users.actions.enable", enableUserFn(user)));
   }
   if (status !== "disabled") {
-    actions.push(disableBtn("table.users.actions.disable"));
+    actions.push(
+      disableBtn("table.users.actions.disable", disableUserFn(user)),
+    );
   }
   actions.push(ensureDeleteBtn("table.users.actions"));
 
