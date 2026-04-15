@@ -1,48 +1,31 @@
 {
-  "title.main": "Оттепелль - Админ",
-
-  "title.main-page": "Смотри, Таблички!",
-
-  "title.users-card": "Пользователи",
-
-  "table.users.id": "ID",
-  "table.users.display-name": "Display Name",
-  "table.users.name": "Username",
-  "table.users.vless-uuid": "VLESS UUID",
-  "table.users.target-status": "Target Status",
-  "table.users.actions": "Actions",
-
-  "table.users.status.enabled": "enabled",
-  "table.users.status.disabled": "disabled",
-  "table.users.status.unknown": "unknown",
-
-  "table.users.actions.enable": "Enable",
-  "table.users.actions.disable": "Disable",
-  "table.users.actions.delete": "Delete",
-  "table.users.actions.delete-confirn-header": "Delete user?",
-  "table.users.actions.delete-confirn-body": "Are you sure?",
-  "table.users.actions.delete-confirn-yes": "Da",
-  "table.users.actions.delete-confirn-no": "Net",
-
-  "title.nodes-card": "Ноды",
-
-  "table.nodes.id": "ID",
-  "table.nodes.endpoint": "Endpoint",
-  "table.nodes.current-status": "Current Status",
-  "table.nodes.target-status": "Target Status",
-  "table.nodes.access-key": "Access Key",
-  "table.nodes.client-config": "Client Config",
-  "table.nodes.actions": "Actions",
-
-  "table.nodes.status.running": "running",
-  "table.nodes.status.stopped": "stopped",
-  "table.nodes.status.unknown": "unknown",
-
-  "table.nodes.actions.start": "Start",
-  "table.nodes.actions.stop": "Stop",
-  "table.nodes.actions.delete": "Delete",
-  "table.nodes.actions.delete-confirn-header": "Delete node?",
-  "table.nodes.actions.delete-confirn-body": "Are you sure?",
-  "table.nodes.actions.delete-confirn-yes": "Da",
-  "table.nodes.actions.delete-confirn-no": "Net"
+  "table": {
+    "users": {
+      "status": {
+        "enabled": "Энейбл",
+        "disabled": "Дизейбл"
+      },
+      "actions": {
+        "enable": "Enable",
+        "disable": "Disable",
+        "delete": {
+          "button": "Delete",
+          "confirm": {
+            "header": "Delete user?",
+            "body": "Are you sure?",
+            "ok": "Da",
+            "cancel": "Net"
+          }
+        }
+      },
+      "columns": {
+        "id": "IDD",
+        "display-name": "Display Name",
+        "target-status": "Target Status",
+        "name": "Name",
+        "vless-uuid": "VLESS UUID",
+        "actions": "Actions"
+      }
+    }
+  }
 }

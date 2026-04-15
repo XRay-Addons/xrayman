@@ -1,26 +1,31 @@
 {
-  "title.main": "Ottepell - Admin'",
-
-  "title.main-page": "Smotri, Tablichki!",
-
-  "title.users-card": "Polzovateli",
-
-  "table.users.id": "ID",
-  "table.users.display-name": "Display Name",
-  "table.users.name": "Username",
-  "table.users.vless-uuid": "VLESS UUID",
-  "table.users.target-status": "Target Status",
-  "table.users.actions": "Actions",
-
-  "table.users.status.enabled": "enabled",
-  "table.users.status.disabled": "disabled",
-  "table.users.status.unknown": "unknown",
-
-  "table.users.actions.enable": "Enable",
-  "table.users.actions.disable": "Disable",
-  "table.users.actions.delete": "Delete",
-  "table.users.actions.delete-confirn-header": "Delete user?",
-  "table.users.actions.delete-confirn-body": "Are you sure?",
-  "table.users.actions.delete-confirn-yes": "Da",
-  "table.users.actions.delete-confirn-no": "Net"
+  "table": {
+    "users": {
+      "status": {
+        "enabled": "Enabled",
+        "disabled": "Disabled"
+      },
+      "actions": {
+        "enable": "Enable",
+        "disable": "Disable",
+        "delete": {
+          "button": "Delete",
+          "confirm": {
+            "header": "Delete user?",
+            "body": "Are you sure?",
+            "ok": "Da",
+            "cancel": "Net"
+          }
+        }
+      },
+      "columns": {
+        "id": "ID",
+        "display-name": "Display Name",
+        "target-status": "Target Status",
+        "name": "Name",
+        "vless-uuid": "VLESS UUID",
+        "actions": "Actions"
+      }
+    }
+  }
 }

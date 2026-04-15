@@ -18,6 +18,8 @@ export const colors = ref({
   [Colors.Table]: "undefined",
 });
 
+export type ColorsType = Record<colors, string>;
+
 export interface SetColorPayload {
   color: (typeof Colors)[keyof typeof Colors];
   value: string;

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { watch, onMounted } from "vue";
-import { colors, Colors } from "../../state/colors";
+import { colors, Colors, type ColorsType } from "../../state/colors";
 
 // map CSS <-> state
 const map = {
@@ -12,56 +12,49 @@ const map = {
   [Colors.Table]: "--table-color",
 } as const;
 
-// sync CSS → state
+// sync CSS -> state
 function colorsFromCSS(root: HTMLElement) {
+  // read colors from css, update by single op.
+  const updatedColors = { ...colors.value };
   const styles = getComputedStyle(root);
-
-  for (const key in map) {
-    const cssVar = map[key as Colors];
+  Object.entries(map).forEach(([key, cssVar]) => {
     const value = styles.getPropertyValue(cssVar).trim();
-
-    if (value) {
-      colors.value[key as Colors] = value;
-    }
-  }
+    if (value) updatedColors[key as Colors] = value;
+  });
+  colors.value = updatedColors;
 }
 
-// sync: state → CSS
-function colorsToCSS(root: HTMLElement) {
-  for (const key in map) {
-    const cssVar = map[key as Colors];
-    root.style.setProperty(cssVar, colors.value[key as Colors]);
-  }
+// sync: state -> CSS
+function colorsToCSS(colors: ColorsType, root: HTMLElement) {
+  Object.entries(map).forEach(([key, cssVar]) => {
+    root.style.setProperty(cssVar, colors[key as Colors]);
+  });
 }
 
 // css values are source of initial values.
 // reactive color updates leads to css updates
-function getRoot() {
-  return document.documentElement;
-}
-
-function initGlobals() {
-  const root = getRoot();
+function initFromCSS() {
+  const root = document.documentElement;
   if (!root) return;
   colorsFromCSS(root);
 }
 
-function applyGlobals() {
-  const root = getRoot();
+function applyToCSS(colors) {
+  const root = document.documentElement;
   if (!root) return;
-  colorsToCSS(root);
+  colorsToCSS(colors, root);
 }
 
 watch(
   colors,
-  () => {
-    applyGlobals();
+  (newColors) => {
+    applyToCSS(newColors);
   },
   { deep: true },
 );
 
 onMounted(() => {
-  initGlobals();
+  initFromCSS();
 });
 </script>
 
