@@ -6,11 +6,13 @@ import {
   ExclamationCircleOutlined,
 } from "@ant-design/icons-vue";
 import { type ExtendedColumn } from "@/components/ui/TableExt.vue";
+import { i18n } from "@/runtime/i18n/i18n";
 
 function t(text: string) {
   return {
     default: () => {
-      return text;
+      console.log("translate", text);
+      return i18n.global.t(text);
     },
   };
 }
@@ -21,7 +23,7 @@ export function i18nateColumns<T>(
 ): ExtendedColumn<T>[] {
   return columns.map((col) => ({
     ...col,
-    title: col.title || `${i18nPrefix}.${col.key}`,
+    title: col.title || i18n.global.t(`${i18nPrefix}.${col.key}`),
   }));
 }
 
@@ -77,8 +79,8 @@ export function ensureDeleteBtn(i18nPrefix: string): VNode {
   return h(
     Popconfirm,
     {
-      okText: h("span", {}, t(`${i18nPrefix}.delete-confirn-yes`)),
-      cancelText: h("span", {}, t(`${i18nPrefix}.delete-confirn-no`)),
+      okText: h("span", {}, t(`${i18nPrefix}.delete.confirm.ok`)),
+      cancelText: h("span", {}, t(`${i18nPrefix}.delete.confirm.cancel`)),
     },
     {
       default: () =>
@@ -90,10 +92,10 @@ export function ensureDeleteBtn(i18nPrefix: string): VNode {
             type: "primary",
             style: { boxShadow: "none" },
           },
-          t(`${i18nPrefix}.delete`),
+          t(`${i18nPrefix}.delete.button`),
         ),
-      title: () => h("span", {}, t(`${i18nPrefix}.delete-confirn-header`)),
-      description: () => h("span", {}, t(`${i18nPrefix}.delete-confirn-body`)),
+      title: () => h("span", {}, t(`${i18nPrefix}.delete.confirm.header`)),
+      description: () => h("span", {}, t(`${i18nPrefix}.delete.confirm.body`)),
     },
   );
 }

@@ -16,6 +16,7 @@
           :data-source="extendedDataSource(record)"
           :pagination="false"
           :show-header="false"
+          :showExpandColumn="false"
           size="small"
           class="table-extension"
         />
@@ -97,30 +98,39 @@ const extendedColumns = computed<ExtendedColumn<T>[]>(() =>
 // expanded columns as rows
 const extendedTableColumns = computed<ColumnType<ExtendedRow<T>>[]>(() => [
   {
+    // show only header and hide the body
     key: "key",
     width: "16ch",
     customRender: ({ record }): VNode => {
+      // unbold table header for better style
+      const keyHeader = unbold(extendedColumns.value[record.columnIndex]);
       return h(Table, {
         class: "table-extension-key-cell no-body-table",
-        columns: [extendedColumns.value[record.columnIndex]],
+        style: { "margin-inline": "0" },
+        columns: [keyHeader],
         dataSource: [],
         showHeader: true,
-        bordered: true,
+        bordered: false,
         pagination: false,
-        size: "small",
+        showExpandColumn: false,
+        indentSize: 0,
       });
     },
   },
   {
+    // show only cell and hide the header
     key: "value",
     customRender: ({ record }): VNode => {
       return h(Table, {
         class: "table-extension-value-cell",
+        style: { "margin-inline": "0" },
         columns: [extendedColumns.value[record.columnIndex]],
         dataSource: [record.originalRecord],
         pagination: false,
         showHeader: false,
         bordered: false,
+        indentSize: 0,
+        showExpandColumn: false,
         size: "small",
       });
     },
@@ -132,6 +142,23 @@ function extendedDataSource(record: T): ExtendedRow<T>[] {
     originalRecord: record,
     columnIndex: index,
   }));
+}
+
+function unbold<T>(keyHeader: ExtendedColumn<T>): ExtendedColumn<T> {
+  const originalFn = keyHeader.customHeaderCell;
+
+  keyHeader.customHeaderCell = (...args) => {
+    const originalProps = originalFn ? originalFn(...args) : {};
+    return {
+      ...originalProps,
+      style: Object.assign({}, originalProps.style, {
+        fontWeight: "normal",
+        borderBottom: "none",
+      }),
+    };
+  };
+
+  return keyHeader;
 }
 </script>
 

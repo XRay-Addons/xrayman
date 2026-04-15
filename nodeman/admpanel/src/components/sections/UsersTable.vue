@@ -78,7 +78,7 @@ const userColumns = computed(() => {
       extended: true,
     },
   ];
-  return i18nateColumns<APIUser>(i18nPrefix, columns);
+  return i18nateColumns<APIUser>(`${i18nPrefix}.columns`, columns);
 });
 
 // value rendering
