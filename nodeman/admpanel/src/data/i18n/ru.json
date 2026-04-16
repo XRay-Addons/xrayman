@@ -16,8 +16,8 @@
   "table": {
     "users": {
       "status": {
-        "enabled": "Энейбл",
-        "disabled": "Дизейбл"
+        "enabled": "Энейблед",
+        "disabled": "Дизейблед"
       },
       "actions": {
         "enable": "Enable",
