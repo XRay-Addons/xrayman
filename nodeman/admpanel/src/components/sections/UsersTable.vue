@@ -46,16 +46,19 @@ const userColumns = computed(() => {
     {
       key: "id",
       dataIndex: ["Profile", "ID"],
+      width: "4ch",
     },
     {
       key: "display-name",
       dataIndex: ["Profile", "DisplayName"],
+      ellipsis: true,
+      width: "16ch",
     },
     {
       key: "target-status",
       dataIndex: ["TargetStatus"],
       customRender: ({ value }) => renderTag(value),
-      width: "16ch",
+      width: "8ch",
     },
     {
       key: "name",
