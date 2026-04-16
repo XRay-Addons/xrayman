@@ -1,6 +1,8 @@
 import { ref } from "vue";
 import type { User as APIUser } from "../api/generated/types.gen";
 import { listUsers } from "../api/client";
+import { errorNotification } from "@/runtime/notifications/errors";
+import { serverErrorNotification } from "@/runtime/notifications/errors";
 
 // state
 export const users = ref<APIUser[]>([]);
@@ -12,15 +14,19 @@ export async function reloadUsers() {
   usersLoading.value = true;
   usersError.value = null;
 
-  const result = await listUsers();
-  if (result.ok) {
-    users.value = result.data;
-  } else {
-    usersError.value = result.reason ?? "Unknown error";
-    console.error("Loading users error:", result.reason);
-  }
+  try {
+    const result = await listUsers();
+    if (result.ok) {
+      users.value = result.data;
+    } else {
+      usersError.value = result.reason;
 
-  usersLoading.value = false;
+      serverErrorNotification("get_users", result.reason);
+      console.error("Loading users error:", result.reason);
+    }
+  } finally {
+    usersLoading.value = false;
+  }
 }
 
 export async function syncUsers() {

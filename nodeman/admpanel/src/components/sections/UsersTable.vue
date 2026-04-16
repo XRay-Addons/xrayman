@@ -20,6 +20,7 @@ import { onMounted, type VNode, computed } from "vue";
 import {
   i18nateColumns,
   makeMonospace,
+  makeCopyable,
   enabledTag,
   disabledTag,
   unknownTag,
@@ -31,6 +32,7 @@ import {
 } from "@/lib/table-ext-elements";
 import { users, usersLoading, reloadUsers } from "@/state/users";
 import { enableUser, disableUser } from "@/api/client";
+import { serverErrorNotification } from "@/runtime/notifications/errors";
 
 onMounted(reloadUsers);
 
@@ -70,7 +72,7 @@ const userColumns = computed(() => {
       dataIndex: ["Profile", "VlessUUID"],
       ellipsis: true,
       width: "8ch",
-      customRender: ({ text }) => makeMonospace(text),
+      customRender: ({ text }) => makeCopyable(makeMonospace(text), text),
       extended: true,
     },
     {
@@ -100,7 +102,7 @@ function enableUserFn(user: APIUser): BtnAction {
     if (r.ok) {
       reloadUsers();
     } else {
-      console.log(r.reason);
+      serverErrorNotification("enable_user", r.reason);
     }
   };
 }
@@ -111,7 +113,7 @@ function disableUserFn(user: APIUser): BtnAction {
     if (r.ok) {
       reloadUsers();
     } else {
-      console.log(r.reason);
+      serverErrorNotification("disable_user", r.reason);
     }
   };
 }

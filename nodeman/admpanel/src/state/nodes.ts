@@ -1,6 +1,7 @@
 import { ref } from "vue";
 import type { Node as APINode } from "../api/generated/types.gen";
 import { listNodes } from "../api/client";
+import { serverErrorNotification } from "@/runtime/notifications/errors";
 
 // state
 export const nodes = ref<APINode[]>([]);
@@ -12,15 +13,17 @@ export async function reloadNodes() {
   nodesLoading.value = true;
   nodesError.value = null;
 
-  const result = await listNodes();
-  if (result.ok) {
-    nodes.value = result.data;
-  } else {
-    nodesError.value = result.reason ?? "Unknown error";
-    console.error("Loading nodes error:", result.reason);
+  try {
+    const result = await listNodes();
+    if (result.ok) {
+      nodes.value = result.data;
+    } else {
+      nodesError.value = result.reason;
+      serverErrorNotification("get_nodes", result.reason);
+    }
+  } finally {
+    nodesLoading.value = false;
   }
-
-  nodesLoading.value = false;
 }
 
 export async function syncNodes() {

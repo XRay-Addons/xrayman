@@ -11,3 +11,7 @@ export const i18n = createI18n({
     ru: ru,
   },
 });
+
+export const t = (text) => {
+  return i18n.global.t(text);
+};

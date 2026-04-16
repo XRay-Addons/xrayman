@@ -20,6 +20,7 @@ import { onMounted, type VNode, computed } from "vue";
 import {
   i18nateColumns,
   makeMonospace,
+  makeCopyable,
   enabledTag,
   disabledTag,
   unknownTag,
@@ -30,6 +31,7 @@ import {
 } from "@/lib/table-ext-elements";
 import { nodes, nodesLoading, reloadNodes } from "@/state/nodes";
 import { startNode, stopNode } from "@/api/client";
+import { serverErrorNotification } from "@/runtime/notifications/errors";
 
 onMounted(reloadNodes);
 
@@ -67,7 +69,7 @@ const nodesColumns = computed(() => {
     {
       key: "access-key",
       dataIndex: ["Config", "ConnectionInfo", "AccessKey"],
-      customRender: ({ text }) => makeMonospace(text),
+      customRender: ({ text }) => makeCopyable(makeMonospace(text), text),
       ellipsis: true,
       width: "8ch",
       extended: true,
@@ -75,7 +77,9 @@ const nodesColumns = computed(() => {
     {
       key: "client-config",
       dataIndex: ["Config", "ClientConfigTemplate"],
-      customRender: ({ text }) => makeMonospace(text),
+      customRender: ({ text }) => {
+        return makeMonospace(JSON.stringify(text));
+      },
       extended: true,
     },
     {
@@ -106,7 +110,7 @@ function startNodeFn(node: APINode): BtnAction {
     if (r.ok) {
       reloadNodes();
     } else {
-      console.log(r.reason);
+      serverErrorNotification("start_node", r.reason);
     }
   };
 }
@@ -117,7 +121,7 @@ function stopNodeFn(node: APINode): BtnAction {
     if (r.ok) {
       reloadNodes();
     } else {
-      console.log(r.reason);
+      serverErrorNotification("stop_node", r.reason);
     }
   };
 }

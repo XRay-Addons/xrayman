@@ -1,5 +1,12 @@
 import { h, type VNode } from "vue";
-import { Tag, Button, Popconfirm, Space } from "ant-design-vue";
+import {
+  Tag,
+  Button,
+  Popconfirm,
+  Space,
+  TypographyText,
+  Typography,
+} from "ant-design-vue";
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
@@ -27,7 +34,28 @@ export function i18nateColumns<T>(
 }
 
 export function makeMonospace(text: string): VNode {
-  return h("span", { style: { fontFamily: "monospace" } }, text);
+  return h(
+    TypographyText,
+    {
+      style: { fontFamily: "monospace" },
+    },
+    () => text,
+  );
+}
+
+export function makeCopyable(node: VNode, textToCopy: string): VNode {
+  return h(
+    TypographyText,
+    {
+      copyable: {
+        text: textToCopy,
+        tooltip: false,
+      },
+    },
+    () => {
+      return node;
+    },
+  );
 }
 
 export function enabledTag(i18n: string): VNode {

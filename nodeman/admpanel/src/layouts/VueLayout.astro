@@ -1,7 +1,10 @@
 ---
 import SyncVue from "@/runtime/bridge/Sync.vue";
+import NotificationContext from "@/runtime/notifications/NotificationContext.vue";
 ---
 
-<SyncVue client:only="vue">
-  <slot />
-</SyncVue>
+<NotificationContext client:only="vue">
+  <SyncVue client:only="vue">
+    <slot />
+  </SyncVue>
+</NotificationContext>
