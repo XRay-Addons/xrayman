@@ -12,19 +12,22 @@ export async function reloadUsers() {
   usersLoading.value = true;
   usersError.value = null;
 
-  try {
-    const result = await listUsers();
+  const result = await listUsers();
+  if (result.ok) {
+    users.value = result.data;
+  } else {
+    usersError.value = result.reason ?? "Unknown error";
+    console.error("Loading users error:", result.reason);
+  }
 
-    if (result.ok) {
-      users.value = result.data;
-    } else {
-      usersError.value = result.reason ?? "Unknown error";
-      console.error("Loading users error:", result.reason);
-    }
-  } catch (error) {
-    usersError.value = String(error);
-    console.error("Loading users error:", error);
-  } finally {
-    usersLoading.value = false;
+  usersLoading.value = false;
+}
+
+export async function syncUsers() {
+  const result = await listUsers();
+  if (result.ok) {
+    users.value = result.data;
+  } else {
+    console.error("Loading users error:", result.reason);
   }
 }

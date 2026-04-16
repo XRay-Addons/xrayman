@@ -12,19 +12,22 @@ export async function reloadNodes() {
   nodesLoading.value = true;
   nodesError.value = null;
 
-  try {
-    const result = await listNodes();
+  const result = await listNodes();
+  if (result.ok) {
+    nodes.value = result.data;
+  } else {
+    nodesError.value = result.reason ?? "Unknown error";
+    console.error("Loading nodes error:", result.reason);
+  }
 
-    if (result.ok) {
-      nodes.value = result.data;
-    } else {
-      nodesError.value = result.reason ?? "Unknown error";
-      console.error("Loading nodes error:", result.reason);
-    }
-  } catch (error) {
-    nodesError.value = String(error);
-    console.error("Loading nodes error:", error);
-  } finally {
-    nodesLoading.value = false;
+  nodesLoading.value = false;
+}
+
+export async function syncNodes() {
+  const result = await listNodes();
+  if (result.ok) {
+    nodes.value = result.data;
+  } else {
+    console.error("Loading nodes error:", result.reason);
   }
 }
