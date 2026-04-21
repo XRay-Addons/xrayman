@@ -1,0 +1,19 @@
+---
+import Surface from "./Surface.astro";
+
+interface Props {
+  class?: string;
+}
+
+const { class: extraClass = "", ...rest } = Astro.props;
+---
+
+<Surface
+  depth="var(--card-depth)"
+  color="var(--card-color)"
+  class:list={["app-card", extraClass]}
+  inClass="p-2"
+  {...rest}
+>
+  <slot />
+</Surface>

@@ -1,0 +1,47 @@
+---
+const { src = "", class: extraClass = "", ...rest } = Astro.props;
+---
+
+<lazy-img>
+  <img
+    class:list={["app-lazy-image", extraClass]}
+    {...rest}
+    data-src={src}
+    part="image"
+  />
+</lazy-img>
+
+<style>
+  lazy-img {
+    display: contents;
+  }
+</style>
+
+<script>
+  import { PathTools } from "../../lib/path-utils";
+
+  class LazyImg extends HTMLElement {
+    obs: IntersectionObserver | null;
+
+    connectedCallback() {
+      const imageEl = this.querySelector<HTMLImageElement>('[part="image"]');
+      if (!imageEl) return;
+
+      this.obs = new IntersectionObserver(([entry], obs) => {
+        if (entry.isIntersecting) {
+          imageEl.src = PathTools.userpagePath(imageEl.dataset.src);
+          obs.disconnect();
+        }
+      });
+
+      this.obs.observe(imageEl);
+    }
+
+    disconnectedCallback() {
+      this.obs?.disconnect();
+      this.obs = null;
+    }
+  }
+
+  customElements.define("lazy-img", LazyImg);
+</script>

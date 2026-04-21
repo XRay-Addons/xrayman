@@ -1,0 +1,20 @@
+---
+import Surface from "./Surface.astro";
+
+interface Props {
+  class?: string;
+}
+
+const { class: extraClass = "", ...rest } = Astro.props;
+---
+
+<div class:list={["app-title h-center", extraClass]} {...rest}>
+  <Surface
+    depth="var(--title-depth)"
+    color="var(--title-color)"
+    class="col-10 col-lg-8"
+    inClass="text-lg text-center p-2"
+  >
+    <slot />
+  </Surface>
+</div>

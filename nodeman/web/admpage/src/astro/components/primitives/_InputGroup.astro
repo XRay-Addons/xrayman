@@ -1,0 +1,37 @@
+---
+import Surface from "./Surface.astro";
+
+const { class: extraClass = "", ...rest } = Astro.props;
+---
+
+<div class:list={["app-input", "h-center", extraClass]} {...rest}>
+  <div class="app-input__layout col-12 col-md-10 col-lg-8 row p-1 g-0">
+    <Surface
+      class="app-input__field"
+      depth="var(--input-depth)"
+      color="var(--input-color)"
+    >
+      <slot name="input" />
+    </Surface>
+
+    <Surface
+      class="app-input__button"
+      dynamic
+      depth="var(--input-depth)"
+      color="var(--input-color)"
+    >
+      <slot name="button" />
+    </Surface>
+  </div>
+</div>
+
+<style>
+  .app-input__field {
+    width: 75%;
+  }
+
+  .app-input__button {
+    width: calc(25% + var(--input-depth));
+    margin-left: calc(-1 * var(--input-depth));
+  }
+</style>

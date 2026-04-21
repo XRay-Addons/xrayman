@@ -1,11 +1,11 @@
 import { ref } from "vue";
-import type { User as APIUser } from "../api/generated/types.gen";
+import type { User } from "../api/generated/types.gen";
 import { listUsers } from "../api/client";
 import { errorNotification } from "@/runtime/notifications/errors";
 import { serverErrorNotification } from "@/runtime/notifications/errors";
 
 // state
-export const users = ref<APIUser[]>([]);
+export const users = ref<User[]>([]);
 export const usersLoading = ref(false);
 export const usersError = ref<string | null>(null);
 

@@ -1,0 +1,23 @@
+---
+import Surface from "./Surface.astro";
+
+const {
+  class: extraClass = "",
+  part = "",
+  onclick = "",
+  ...rest
+} = Astro.props;
+---
+
+<div class:list={["app-button col-6 p-1", extraClass]} {...rest}>
+  <Surface dynamic depth="var(--button-depth)" color="var(--button-color)">
+    <button
+      type="button"
+      part={part}
+      onclick={onclick}
+      class="ui-reset-button w-100 h-100 text-md p-2 hv-center"
+    >
+      <slot />
+    </button>
+  </Surface>
+</div>

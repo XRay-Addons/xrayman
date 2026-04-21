@@ -1,0 +1,19 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: extraClass = "", ...rest } = Astro.props as Props;
+---
+
+<div class:list={["app-hv-center hv-center p-2", extraClass]} {...rest}>
+  <slot />
+</div>
+
+<style>
+  .app-hv-center {
+    min-height: 100vh;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+</style>

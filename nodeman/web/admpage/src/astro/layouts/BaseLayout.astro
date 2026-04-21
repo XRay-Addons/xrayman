@@ -1,0 +1,33 @@
+---
+import "bootstrap/dist/css/bootstrap.min.css";
+import "@/styles/tokens.css";
+import "@/styles/centering.css";
+import "@/styles/globals.css";
+import "@/styles/noselect.css";
+import "@/styles/typography.css";
+import VueRuntime from "@/vue/runtime/VueRuntime.vue";
+import NotificationsCtx from "@/runtime/notifications/NotificationsCtx.vue";
+import I18nDom from "@/runtime/dom/I18nDOM.vue";
+---
+
+<html>
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+    />
+
+    <title data-i18n="title.main"></title>
+  </head>
+  <body>
+    <VueRuntime client:only="vue" />
+    <NotificationsCtx client:only="vue" />
+
+    <slot />
+
+    <I18nDom client:only="vue" />
+    <script src="@/runtime/init.ts"></script>
+  </body>
+</html>

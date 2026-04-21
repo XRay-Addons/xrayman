@@ -1,0 +1,52 @@
+---
+import HVCenter from "../primitives/HVCenter.astro";
+import LGWidth from "../primitives/LGWidth.astro";
+import Title from "../primitives/Title.astro";
+import Card from "../primitives/Card.astro";
+import Info from "../primitives/Info.astro";
+import UsersTableCard from "./UsersTableCard.astro";
+import NodesTableCard from "./NodesTableCard.astro";
+
+import NodesTable from "@/vue/components/islands/nodes-table/NodesTable.vue";
+import ServerPoll from "@/runtime/polling/ServerPoll.vue";
+import SampleButtonForm from "@/vue/components/islands/SampleButtonForm.vue";
+import Button from "../primitives/_Button.astro";
+import PrimeTable from "@/vue/Table.Prime.vue";
+---
+
+<script>
+  import { initRandomThemeFeature } from "@/features/random-theme";
+  import { updateDOMPalette } from "@/runtime/dom/palette-dom";
+  updateDOMPalette();
+  initRandomThemeFeature();
+</script>
+
+<HVCenter>
+  <LGWidth>
+    <Title class="mb-2">
+      <span data-i18n="title.main"></span>
+    </Title>
+    <Card>
+      <Info>
+        <span data-i18n="info.text"></span>
+      </Info>
+    </Card>
+
+    <PrimeTable client:only="vue" />
+
+    <!---
+    <div class="row gx-2">
+      <UsersTableCard />
+      <NodesTableCard />
+    </div>
+
+    <SampleButtonForm client:only="vue">
+      <Button>Text = Hkadma</Button>
+    </SampleButtonForm>
+
+    <SampleButtonForm client:only="vue">
+      <Button>Text = Hkadasdma</Button>
+    </SampleButtonForm>
+  -->
+  </LGWidth>
+</HVCenter>
