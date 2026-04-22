@@ -1,51 +1,32 @@
-import { reloadUsers } from "@/actions/users";
-import { reloadNodes } from "@/actions/nodes";
+export function createPoll(pollFn: () => Promise<void>, interval = 3200) {
+  let stopped = false;
+  let timer: number | null = null;
 
-class ServerPoll {
-  private timer: number | null = null;
-  private running = false;
-  private interval = 3200;
+  const loop = async () => {
+    if (stopped) return;
 
-  start() {
-    if (this.running) return;
-    this.running = true;
-
-    const tick = async () => {
-      if (!this.running) return;
-
-      try {
-        await Promise.all([
-          reloadUsers({ quiet: true }),
-          reloadNodes({ quiet: true }),
-        ]);
-      } catch (e) {
-        console.error("[server-poll] sync error", e);
-      } finally {
-        if (this.running) {
-          this.timer = window.setTimeout(tick, this.interval);
-        }
+    try {
+      await pollFn();
+    } catch (e) {
+      console.error("[poll] error", e);
+    } finally {
+      if (!stopped) {
+        timer = window.setTimeout(loop, interval);
       }
-    };
-
-    tick();
-  }
-
-  stop() {
-    this.running = false;
-
-    if (this.timer) {
-      clearTimeout(this.timer);
-      this.timer = null;
     }
-  }
-}
+  };
 
-const serverPoll = new ServerPoll();
-
-export function startServerPoll() {
-  serverPoll.start();
-}
-
-export function stopServerPoll() {
-  serverPoll.stop();
+  return {
+    start() {
+      if (timer !== null) return;
+      timer = window.setTimeout(loop, interval);
+    },
+    stop() {
+      stopped = true;
+      if (timer !== null) {
+        clearTimeout(timer);
+        timer = null;
+      }
+    },
+  };
 }
