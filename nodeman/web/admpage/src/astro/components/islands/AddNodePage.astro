@@ -6,45 +6,46 @@ import Card from "../primitives/Card.astro";
 import Title from "../primitives/Title.astro";
 import AppButton from "../primitives/Button.astro";
 import SuccessMsg from "../primitives/SuccessMsg.astro";
-
-interface Props {
-  class?: string;
-}
-
-const { class: extraClass = "", ...rest } = Astro.props;
+import I18NText from "../primitives/I18nText.astro";
 ---
 
-<add-node-page class={extraClass} {...rest}>
-  <Card inClass="p-4">
-    <Title outClass="col-md-8 mb-2" data-i18n="add-node.title" />
+<add-node-page>
+  <Card>
+    <Title>
+      <I18NText data-i18n="add-node.title" />
+    </Title>
 
-    <Info data-i18n="add-node.request.endpoint.info" />
+    <Info>
+      <I18NText data-i18n="add-node.request.endpoint.info" />
+    </Info>
+
     <Input
-      outClass="col-12 mb-2"
       data-part="endpoint-input"
       data-i18n-placeholder="add-node.request.endpoint.placeholder"
     />
 
-    <Info data-i18n="add-node.request.accesskey.info" />
+    <Info>
+      <I18NText data-i18n="add-node.request.accesskey.info" />
+    </Info>
+
     <Input
-      outClass="col-12 mb-2"
       data-part="accesskey-input"
       data-i18n-placeholder="add-node.request.accesskey.placeholder"
     />
 
-    <AppButton
-      outClass="col-8 mb-2"
-      data-i18n="add-node.submit-btn.info"
-      data-part="submit-input"
-    />
+    <AppButton data-part="submit-input">
+      <I18NText data-i18n="add-node.submit-btn.info" />
+    </AppButton>
+
     <div data-part="success-result" hidden>
-      <SuccessMsg data-i18n="add-user.response.name.info" outClass="mt-4" />
+      <SuccessMsg>
+        <I18NText data-i18n="add-node.response.info" />
+      </SuccessMsg>
     </div>
   </Card>
 </add-node-page>
 
 <script>
-  import { type ButtonElement } from "@/astro/components/types/Button";
   import { newNode } from "@/services/api/client";
   import { notifyApiError } from "@/runtime/notifications/errors";
   import { reloadNodes } from "@/actions/nodes";
@@ -53,19 +54,19 @@ const { class: extraClass = "", ...rest } = Astro.props;
   class AddNodePage extends HTMLElement implements DialogPageElement {
     private endpointInputEl: HTMLInputElement | null = null;
     private accesskeyInputEl: HTMLInputElement | null = null;
-    private inputSubmitEl: ButtonElement | null = null;
+    private inputSubmitEl: HTMLButtonElement | null = null;
     private successResultEl: HTMLElement | null = null;
 
     connectedCallback() {
       this.endpointInputEl = this.querySelector<HTMLInputElement>(`[data-part="endpoint-input"]`);
       this.accesskeyInputEl = this.querySelector<HTMLInputElement>(`[data-part="accesskey-input"]`);
-      this.inputSubmitEl = this.querySelector<ButtonElement>(`[data-part="submit-input"]`);
+      this.inputSubmitEl = this.querySelector<HTMLButtonElement>(`[data-part="submit-input"]`);
       this.successResultEl = this.querySelector<HTMLElement>(`[data-part="success-result"]`);
       if (!this.inputSubmitEl) {
         return;
       }
 
-      this.inputSubmitEl.onClick(async () => {
+      this.inputSubmitEl.onclick = async () => {
         const endpoint = this.endpointInputEl?.value ?? "";
         const accesskey = this.accesskeyInputEl?.value ?? "";
         if (endpoint.length == 0 || accesskey.length == 0) {
@@ -84,13 +85,12 @@ const { class: extraClass = "", ...rest } = Astro.props;
 
         // show back
         this.successResultEl?.removeAttribute("hidden");
-      });
+      };
     }
 
     disconnectedCallback() {}
 
     reset() {
-      console.log("reset");
       this.endpointInputEl!.value = "";
       this.accesskeyInputEl!.value = "";
       this.successResultEl?.setAttribute("hidden", "true");

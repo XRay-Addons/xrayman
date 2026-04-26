@@ -1,17 +1,23 @@
 ---
 import InputGroup from "./InputGroup.astro";
 
-interface Props {
-  outClass?: string;
-  "data-i18n"?: string;
-  part?: string;
-}
+const { inputProps = {}, buttonProps = {}, ...rest } = Astro.props;
 
-const { outClass = "", "data-i18n": i18nButton, ...rest } = Astro.props;
+const { class: _ic, style: _is, "data-part": _dpInput, ...safeInputProps } = inputProps;
+
+const { class: _bc, style: _bs, "data-part": _dpButton, ...safeButtonProps } = buttonProps;
 ---
 
 <copy-group {...rest}>
-  <InputGroup data-part="input-group" outClass={outClass} data-i18n={i18nButton} readonly />
+  <InputGroup
+    inputProps={{
+      readonly: "true",
+      ...inputProps,
+    }}
+    ,
+    buttonProps={buttonProps}
+    data-part="input-group"
+  />
 </copy-group>
 
 <script>
@@ -28,15 +34,13 @@ const { outClass = "", "data-i18n": i18nButton, ...rest } = Astro.props;
     }
 
     connectedCallback() {
-      customElements.whenDefined("input-group").then(() => {
-        this.inputGroupEl = this.querySelector<InputGroupElement>(`[data-part="input-group"]`);
-        this.inputGroupEl?.onClick(async (val: string) => {
-          try {
-            await navigator.clipboard.writeText(val);
-          } catch (err) {
-            console.error("Clipboard error", err);
-          }
-        });
+      this.inputGroupEl = this.querySelector<InputGroupElement>(`[data-part="input-group"]`);
+      this.inputGroupEl?.onClick(async (val: string) => {
+        try {
+          await navigator.clipboard.writeText(val);
+        } catch (err) {
+          console.error("Clipboard error", err);
+        }
       });
     }
 

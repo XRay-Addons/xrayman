@@ -2,10 +2,8 @@
 interface Props {
   class?: string;
 }
-
-const { class: extraClass = "", ...rest } = Astro.props;
 ---
 
-<div class:list={["text-sm p-2", extraClass]} {...rest}>
+<div class="text-sm p-2">
   <slot />
 </div>

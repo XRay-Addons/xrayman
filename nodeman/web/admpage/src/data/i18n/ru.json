@@ -23,9 +23,7 @@
       }
     },
     "response": {
-      "name": {
-        "info": "User added successfully!"
-      },
+      "info": "User added successfully!",
       "userpage": {
         "info": "User page URL",
         "copy-button": "Copy!"

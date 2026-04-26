@@ -2,19 +2,9 @@
 import PageCenter from "../primitives/PageCenter.astro";
 import LGWidth from "../primitives/LGWidth.astro";
 import Title from "../primitives/Title.astro";
-import Button from "../primitives/Button.astro";
-import Card from "../primitives/Card.astro";
-import Info from "../primitives/Info.astro";
-import Input from "../primitives/Input.astro";
 import UsersTableCard from "./UsersTableCard.astro";
 import NodesTableCard from "./NodesTableCard.astro";
-import InputGroup from "../primitives/InputGroup.astro";
-//import NameInput from "./NameInput.astro";
-import Surface from "../primitives/Surface.astro";
-import Box from "../primitives/Box.astro";
-import AddUserPage from "./AddUserPage.astro";
-import AddNodePage from "./AddNodePage.astro";
-import AddNodeDialog from "./AddNodeDialog.astro";
+import I18NText from "../primitives/I18nText.astro";
 ---
 
 <script>
@@ -26,8 +16,8 @@ import AddNodeDialog from "./AddNodeDialog.astro";
 
 <PageCenter>
   <LGWidth>
-    <Title outClass="col-6 mb-2">
-      <span data-i18n="title.main"></span>
+    <Title>
+      <I18NText data-i18n="title.main" />
     </Title>
 
     <div class="row gx-2">

@@ -1,67 +1,61 @@
 ---
 import Button from "../primitives/Button.astro";
-
-interface Props {
-  outClass?: string;
-  inClass?: string;
-}
-
-const { outClass = "", inClass = "", ...rest } = Astro.props;
+import I18NText from "./I18nText.astro";
 ---
 
 <btn-dialog>
-  <Button data-part="app-dialog-button" outClass={outClass} inClass={inClass} } {...rest} />
+  <Button data-part="app-dialog-button">
+    <slot name="button" />
+  </Button>
 
   <dialog class="app-dialog" data-part="app-dialog">
-    <div class="app-dialog-page row h-center">
-      <slot />
+    <div class="row h-center" data-part="app-dialog-page">
+      <slot name="page" />
     </div>
   </dialog>
-</btn-dialog>
 
-<script>
-  import type { ButtonElement } from "../types/Button";
+  <script>
+    class BtnDialog extends HTMLElement {
+      connectedCallback() {
+        const button = this.querySelector<HTMLButtonElement>('[data-part="app-dialog-button"]');
+        const dialog = this.querySelector<HTMLDialogElement>("[data-part=app-dialog]");
+        const page = this.querySelector<HTMLElement>("[data-part=app-dialog-page]");
 
-  class BtnDialog extends HTMLElement {
-    connectedCallback() {
-      const button = this.querySelector<ButtonElement>('[data-part="app-dialog-button"]');
-      const dialog = this.querySelector<HTMLDialogElement>("[data-part=app-dialog]");
-      const page = this.querySelector<HTMLElement>("[data-part=app-dialog-page]");
+        // reset everything resettable on close
+        const reset = () => {
+          Array.from(page?.children ?? []).forEach((el) => {
+            const resettable = el as any;
+            if (typeof resettable.reset === "function") {
+              resettable.reset();
+            }
+          });
+        };
 
-      // reset everything resettable on close
-      const reset = () => {
-        Array.from(page?.children ?? []).forEach((el) => {
-          const resettable = el as any;
-          if (typeof resettable.reset === "function") {
-            resettable.reset();
-          }
+        button!.onclick = async () => {
+          dialog?.showModal();
+        };
+
+        dialog?.addEventListener("close", () => {
+          reset();
         });
-      };
+      }
 
-      button?.onClick(async () => {
-        dialog?.showModal();
-      });
-
-      dialog?.addEventListener("close", () => {
-        reset();
-      });
+      disconnectedCallback() {}
     }
 
-    disconnectedCallback() {}
-  }
+    customElements.define("btn-dialog", BtnDialog);
+  </script>
 
-  customElements.define("btn-dialog", BtnDialog);
-</script>
+  <style>
+    .app-dialog {
+      background: transparent;
+      border: none;
+      width: 100%;
+      padding: 0;
+    }
 
-<style>
-  .app-dialog {
-    background: transparent;
-    border: none;
-    width: 100%;
-    padding: 0;
-  }
-
-  .app-dialog::backdrop {
-    background: rgba(0, 0, 0, 0.4);
-  }
-</style>
+    .app-dialog::backdrop {
+      background: rgba(255, 255, 255, 0.5);
+    }
+  </style>
+</btn-dialog>

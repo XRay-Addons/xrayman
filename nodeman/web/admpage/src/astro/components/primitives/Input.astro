@@ -1,21 +1,13 @@
 ---
 import Surface from "./Surface.astro";
-import HCenter from "./HCenter.astro";
 
 interface Props {
-  inClass?: string;
-  outClass?: string;
+  class?: string;
+  style?: string;
 }
-
-const { inClass = "", outClass = "", ...rest } = Astro.props;
+const { class: _class, style: _style, ...rest } = Astro.props;
 ---
 
-<HCenter class={outClass}>
-  <Surface depth="var(--input-depth)" color="var(--input-color)">
-    <input
-      class:list={["ui-reset-input text-md w-100 p-2", inClass]}
-      type="text"
-      {...rest}
-    />
-  </Surface>
-</HCenter>
+<Surface depth="var(--input-depth)" color="var(--input-color)">
+  <input class="ui-reset-input text-md w-100 p-2" type="text" {...rest} />
+</Surface>

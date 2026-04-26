@@ -1,12 +1,8 @@
 ---
-interface Props {
-  class?: string;
-}
 
-const { class: extraClass = "", ...rest } = Astro.props as Props;
 ---
 
-<div class:list={["app-hv-center hv-center p-2", extraClass]} {...rest}>
+<div class="app-hv-center hv-center p-2">
   <slot />
 </div>
 

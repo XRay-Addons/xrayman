@@ -1,46 +1,34 @@
 ---
 import Surface from "./Surface.astro";
-import HCenter from "./HCenter.astro";
+import I18NText from "./I18nText.astro";
 
-interface Props {
-  outClass?: string;
-  "data-i18n-placeholder"?: string;
-  "data-i18n"?: string;
-  readonly?: boolean;
-}
+const { inputProps = {}, buttonProps = {}, ...rest } = Astro.props;
 
-const {
-  outClass = "",
-  "data-i18n-placeholder": i18nPlaceholder,
-  "data-i18n": i18nText,
-  readonly = false,
-  ...rest
-} = Astro.props;
+const { class: _ic, style: _is, "data-part": _dpInput, ...safeInputProps } = inputProps;
+
+const { class: _bc, style: _bs, "data-part": _dpButton, ...safeButtonProps } = buttonProps;
 ---
 
-<input-group {...rest}>
-  <HCenter class:list={["row g-0", outClass]}>
-    <div class="group-input-wrap">
-      <Surface depth="var(--input-depth)" color="var(--input-color)">
-        <input
-          type="text"
-          class="ui-reset-input group-input text-md p-2"
-          data-i18n-placeholder={i18nPlaceholder}
-          data-part="input"
-          readonly={readonly}
-        />
-      </Surface>
-    </div>
+<input-group class="row g-0" {...rest}>
+  <div class="group-input-wrap">
+    <Surface depth="var(--input-depth)" color="var(--input-color)">
+      <input
+        data-part="input"
+        type="text"
+        class="ui-reset-input group-input text-md p-2"
+        {...safeInputProps}
+      />
+    </Surface>
+  </div>
 
-    <div class="group-btn-wrap">
-      <Surface depth="var(--input-depth)" color="var(--input-color)" dynamic>
-        <button
-          class="ui-reset-button noselect group-btn text-md p-2"
-          data-i18n={i18nText}
-          data-part="button"></button>
-      </Surface>
-    </div>
-  </HCenter>
+  <div class="group-btn-wrap">
+    <Surface depth="var(--input-depth)" color="var(--input-color)" dynamic>
+      <button
+        data-part="button"
+        class="ui-reset-button noselect group-btn text-md p-2"
+        {...safeButtonProps}></button>
+    </Surface>
+  </div>
 </input-group>
 
 <script>

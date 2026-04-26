@@ -20,34 +20,7 @@ const styleVars = {
 </div>
 
 <style lang="scss">
-  @function darker($color) {
-    @return color-mix(in srgb, $color 87.5%, black 12.5%);
-  }
-  @function ddarker($color) {
-    @return color-mix(in srgb, $color 75%, black 25%);
-  }
-  @function dddarker($color) {
-    @return color-mix(in srgb, $color 50%, black 50%);
-  }
-  @function ddddarker($color) {
-    @return color-mix(in srgb, $color 25%, black 75%);
-  }
-  @function lighter($color) {
-    @return color-mix(in srgb, $color 87.5%, white 12.5%);
-  }
-  @function llighter($color) {
-    @return color-mix(in srgb, $color 75%, white 25%);
-  }
-  @function lllighter($color) {
-    @return color-mix(in srgb, $color 50%, white 50%);
-  }
-  @function llllighter($color) {
-    @return color-mix(in srgb, $color 25%, white 75%);
-  }
-  @function contrasted($color) {
-    $contrasted: lch(from $color calc((50 - l) * infinity) 0 0);
-    @return color-mix(in srgb, $color 25%, $contrasted 75%);
-  }
+  @use "@/styles/shades.scss" as *;
 
   .surface-in {
     position: relative;
@@ -60,9 +33,6 @@ const styleVars = {
     border-color: dddarker(var(--surface-color));
     background-color: var(--surface-color);
 
-    --contrast-color: lch(
-      from var(--surface-color) calc((49.44 - l) * infinity) 0 0
-    );
     color: contrasted(var(--surface-color));
   }
 
@@ -95,10 +65,7 @@ const styleVars = {
   @media (any-hover: hover) {
     .surface-dynamic:hover {
       background-color: darker(var(--surface-color));
-      transform: translate(
-        calc(var(--surface-depth) / 2),
-        calc(var(--surface-depth) / 2)
-      );
+      transform: translate(calc(var(--surface-depth) / 2), calc(var(--surface-depth) / 2));
     }
   }
 

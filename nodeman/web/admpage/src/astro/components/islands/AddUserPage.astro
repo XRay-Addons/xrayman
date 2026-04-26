@@ -5,37 +5,46 @@ import CopyGroup from "../primitives/CopyGroup.astro";
 import Card from "../primitives/Card.astro";
 import Title from "../primitives/Title.astro";
 import SuccessMsg from "../primitives/SuccessMsg.astro";
-
-interface Props {
-  class?: string;
-}
-
-const { class: extraClass = "", ...rest } = Astro.props;
+import I18NText from "../primitives/I18nText.astro";
 ---
 
-<add-user-page class={extraClass} {...rest}>
-  <Card inClass="p-4">
-    <Title outClass="col-md-8 mb-2" data-i18n="add-user.title" />
+<add-user-page>
+  <Card>
+    <Title>
+      <I18NText data-i18n="add-user.title" />
+    </Title>
 
-    <Info data-i18n="add-user.request.name.info" />
+    <Info>
+      <I18NText data-i18n="add-user.request.name.info" />
+    </Info>
+
     <InputGroup
-      outClass="col-12 mb-2"
+      inputProps={{
+        "data-i18n-placeholder": "add-user.request.name.placeholder",
+      }}
+      ,
+      buttonProps={{
+        "data-i18n": "add-user.request.name.button",
+      }}
+      ,
       data-part="name-input"
-      data-i18n="add-user.request.name.button"
-      data-i18n-placeholder="add-user.request.name.placeholder"
     />
 
     <div data-part="success-result" hidden>
-      <SuccessMsg data-i18n="add-user.response.name.info" outClass="mt-4" />
+      <SuccessMsg>
+        <I18NText data-i18n="add-user.response.info" />
+      </SuccessMsg>
 
       <Info>
-        <span data-i18n="add-user.response.userpage.info"></span>
+        <I18NText data-i18n="add-user.response.userpage.info" />
       </Info>
 
       <CopyGroup
-        outClass="col-12 mb-2"
+        buttonProps={{
+          "data-i18n": "add-user.response.userpage.copy-button",
+        }}
+        ,
         data-part="result-userpage"
-        data-i18n="add-user.response.userpage.copy-button"
       />
     </div>
   </Card>

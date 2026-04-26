@@ -3,16 +3,15 @@ import Title from "../primitives/Title.astro";
 import Card from "../primitives/Card.astro";
 import NodesTable from "@/vue/components/islands/nodes-table/NodesTable.vue";
 import AddNodeDialog from "./AddNodeDialog.astro";
+import I18NText from "../primitives/I18nText.astro";
 ---
 
-<div class="col-sm-12 col-lg-6">
-  <Card>
-    <Title outClass="col-10 col-md-8 mb-2">
-      <span data-i18n="cards.nodes.title"></span>
-    </Title>
+<Card>
+  <Title>
+    <I18NText data-i18n="cards.nodes.title" />
+  </Title>
 
-    <NodesTable client:only="vue" />
+  <NodesTable client:only="vue" />
 
-    <AddNodeDialog />
-  </Card>
-</div>
+  <AddNodeDialog />
+</Card>
