@@ -10,8 +10,7 @@ type NewNodeParams struct {
 }
 
 type NewNodeResult struct {
-	ID       NodeID
-	Endpoint string
+	Node       Node
 }
 
 type StartNodeParams struct {

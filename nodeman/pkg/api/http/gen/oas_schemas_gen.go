@@ -201,28 +201,17 @@ func (s *NewNodeRequest) SetAccessKey(val string) {
 
 // Ref: #/components/schemas/NewNodeResponse
 type NewNodeResponse struct {
-	ID       NodeID `json:"ID"`
-	Endpoint string `json:"Endpoint"`
+	Node Node `json:"Node"`
 }
 
-// GetID returns the value of ID.
-func (s *NewNodeResponse) GetID() NodeID {
-	return s.ID
+// GetNode returns the value of Node.
+func (s *NewNodeResponse) GetNode() Node {
+	return s.Node
 }
 
-// GetEndpoint returns the value of Endpoint.
-func (s *NewNodeResponse) GetEndpoint() string {
-	return s.Endpoint
-}
-
-// SetID sets the value of ID.
-func (s *NewNodeResponse) SetID(val NodeID) {
-	s.ID = val
-}
-
-// SetEndpoint sets the value of Endpoint.
-func (s *NewNodeResponse) SetEndpoint(val string) {
-	s.Endpoint = val
+// SetNode sets the value of Node.
+func (s *NewNodeResponse) SetNode(val Node) {
+	s.Node = val
 }
 
 // Ref: #/components/schemas/NewUserRequest

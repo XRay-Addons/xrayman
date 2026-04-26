@@ -2,18 +2,17 @@
 import Surface from "./Surface.astro";
 
 interface Props {
-  class?: string;
+  inClass?: string;
+  outClass?: string;
 }
 
-const { class: extraClass = "", ...rest } = Astro.props;
+const { inClass = "", outClass = "", ...rest } = Astro.props;
 ---
 
-<Surface
-  depth="var(--card-depth)"
-  color="var(--card-color)"
-  class:list={["app-card", extraClass]}
-  inClass="p-2"
-  {...rest}
->
-  <slot />
-</Surface>
+<div class={outClass}>
+  <Surface depth="var(--card-depth)" color="var(--card-color)">
+    <div class:list={["p-2", inClass]} {...rest}>
+      <slot />
+    </div>
+  </Surface>
+</div>

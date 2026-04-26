@@ -1,0 +1,47 @@
+---
+import InputGroup from "./InputGroup.astro";
+
+interface Props {
+  outClass?: string;
+  "data-i18n"?: string;
+  part?: string;
+}
+
+const { outClass = "", "data-i18n": i18nButton, ...rest } = Astro.props;
+---
+
+<copy-group {...rest}>
+  <InputGroup data-part="input-group" outClass={outClass} data-i18n={i18nButton} readonly />
+</copy-group>
+
+<script>
+  import { type CopyGroupElement } from "@/astro/components/types/CopyGroup";
+  import type { InputGroupElement } from "@/astro/components/types/InputGroup";
+
+  class CopyGroup extends HTMLElement implements CopyGroupElement {
+    private inputGroupEl: InputGroupElement | null = null;
+
+    setValue(val: string) {
+      if (this.inputGroupEl) {
+        this.inputGroupEl.setValue(val);
+      }
+    }
+
+    connectedCallback() {
+      customElements.whenDefined("input-group").then(() => {
+        this.inputGroupEl = this.querySelector<InputGroupElement>(`[data-part="input-group"]`);
+        this.inputGroupEl?.onClick(async (val: string) => {
+          try {
+            await navigator.clipboard.writeText(val);
+          } catch (err) {
+            console.error("Clipboard error", err);
+          }
+        });
+      });
+    }
+
+    disconnectedCallback() {}
+  }
+
+  customElements.define("copy-group", CopyGroup);
+</script>

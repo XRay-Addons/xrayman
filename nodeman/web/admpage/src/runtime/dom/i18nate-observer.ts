@@ -13,7 +13,7 @@ export class I18nObserver {
     this.observer.observe(document.documentElement, {
       childList: true,
       subtree: true,
-      attributes: true,
+      attributes: false,
     });
   }
 

@@ -3,18 +3,9 @@ interface Props {
   dynamic?: boolean;
   depth?: string;
   color?: string;
-  class?: string;
-  inClass?: string;
 }
 
-const {
-  dynamic = false,
-  depth = "0px",
-  color = "transparent",
-  class: extraClass = "",
-  inClass = "",
-  ...rest
-} = Astro.props;
+const { dynamic = false, depth = "0px", color = "transparent" } = Astro.props;
 
 const styleVars = {
   ...(color && { "--surface-color": color }),
@@ -22,8 +13,8 @@ const styleVars = {
 };
 ---
 
-<div class:list={["surface__wrap", extraClass]} style={styleVars} {...rest}>
-  <div class:list={["surface", inClass, { "surface--dynamic": dynamic }]}>
+<div class="surface-out" style={styleVars}>
+  <div class:list={["surface-in", { "surface-dynamic": dynamic }]}>
     <slot />
   </div>
 </div>
@@ -58,9 +49,11 @@ const styleVars = {
     @return color-mix(in srgb, $color 25%, $contrasted 75%);
   }
 
-  .surface {
+  .surface-in {
     position: relative;
     z-index: 1;
+    width: 100%;
+    height: 100%;
 
     border-width: 1px;
     border-style: solid;
@@ -73,16 +66,16 @@ const styleVars = {
     color: contrasted(var(--surface-color));
   }
 
-  .surface__wrap {
+  .surface-out {
     isolation: isolate;
     position: relative;
+    height: 100%;
 
-    padding-left: 0;
     padding-right: var(--surface-depth);
     padding-bottom: var(--surface-depth);
   }
 
-  .surface__wrap::before {
+  .surface-out::before {
     content: "";
     position: absolute;
 
@@ -95,12 +88,12 @@ const styleVars = {
     background-color: dddarker(var(--surface-color));
   }
 
-  .surface--dynamic {
+  .surface-dynamic {
     transition: transform 200ms ease;
   }
 
   @media (any-hover: hover) {
-    .surface--dynamic:hover {
+    .surface-dynamic:hover {
       background-color: darker(var(--surface-color));
       transform: translate(
         calc(var(--surface-depth) / 2),
@@ -109,18 +102,18 @@ const styleVars = {
     }
   }
 
-  .surface--dynamic:active {
+  .surface-dynamic:active {
     background-color: ddarker(var(--surface-color));
     transform: translate(var(--surface-depth), var(--surface-depth));
   }
 
-  :global(.surface input) {
+  :global(.surface-out input) {
     background-color: llllighter(var(--surface-color));
     color: ddddarker(var(--surface-color));
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .surface--dynamic {
+    .surface-dynamic {
       transition: none;
     }
   }

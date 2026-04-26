@@ -960,18 +960,13 @@ func (s *NewNodeResponse) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *NewNodeResponse) encodeFields(e *jx.Encoder) {
 	{
-		e.FieldStart("ID")
-		s.ID.Encode(e)
-	}
-	{
-		e.FieldStart("Endpoint")
-		e.Str(s.Endpoint)
+		e.FieldStart("Node")
+		s.Node.Encode(e)
 	}
 }
 
-var jsonFieldsNameOfNewNodeResponse = [2]string{
-	0: "ID",
-	1: "Endpoint",
+var jsonFieldsNameOfNewNodeResponse = [1]string{
+	0: "Node",
 }
 
 // Decode decodes NewNodeResponse from json.
@@ -983,27 +978,15 @@ func (s *NewNodeResponse) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "ID":
+		case "Node":
 			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
-				if err := s.ID.Decode(d); err != nil {
+				if err := s.Node.Decode(d); err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"ID\"")
-			}
-		case "Endpoint":
-			requiredBitSet[0] |= 1 << 1
-			if err := func() error {
-				v, err := d.Str()
-				s.Endpoint = string(v)
-				if err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"Endpoint\"")
+				return errors.Wrap(err, "decode field \"Node\"")
 			}
 		default:
 			return d.Skip()
@@ -1015,7 +998,7 @@ func (s *NewNodeResponse) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000011,
+		0b00000001,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.

@@ -32,5 +32,6 @@ function getRandomPalette(): Palette | null {
     [PaletteItem.Button]: p[3 % n],
     [PaletteItem.Input]: p[4 % n],
     [PaletteItem.Table]: p[1 % n], // table color = card color
+    [PaletteItem.Success]: p[0 % n], // success color = card color
   };
 }

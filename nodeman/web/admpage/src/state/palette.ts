@@ -7,6 +7,7 @@ export enum PaletteItem {
   Button = "Button",
   Input = "Input",
   Table = "Table",
+  Success = "Success",
 }
 
 let paletteValue = {
@@ -16,6 +17,7 @@ let paletteValue = {
   [PaletteItem.Button]: "#eecbff",
   [PaletteItem.Input]: "#dbdcff",
   [PaletteItem.Table]: "#d4ffea",
+  [PaletteItem.Success]: "#feffa3",
 };
 
 const palette = shallowRef(paletteValue);

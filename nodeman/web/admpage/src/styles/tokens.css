@@ -6,6 +6,7 @@
   --button-color: transparent;
   --input-color: transparent;
   --table-color: transparent; /* not used in astro */
+  --success-color: transparent;
 }
 
 /* surface depths */
@@ -15,6 +16,7 @@
   --input-depth: 4px;
   --button-depth: 4px;
   --error-depth: 4px;
+  --success-depth: 4px;
 }
 
 /* typography */

@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { DisableUserData, DisableUserErrors, DisableUserResponses, EnableUserData, EnableUserErrors, EnableUserResponses, ListNodesData, ListNodesErrors, ListNodesResponses, ListUsersData, ListUsersErrors, ListUsersResponses, StartNodeData, StartNodeErrors, StartNodeResponses, StopNodeData, StopNodeErrors, StopNodeResponses } from './types.gen';
+import type { DisableUserData, DisableUserErrors, DisableUserResponses, EnableUserData, EnableUserErrors, EnableUserResponses, ListNodesData, ListNodesErrors, ListNodesResponses, ListUsersData, ListUsersErrors, ListUsersResponses, NewNodeData, NewNodeErrors, NewNodeResponses, NewUserData, NewUserErrors, NewUserResponses, StartNodeData, StartNodeErrors, StartNodeResponses, StopNodeData, StopNodeErrors, StopNodeResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -17,6 +17,18 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
      */
     meta?: Record<string, unknown>;
 };
+
+/**
+ * Create a new node
+ */
+export const newNode = <ThrowOnError extends boolean = false>(options: Options<NewNodeData, ThrowOnError>) => (options.client ?? client).post<NewNodeResponses, NewNodeErrors, ThrowOnError>({
+    url: '/nodes/new',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Start a node
@@ -46,6 +58,18 @@ export const stopNode = <ThrowOnError extends boolean = false>(options: Options<
  * List all nodes
  */
 export const listNodes = <ThrowOnError extends boolean = false>(options?: Options<ListNodesData, ThrowOnError>) => (options?.client ?? client).get<ListNodesResponses, ListNodesErrors, ThrowOnError>({ url: '/nodes', ...options });
+
+/**
+ * Create a new user
+ */
+export const newUser = <ThrowOnError extends boolean = false>(options: Options<NewUserData, ThrowOnError>) => (options.client ?? client).post<NewUserResponses, NewUserErrors, ThrowOnError>({
+    url: '/user/new',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Enable a user on all nodes

@@ -30,7 +30,7 @@ import Button from "../ui/Button.astro";
 
   class OpenAppCard extends HTMLElement {
     private unsub?: () => void;
-    private openHappFn: () => void;
+    private openHappFn?: () => void;
 
     makeHappSubLink(subscriptionURL: string) {
       return `${config.HAPP_INTENT}${subscriptionURL}`;

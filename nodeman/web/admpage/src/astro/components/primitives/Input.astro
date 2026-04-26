@@ -11,9 +11,11 @@ const { inClass = "", outClass = "", ...rest } = Astro.props;
 ---
 
 <HCenter class={outClass}>
-  <Surface depth="var(--title-depth)" color="var(--title-color)">
-    <div class:list={["h-center text-lg p-2 noselect", inClass]} {...rest}>
-      <slot />
-    </div>
+  <Surface depth="var(--input-depth)" color="var(--input-color)">
+    <input
+      class:list={["ui-reset-input text-md w-100 p-2", inClass]}
+      type="text"
+      {...rest}
+    />
   </Surface>
 </HCenter>

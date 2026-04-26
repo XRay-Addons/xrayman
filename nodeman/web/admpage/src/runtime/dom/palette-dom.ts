@@ -9,6 +9,7 @@ export function getDOMPalette(): Palette {
     [PaletteItem.Button]: root.style.getPropertyValue("--button-color"),
     [PaletteItem.Input]: root.style.getPropertyValue("--input-color"),
     [PaletteItem.Table]: root.style.getPropertyValue("--table-color"),
+    [PaletteItem.Success]: root.style.getPropertyValue("--success-color"),
   };
 }
 
@@ -21,4 +22,5 @@ export function updateDOMPalette() {
   root.style.setProperty("--button-color", p[PaletteItem.Button]);
   root.style.setProperty("--input-color", p[PaletteItem.Input]);
   root.style.setProperty("--table-color", p[PaletteItem.Table]);
+  root.style.setProperty("--success-color", p[PaletteItem.Success]);
 }

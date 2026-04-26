@@ -13,12 +13,61 @@
     }
   },
 
+  "add-user": {
+    "title": "Add new user",
+    "request": {
+      "name": {
+        "info": "User displayname",
+        "button": "Add!",
+        "placeholder": "Например, Никита"
+      }
+    },
+    "response": {
+      "name": {
+        "info": "User added successfully!"
+      },
+      "userpage": {
+        "info": "User page URL",
+        "copy-button": "Copy!"
+      }
+    },
+    "button": {
+      "text": "+"
+    }
+  },
+
+  "add-node": {
+    "title": "Add new node",
+    "request": {
+      "endpoint": {
+        "info": "Node endpoint",
+        "placeholder": "https://node.com:80"
+      },
+      "accesskey": {
+        "info": "Node access key",
+        "placeholder": "HexAccessKey..."
+      }
+    },
+    "submit-btn": {
+      "info": "Add!"
+    },
+    "response": {
+      "info": "Node added successfully!",
+      "endpoint": "Node endpoint:"
+    },
+    "button": {
+      "text": "+"
+    }
+  },
+
   "errors": {
     "server": {
       "get_users": "Получить пользователей ошибка",
       "get_nodes": "Получить ноды ошибка",
+      "new_user": "Добавить юзер",
       "start_node": "Старт ноды",
       "stop_node": "Стоп ноды",
+      "new_node": "Добавить ноду",
       "enable_user": "Разрешить пользователя",
       "disable_user": "Запретить пользователя",
 

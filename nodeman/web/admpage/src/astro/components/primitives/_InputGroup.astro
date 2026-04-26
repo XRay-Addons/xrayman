@@ -1,17 +1,32 @@
 ---
 import Surface from "./Surface.astro";
 
-const { class: extraClass = "", ...rest } = Astro.props;
+interface Props {
+  class?: string;
+  inputClass?: string;
+  inputPart?: string;
+  btnClass?: string;
+  btnPart?: string;
+}
+
+const {
+  class: extraClass = "",
+  inputClass = "",
+  inputPart = "",
+  btnClass = "",
+  btnPart = "",
+  ...rest
+} = Astro.props;
 ---
 
-<div class:list={["app-input", "h-center", extraClass]} {...rest}>
-  <div class="app-input__layout col-12 col-md-10 col-lg-8 row p-1 g-0">
+<div class="app-input__wrap h-center">
+  <div class:list={["app-input__layout row p-1 g-0", extraClass]} {...rest}>
     <Surface
       class="app-input__field"
       depth="var(--input-depth)"
       color="var(--input-color)"
     >
-      <slot name="input" />
+      <input part={inputPart} />
     </Surface>
 
     <Surface
@@ -20,7 +35,7 @@ const { class: extraClass = "", ...rest } = Astro.props;
       depth="var(--input-depth)"
       color="var(--input-color)"
     >
-      <slot name="button" />
+      <button part={btnPart}></button>
     </Surface>
   </div>
 </div>

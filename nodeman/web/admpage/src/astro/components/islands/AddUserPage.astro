@@ -1,0 +1,96 @@
+---
+import Info from "@/astro/components/primitives/Info.astro";
+import InputGroup from "../primitives/InputGroup.astro";
+import CopyGroup from "../primitives/CopyGroup.astro";
+import Card from "../primitives/Card.astro";
+import Title from "../primitives/Title.astro";
+import SuccessMsg from "../primitives/SuccessMsg.astro";
+
+interface Props {
+  class?: string;
+}
+
+const { class: extraClass = "", ...rest } = Astro.props;
+---
+
+<add-user-page class={extraClass} {...rest}>
+  <Card inClass="p-4">
+    <Title outClass="col-md-8 mb-2" data-i18n="add-user.title" />
+
+    <Info data-i18n="add-user.request.name.info" />
+    <InputGroup
+      outClass="col-12 mb-2"
+      data-part="name-input"
+      data-i18n="add-user.request.name.button"
+      data-i18n-placeholder="add-user.request.name.placeholder"
+    />
+
+    <div data-part="success-result" hidden>
+      <SuccessMsg data-i18n="add-user.response.name.info" outClass="mt-4" />
+
+      <Info>
+        <span data-i18n="add-user.response.userpage.info"></span>
+      </Info>
+
+      <CopyGroup
+        outClass="col-12 mb-2"
+        data-part="result-userpage"
+        data-i18n="add-user.response.userpage.copy-button"
+      />
+    </div>
+  </Card>
+</add-user-page>
+
+<script>
+  import { type InputGroupElement } from "@/astro/components/types/InputGroup";
+  import { type CopyGroupElement } from "@/astro/components/types/CopyGroup";
+  import { newUser } from "@/services/api/client";
+  import { notifyApiError } from "@/runtime/notifications/errors";
+  import { reloadUsers } from "@/actions/users";
+  import type { DialogPageElement } from "../types/DialogPage";
+
+  class AddUserPage extends HTMLElement implements DialogPageElement {
+    private nameInputEl: InputGroupElement | null = null;
+    private successResultEl: HTMLElement | null = null;
+    private userpageOutputEl: CopyGroupElement | null = null;
+
+    async connectedCallback() {
+      this.nameInputEl = this.querySelector<InputGroupElement>(`[data-part="name-input"]`);
+      this.successResultEl = this.querySelector<HTMLElement>(`[data-part="success-result"]`);
+      this.userpageOutputEl = this.querySelector<CopyGroupElement>(`[data-part="result-userpage"]`);
+      if (this.nameInputEl == null) {
+        return;
+      }
+
+      this.nameInputEl.onClick(async (name: string) => {
+        if (name.length == 0) {
+          return;
+        }
+        // reset and hide
+        this.successResultEl?.setAttribute("hidden", "true");
+        this.userpageOutputEl?.setValue("");
+
+        const response = await newUser(name);
+        if (!response.ok) {
+          notifyApiError("new_user", response.reason);
+          return;
+        }
+        reloadUsers({ quiet: true });
+
+        // show back
+        this.successResultEl?.removeAttribute("hidden");
+        this.userpageOutputEl?.setValue(response.data.Profile.Name);
+      });
+    }
+
+    disconnectedCallback() {}
+
+    reset() {
+      this.nameInputEl?.setValue("");
+      this.userpageOutputEl?.setValue("");
+      this.successResultEl?.setAttribute("hidden", "true");
+    }
+  }
+
+  customElements.define("add-user-page", AddUserPage);
+</script>

@@ -1,0 +1,35 @@
+---
+import SurfaceRow from "../primitives/SurfaceRow.astro";
+import Surface from "../primitives/Surface.astro";
+---
+
+<SurfaceRow class="col-md-12">
+  <Surface
+    class="app-input__field"
+    depth="var(--input-depth)"
+    color="var(--input-color)"
+  >
+    <input part="input" class="ui-reset-input text-md w-100 p-2" />
+  </Surface>
+
+  <Surface
+    class="app-input__button"
+    dynamic
+    depth="var(--input-depth)"
+    color="var(--input-color)"
+  >
+    <button part="button" class="ui-reset-button text-md w-100 p-2">Text</button
+    >
+  </Surface>
+</SurfaceRow>
+
+<style>
+  .app-input__field {
+    width: 75%;
+  }
+
+  .app-input__button {
+    width: calc(25% + var(--input-depth));
+    margin-left: calc(-1 * var(--input-depth));
+  }
+</style>

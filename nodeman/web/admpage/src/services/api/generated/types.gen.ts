@@ -45,6 +45,10 @@ export type User = {
     TargetStatus: UserStatus;
 };
 
+export type NewUserRequest = {
+    DisplayName: string;
+};
+
 export type ListNodeResponse = {
     Nodes: Array<Node>;
 };
@@ -96,6 +100,43 @@ export type StartNodeResponse = {
 export type StartNodeRequest = {
     ID: NodeId;
 };
+
+export type NewNodeResponse = {
+    Node: Node;
+};
+
+export type NewNodeRequest = {
+    Endpoint: string;
+    /**
+     * Base64-encoded 32-byte access secret + 32-byte cert hash
+     */
+    AccessKey: string;
+};
+
+export type NewNodeData = {
+    body: NewNodeRequest;
+    path?: never;
+    query?: never;
+    url: '/nodes/new';
+};
+
+export type NewNodeErrors = {
+    /**
+     * General Error
+     */
+    default: Error;
+};
+
+export type NewNodeError = NewNodeErrors[keyof NewNodeErrors];
+
+export type NewNodeResponses = {
+    /**
+     * Created node
+     */
+    200: NewNodeResponse;
+};
+
+export type NewNodeResponse2 = NewNodeResponses[keyof NewNodeResponses];
 
 export type StartNodeData = {
     body: StartNodeRequest;
@@ -171,6 +212,31 @@ export type ListNodesResponses = {
 };
 
 export type ListNodesResponse = ListNodesResponses[keyof ListNodesResponses];
+
+export type NewUserData = {
+    body: NewUserRequest;
+    path?: never;
+    query?: never;
+    url: '/user/new';
+};
+
+export type NewUserErrors = {
+    /**
+     * General Error
+     */
+    default: Error;
+};
+
+export type NewUserError = NewUserErrors[keyof NewUserErrors];
+
+export type NewUserResponses = {
+    /**
+     * Created user
+     */
+    200: User;
+};
+
+export type NewUserResponse = NewUserResponses[keyof NewUserResponses];
 
 export type EnableUserData = {
     body: EnableUserRequest;

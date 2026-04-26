@@ -6,6 +6,6 @@ interface Props {
 const { class: extraClass = "", ...rest } = Astro.props;
 ---
 
-<div class:list={["app-lg-width col-12 col-xl-10", extraClass]} {...rest}>
+<div class:list={["col-12 col-xl-10", extraClass]} {...rest}>
   <slot />
 </div>

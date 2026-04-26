@@ -1,0 +1,58 @@
+---
+import Surface from "./Surface.astro";
+import HCenter from "./HCenter.astro";
+
+interface Props {
+  inClass?: string;
+  outClass?: string;
+  "data-i18n"?: string;
+  "data-part"?: string;
+}
+
+const {
+  inClass = "",
+  outClass = "",
+  "data-i18n": i18nText,
+  "data-part": dataPart,
+  ...rest
+} = Astro.props;
+---
+
+<app-button data-part={dataPart}>
+  <div class:list={["button-wrap row g-0", outClass]} {...rest}>
+    <Surface depth="var(--button-depth)" color="var(--button-color)" dynamic>
+      <button
+        class="ui-reset-button noselect w-100 h-100 text-center text-md p-2"
+        data-i18n={i18nText}
+        data-part="button"></button>
+    </Surface>
+  </div>
+</app-button>
+
+<script>
+  import { type ButtonElement, type OnClickFn } from "@/astro/components/types/Button";
+
+  class Button extends HTMLElement implements ButtonElement {
+    private buttonEl: HTMLButtonElement | null = null;
+    private onClickFn: OnClickFn | null = null;
+
+    onClick(fn: OnClickFn): void {
+      this.onClickFn = fn;
+    }
+
+    connectedCallback() {
+      this.buttonEl = this.querySelector<HTMLButtonElement>(`[data-part="button"]`);
+      if (!this.buttonEl) return;
+
+      this.buttonEl.onclick = async () => {
+        try {
+          await this.onClickFn?.();
+        } catch (err) {
+          console.error("Button error", err);
+        }
+      };
+    }
+  }
+
+  customElements.define("app-button", Button);
+</script>

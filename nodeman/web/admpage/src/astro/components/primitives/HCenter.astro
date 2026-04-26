@@ -1,0 +1,12 @@
+---
+interface Props {
+  class?: string;
+}
+const { class: extraClss = "" } = Astro.props;
+---
+
+<div class="h-center">
+  <div class={extraClss}>
+    <slot />
+  </div>
+</div>

@@ -27,6 +27,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+      tags:
+        - admpage
 
   /nodes/start:
     post:
@@ -105,8 +107,6 @@ paths:
     post:
       summary: Create a new user
       operationId: NewUser
-      tags:
-        - userpage
       requestBody:
         required: true
         content:
@@ -126,6 +126,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+      tags:
+        - userpage
+        - admpage
 
   /user/enable:
     post:
@@ -183,8 +186,6 @@ paths:
     get:
       summary: Get user properties
       operationId: GetUser
-      tags:
-        - userpage
       parameters:
         - name: ID
           in: path
@@ -211,6 +212,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+      tags:
+        - userpage
 
   /users:
     get:
@@ -343,13 +346,10 @@ components:
     NewNodeResponse:
       type: object
       properties:
-        ID:
-          $ref: "#/components/schemas/NodeID"
-        Endpoint:
-          type: string
+        Node:
+          $ref: "#/components/schemas/Node"
       required:
-        - ID
-        - Endpoint
+        - Node
 
     StartNodeRequest:
       type: object

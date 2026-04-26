@@ -1,0 +1,233 @@
+---
+
+---
+
+<div id="root" class="p-2">
+  <div id="wrapper"></div>
+</div>
+
+<table id="table" border="1" cellpadding="6">
+  <thead></thead>
+  <tbody></tbody>
+</table>
+
+<style>
+  table {
+    border: 1px solid lightgray;
+  }
+
+  tbody {
+    border-bottom: 1px solid lightgray;
+  }
+
+  th {
+    border-bottom: 1px solid lightgray;
+    border-right: 1px solid lightgray;
+    padding: 2px 4px;
+  }
+
+  tfoot {
+    color: gray;
+  }
+
+  tfoot th {
+    font-weight: normal;
+  }
+</style>
+<script>
+  import { atom } from "nanostores";
+
+  import {
+    type RowData,
+    type TableOptions,
+    type TableOptionsResolved,
+    createTable,
+  } from "@tanstack/table-core";
+
+  export const flexRender = <TProps extends object>(
+    comp: any,
+    props: TProps,
+  ) => {
+    if (typeof comp === "function") {
+      return comp(props);
+    }
+    return comp;
+  };
+
+  export const useTable = <TData extends RowData>(
+    options: TableOptions<TData>,
+  ) => {
+    // Compose in the generic options to the user options
+    const resolvedOptions: TableOptionsResolved<TData> = {
+      state: {}, // Dummy state
+      onStateChange: () => {}, // noop
+      renderFallbackValue: null,
+      ...options,
+    };
+
+    // Create a new table
+    const table = createTable<TData>(resolvedOptions);
+
+    // By default, manage table state here using the table's initial state
+    const state = atom(table.initialState);
+
+    // Subscribe to state changes
+    state.subscribe((currentState) => {
+      table.setOptions((prev) => ({
+        ...prev,
+        ...options,
+        state: {
+          ...currentState,
+          ...options.state,
+        },
+        // Similarly, we'll maintain both our internal state and any user-provided state
+        onStateChange: (updater) => {
+          if (typeof updater === "function") {
+            const newState = updater(currentState);
+            state.set(newState);
+          } else {
+            state.set(updater);
+          }
+          options.onStateChange?.(updater);
+        },
+      }));
+    });
+
+    return table;
+  };
+
+  import { createColumnHelper, getCoreRowModel } from "@tanstack/table-core";
+
+  type Person = {
+    firstName: string;
+    lastName: string;
+    age: number;
+    visits: number;
+    status: string;
+    progress: number;
+  };
+
+  const data: Person[] = [
+    {
+      firstName: "tanner",
+      lastName: "linsley",
+      age: 24,
+      visits: 100,
+      status: "In Relationship",
+      progress: 50,
+    },
+    {
+      firstName: "tandy",
+      lastName: "miller",
+      age: 40,
+      visits: 40,
+      status: "Single",
+      progress: 80,
+    },
+    {
+      firstName: "joe",
+      lastName: "dirte",
+      age: 45,
+      visits: 20,
+      status: "Complicated",
+      progress: 10,
+    },
+  ];
+
+  const columnHelper = createColumnHelper<Person>();
+
+  const columns = [
+    columnHelper.accessor("firstName", {
+      cell: (info) => info.getValue(),
+      footer: (info) => info.column.id,
+    }),
+    columnHelper.accessor((row) => row.lastName, {
+      id: "lastName",
+      cell: (info) => `<i>${info.getValue()}</i>`,
+      header: () => "<span>Last Name</span>",
+      footer: (info) => info.column.id,
+    }),
+    columnHelper.accessor("age", {
+      header: () => "Age",
+      cell: (info) => info.renderValue(),
+      footer: (info) => info.column.id,
+    }),
+    columnHelper.accessor("visits", {
+      header: () => "<span>Visits</span>",
+      footer: (info) => info.column.id,
+    }),
+    columnHelper.accessor("status", {
+      header: "Status",
+      footer: (info) => info.column.id,
+    }),
+    columnHelper.accessor("progress", {
+      header: "Profile Progress",
+      footer: (info) => info.column.id,
+    }),
+  ];
+
+  const renderTable = () => {
+    // Create table elements
+    const tableElement = document.createElement("table");
+    const theadElement = document.createElement("thead");
+    const tbodyElement = document.createElement("tbody");
+    const tfootElement = document.createElement("tfoot");
+
+    tableElement.appendChild(theadElement);
+    tableElement.appendChild(tbodyElement);
+    tableElement.appendChild(tfootElement);
+
+    // Render table headers
+    table.getHeaderGroups().forEach((headerGroup) => {
+      const trElement = document.createElement("tr");
+      headerGroup.headers.forEach((header) => {
+        const thElement = document.createElement("th");
+        thElement.innerHTML = header.isPlaceholder
+          ? ""
+          : flexRender(header.column.columnDef.header, header.getContext());
+        trElement.appendChild(thElement);
+      });
+      theadElement.appendChild(trElement);
+    });
+
+    // Render table rows
+    table.getRowModel().rows.forEach((row) => {
+      const trElement = document.createElement("tr");
+      row.getVisibleCells().forEach((cell) => {
+        const tdElement = document.createElement("td");
+        tdElement.innerHTML = flexRender(
+          cell.column.columnDef.cell,
+          cell.getContext(),
+        );
+        trElement.appendChild(tdElement);
+      });
+      tbodyElement.appendChild(trElement);
+    });
+
+    // Render table footers
+    table.getFooterGroups().forEach((footerGroup) => {
+      const trElement = document.createElement("tr");
+      footerGroup.headers.forEach((header) => {
+        const thElement = document.createElement("th");
+        thElement.innerHTML = header.isPlaceholder
+          ? ""
+          : flexRender(header.column.columnDef.footer, header.getContext());
+        trElement.appendChild(thElement);
+      });
+      tfootElement.appendChild(trElement);
+    });
+
+    // Clear previous content and append new content
+    const wrapperElement = document.getElementById("wrapper") as HTMLDivElement;
+    wrapperElement.innerHTML = "";
+    wrapperElement.appendChild(tableElement);
+  };
+
+  const table = useTable<Person>({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
+  renderTable();
+</script>

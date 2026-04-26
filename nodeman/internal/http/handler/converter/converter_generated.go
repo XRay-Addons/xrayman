@@ -83,8 +83,7 @@ func ConvertNewNodeResult(source *models.NewNodeResult) *gen.NewNodeResponse {
 	var pApiNewNodeResponse *gen.NewNodeResponse
 	if source != nil {
 		var apiNewNodeResponse gen.NewNodeResponse
-		apiNewNodeResponse.ID = ConvertNodeID((*source).ID)
-		apiNewNodeResponse.Endpoint = (*source).Endpoint
+		apiNewNodeResponse.Node = modelsNodeToApiNode((*source).Node)
 		pApiNewNodeResponse = &apiNewNodeResponse
 	}
 	return pApiNewNodeResponse

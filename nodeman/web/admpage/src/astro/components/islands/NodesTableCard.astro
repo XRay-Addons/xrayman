@@ -2,14 +2,17 @@
 import Title from "../primitives/Title.astro";
 import Card from "../primitives/Card.astro";
 import NodesTable from "@/vue/components/islands/nodes-table/NodesTable.vue";
+import AddNodeDialog from "./AddNodeDialog.astro";
 ---
 
 <div class="col-sm-12 col-lg-6">
   <Card>
-    <Title class="mb-2">
+    <Title outClass="col-10 col-md-8 mb-2">
       <span data-i18n="cards.nodes.title"></span>
     </Title>
 
     <NodesTable client:only="vue" />
+
+    <AddNodeDialog />
   </Card>
 </div>

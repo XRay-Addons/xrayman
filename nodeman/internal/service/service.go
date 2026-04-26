@@ -61,8 +61,7 @@ func (s *Service) NewNode(ctx context.Context, p models.NewNodeParams) (*models.
 	_ = s.syncNode(ctx, node.ID)
 
 	return &models.NewNodeResult{
-		ID:       node.ID,
-		Endpoint: node.Config.ConnectionInfo.Endpoint,
+		Node:       node,
 	}, nil
 }
 
