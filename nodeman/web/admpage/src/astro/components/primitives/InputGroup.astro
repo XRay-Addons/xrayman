@@ -33,20 +33,18 @@ const { class: _bc, style: _bs, "data-part": _dpButton, ...safeButtonProps } = b
 
 <script>
   import { type InputGroupElement, type OnClickFn } from "@/astro/components/types/InputGroup";
+  import { PartedElement } from "@/runtime/dom/parted-element";
 
-  class InputGroup extends HTMLElement implements InputGroupElement {
-    private btnEl: HTMLButtonElement | null = null;
-    private inputEl: HTMLInputElement | null = null;
+  class InputGroup extends PartedElement implements InputGroupElement {
+    private inputEl!: HTMLInputElement;
     private onClickFn?: OnClickFn;
 
     setValue(val: string) {
-      if (this.inputEl) {
-        this.inputEl.value = val;
-      }
+      this.inputEl.value = val;
     }
 
     getValue(): string {
-      return this.inputEl?.value ?? "";
+      return this.inputEl.value;
     }
 
     onClick(fn: OnClickFn): void {
@@ -54,21 +52,18 @@ const { class: _bc, style: _bs, "data-part": _dpButton, ...safeButtonProps } = b
     }
 
     connectedCallback() {
-      this.inputEl = this.querySelector<HTMLInputElement>(`[data-part="input"]`);
-      this.btnEl = this.querySelector<HTMLButtonElement>(`[data-part="button"]`);
-      if (!this.inputEl || !this.btnEl) return;
-
-      this.btnEl.addEventListener("click", async (e: Event) => {
-        if (this.inputEl && this.onClickFn) {
+      this.inputEl = this.pt<HTMLInputElement>("input");
+      this.inputEl.addEventListener("keydown", async (e: KeyboardEvent) => {
+        if (e.key === "Enter") {
           e.preventDefault();
-          await this.onClickFn(this.inputEl.value);
+          await this.onClickFn?.(this.inputEl.value);
         }
       });
-      this.inputEl.addEventListener("keydown", async (e: KeyboardEvent) => {
-        if (this.inputEl && this.onClickFn && e.key === "Enter") {
-          e.preventDefault();
-          await this.onClickFn(this.inputEl.value);
-        }
+
+      const btnEl = this.pt<HTMLButtonElement>("button");
+      btnEl.addEventListener("click", async (e: Event) => {
+        e.preventDefault();
+        await this.onClickFn?.(this.inputEl.value);
       });
     }
 

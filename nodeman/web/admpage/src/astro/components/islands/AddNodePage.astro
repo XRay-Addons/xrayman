@@ -50,25 +50,23 @@ import I18NText from "../primitives/I18nText.astro";
   import { notifyApiError } from "@/runtime/notifications/errors";
   import { reloadNodes } from "@/actions/nodes";
   import type { DialogPageElement } from "../types/DialogPage";
+  import { PartedElement } from "@/runtime/dom/parted-element";
 
-  class AddNodePage extends HTMLElement implements DialogPageElement {
-    private endpointInputEl: HTMLInputElement | null = null;
-    private accesskeyInputEl: HTMLInputElement | null = null;
-    private inputSubmitEl: HTMLButtonElement | null = null;
-    private successResultEl: HTMLElement | null = null;
+  class AddNodePage extends PartedElement implements DialogPageElement {
+    private endpointInputEl!: HTMLInputElement;
+    private accesskeyInputEl!: HTMLInputElement;
+    private inputSubmitEl!: HTMLButtonElement;
+    private successResultEl!: HTMLElement;
 
     connectedCallback() {
-      this.endpointInputEl = this.querySelector<HTMLInputElement>(`[data-part="endpoint-input"]`);
-      this.accesskeyInputEl = this.querySelector<HTMLInputElement>(`[data-part="accesskey-input"]`);
-      this.inputSubmitEl = this.querySelector<HTMLButtonElement>(`[data-part="submit-input"]`);
-      this.successResultEl = this.querySelector<HTMLElement>(`[data-part="success-result"]`);
-      if (!this.inputSubmitEl) {
-        return;
-      }
+      this.endpointInputEl = this.pt<HTMLInputElement>("endpoint-input");
+      this.accesskeyInputEl = this.pt<HTMLInputElement>("accesskey-input");
+      this.inputSubmitEl = this.pt<HTMLButtonElement>("submit-input");
+      this.successResultEl = this.pt<HTMLElement>("success-result");
 
       this.inputSubmitEl.onclick = async () => {
-        const endpoint = this.endpointInputEl?.value ?? "";
-        const accesskey = this.accesskeyInputEl?.value ?? "";
+        const endpoint = this.endpointInputEl.value;
+        const accesskey = this.accesskeyInputEl?.value;
         if (endpoint.length == 0 || accesskey.length == 0) {
           return;
         }
@@ -91,9 +89,9 @@ import I18NText from "../primitives/I18nText.astro";
     disconnectedCallback() {}
 
     reset() {
-      this.endpointInputEl!.value = "";
-      this.accesskeyInputEl!.value = "";
-      this.successResultEl?.setAttribute("hidden", "true");
+      this.endpointInputEl.value = "";
+      this.accesskeyInputEl.value = "";
+      this.successResultEl.hidden = true;
     }
   }
 

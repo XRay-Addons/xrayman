@@ -57,27 +57,25 @@ import I18NText from "../primitives/I18nText.astro";
   import { notifyApiError } from "@/runtime/notifications/errors";
   import { reloadUsers } from "@/actions/users";
   import type { DialogPageElement } from "../types/DialogPage";
+  import { PartedElement } from "@/runtime/dom/parted-element";
 
-  class AddUserPage extends HTMLElement implements DialogPageElement {
-    private nameInputEl: InputGroupElement | null = null;
-    private successResultEl: HTMLElement | null = null;
-    private userpageOutputEl: CopyGroupElement | null = null;
+  class AddUserPage extends PartedElement implements DialogPageElement {
+    private nameInputEl!: InputGroupElement;
+    private successResultEl!: HTMLElement;
+    private userpageOutputEl!: CopyGroupElement;
 
-    async connectedCallback() {
-      this.nameInputEl = this.querySelector<InputGroupElement>(`[data-part="name-input"]`);
-      this.successResultEl = this.querySelector<HTMLElement>(`[data-part="success-result"]`);
-      this.userpageOutputEl = this.querySelector<CopyGroupElement>(`[data-part="result-userpage"]`);
-      if (this.nameInputEl == null) {
-        return;
-      }
+    connectedCallback() {
+      this.nameInputEl = this.pt<InputGroupElement>("name-input");
+      this.successResultEl = this.pt<HTMLElement>("success-result");
+      this.userpageOutputEl = this.pt<CopyGroupElement>("result-userpage")!;
 
       this.nameInputEl.onClick(async (name: string) => {
         if (name.length == 0) {
           return;
         }
         // reset and hide
-        this.successResultEl?.setAttribute("hidden", "true");
-        this.userpageOutputEl?.setValue("");
+        this.successResultEl.setAttribute("hidden", "true");
+        this.userpageOutputEl.setValue("");
 
         const response = await newUser(name);
         if (!response.ok) {
@@ -87,17 +85,17 @@ import I18NText from "../primitives/I18nText.astro";
         reloadUsers({ quiet: true });
 
         // show back
-        this.successResultEl?.removeAttribute("hidden");
-        this.userpageOutputEl?.setValue(response.data.Profile.Name);
+        this.successResultEl.removeAttribute("hidden");
+        this.userpageOutputEl.setValue(response.data.Profile.Name);
       });
     }
 
     disconnectedCallback() {}
 
     reset() {
-      this.nameInputEl?.setValue("");
-      this.userpageOutputEl?.setValue("");
-      this.successResultEl?.setAttribute("hidden", "true");
+      this.nameInputEl.setValue("");
+      this.userpageOutputEl.setValue("");
+      this.successResultEl.hidden = true;
     }
   }
 
