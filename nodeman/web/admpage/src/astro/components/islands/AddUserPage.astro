@@ -8,9 +8,9 @@ import SuccessMsg from "../primitives/SuccessMsg.astro";
 import I18NText from "../primitives/I18nText.astro";
 ---
 
-<add-user-page>
-  <Card>
-    <Title>
+<add-user-page class="w-100 d-flex justify-content-center">
+  <Card class="col-6">
+    <Title class="col-8">
       <I18NText data-i18n="add-user.title" />
     </Title>
 
@@ -30,8 +30,8 @@ import I18NText from "../primitives/I18nText.astro";
       data-part="name-input"
     />
 
-    <div data-part="success-result" hidden>
-      <SuccessMsg>
+    <div data-part="success-result" class="mt-2" hidden>
+      <SuccessMsg class="col-8">
         <I18NText data-i18n="add-user.response.info" />
       </SuccessMsg>
 

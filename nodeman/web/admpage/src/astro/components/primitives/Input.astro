@@ -5,9 +5,9 @@ interface Props {
   class?: string;
   style?: string;
 }
-const { class: _class, style: _style, ...rest } = Astro.props;
+const { class: extraClass, style: __, ...rest } = Astro.props;
 ---
 
-<Surface depth="var(--input-depth)" color="var(--input-color)">
-  <input class="ui-reset-input text-md p-2" type="text" {...rest} />
+<Surface depth="var(--input-depth)" color="var(--input-color)" class={extraClass}>
+  <input class="ui-reset-input w-100 text-md p-2" type="text" {...rest} />
 </Surface>

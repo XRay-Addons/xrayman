@@ -6,12 +6,14 @@ import AddUserDialog from "./AddUserDialog.astro";
 import I18NText from "../primitives/I18nText.astro";
 ---
 
-<Card>
-  <Title>
-    <I18NText data-i18n="cards.users.title" />
-  </Title>
+<div class="col-12 col-md-6 col-lg-5 mb-2">
+  <Card class="w-100">
+    <Title class="col-6 mb-2">
+      <I18NText data-i18n="cards.users.title" />
+    </Title>
 
-  <UsersTable client:only="vue" />
+    <UsersTable client:only="vue" />
 
-  <AddUserDialog />
-</Card>
+    <AddUserDialog />
+  </Card>
+</div>

@@ -1,11 +1,19 @@
 ---
 interface Props {
+  class?: string;
+  "content-class"?: string;
   dynamic?: boolean;
   depth?: string;
   color?: string;
 }
 
-const { dynamic = false, depth = "0px", color = "transparent" } = Astro.props;
+const {
+  class: extraClass = "",
+  "content-class": contentClass = "",
+  dynamic = false,
+  depth = "0px",
+  color = "transparent",
+} = Astro.props;
 
 const styleVars = {
   ...(color && { "--surface-color": color }),
@@ -13,8 +21,8 @@ const styleVars = {
 };
 ---
 
-<div class="surface-out" style={styleVars}>
-  <div class:list={["surface-in", { "surface-dynamic": dynamic }]}>
+<div class:list={["surface-out", extraClass]} style={styleVars}>
+  <div class:list={["surface-in", contentClass, { "surface-dynamic": dynamic }]}>
     <slot />
   </div>
 </div>
@@ -25,7 +33,6 @@ const styleVars = {
   .surface-in {
     position: relative;
     z-index: 1;
-    display: grid;
 
     border-width: 1px;
     border-style: solid;

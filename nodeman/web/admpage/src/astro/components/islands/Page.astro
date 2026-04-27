@@ -16,11 +16,13 @@ import I18NText from "../primitives/I18nText.astro";
 
 <PageCenter>
   <LGWidth>
-    <Title>
+    <Title class="col-6 mb-2">
       <I18NText data-i18n="title.main" />
     </Title>
 
-    <UsersTableCard />
-    <NodesTableCard />
+    <div class="row gx-2 justify-content-center">
+      <UsersTableCard />
+      <NodesTableCard />
+    </div>
   </LGWidth>
 </PageCenter>

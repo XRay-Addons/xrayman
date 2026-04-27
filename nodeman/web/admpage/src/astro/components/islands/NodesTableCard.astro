@@ -6,12 +6,14 @@ import AddNodeDialog from "./AddNodeDialog.astro";
 import I18NText from "../primitives/I18nText.astro";
 ---
 
-<Card>
-  <Title>
-    <I18NText data-i18n="cards.nodes.title" />
-  </Title>
+<div class="col-12 col-md-6 col-lg-5 mb-2">
+  <Card class="w-100">
+    <Title class="col-6 mb-2">
+      <I18NText data-i18n="cards.nodes.title" />
+    </Title>
 
-  <NodesTable client:only="vue" />
+    <NodesTable client:only="vue" />
 
-  <AddNodeDialog />
-</Card>
+    <AddNodeDialog />
+  </Card>
+</div>

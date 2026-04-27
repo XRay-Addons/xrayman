@@ -1,15 +1,22 @@
 ---
 import Button from "../primitives/Button.astro";
-import I18NText from "./I18nText.astro";
+
+interface Props {
+  class?: string;
+  "content-class"?: string;
+}
+const { class: extraClass = "", "content-class": contentClass = "" } = Astro.props;
 ---
 
 <btn-dialog>
-  <Button data-part="app-dialog-button">
-    <slot name="button" />
-  </Button>
+  <div class={extraClass}>
+    <Button data-part="app-dialog-button" class={contentClass}>
+      <slot name="button" />
+    </Button>
+  </div>
 
   <dialog class="app-dialog" data-part="app-dialog">
-    <div class="row h-center" data-part="app-dialog-page">
+    <div class="h-center" data-part="app-dialog-page">
       <slot name="page" />
     </div>
   </dialog>
