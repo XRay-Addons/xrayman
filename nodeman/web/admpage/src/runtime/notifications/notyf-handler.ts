@@ -2,7 +2,7 @@ import { Notyf } from "notyf";
 import { setErrorHandler } from "./errors";
 
 const notyf = new Notyf({
-  duration: 60000,
+  duration: 6000,
   position: { x: "right", y: "bottom" },
   dismissible: true,
 });
