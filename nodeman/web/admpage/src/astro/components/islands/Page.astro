@@ -1,6 +1,5 @@
 ---
 import PageCenter from "../primitives/PageCenter.astro";
-import LGWidth from "../primitives/LGWidth.astro";
 import Title from "../primitives/Title.astro";
 import UsersTableCard from "./UsersTableCard.astro";
 import NodesTableCard from "./NodesTableCard.astro";
@@ -14,15 +13,13 @@ import I18NText from "../primitives/I18nText.astro";
   initRandomThemeFeature();
 </script>
 
-<PageCenter>
-  <LGWidth>
-    <Title class="col-6 mb-2">
-      <I18NText data-i18n="title.main" />
-    </Title>
+<PageCenter class="col-12 col-xl-10">
+  <Title class="col-6 mb-2">
+    <I18NText data-i18n="title.main" />
+  </Title>
 
-    <div class="row gx-2 justify-content-center">
-      <UsersTableCard />
-      <NodesTableCard />
-    </div>
-  </LGWidth>
+  <div class="row gx-2 justify-content-center">
+    <UsersTableCard />
+    <NodesTableCard />
+  </div>
 </PageCenter>
