@@ -56,10 +56,10 @@ import I18NText from "../primitives/I18nText.astro";
   import { newUser } from "@/services/api/client";
   import { notifyApiError } from "@/runtime/notifications/errors";
   import { reloadUsers } from "@/actions/users";
-  import type { DialogPageElement } from "../types/DialogPage";
+  import type { ResettableElement } from "../types/Resettable";
   import { PartedElement } from "@/runtime/dom/parted-element";
 
-  class AddUserPage extends PartedElement implements DialogPageElement {
+  class AddUserPage extends PartedElement implements ResettableElement {
     private nameInputEl!: InputGroupElement;
     private successResultEl!: HTMLElement;
     private userpageOutputEl!: CopyGroupElement;

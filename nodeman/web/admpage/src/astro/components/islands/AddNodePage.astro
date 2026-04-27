@@ -49,10 +49,10 @@ import I18NText from "../primitives/I18nText.astro";
     import { newNode } from "@/services/api/client";
     import { notifyApiError } from "@/runtime/notifications/errors";
     import { reloadNodes } from "@/actions/nodes";
-    import type { DialogPageElement } from "../types/DialogPage";
+    import type { ResettableElement } from "../types/Resettable";
     import { PartedElement } from "@/runtime/dom/parted-element";
 
-    class AddNodePage extends PartedElement implements DialogPageElement {
+    class AddNodePage extends PartedElement implements ResettableElement {
       private endpointInputEl!: HTMLInputElement;
       private accesskeyInputEl!: HTMLInputElement;
       private inputSubmitEl!: HTMLButtonElement;
