@@ -8,6 +8,18 @@ import (
 
 // Handler handles operations described by OpenAPI v3 specification.
 type Handler interface {
+	// DeleteNode implements DeleteNode operation.
+	//
+	// Delete a node.
+	//
+	// POST /nodes/delete
+	DeleteNode(ctx context.Context, req *DeleteNodeRequest) error
+	// DeleteUser implements DeleteUser operation.
+	//
+	// Delete a user from all nodes.
+	//
+	// POST /user/delete
+	DeleteUser(ctx context.Context, req *DeleteUserRequest) error
 	// DisableUser implements DisableUser operation.
 	//
 	// Disable a user from all nodes.

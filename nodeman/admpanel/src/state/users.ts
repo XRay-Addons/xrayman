@@ -7,20 +7,16 @@ import { serverErrorNotification } from "@/runtime/notifications/errors";
 // state
 export const users = ref<User[]>([]);
 export const usersLoading = ref(false);
-export const usersError = ref<string | null>(null);
 
 // actions
 export async function reloadUsers() {
   usersLoading.value = true;
-  usersError.value = null;
 
   try {
     const result = await listUsers();
     if (result.ok) {
       users.value = result.data;
     } else {
-      usersError.value = result.reason;
-
       serverErrorNotification("get_users", result.reason);
       console.error("Loading users error:", result.reason);
     }

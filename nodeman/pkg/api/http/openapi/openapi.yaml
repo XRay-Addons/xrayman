@@ -82,6 +82,32 @@ paths:
       tags:
         - admpage
 
+  /nodes/delete:
+    post:
+      summary: Delete a node
+      operationId: DeleteNode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteNodeRequest"
+      responses:
+        "200":
+          description: Delete result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteNodeResponse"
+        "default":
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      tags:
+        - admpage
+
   /nodes:
     get:
       summary: List all nodes
@@ -173,6 +199,32 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DisableUserResponse"
+        "default":
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      tags:
+        - admpage
+
+  /user/delete:
+    post:
+      summary: Delete a user from all nodes
+      operationId: DeleteUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteUserRequest"
+      responses:
+        "200":
+          description: User deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteUserResponse"
         "default":
           description: General Error
           content:
@@ -389,6 +441,18 @@ components:
       required:
         - Nodes
 
+    DeleteNodeRequest:
+      type: object
+      properties:
+        ID:
+          $ref: "#/components/schemas/NodeID"
+      required:
+        - ID
+
+    DeleteNodeResponse:
+      type: object
+      properties: {}
+
     UserID:
       type: integer
 
@@ -480,6 +544,18 @@ components:
         - ID
 
     DisableUserResponse:
+      type: object
+      properties: {}
+
+    DeleteUserRequest:
+      type: object
+      properties:
+        ID:
+          $ref: "#/components/schemas/UserID"
+      required:
+        - ID
+
+    DeleteUserResponse:
       type: object
       properties: {}
 

@@ -92,11 +92,11 @@ export function disableBtn(i18n: string, onClick?: BtnAction): VNode {
   );
 }
 
-export function ensureDeleteBtn(i18nPrefix: string): VNode {
+export function ensureDeleteBtn(i18nPrefix: string, onClick?: BtnAction): VNode {
   return h(
     Popconfirm,
     {
-      okText: h("span", {}, t(`${i18nPrefix}.delete.confirm.ok`)),
+      okText: h("span", { onClick: onClick }, t(`${i18nPrefix}.delete.confirm.ok`)),
       cancelText: h("span", {}, t(`${i18nPrefix}.delete.confirm.cancel`)),
     },
     {

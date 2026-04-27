@@ -106,6 +106,22 @@ func (h *Handler) ListNodes(ctx context.Context) (*api.ListNodeResponse, error) 
 	return converter.ConvertListNodesResult(res), nil
 }
 
+func (h *Handler) DeleteNode(ctx context.Context, req *api.DeleteNodeRequest) error {
+	if h == nil || h.service == nil {
+		return errdefs.NewNilCall()
+	}
+	p, err := converter.ConvertDeleteNodeRequest(req)
+	if err != nil {
+		return httperr.ErrInvaildPayload
+	}
+	_, err = h.service.DeleteNode(ctx, *p)
+	if err != nil {
+		h.logError(ctx, err)
+		return httperr.ErrInternalServerError
+	}
+	return nil
+}
+
 func (h *Handler) NewUser(ctx context.Context, req *api.NewUserRequest) (*api.User, error) {
 	if h == nil || h.service == nil {
 		return nil, errdefs.NewNilCall()
@@ -178,6 +194,22 @@ func (h *Handler) DisableUser(ctx context.Context, req *api.DisableUserRequest) 
 		return httperr.ErrInvaildPayload
 	}
 	_, err = h.service.DisableUser(ctx, *p)
+	if err != nil {
+		h.logError(ctx, err)
+		return httperr.ErrInternalServerError
+	}
+	return nil
+}
+
+func (h *Handler) DeleteUser(ctx context.Context, req *api.DeleteUserRequest) error {
+	if h == nil || h.service == nil {
+		return errdefs.NewNilCall()
+	}
+	p, err := converter.ConvertDeleteUserRequest(req)
+	if err != nil {
+		return httperr.ErrInvaildPayload
+	}
+	_, err = h.service.DeleteUser(ctx, *p)
 	if err != nil {
 		h.logError(ctx, err)
 		return httperr.ErrInternalServerError

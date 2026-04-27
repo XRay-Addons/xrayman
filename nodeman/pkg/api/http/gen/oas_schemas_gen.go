@@ -54,6 +54,42 @@ func (s *ClientConfigTemplate) SetVlessUUIDField(val string) {
 
 type ClientConfigTemplateItem jx.Raw
 
+// Ref: #/components/schemas/DeleteNodeRequest
+type DeleteNodeRequest struct {
+	ID NodeID `json:"ID"`
+}
+
+// GetID returns the value of ID.
+func (s *DeleteNodeRequest) GetID() NodeID {
+	return s.ID
+}
+
+// SetID sets the value of ID.
+func (s *DeleteNodeRequest) SetID(val NodeID) {
+	s.ID = val
+}
+
+// Ref: #/components/schemas/DeleteNodeResponse
+type DeleteNodeResponse struct{}
+
+// Ref: #/components/schemas/DeleteUserRequest
+type DeleteUserRequest struct {
+	ID UserID `json:"ID"`
+}
+
+// GetID returns the value of ID.
+func (s *DeleteUserRequest) GetID() UserID {
+	return s.ID
+}
+
+// SetID sets the value of ID.
+func (s *DeleteUserRequest) SetID(val UserID) {
+	s.ID = val
+}
+
+// Ref: #/components/schemas/DeleteUserResponse
+type DeleteUserResponse struct{}
+
 // Ref: #/components/schemas/DisableUserRequest
 type DisableUserRequest struct {
 	ID UserID `json:"ID"`

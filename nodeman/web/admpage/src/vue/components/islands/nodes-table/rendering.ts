@@ -9,7 +9,7 @@ import {
   ensureDeleteBtn,
   mergeActionBtns,
 } from "@/vue/components/primitives/table-ext/render-primitives";
-import { startNodeAction, stopNodeAction } from "./btn-actions";
+import { startNodeAction, stopNodeAction, deleteNodeAction } from "./btn-actions";
 
 import { type VNode } from "vue";
 
@@ -32,7 +32,7 @@ export function renderActions(status: NodeStatus, node: Node) {
   if (status !== "stopped") {
     actions.push(disableBtn("table.nodes.actions.stop", stopNodeAction(node)));
   }
-  actions.push(ensureDeleteBtn("table.nodes.actions"));
+  actions.push(ensureDeleteBtn("table.nodes.actions", deleteNodeAction(node)));
 
   return mergeActionBtns(actions);
 }

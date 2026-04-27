@@ -28,6 +28,8 @@ type Converter interface {
 
 	ConvertListNodesResult(r *models.ListNodeResult) *api.ListNodeResponse
 
+	ConvertDeleteNodeRequest(r *api.DeleteNodeRequest) (*models.DeleteNodeParams, error)
+
 	ConvertNewUserRequest(r *api.NewUserRequest) (*models.NewUserParams, error)
 
 	ConvertUser(r *models.User) *api.User
@@ -39,6 +41,8 @@ type Converter interface {
 	ConvertDisableUserRequest(r *api.DisableUserRequest) (*models.DisableUserParams, error)
 
 	ConvertListUsersResult(r *models.ListUsersResult) *api.ListUsersResponse
+
+	ConvertDeleteUserRequest(r *api.DeleteUserRequest) (*models.DeleteUserParams, error)
 
 	ConvertUserSubRequest(r *api.UserSubParams) (*models.UserSubParams, error)
 	// goverter:map ClientConfigs Response

@@ -56,6 +56,7 @@ func (uow *uowctx) FindPendingSyncs(ctx context.Context, id models.NodeID) ([]mo
 
 func (uow *uowctx) SetNodeUsers(ctx context.Context, id models.NodeID, patch []models.UserStatusPatch) error {
 	// remove old users
+	// TODO: 3-steps via temp table
 	delQuery := queryReplacer.Replace(`
 		DELETE FROM {syncs}
 		WHERE {node_id} = $1

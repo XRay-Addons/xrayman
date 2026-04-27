@@ -9,6 +9,16 @@ export type Error = {
     Details?: string | null;
 };
 
+export type DeleteUserResponse = {
+    [key: string]: unknown;
+};
+
+export type DeleteUserRequest = {
+    ID: UserId;
+};
+
+export type UserId = number;
+
 export type DisableUserResponse = {
     [key: string]: unknown;
 };
@@ -16,8 +26,6 @@ export type DisableUserResponse = {
 export type DisableUserRequest = {
     ID: UserId;
 };
-
-export type UserId = number;
 
 export type EnableUserResponse = {
     [key: string]: unknown;
@@ -49,6 +57,16 @@ export type NewUserRequest = {
     DisplayName: string;
 };
 
+export type DeleteNodeResponse = {
+    [key: string]: unknown;
+};
+
+export type DeleteNodeRequest = {
+    ID: NodeId;
+};
+
+export type NodeId = number;
+
 export type ListNodeResponse = {
     Nodes: Array<Node>;
 };
@@ -75,8 +93,6 @@ export type NodeConfig = {
     ClientConfigTemplate: ClientConfigTemplate;
     ConnectionInfo: NodeConnectionInfo;
 };
-
-export type NodeId = number;
 
 export type Node = {
     ID: NodeId;
@@ -188,6 +204,31 @@ export type StopNodeResponses = {
 
 export type StopNodeResponse2 = StopNodeResponses[keyof StopNodeResponses];
 
+export type DeleteNodeData = {
+    body: DeleteNodeRequest;
+    path?: never;
+    query?: never;
+    url: '/nodes/delete';
+};
+
+export type DeleteNodeErrors = {
+    /**
+     * General Error
+     */
+    default: Error;
+};
+
+export type DeleteNodeError = DeleteNodeErrors[keyof DeleteNodeErrors];
+
+export type DeleteNodeResponses = {
+    /**
+     * Delete result
+     */
+    200: DeleteNodeResponse;
+};
+
+export type DeleteNodeResponse2 = DeleteNodeResponses[keyof DeleteNodeResponses];
+
 export type ListNodesData = {
     body?: never;
     path?: never;
@@ -287,6 +328,31 @@ export type DisableUserResponses = {
 };
 
 export type DisableUserResponse2 = DisableUserResponses[keyof DisableUserResponses];
+
+export type DeleteUserData = {
+    body: DeleteUserRequest;
+    path?: never;
+    query?: never;
+    url: '/user/delete';
+};
+
+export type DeleteUserErrors = {
+    /**
+     * General Error
+     */
+    default: Error;
+};
+
+export type DeleteUserError = DeleteUserErrors[keyof DeleteUserErrors];
+
+export type DeleteUserResponses = {
+    /**
+     * User deleted
+     */
+    200: DeleteUserResponse;
+};
+
+export type DeleteUserResponse2 = DeleteUserResponses[keyof DeleteUserResponses];
 
 export type ListUsersData = {
     body?: never;

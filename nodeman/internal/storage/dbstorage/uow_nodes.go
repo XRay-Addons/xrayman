@@ -50,6 +50,7 @@ func (uow *uowctx) GetNode(ctx context.Context, id models.NodeID) (*models.Node,
 			{node_target_status}
 		FROM {nodes}
 		WHERE {node_id} = $1
+		  AND {deleted_at} IS NULL
 	`)
 
 	var n models.Node
@@ -85,6 +86,7 @@ func (uow *uowctx) ListNodes(ctx context.Context) ([]models.Node, error) {
 			{node_current_status},
 			{node_target_status}
 		FROM {nodes}
+		WHERE {deleted_at} IS NULL
 		ORDER BY {node_id} ASC
 	`)
 
@@ -123,8 +125,11 @@ func (uow *uowctx) ListNodes(ctx context.Context) ([]models.Node, error) {
 func (uow *uowctx) SetTargetNodeStatus(ctx context.Context, id models.NodeID, status models.NodeStatus) error {
 	query := queryReplacer.Replace(`
 		UPDATE {nodes}
-		SET {node_target_status} = $1
+		SET
+			{node_target_status} = $1,
+			{updated_at} = now()
 		WHERE {node_id} = $2
+		  AND {deleted_at} IS NULL
 	`)
 
 	_, err := uow.tx.ExecContext(ctx, query, status, id)
@@ -138,8 +143,11 @@ func (uow *uowctx) SetTargetNodeStatus(ctx context.Context, id models.NodeID, st
 func (uow *uowctx) SetCurrentNodeStatus(ctx context.Context, id models.NodeID, status models.NodeStatus) error {
 	query := queryReplacer.Replace(`
 		UPDATE {nodes}
-		SET {node_current_status} = $1
+		SET
+			{node_current_status} = $1,
+			{updated_at} = now()
 		WHERE {node_id} = $2
+		  AND {deleted_at} IS NULL
 	`)
 
 	_, err := uow.tx.ExecContext(ctx, query, status, id)
@@ -152,13 +160,32 @@ func (uow *uowctx) SetCurrentNodeStatus(ctx context.Context, id models.NodeID, s
 func (uow *uowctx) SetClientConfig(ctx context.Context, id models.NodeID, cfg models.ClientConfigTemplate) error {
 	query := queryReplacer.Replace(`
 		UPDATE {nodes}
-		SET {client_config_template} = $1
+		SET
+			{client_config_template} = $1,
+			{updated_at} = now()
 		WHERE {node_id} = $2
+		  AND {deleted_at} IS NULL
 	`)
 
 	dbCfg := ClientConfigTemplate(cfg)
 
 	_, err := uow.tx.ExecContext(ctx, query, dbCfg, id)
+	if err != nil {
+		return errdefs.WrapWithStack(err)
+	}
+
+	return nil
+}
+
+func (uow *uowctx) DeleteNode(ctx context.Context, id models.NodeID) error {
+	query := queryReplacer.Replace(`
+		UPDATE {nodes}
+		SET {deleted_at} = now()
+		WHERE {node_id} = $1
+		  AND {deleted_at} IS NULL
+	`)
+
+	_, err := uow.tx.ExecContext(ctx, query, id)
 	if err != nil {
 		return errdefs.WrapWithStack(err)
 	}

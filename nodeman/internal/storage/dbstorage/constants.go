@@ -26,3 +26,9 @@ const (
 
 	UserCurrentStatusCol = "user_current_status"
 )
+
+const (
+	CreatedAtCol = "created_at"
+	UpdatedAtCol = "updated_at"
+	DeletedAtCol = "deleted_at"
+)

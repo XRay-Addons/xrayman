@@ -15,6 +15,9 @@ type NodesStorage interface {
 	// change node target status
 	SetTargetNodeStatus(ctx context.Context, id models.NodeID,
 		status models.NodeStatus) error
+	// delete node
+	DeleteNode(ctx context.Context,
+		id models.NodeID) error
 }
 
 type UsersStorage interface {
@@ -27,6 +30,9 @@ type UsersStorage interface {
 	// change user target status
 	SetTargetUserStatus(ctx context.Context, id models.UserID,
 		status models.UserStatus) error
+	// delete user
+	DeleteUser(ctx context.Context,
+		id models.UserID) error
 }
 
 type UserNodesStorage interface {

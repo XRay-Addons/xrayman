@@ -9,7 +9,7 @@ import {
   ensureDeleteBtn,
   mergeActionBtns,
 } from "@/vue/components/primitives/table-ext/render-primitives";
-import { enableUserAction, disableUserAction } from "./btn-actions";
+import { enableUserAction, disableUserAction, deleteUserAction } from "./btn-actions";
 
 import { type VNode } from "vue";
 
@@ -27,16 +27,12 @@ export function renderActions(status: UserStatus, user: User) {
   const actions: VNode[] = [];
 
   if (status !== "enabled") {
-    actions.push(
-      enableBtn("table.users.actions.enable", enableUserAction(user)),
-    );
+    actions.push(enableBtn("table.users.actions.enable", enableUserAction(user)));
   }
   if (status !== "disabled") {
-    actions.push(
-      disableBtn("table.users.actions.disable", disableUserAction(user)),
-    );
+    actions.push(disableBtn("table.users.actions.disable", disableUserAction(user)));
   }
-  actions.push(ensureDeleteBtn("table.users.actions"));
+  actions.push(ensureDeleteBtn("table.users.actions", deleteUserAction(user)));
 
   return mergeActionBtns(actions);
 }

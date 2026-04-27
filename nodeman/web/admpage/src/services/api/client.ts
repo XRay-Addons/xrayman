@@ -5,11 +5,13 @@ import {
   listUsers as _listUsers,
   enableUser as _enableUser,
   disableUser as _disableUser,
+  deleteUser as _deleteUser,
   newUser as _newUser,
   listNodes as _listNodes,
   startNode as _startNode,
   stopNode as _stopNode,
   newNode as _newNode,
+  deleteNode as _deleteNode,
 } from "./generated/sdk.gen";
 import type { Error, User, Node } from "./generated/types.gen";
 
@@ -18,14 +20,9 @@ client.setConfig({
   baseUrl: "http://localhost:80/api",
 });
 
-export type ApiResult<T> =
-  | { ok: true; data: T }
-  | { ok: false; reason: ApiReason };
+export type ApiResult<T> = { ok: true; data: T } | { ok: false; reason: ApiReason };
 
-type ApiResponse<T> = (
-  | { data: T; error: undefined }
-  | { data: undefined; error: Error }
-) & {
+type ApiResponse<T> = ({ data: T; error: undefined } | { data: undefined; error: Error }) & {
   request: Request;
   response: Response;
 };
@@ -58,6 +55,13 @@ export async function newUser(displayName: string): Promise<ApiResult<User>> {
   );
 }
 
+export async function deleteUser(id: number): Promise<ApiResult<void>> {
+  return handleAPI(
+    () => _deleteUser({ body: { ID: id } }),
+    (data) => {},
+  );
+}
+
 export async function listNodes(): Promise<ApiResult<Array<APINode>>> {
   return handleAPI(
     () => _listNodes(),
@@ -79,13 +83,17 @@ export async function stopNode(id: number): Promise<ApiResult<void>> {
   );
 }
 
-export async function newNode(
-  endpoint: string,
-  accessKey: string,
-): Promise<ApiResult<Node>> {
+export async function newNode(endpoint: string, accessKey: string): Promise<ApiResult<Node>> {
   return handleAPI(
     () => _newNode({ body: { Endpoint: endpoint, AccessKey: accessKey } }),
     (data) => data,
+  );
+}
+
+export async function deleteNode(id: number): Promise<ApiResult<void>> {
+  return handleAPI(
+    () => _deleteNode({ body: { ID: id } }),
+    (data) => {},
   );
 }
 

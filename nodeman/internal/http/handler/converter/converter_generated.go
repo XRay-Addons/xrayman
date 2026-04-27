@@ -9,6 +9,24 @@ import (
 	jx "github.com/go-faster/jx"
 )
 
+func ConvertDeleteNodeRequest(source *gen.DeleteNodeRequest) (*models.DeleteNodeParams, error) {
+	var pModelsDeleteNodeParams *models.DeleteNodeParams
+	if source != nil {
+		var modelsDeleteNodeParams models.DeleteNodeParams
+		modelsDeleteNodeParams.ID = RConvertNodeID((*source).ID)
+		pModelsDeleteNodeParams = &modelsDeleteNodeParams
+	}
+	return pModelsDeleteNodeParams, nil
+}
+func ConvertDeleteUserRequest(source *gen.DeleteUserRequest) (*models.DeleteUserParams, error) {
+	var pModelsDeleteUserParams *models.DeleteUserParams
+	if source != nil {
+		var modelsDeleteUserParams models.DeleteUserParams
+		modelsDeleteUserParams.ID = RConvertUserID((*source).ID)
+		pModelsDeleteUserParams = &modelsDeleteUserParams
+	}
+	return pModelsDeleteUserParams, nil
+}
 func ConvertDisableUserRequest(source *gen.DisableUserRequest) (*models.DisableUserParams, error) {
 	var pModelsDisableUserParams *models.DisableUserParams
 	if source != nil {

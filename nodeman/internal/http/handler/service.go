@@ -12,12 +12,14 @@ type Service interface {
 	StartNode(ctx context.Context, p models.StartNodeParams) (*models.StartNodeResult, error)
 	StopNode(ctx context.Context, p models.StopNodeParams) (*models.StopNodeResult, error)
 	ListNodes(ctx context.Context, p models.ListNodeParams) (*models.ListNodeResult, error)
+	DeleteNode(ctx context.Context, p models.DeleteNodeParams) (*models.DeleteNodeResult, error)
 
 	NewUser(ctx context.Context, p models.NewUserParams) (*models.User, error)
 	GetUser(ctx context.Context, p models.GetUserParams) (*models.User, bool, error)
 	ListUsers(ctx context.Context, p models.ListUserParams) (*models.ListUsersResult, error)
 	DisableUser(ctx context.Context, p models.DisableUserParams) (*models.DisableUserResult, error)
 	EnableUser(ctx context.Context, p models.EnableUserParams) (*models.EnableUserResult, error)
+	DeleteUser(ctx context.Context, p models.DeleteUserParams) (*models.DeleteUserResult, error)
 
 	GetUserSub(ctx context.Context, p models.UserSubParams) (*models.UserSubResult, bool, error)
 }

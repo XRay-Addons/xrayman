@@ -92,6 +92,26 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 						break
 					}
 					switch elem[0] {
+					case 'd': // Prefix: "delete"
+
+						if l := len("delete"); len(elem) >= l && elem[0:l] == "delete" {
+							elem = elem[l:]
+						} else {
+							break
+						}
+
+						if len(elem) == 0 {
+							// Leaf node.
+							switch r.Method {
+							case "POST":
+								s.handleDeleteNodeRequest([0]string{}, elemIsEscaped, w, r)
+							default:
+								s.notAllowed(w, r, "POST")
+							}
+
+							return
+						}
+
 					case 'n': // Prefix: "new"
 
 						if l := len("new"); len(elem) >= l && elem[0:l] == "new" {
@@ -249,24 +269,58 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 						break
 					}
 					switch elem[0] {
-					case 'd': // Prefix: "disable"
+					case 'd': // Prefix: "d"
 						origElem := elem
-						if l := len("disable"); len(elem) >= l && elem[0:l] == "disable" {
+						if l := len("d"); len(elem) >= l && elem[0:l] == "d" {
 							elem = elem[l:]
 						} else {
 							break
 						}
 
 						if len(elem) == 0 {
-							// Leaf node.
-							switch r.Method {
-							case "POST":
-								s.handleDisableUserRequest([0]string{}, elemIsEscaped, w, r)
-							default:
-								s.notAllowed(w, r, "POST")
+							break
+						}
+						switch elem[0] {
+						case 'e': // Prefix: "elete"
+
+							if l := len("elete"); len(elem) >= l && elem[0:l] == "elete" {
+								elem = elem[l:]
+							} else {
+								break
 							}
 
-							return
+							if len(elem) == 0 {
+								// Leaf node.
+								switch r.Method {
+								case "POST":
+									s.handleDeleteUserRequest([0]string{}, elemIsEscaped, w, r)
+								default:
+									s.notAllowed(w, r, "POST")
+								}
+
+								return
+							}
+
+						case 'i': // Prefix: "isable"
+
+							if l := len("isable"); len(elem) >= l && elem[0:l] == "isable" {
+								elem = elem[l:]
+							} else {
+								break
+							}
+
+							if len(elem) == 0 {
+								// Leaf node.
+								switch r.Method {
+								case "POST":
+									s.handleDisableUserRequest([0]string{}, elemIsEscaped, w, r)
+								default:
+									s.notAllowed(w, r, "POST")
+								}
+
+								return
+							}
+
 						}
 
 						elem = origElem
@@ -511,6 +565,30 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 						break
 					}
 					switch elem[0] {
+					case 'd': // Prefix: "delete"
+
+						if l := len("delete"); len(elem) >= l && elem[0:l] == "delete" {
+							elem = elem[l:]
+						} else {
+							break
+						}
+
+						if len(elem) == 0 {
+							// Leaf node.
+							switch method {
+							case "POST":
+								r.name = DeleteNodeOperation
+								r.summary = "Delete a node"
+								r.operationID = "DeleteNode"
+								r.pathPattern = "/nodes/delete"
+								r.args = args
+								r.count = 0
+								return r, true
+							default:
+								return
+							}
+						}
+
 					case 'n': // Prefix: "new"
 
 						if l := len("new"); len(elem) >= l && elem[0:l] == "new" {
@@ -681,28 +759,66 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 						break
 					}
 					switch elem[0] {
-					case 'd': // Prefix: "disable"
+					case 'd': // Prefix: "d"
 						origElem := elem
-						if l := len("disable"); len(elem) >= l && elem[0:l] == "disable" {
+						if l := len("d"); len(elem) >= l && elem[0:l] == "d" {
 							elem = elem[l:]
 						} else {
 							break
 						}
 
 						if len(elem) == 0 {
-							// Leaf node.
-							switch method {
-							case "POST":
-								r.name = DisableUserOperation
-								r.summary = "Disable a user from all nodes"
-								r.operationID = "DisableUser"
-								r.pathPattern = "/user/disable"
-								r.args = args
-								r.count = 0
-								return r, true
-							default:
-								return
+							break
+						}
+						switch elem[0] {
+						case 'e': // Prefix: "elete"
+
+							if l := len("elete"); len(elem) >= l && elem[0:l] == "elete" {
+								elem = elem[l:]
+							} else {
+								break
 							}
+
+							if len(elem) == 0 {
+								// Leaf node.
+								switch method {
+								case "POST":
+									r.name = DeleteUserOperation
+									r.summary = "Delete a user from all nodes"
+									r.operationID = "DeleteUser"
+									r.pathPattern = "/user/delete"
+									r.args = args
+									r.count = 0
+									return r, true
+								default:
+									return
+								}
+							}
+
+						case 'i': // Prefix: "isable"
+
+							if l := len("isable"); len(elem) >= l && elem[0:l] == "isable" {
+								elem = elem[l:]
+							} else {
+								break
+							}
+
+							if len(elem) == 0 {
+								// Leaf node.
+								switch method {
+								case "POST":
+									r.name = DisableUserOperation
+									r.summary = "Disable a user from all nodes"
+									r.operationID = "DisableUser"
+									r.pathPattern = "/user/disable"
+									r.args = args
+									r.count = 0
+									return r, true
+								default:
+									return
+								}
+							}
+
 						}
 
 						elem = origElem

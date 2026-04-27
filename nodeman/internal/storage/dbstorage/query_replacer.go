@@ -29,5 +29,9 @@ var (
 		"{user_status_enabled}", models.UserStatusEnabled.StringInt(),
 		"{user_status_disabled}", models.UserStatusDisabled.StringInt(),
 		"{node_status_running}", models.NodeStatusRunning.StringInt(),
+
+		"{created_at}", CreatedAtCol,
+		"{updated_at}", UpdatedAtCol,
+		"{deleted_at}", DeletedAtCol,
 	)
 )

@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { DisableUserData, DisableUserErrors, DisableUserResponses, EnableUserData, EnableUserErrors, EnableUserResponses, ListNodesData, ListNodesErrors, ListNodesResponses, ListUsersData, ListUsersErrors, ListUsersResponses, NewNodeData, NewNodeErrors, NewNodeResponses, NewUserData, NewUserErrors, NewUserResponses, StartNodeData, StartNodeErrors, StartNodeResponses, StopNodeData, StopNodeErrors, StopNodeResponses } from './types.gen';
+import type { DeleteNodeData, DeleteNodeErrors, DeleteNodeResponses, DeleteUserData, DeleteUserErrors, DeleteUserResponses, DisableUserData, DisableUserErrors, DisableUserResponses, EnableUserData, EnableUserErrors, EnableUserResponses, ListNodesData, ListNodesErrors, ListNodesResponses, ListUsersData, ListUsersErrors, ListUsersResponses, NewNodeData, NewNodeErrors, NewNodeResponses, NewUserData, NewUserErrors, NewUserResponses, StartNodeData, StartNodeErrors, StartNodeResponses, StopNodeData, StopNodeErrors, StopNodeResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -55,6 +55,18 @@ export const stopNode = <ThrowOnError extends boolean = false>(options: Options<
 });
 
 /**
+ * Delete a node
+ */
+export const deleteNode = <ThrowOnError extends boolean = false>(options: Options<DeleteNodeData, ThrowOnError>) => (options.client ?? client).post<DeleteNodeResponses, DeleteNodeErrors, ThrowOnError>({
+    url: '/nodes/delete',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * List all nodes
  */
 export const listNodes = <ThrowOnError extends boolean = false>(options?: Options<ListNodesData, ThrowOnError>) => (options?.client ?? client).get<ListNodesResponses, ListNodesErrors, ThrowOnError>({ url: '/nodes', ...options });
@@ -88,6 +100,18 @@ export const enableUser = <ThrowOnError extends boolean = false>(options: Option
  */
 export const disableUser = <ThrowOnError extends boolean = false>(options: Options<DisableUserData, ThrowOnError>) => (options.client ?? client).post<DisableUserResponses, DisableUserErrors, ThrowOnError>({
     url: '/user/disable',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete a user from all nodes
+ */
+export const deleteUser = <ThrowOnError extends boolean = false>(options: Options<DeleteUserData, ThrowOnError>) => (options.client ?? client).post<DeleteUserResponses, DeleteUserErrors, ThrowOnError>({
+    url: '/user/delete',
     ...options,
     headers: {
         'Content-Type': 'application/json',

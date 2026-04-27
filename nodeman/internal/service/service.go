@@ -95,6 +95,19 @@ func (s *Service) ListNodes(ctx context.Context, p models.ListNodeParams) (*mode
 	}, nil
 }
 
+func (s *Service) DeleteNode(ctx context.Context, p models.DeleteNodeParams) (*models.DeleteNodeResult, error) {
+	if s == nil {
+		return nil, errdefs.NewNilCall()
+	}
+	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
+		err = uowctx.DeleteNode(ctx, p.ID)
+		return
+	}); err != nil {
+		return nil, err
+	}
+	return &models.DeleteNodeResult{}, nil
+}
+
 func (s *Service) NewUser(ctx context.Context, p models.NewUserParams) (*models.User, error) {
 	if s == nil {
 		return nil, errdefs.NewNilCall()
@@ -196,6 +209,19 @@ func (s *Service) GetUserSub(ctx context.Context, p models.UserSubParams) (
 	}
 
 	return userSub, true, nil
+}
+
+func (s *Service) DeleteUser(ctx context.Context, p models.DeleteUserParams) (*models.DeleteUserResult, error) {
+	if s == nil {
+		return nil, errdefs.NewNilCall()
+	}
+	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
+		err = uowctx.DeleteUser(ctx, p.ID)
+		return
+	}); err != nil {
+		return nil, err
+	}
+	return &models.DeleteUserResult{}, nil
 }
 
 func (s *Service) setNodeStatus(ctx context.Context, id models.NodeID, status models.NodeStatus) error {

@@ -13,6 +13,24 @@ type UnimplementedHandler struct{}
 
 var _ Handler = UnimplementedHandler{}
 
+// DeleteNode implements DeleteNode operation.
+//
+// Delete a node.
+//
+// POST /nodes/delete
+func (UnimplementedHandler) DeleteNode(ctx context.Context, req *DeleteNodeRequest) error {
+	return ht.ErrNotImplemented
+}
+
+// DeleteUser implements DeleteUser operation.
+//
+// Delete a user from all nodes.
+//
+// POST /user/delete
+func (UnimplementedHandler) DeleteUser(ctx context.Context, req *DeleteUserRequest) error {
+	return ht.ErrNotImplemented
+}
+
 // DisableUser implements DisableUser operation.
 //
 // Disable a user from all nodes.

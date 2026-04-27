@@ -120,6 +120,14 @@ func (s *Storage) SetCurrentNodeStatus(ctx context.Context,
 	return nil
 }
 
+func (s *Storage) DeleteNode(ctx context.Context,
+	id models.NodeID,
+) error {
+	s.nodes[id].CurrentStatus = 0;
+	s.nodes[id].TargetStatus = 0
+	return nil
+}
+
 // UserSyncsStorage impl
 func (s *Storage) FindPendingSyncs(ctx context.Context, id models.NodeID) (
 	[]models.UserSyncStatus, error,
@@ -215,4 +223,11 @@ func (s *Storage) GetUserNodes(ctx context.Context, id models.UserID) ([]models.
 	}
 
 	return nodes, nil
+}
+
+func (s *Storage) DeleteUser(ctx context.Context,
+	id models.UserID,
+) error {
+	s.users[id].TargetStatus = 0;
+	return nil
 }

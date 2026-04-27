@@ -20,6 +20,8 @@ type StatesStorage interface {
 		cfg models.ClientConfigTemplate) error
 	SetCurrentNodeStatus(ctx context.Context, id models.NodeID,
 		s models.NodeStatus) error
+	DeleteNode(ctx context.Context,
+		id models.NodeID) error
 }
 
 type SyncsStorage interface {
@@ -29,6 +31,8 @@ type SyncsStorage interface {
 		patch []models.UserStatusPatch) error
 	SetNodeUsers(ctx context.Context, id models.NodeID,
 		patch []models.UserStatusPatch) error
+	DeleteUser(ctx context.Context,
+		id models.UserID) error
 }
 
 type UoWContext interface {

@@ -1,4 +1,4 @@
-import { enableUser, disableUser } from "@/services/api/client";
+import { enableUser, disableUser, deleteUser } from "@/services/api/client";
 import { reloadUsers } from "@/actions/users";
 import { type User } from "@/services/api/generated/types.gen";
 import { type BtnAction } from "../../primitives/table-ext/render-primitives";
@@ -22,6 +22,17 @@ export function disableUserAction(user: User): BtnAction {
       reloadUsers({ quiet: true });
     } else {
       notifyApiError("disable_user", r.reason);
+    }
+  };
+}
+
+export function deleteUserAction(user: User): BtnAction {
+  return async () => {
+    const r = await deleteUser(user.Profile.ID);
+    if (r.ok) {
+      reloadUsers({ quiet: true });
+    } else {
+      notifyApiError("delete_user", r.reason);
     }
   };
 }

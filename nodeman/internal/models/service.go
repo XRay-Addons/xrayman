@@ -34,6 +34,13 @@ type ListNodeResult struct {
 	Nodes []Node
 }
 
+type DeleteNodeParams struct {
+	ID NodeID
+}
+
+type DeleteNodeResult struct {
+}
+
 type NewUserParams struct {
 	DisplayName string
 }
@@ -62,6 +69,13 @@ type ListUserParams struct {
 
 type ListUsersResult struct {
 	Users []User
+}
+
+type DeleteUserParams struct {
+	ID UserID
+}
+
+type DeleteUserResult struct {
 }
 
 type UserSubParams struct {

@@ -44,6 +44,7 @@ func (uow *uowctx) GetUser(ctx context.Context, id models.UserID) (*models.User,
 			{user_target_status}
 		FROM {users}
 		WHERE {user_id} = $1
+		  AND {deleted_at} IS NULL
 	`)
 
 	row := uow.tx.QueryRowContext(ctx, query, id)
@@ -75,6 +76,7 @@ func (uow *uowctx) ListUsers(ctx context.Context) ([]models.User, error) {
 			{vless_uuid},
 			{user_target_status}
 		FROM {users}
+		WHERE {deleted_at} IS NULL
 		ORDER BY {user_id} ASC
 	`)
 
@@ -110,11 +112,30 @@ func (uow *uowctx) ListUsers(ctx context.Context) ([]models.User, error) {
 func (uow *uowctx) SetTargetUserStatus(ctx context.Context, id models.UserID, status models.UserStatus) error {
 	query := queryReplacer.Replace(`
 		UPDATE {users}
-		SET {user_target_status} = $1
+		SET
+			{user_target_status} = $1,
+			{updated_at} = now()
 		WHERE {user_id} = $2
+		  AND {deleted_at} IS NULL
 	`)
 
 	_, err := uow.tx.ExecContext(ctx, query, status, id)
+	if err != nil {
+		return errdefs.WrapWithStack(err)
+	}
+
+	return nil
+}
+
+func (uow *uowctx) DeleteUser(ctx context.Context, id models.UserID) error {
+	query := queryReplacer.Replace(`
+		UPDATE {users}
+		SET {deleted_at} = now()
+		WHERE {user_id} = $1
+		  AND {deleted_at} IS NULL
+	`)
+
+	_, err := uow.tx.ExecContext(ctx, query, id)
 	if err != nil {
 		return errdefs.WrapWithStack(err)
 	}
