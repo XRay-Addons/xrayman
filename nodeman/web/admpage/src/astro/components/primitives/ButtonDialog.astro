@@ -16,7 +16,8 @@ const { class: extraClass = "", "content-class": contentClass = "" } = Astro.pro
   </div>
 
   <dialog class="app-dialog" data-part="app-dialog">
-    <div class="h-center" data-part="app-dialog-page">
+    <div class="app-dialog-overlay" data-part="app-dialog-overlay"></div>
+    <div class="app-dialog-page h-center" data-part="app-dialog-page">
       <slot name="page" />
     </div>
   </dialog>
@@ -39,9 +40,14 @@ const { class: extraClass = "", "content-class": contentClass = "" } = Astro.pro
         };
 
         this.dialog.addEventListener("close", () => {
-          console.log("resetting...");
           this.reset();
         });
+
+        const overlay = this.pt<HTMLElement>("app-dialog-overlay");
+        overlay.onclick = () => {
+          this.dialog.close();
+          this.reset();
+        };
       }
 
       disconnectedCallback() {}
@@ -66,8 +72,12 @@ const { class: extraClass = "", "content-class": contentClass = "" } = Astro.pro
       width: 100%;
       padding: 0;
     }
-
     .app-dialog::backdrop {
+      background: transparent;
+    }
+    .app-dialog-overlay {
+      position: fixed;
+      inset: 0;
       background: rgba(255, 255, 255, 0.5);
     }
   </style>
