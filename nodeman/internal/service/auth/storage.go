@@ -4,16 +4,12 @@ import (
 	"context"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/uow"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
-
-type Auth struct {
-	PasswordHash []byte
-}
-
 type UoWContext interface {
-	GetAdmin(context.Context) (*Auth, error)
-	SetAdmin(context.Context, *Auth) error
+	GetAdmin(context.Context) (*models.Auth, error)
+	SetAdmin(context.Context, *models.Auth) error
 }
 
 type UoWFn = uow.Fn[UoWContext]

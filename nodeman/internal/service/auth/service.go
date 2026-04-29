@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -24,7 +25,7 @@ func (s *Service) AuthAdmin(ctx context.Context, password string) error {
 	if s == nil {
 		return errdefs.NewNilCall()
 	}
-	var admin *Auth
+	var admin *models.Auth
 	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
 		admin, err = uowctx.GetAdmin(ctx)
 		return
@@ -49,7 +50,7 @@ func (s *Service) SetAdmin(ctx context.Context, password string) error {
 	}
 
 	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		err = uowctx.SetAdmin(ctx, &Auth{PasswordHash: hash})
+		err = uowctx.SetAdmin(ctx, &models.Auth{PasswordHash: hash})
 		return
 	}); err != nil {
 		return err

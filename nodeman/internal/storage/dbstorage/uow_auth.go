@@ -4,13 +4,13 @@ import (
 	"context"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service/auth"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
 const adminID = 0
 
 // auth.UoWContext impl
-func (uow *uowctx) GetAdmin(ctx context.Context) (*auth.Auth, error) {
+func (uow *uowctx) GetAdmin(ctx context.Context) (*models.Auth, error) {
 	query := queryReplacer.Replace(`
 		SELECT
 			{admin_id},
@@ -23,7 +23,7 @@ func (uow *uowctx) GetAdmin(ctx context.Context) (*auth.Auth, error) {
 	row := uow.tx.QueryRowContext(ctx, query, adminID)
 
 	var authId int
-	var auth auth.Auth
+	var auth models.Auth
 	err := row.Scan(
 		&authId,
 		&auth.PasswordHash,
@@ -35,7 +35,7 @@ func (uow *uowctx) GetAdmin(ctx context.Context) (*auth.Auth, error) {
 	return &auth, nil
 }
 
-func (uow *uowctx) SetAdmin(ctx context.Context, a *auth.Auth) error {
+func (uow *uowctx) SetAdmin(ctx context.Context, a *models.Auth) error {
 	query := queryReplacer.Replace(`
 		INSERT INTO {admin_auth} (
 			{admin_id},
