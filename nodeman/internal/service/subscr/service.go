@@ -1,9 +1,10 @@
-package subscrman
+package subscr
 
 import (
 	"context"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/jxext"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/template"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
@@ -11,30 +12,28 @@ import (
 	"go.uber.org/zap"
 )
 
-type SubscrMan interface {
-	GetUserSub(ctx context.Context, user models.User) (*models.UserSubResult, error)
-}
+type option = func(s *Service)
 
-type option = func(s *subscrMan)
-
-func WithLog(l *zap.Logger) option {
-	return func(s *subscrMan) {
+func WithLogger(l *zap.Logger) option {
+	return func(s *Service) {
 		if l != nil {
 			s.log = l
 		}
 	}
 }
 
-type subscrMan struct {
+type Service struct {
 	storage Storage
 	log     *zap.Logger
 }
 
-func New(storage Storage, opts ...option) (SubscrMan, error) {
+var _ handler.SubscrService = (*Service)(nil)
+
+func New(storage Storage, opts ...option) (*Service, error) {
 	if storage == nil {
 		return nil, errdefs.NewNilArg("storage")
 	}
-	s := &subscrMan{
+	s := &Service{
 		storage: storage,
 		log:     zap.NewNop(),
 	}
@@ -44,43 +43,68 @@ func New(storage Storage, opts ...option) (SubscrMan, error) {
 	return s, nil
 }
 
-func (m *subscrMan) GetUserSub(ctx context.Context,
-	user models.User,
-) (*models.UserSubResult, error) {
-	if m == nil || m.storage == nil {
-		return nil, errdefs.NewNilCall()
+func (s *Service) GetUserSub(ctx context.Context,
+	p models.UserSubParams,
+) (*models.UserSubResult, bool, error) {
+	if s == nil || s.storage == nil {
+		return nil, false, errdefs.NewNilCall()
+	}
+
+	// find user
+	user, exists, err := s.findUser(ctx, p)
+	if err != nil || !exists {
+		return nil, exists, err
 	}
 
 	// get active nodes for user
 	var userNodes []models.Node
-	if err := m.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
+	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
 		userNodes, err = uowctx.GetUserNodes(ctx, user.Profile.ID)
 		return
 	}); err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	// get subscription content
-	clientCfgs, err := m.makeClientConfigs(user, userNodes)
+	clientCfgs, err := s.makeClientConfigs(*user, userNodes)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	return &models.UserSubResult{
 		ClientConfigs: clientCfgs,
-	}, nil
+	}, true, nil
 }
 
-func (m *subscrMan) makeClientConfigs(user models.User,
+func (s *Service) findUser(ctx context.Context, p models.UserSubParams) (*models.User, bool, error) {
+	// find user with given id
+	var user *models.User
+	var exists bool
+	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
+		user, exists, err = uowctx.GetUser(ctx, p.ID)
+		return
+	}); err != nil {
+		return nil, false, err
+	}
+
+	// check user name
+	if !exists || user.Profile.Name != p.Name {
+		return nil, false, nil
+	}
+
+	return user, true, nil
+}
+
+func (s *Service) makeClientConfigs(user models.User,
 	userNodes []models.Node,
 ) ([]models.ClientConfigItem, error) {
 	var clientCfgs []models.ClientConfigItem
 	for _, node := range userNodes {
-		nodeClientConfigs, err := m.makeNodeClientConfigs(
+		nodeClientConfigs, err := s.makeNodeClientConfigs(
 			user, node.Config.ClientConfigTemplate)
 		if err != nil {
 			// skip invalid node configs
-			m.log.Warn("node client config", zap.Error(err))
+			s.log.Warn("node client config", zap.Error(err))
 			continue
 		}
 		clientCfgs = append(clientCfgs, nodeClientConfigs...)
@@ -89,7 +113,7 @@ func (m *subscrMan) makeClientConfigs(user models.User,
 	return clientCfgs, nil
 }
 
-func (m *subscrMan) makeNodeClientConfigs(user models.User,
+func (s *Service) makeNodeClientConfigs(user models.User,
 	cfgTemplate models.ClientConfigTemplate,
 ) ([]models.ClientConfigItem, error) {
 	nodeConfigs := make([]models.ClientConfigItem, 0, len(cfgTemplate.Template))

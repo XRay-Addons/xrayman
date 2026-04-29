@@ -13,9 +13,10 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/poolsyncer"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service/users"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/storage/dbstorage/sqldb"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/subscrman"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/require"
 )
@@ -37,7 +38,7 @@ func newTestDB(t *testing.T, l *zap.Logger) (
 			Password("test").
 			Database("testdb").
 			Port(5434),
-			//Logger(zap.NewStdLog(l).Writer()) - not working
+		//Logger(zap.NewStdLog(l).Writer()) - not working
 	)
 
 	err := postgres.Start()
@@ -58,7 +59,7 @@ func newTestDB(t *testing.T, l *zap.Logger) (
 	return
 }
 
-func TestDBStorage(t *testing.T) {	
+func TestDBStorage(t *testing.T) {
 	logger := zaptest.NewLogger(t)
 
 	s, db, cleanup := newTestDB(t, logger)
@@ -70,7 +71,7 @@ func TestDBStorage(t *testing.T) {
 	// add two users - enabled and disabled
 	enabledUser := models.User{TargetStatus: models.UserStatusEnabled}
 	disabledUser := models.User{TargetStatus: models.UserStatusDisabled}
-	err := s.ServiceStorage().DoUoW(ctx, func(uowctx service.UoWContext) error {
+	err := s.UsersStorage().DoUoW(ctx, func(uowctx users.UoWContext) error {
 		if err := uowctx.NewUser(ctx, &enabledUser); err != nil {
 			return err
 		}
@@ -86,7 +87,7 @@ func TestDBStorage(t *testing.T) {
 	// add two nodes - on and off
 	runningNode := models.Node{TargetStatus: models.NodeStatusRunning}
 	stoppedNode := models.Node{TargetStatus: models.NodeStatusStopped}
-	err = s.ServiceStorage().DoUoW(ctx, func(uowctx service.UoWContext) error {
+	err = s.NodesStorage().DoUoW(ctx, func(uowctx nodes.UoWContext) error {
 		if err := uowctx.NewNode(ctx, &runningNode); err != nil {
 			return err
 		}
@@ -111,7 +112,7 @@ func TestDBStorage(t *testing.T) {
 
 	// request user nodes
 	var userNodes []models.Node
-	err = s.SubscrmanStorage().DoUoW(ctx, func(uowctx subscrman.UoWContext) (err error) {
+	err = s.SubscrStorage().DoUoW(ctx, func(uowctx subscr.UoWContext) (err error) {
 		userNodes, err = uowctx.GetUserNodes(ctx, enabledUser.Profile.ID)
 		return
 	})
@@ -157,7 +158,7 @@ func TestDBStorage(t *testing.T) {
 	require.NoError(t, err)
 
 	// request user nodes again
-	err = s.SubscrmanStorage().DoUoW(ctx, func(uowctx subscrman.UoWContext) (err error) {
+	err = s.SubscrStorage().DoUoW(ctx, func(uowctx subscr.UoWContext) (err error) {
 		userNodes, err = uowctx.GetUserNodes(ctx, enabledUser.Profile.ID)
 		return
 	})

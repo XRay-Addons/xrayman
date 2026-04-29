@@ -7,20 +7,7 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
-type NodesStorage interface {
-	// add new node to storage, assign NodeID to node
-	NewNode(ctx context.Context, node *models.Node) error
-	// get all nodes
-	ListNodes(ctx context.Context) ([]models.Node, error)
-	// change node target status
-	SetTargetNodeStatus(ctx context.Context, id models.NodeID,
-		status models.NodeStatus) error
-	// delete node
-	DeleteNode(ctx context.Context,
-		id models.NodeID) error
-}
-
-type UsersStorage interface {
+type UoWContext interface {
 	// add new user to storage, assign UserID to user
 	NewUser(ctx context.Context, user *models.User) error
 	// get user by id, return (nil, false, nil) if not exists
@@ -33,17 +20,6 @@ type UsersStorage interface {
 	// delete user
 	DeleteUser(ctx context.Context,
 		id models.UserID) error
-}
-
-type UserNodesStorage interface {
-	// get nodes where user is active
-	GetUserNodes(ctx context.Context, id models.UserID) ([]models.Node, error)
-}
-
-type UoWContext interface {
-	NodesStorage
-	UsersStorage
-	UserNodesStorage
 }
 
 type UoWFn = uow.Fn[UoWContext]

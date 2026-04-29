@@ -29,7 +29,7 @@ func WithSyncInterval(interval time.Duration) Option {
 	}
 }
 
-func WithLog(log *zap.Logger) Option {
+func WithLogger(log *zap.Logger) Option {
 	return func(m *SyncMan) {
 		if log != nil {
 			m.log = log

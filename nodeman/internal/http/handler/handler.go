@@ -6,17 +6,17 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/constants"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/converter"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/httperr"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
 	chimw "github.com/go-chi/chi/v5/middleware"
 	"go.uber.org/zap"
 )
 
 type Handler struct {
-	service Service
-	log     *zap.Logger
+	us  UsersService
+	ns  NodesService
+	ss  SubscrService
+	log *zap.Logger
 }
 
 func WithLogger(log *zap.Logger) option {
@@ -32,211 +32,31 @@ type option = func(h *Handler)
 
 var _ api.Handler = (*Handler)(nil)
 
-func New(s Service, opts ...option) (*Handler, error) {
-	if s == nil {
-		return nil, errdefs.NewNilArg("s")
+func New(
+	us UsersService,
+	ns NodesService,
+	ss SubscrService,
+	opts ...option,
+) (*Handler, error) {
+	if us == nil {
+		return nil, errdefs.NewNilArg("us")
+	}
+	if ns == nil {
+		return nil, errdefs.NewNilArg("ns")
+	}
+	if ss == nil {
+		return nil, errdefs.NewNilArg("ss")
 	}
 	handler := &Handler{
-		service: s,
-		log:     zap.NewNop(),
+		us:  us,
+		ns:  ns,
+		ss:  ss,
+		log: zap.NewNop(),
 	}
 	for _, o := range opts {
 		o(handler)
 	}
 	return handler, nil
-}
-
-func (h *Handler) NewNode(ctx context.Context, req *api.NewNodeRequest) (*api.NewNodeResponse, error) {
-	if h == nil || h.service == nil {
-		return nil, errdefs.NewNilCall()
-	}
-	p, err := converter.ConvertNewNodeRequest(req)
-	if err != nil {
-		return nil, httperr.ErrInvaildPayload
-	}
-	res, err := h.service.NewNode(ctx, *p)
-	if err != nil {
-		h.logError(ctx, err)
-		return nil, httperr.ErrInternalServerError
-	}
-	return converter.ConvertNewNodeResult(res), nil
-}
-
-func (h *Handler) StartNode(ctx context.Context, req *api.StartNodeRequest) error {
-	if h == nil || h.service == nil {
-		return errdefs.NewNilCall()
-	}
-	p, err := converter.ConvertStartNodeRequest(req)
-	if err != nil {
-		return httperr.ErrInvaildPayload
-	}
-	_, err = h.service.StartNode(ctx, *p)
-	if err != nil {
-		h.logError(ctx, err)
-		return httperr.ErrInternalServerError
-	}
-	return nil
-}
-
-func (h *Handler) StopNode(ctx context.Context, req *api.StopNodeRequest) error {
-	if h == nil || h.service == nil {
-		return errdefs.NewNilCall()
-	}
-	p, err := converter.ConvertStopNodeRequest(req)
-	if err != nil {
-		return httperr.ErrInvaildPayload
-	}
-	_, err = h.service.StopNode(ctx, *p)
-	if err != nil {
-		h.logError(ctx, err)
-		return httperr.ErrInternalServerError
-	}
-	return nil
-}
-
-func (h *Handler) ListNodes(ctx context.Context) (*api.ListNodeResponse, error) {
-	if h == nil || h.service == nil {
-		return nil, errdefs.NewNilCall()
-	}
-	res, err := h.service.ListNodes(ctx, models.ListNodeParams{})
-	if err != nil {
-		h.logError(ctx, err)
-		return nil, httperr.ErrInternalServerError
-	}
-	return converter.ConvertListNodesResult(res), nil
-}
-
-func (h *Handler) DeleteNode(ctx context.Context, req *api.DeleteNodeRequest) error {
-	if h == nil || h.service == nil {
-		return errdefs.NewNilCall()
-	}
-	p, err := converter.ConvertDeleteNodeRequest(req)
-	if err != nil {
-		return httperr.ErrInvaildPayload
-	}
-	_, err = h.service.DeleteNode(ctx, *p)
-	if err != nil {
-		h.logError(ctx, err)
-		return httperr.ErrInternalServerError
-	}
-	return nil
-}
-
-func (h *Handler) NewUser(ctx context.Context, req *api.NewUserRequest) (*api.User, error) {
-	if h == nil || h.service == nil {
-		return nil, errdefs.NewNilCall()
-	}
-	p, err := converter.ConvertNewUserRequest(req)
-	if err != nil {
-		return nil, httperr.ErrInvaildPayload
-	}
-	res, err := h.service.NewUser(ctx, *p)
-	if err != nil {
-		h.logError(ctx, err)
-		return nil, httperr.ErrInternalServerError
-	}
-	return converter.ConvertUser(res), nil
-}
-
-func (h *Handler) GetUser(ctx context.Context, req api.GetUserParams) (*api.User, error) {
-	if h == nil || h.service == nil {
-		return nil, errdefs.NewNilCall()
-	}
-	p, err := converter.ConvertGetUserRequest(&req)
-	if err != nil {
-		return nil, httperr.ErrInvaildPayload
-	}
-	user, exists, err := h.service.GetUser(ctx, *p)
-	if err != nil {
-		return nil, err
-	}
-	if !exists {
-		return nil, httperr.ErrUserNotFound
-	}
-	userResponse := converter.ConvertUser(user)
-	return userResponse, nil
-}
-
-func (h *Handler) ListUsers(ctx context.Context) (*api.ListUsersResponse, error) {
-	if h == nil || h.service == nil {
-		return nil, errdefs.NewNilCall()
-	}
-	res, err := h.service.ListUsers(ctx, models.ListUserParams{})
-	if err != nil {
-		h.logError(ctx, err)
-		return nil, httperr.ErrInternalServerError
-	}
-	return converter.ConvertListUsersResult(res), nil
-}
-
-func (h *Handler) EnableUser(ctx context.Context, req *api.EnableUserRequest) error {
-	if h == nil || h.service == nil {
-		return errdefs.NewNilCall()
-	}
-	p, err := converter.ConvertEnableUserRequest(req)
-	if err != nil {
-		return httperr.ErrInvaildPayload
-	}
-	_, err = h.service.EnableUser(ctx, *p)
-	if err != nil {
-		h.logError(ctx, err)
-		return httperr.ErrInternalServerError
-	}
-	return nil
-}
-
-func (h *Handler) DisableUser(ctx context.Context, req *api.DisableUserRequest) error {
-	if h == nil || h.service == nil {
-		return errdefs.NewNilCall()
-	}
-	p, err := converter.ConvertDisableUserRequest(req)
-	if err != nil {
-		return httperr.ErrInvaildPayload
-	}
-	_, err = h.service.DisableUser(ctx, *p)
-	if err != nil {
-		h.logError(ctx, err)
-		return httperr.ErrInternalServerError
-	}
-	return nil
-}
-
-func (h *Handler) DeleteUser(ctx context.Context, req *api.DeleteUserRequest) error {
-	if h == nil || h.service == nil {
-		return errdefs.NewNilCall()
-	}
-	p, err := converter.ConvertDeleteUserRequest(req)
-	if err != nil {
-		return httperr.ErrInvaildPayload
-	}
-	_, err = h.service.DeleteUser(ctx, *p)
-	if err != nil {
-		h.logError(ctx, err)
-		return httperr.ErrInternalServerError
-	}
-	return nil
-}
-
-func (h *Handler) UserSub(ctx context.Context, req api.UserSubParams) (*api.UserSubResponseHeaders, error) {
-	if h == nil || h.service == nil {
-		return nil, errdefs.NewNilCall()
-	}
-	p, err := converter.ConvertUserSubRequest(&req)
-	if err != nil {
-		return nil, httperr.ErrInvaildPayload
-	}
-	sub, exists, err := h.service.GetUserSub(ctx, *p)
-	if err != nil {
-		return nil, err
-	}
-	if !exists {
-		return nil, httperr.ErrUserNotFound
-	}
-	subResponse, err := converter.ConvertUserSubResult(sub)
-	if err != nil {
-		return nil, err
-	}
-	return subResponse, nil
 }
 
 func (h *Handler) NewError(ctx context.Context, err error) *api.ErrorStatusCode {

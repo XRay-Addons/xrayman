@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"net/http"
 
+	"github.com/XRay-Addons/xrayman/nodeman/internal/auth"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/bootstrap"
 	client "github.com/XRay-Addons/xrayman/nodeman/internal/clients/node"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/config"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
@@ -16,10 +18,11 @@ import (
 	a "github.com/XRay-Addons/xrayman/nodeman/internal/infra/app"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/httpclient"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/poolsyncer"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service"
+	nodes "github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
+	subscr "github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
+	users "github.com/XRay-Addons/xrayman/nodeman/internal/service/users"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/storage/dbstorage"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/storage/dbstorage/sqldb"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/subscrman"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/syncman"
 
 	"go.uber.org/zap"
@@ -36,6 +39,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 
 	var db *sql.DB
 	var storage *dbstorage.Storage
+	var authService *auth.Service
 
 	var httpClient *httpclient.ClientFactory
 	var poolClient *client.PoolClient
@@ -44,9 +48,9 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 
 	var syncJob *syncman.SyncMan
 
-	var subscrMan subscrman.SubscrMan
-
-	var s *service.Service
+	var usersService *users.Service
+	var nodesService *nodes.Service
+	var subscrService *subscr.Service
 
 	var h *handler.Handler
 	var apiHandler http.Handler
@@ -57,8 +61,8 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 	app := a.New(
 		// db
 		a.WithComponent("db",
-			func(ctx context.Context) (err error ) {
-				db, err = sqldb.New(ctx, cfg.DBConn)
+			func(ctx context.Context) (err error) {
+				db, err = sqldb.New(cfg.DBConn)
 				return
 			},
 			func(context.Context) (err error) {
@@ -74,9 +78,22 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 				return
 			}, nil,
 		),
-
-		// http client
-		a.WithComponent("http client",
+		// auth service
+		a.WithComponent("auth",
+			func(ctx context.Context) (err error) {
+				authService, err = auth.New(storage.AuthStorage())
+				return
+			}, nil,
+		),
+		// bootstrap
+		a.WithComponent("bootstrap",
+			func(ctx context.Context) (err error) {
+				err = bootstrap.Bootstrap(ctx, bootstrap.Config{}, authService)
+				return
+			}, nil,
+		),
+		// nodes http client
+		a.WithComponent("nodes http client",
 			func(context.Context) (err error) {
 				httpClient = httpclient.NewClientFactory()
 				return
@@ -105,7 +122,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// background syncer
 		a.WithComponent("background sync job",
 			func(context.Context) (err error) {
-				syncJob, err = syncman.New(poolSyncer, syncman.WithLog(log))
+				syncJob, err = syncman.New(poolSyncer, syncman.WithLogger(log))
 				return
 			},
 			func(ctx context.Context) (err error) {
@@ -114,18 +131,24 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 			},
 		),
 
-		// subscr manager
-		a.WithComponent("subscr manager",
+		// nodes service
+		a.WithComponent("nodes service",
 			func(context.Context) (err error) {
-				subscrMan, err = subscrman.New(storage.SubscrmanStorage(), subscrman.WithLog(log))
+				nodesService, err = nodes.New(poolSyncer, storage.ServiceStorage())
 				return
 			}, nil,
 		),
-
-		// service
-		a.WithComponent("service",
+		// users service
+		a.WithComponent("users service",
 			func(context.Context) (err error) {
-				s, err = service.New(poolSyncer, subscrMan, storage.ServiceStorage())
+				usersService, err = users.New(poolSyncer, storage.ServiceStorage())
+				return
+			}, nil,
+		),
+		// subscr service
+		a.WithComponent("subscr service",
+			func(context.Context) (err error) {
+				subscrService, err = subscr.New(storage.ServiceStorage(), subscr.WithLogger(log))
 				return
 			}, nil,
 		),
@@ -133,7 +156,11 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// handler
 		a.WithComponent("handler",
 			func(context.Context) (err error) {
-				h, err = handler.New(s, handler.WithLogger(log))
+				h, err = handler.New(
+					usersService,
+					nodesService,
+					subscrService,
+					handler.WithLogger(log))
 				return
 			}, nil,
 		),

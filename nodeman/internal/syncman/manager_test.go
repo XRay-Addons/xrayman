@@ -22,7 +22,7 @@ package syncman
 		Times(2)
 
 	poolMonitor, err := New(mockSyncer,
-		WithLog(log),
+		WithLogger(log),
 		WithSyncInterval(2*time.Second))
 	require.NoError(t, err)
 	defer poolMonitor.Close()

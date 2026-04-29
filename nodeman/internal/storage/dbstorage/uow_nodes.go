@@ -9,7 +9,7 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
-// service.UoWContext::NodesStorage impl
+// service.UoWContext::Storage impl
 func (uow *uowctx) NewNode(ctx context.Context, node *models.Node) error {
 	query := queryReplacer.Replace(`
 		INSERT INTO {nodes} (
