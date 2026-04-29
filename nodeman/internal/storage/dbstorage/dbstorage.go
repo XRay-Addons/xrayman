@@ -2,17 +2,19 @@ package dbstorage
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/poolsyncer"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/storage/dbstorage/db"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/storage/dbstorage/migrations"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/subscrman"
+	"go.uber.org/zap"
 )
 
 type Storage struct {
-	db *db.SQLDB
+	db *sql.DB
 }
 
 type serviceStorage struct {
@@ -27,21 +29,49 @@ type subscrmanStorage struct {
 	storage *Storage
 }
 
-func New(dbConn string) (*Storage, error) {
-	db, err := db.NewSQLDB(dbConn, db.WithMigration())
-	if err != nil {
-		return nil, err
+type option func(o *options)
+
+type options struct {
+	migrate bool
+	log *zap.Logger
+}
+
+func WithMigration() option {
+	return func(o *options) {
+		o.migrate = true
 	}
+}
+
+func WithLogger(l *zap.Logger) option {
+	return func(o *options) {
+		if l != nil {
+			o.log = l
+		}
+	}
+}
+
+func New(ctx context.Context, db *sql.DB, opts ...option) (*Storage, error) {
+	cfg := options{
+		migrate: false,
+		log: zap.NewNop(),
+	}
+	for _, o := range opts {
+		o(&cfg)
+	}
+
+	if db == nil {
+		return nil, errdefs.NewNilArg("db")
+	}
+
+	if cfg.migrate {
+		if err := migrations.ApplyMigrations(ctx, db, true, cfg.log); err != nil {
+			return nil, err
+		}
+	}
+
 	return &Storage{
 		db: db,
 	}, nil
-}
-
-func (s *Storage) Close() error {
-	if s == nil || s.db == nil {
-		return nil
-	}
-	return s.db.Close()
 }
 
 func (s *Storage) ServiceStorage() service.Storage {
@@ -79,7 +109,7 @@ func (s *Storage) doTx(ctx context.Context, fn func(uowctx *uowctx) error) (err 
 		return errdefs.NewNilCall()
 	}
 
-	tx, err := s.db.BeginTx(ctx)
+	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return errdefs.WrapWithStack(err)
 	}

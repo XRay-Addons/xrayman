@@ -33,7 +33,7 @@ func TestApp_Run_Success(t *testing.T) {
 		// Track execution order
 		execOrder := []string{}
 
-		compInit := func() error {
+		compInit := func(ctx context.Context) error {
 			execOrder = append(execOrder, "init")
 			return nil
 		}
@@ -72,7 +72,7 @@ func TestApp_Run_InitFailure(t *testing.T) {
 	logger := zaptest.NewLogger(t)
 
 	initErr := errdefs.New("init error")
-	initFn := func() error { return initErr }
+	initFn := func(ctx context.Context) error { return initErr }
 	closeFn := func(ctx context.Context) error { return nil }
 	runnerFn := func() error { return nil }
 
@@ -88,11 +88,45 @@ func TestApp_Run_InitFailure(t *testing.T) {
 	assert.ErrorIs(t, err, initErr)
 }
 
+func TestApp_Run_InitInterrupted(t *testing.T) {
+	logger := zaptest.NewLogger(t)
+
+	initErr := errdefs.New("init timeout error")
+	initFn := func(ctx context.Context) error {
+		select {
+		case <-	time.After(2 * time.Second):
+			return nil
+		case <-ctx.Done():
+			return initErr
+		}
+	}
+	closeFn := func(ctx context.Context) error {
+		return nil
+	}
+	runnerFn := func() error { return nil }
+
+	go func() {
+		time.Sleep(1 * time.Second)
+		p, _ := os.FindProcess(os.Getpid())
+		_ = p.Signal(syscall.SIGINT)
+	}()
+
+	app := New(
+		WithLogger(logger),
+		WithComponent("failing", initFn, closeFn),
+		WithRunner("runner", runnerFn, closeFn),
+	)
+
+	err := app.Run()
+	require.Error(t, err)
+	assert.ErrorIs(t, err, initErr)
+}
+
 func TestApp_Run_RunnerFailure(t *testing.T) {
 	logger := zaptest.NewLogger(t)
 
 	runnerErr := errdefs.New("runner error")
-	initFn := func() error { return nil }
+	initFn := func(ctx context.Context) error { return nil }
 	closeFn := func(ctx context.Context) error { return nil }
 	runnerFn := func() error { return runnerErr }
 
@@ -116,11 +150,11 @@ func TestApp_Close_ErrorHandling(t *testing.T) {
 	app := New(
 		WithLogger(logger),
 		WithComponent("comp1",
-			func() error { return nil },
+			func(ctx context.Context) error { return nil },
 			func(ctx context.Context) error { return closeErr1 },
 		),
 		WithComponent("comp2",
-			func() error { return nil },
+			func(ctx context.Context) error { return nil },
 			func(ctx context.Context) error { return closeErr2 },
 		),
 		WithRunner("runner",
@@ -130,7 +164,7 @@ func TestApp_Close_ErrorHandling(t *testing.T) {
 	)
 
 	// Initialize components
-	err := app.init()
+	err := app.init(t.Context())
 	require.NoError(t, err)
 
 	// Close components (should return aggregated errors)
@@ -178,7 +212,7 @@ func TestComponentLifecycle_Order(t *testing.T) {
 	app := New(
 		WithLogger(logger),
 		WithComponent("first",
-			func() error {
+			func(ctx context.Context) error {
 				order = append(order, "init-first")
 				return nil
 			},
@@ -188,7 +222,7 @@ func TestComponentLifecycle_Order(t *testing.T) {
 			},
 		),
 		WithComponent("second",
-			func() error {
+			func(ctx context.Context) error {
 				order = append(order, "init-second")
 				return nil
 			},
@@ -200,7 +234,7 @@ func TestComponentLifecycle_Order(t *testing.T) {
 	)
 
 	// Initialize
-	err := app.init()
+	err := app.init(t.Context())
 	require.NoError(t, err)
 
 	// Close
@@ -231,7 +265,6 @@ func TestApp_Run_SignalCancel(t *testing.T) {
 		app := New(
 			WithLogger(logger),
 			WithRunner("runner", runner, nil),
-			WithSignalCancel(),
 		)
 
 		go func() {
@@ -252,7 +285,7 @@ func TestApp_Run_SignalCancel(t *testing.T) {
 }
 
 func TestApp_Run_SignalCancelInterrupt(t *testing.T) {
-	t.Run("all operations succeed, close by interript", func(t *testing.T) {
+	t.Run("all operation succeed, close by interript", func(t *testing.T) {
 		logger := zaptest.NewLogger(t)
 
 		// Track execution order
@@ -267,16 +300,52 @@ func TestApp_Run_SignalCancelInterrupt(t *testing.T) {
 		app := New(
 			WithLogger(logger),
 			WithRunner("runner", runner, nil),
-			WithSignalCancel(),
 		)
 
 		err := app.Run()
-		require.Error(t, err)
+		require.NoError(t, err)
 
 		// Verify execution order
 		expected := []string{
 			"run", // Runner execute
 		}
 		require.Equal(t, expected, execOrder)
+	})
+}
+
+func TestApp_Run_ErrorsCollecting(t *testing.T) {
+	t.Run("errors collecting", func(t *testing.T) {
+		logger := zaptest.NewLogger(t)
+
+		runErr1 := errdefs.New("init error 1")
+		closeErr1 := errdefs.New("close error 1")
+		runErr2 := errdefs.New("init error 2")
+		closeErr2 := errdefs.New("close error 2")
+
+		app := New(
+			WithRunner("runner #1",
+				func() error {
+					return runErr1
+				},
+				func(context.Context) error {
+					return closeErr1
+				},
+			),
+			WithRunner("runner #2",
+				func() error {
+					return runErr2
+				},
+				func(context.Context) error {
+					return closeErr2
+				},
+			),
+		)
+
+		err := app.Run()
+		logger.Error("run error: " + err.Error())
+		assert.ErrorIs(t, err, runErr1)
+		assert.ErrorIs(t, err, closeErr1)
+		assert.ErrorIs(t, err, runErr2)
+		assert.ErrorIs(t, err, closeErr2)
 	})
 }

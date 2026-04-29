@@ -8,13 +8,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/tx"
 	"github.com/oklog/run"
 	"go.uber.org/zap"
 )
 
-type InitFn = func() error
+type InitFn = func(ctx context.Context) error
 type CloseFn = func(ctx context.Context) error
 type RunFn = func() error
 
@@ -42,28 +41,6 @@ func WithRunner(name string, run RunFn, close CloseFn) Option {
 		app.runners = append(app.runners, runner{
 			run:   app.runRunnerFn(run, name),
 			close: app.stopRunnerFn(close, name),
-		})
-	}
-}
-
-func WithSignalCancel() Option {
-	return func(app *App) {
-		sigCh := make(chan os.Signal, 1)
-		app.runners = append(app.runners, runner{
-			run: func() error {
-				app.log.Info("Press Ctrl+C to stop the server...")
-				signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
-				if sig := <-sigCh; sig != nil {
-					return errdefs.New("received interript signal",
-						errdefs.WithoutStack())
-				}
-				return nil
-			},
-			close: func(error) {
-				signal.Stop(sigCh)
-				close(sigCh)
-				signal.Reset(syscall.SIGINT, syscall.SIGTERM)
-			},
 		})
 	}
 }
@@ -98,8 +75,13 @@ func New(opts ...Option) *App {
 }
 
 func (app *App) Run() (err error) {
+	// CTRL + C - cancelable context
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	defer cancel();
+	app.log.Info("App starting, press Ctrl+C to cancel...")
+
 	// init app components
-	if err := app.init(); err != nil {
+	if err := app.init(ctx); err != nil {
 		return err
 	}
 	defer func() {
@@ -108,8 +90,8 @@ func (app *App) Run() (err error) {
 		}
 	}()
 
-	// run runners
-	if err := app.run(); err != nil {
+	app.log.Info("App started, press Ctrl+C to cancel...")
+	if err := app.run(ctx); err != nil {
 		return err
 	}
 
@@ -117,22 +99,22 @@ func (app *App) Run() (err error) {
 }
 
 type component struct {
-	init  func() error
+	init  func(ctx context.Context) error
 	close func(ctx context.Context) error
 }
 
 type runner struct {
 	run   func() error
-	close func(error)
+	close func() error
 }
 
-func (app *App) initComponenFn(init InitFn, name string) func() error {
-	return func() (err error) {
+func (app *App) initComponenFn(init InitFn, name string) func(ctx context.Context) error {
+	return func(ctx context.Context) (err error) {
 		if init == nil {
 			return nil
 		}
 		defer func() { logOp(app.log, name, "init", err) }()
-		return init()
+		return init(ctx)
 	}
 }
 
@@ -142,7 +124,6 @@ func (app *App) closeComponentFn(close CloseFn, name string) func(ctx context.Co
 			return nil
 		}
 		defer func() { logOp(app.log, name, "close", err) }()
-
 		return close(ctx)
 	}
 }
@@ -155,8 +136,8 @@ func (app *App) runRunnerFn(runner RunFn, name string) func() error {
 	}
 }
 
-func (app *App) stopRunnerFn(close CloseFn, name string) func(error) {
-	return func(error) {
+func (app *App) stopRunnerFn(close CloseFn, name string) func() error {
+	return func() (err error) {
 		if close == nil {
 			return
 		}
@@ -164,8 +145,8 @@ func (app *App) stopRunnerFn(close CloseFn, name string) func(error) {
 		ctx, cancel := context.WithTimeout(context.Background(), app.cancelTimeout)
 		defer cancel()
 
-		err := close(ctx)
 		defer func() { logOp(app.log, name, "close", err) }()
+		return close(ctx)
 	}
 }
 
@@ -177,7 +158,7 @@ func logOp(log *zap.Logger, name, op string, err error) {
 	}
 }
 
-func (app *App) init() error {
+func (app *App) init(ctx context.Context) error {
 	// init app as transaction.
 	// tx rollback time limited, init - unlimited
 	initTx := tx.New(
@@ -185,12 +166,12 @@ func (app *App) init() error {
 	)
 	for _, c := range app.components {
 		initTx.AddItem(
-			func(context.Context) error { return c.init() },
+			func(ctx context.Context) error { return c.init(ctx) },
 			func(ctx context.Context) error { return c.close(ctx) },
 		)
 	}
 
-	if err := initTx.Run(context.Background()); err != nil {
+	if err := initTx.Run(ctx); err != nil {
 		return err
 	}
 
@@ -216,15 +197,44 @@ func (app *App) close() error {
 	return errors.Join(closeErrs...)
 }
 
-func (app *App) run() error {
+func (app *App) run(ctx context.Context) error {
 	var g run.Group
-	for _, runner := range app.runners {
-		g.Add(runner.run, runner.close)
+
+	// collect runners errors
+	var runErrs = make([]error, len(app.runners))
+	var closeErrs = make([]error, len(app.runners))
+	for i, r := range app.runners {
+		g.Add(
+			func() error {
+				runErrs[i] = r.run()
+				return runErrs[i]
+			},
+			func(err error) {
+				closeErrs[i] = r.close()
+			},
+		)
 	}
 
-	if err := g.Run(); err != nil {
-		return err
-	}
 
-	return nil
+	done := make(chan struct{})
+	g.Add(
+		func() error {
+			select {
+			case <-ctx.Done():
+				return nil
+			case <-done:
+				return nil
+			}
+		},
+		func(error) {
+			close(done)
+		},
+	)
+
+	// all errors collected, ignore this (it's first of runner errors)
+	_ = g.Run()
+
+	// join all errors
+	allErrors := append(runErrs, closeErrs...)
+	return errors.Join(allErrors...)
 }

@@ -8,16 +8,23 @@ import (
 	"time"
 
 	embeddedpostgres "github.com/fergusstrange/embedded-postgres"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/poolsyncer"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/storage/dbstorage/sqldb"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/subscrman"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/require"
 )
 
-func newTestDB(t *testing.T) (s *Storage, postgres *embeddedpostgres.EmbeddedPostgres, cleanup func()) {
+func newTestDB(t *testing.T, l *zap.Logger) (
+	s *Storage,
+	postgres *embeddedpostgres.EmbeddedPostgres,
+	cleanup func(),
+) {
 	t.Helper()
 
 	dataDir := fmt.Sprintf("%s/pg_temp_%d", os.TempDir(), time.Now().UnixNano())
@@ -29,19 +36,21 @@ func newTestDB(t *testing.T) (s *Storage, postgres *embeddedpostgres.EmbeddedPos
 			Username("test").
 			Password("test").
 			Database("testdb").
-			Port(5433),
+			Port(5434),
+			//Logger(zap.NewStdLog(l).Writer()) - not working
 	)
 
 	err := postgres.Start()
 	require.NoError(t, err, "failed to start embedded postgres")
 
-	connStr := "host=localhost port=5433 user=test password=test dbname=testdb sslmode=disable"
-
-	s, err = New(connStr)
+	connStr := "host=localhost port=5434 user=test password=test dbname=testdb sslmode=disable"
+	db, err := sqldb.New(connStr)
+	require.NoError(t, err, "failed to open db")
+	s, err = New(context.TODO(), db, WithMigration(), WithLogger(l))
 	require.NoError(t, err, "failed to create storage")
 
 	cleanup = func() {
-		_ = s.Close()
+		_ = sqldb.Close(db)
 		_ = postgres.Stop()
 		_ = os.RemoveAll(dataDir)
 	}
@@ -49,9 +58,12 @@ func newTestDB(t *testing.T) (s *Storage, postgres *embeddedpostgres.EmbeddedPos
 	return
 }
 
-func TestDBStorage(t *testing.T) {
-	s, db, cleanup := newTestDB(t)
+func TestDBStorage(t *testing.T) {	
+	logger := zaptest.NewLogger(t)
+
+	s, db, cleanup := newTestDB(t, logger)
 	defer cleanup()
+	logger.Info("new test db inited")
 
 	ctx := context.Background()
 
@@ -86,12 +98,16 @@ func TestDBStorage(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, int(runningNode.ID), 1)
 	require.Equal(t, int(stoppedNode.ID), 2)
+	time.Sleep(2 * time.Second)
+	logger.Info("First test passed")
 
 	// restart db
 	err = db.Stop()
 	require.NoError(t, err)
 	err = db.Start()
 	require.NoError(t, err)
+
+	logger.Info("DB restarted")
 
 	// request user nodes
 	var userNodes []models.Node
@@ -147,4 +163,6 @@ func TestDBStorage(t *testing.T) {
 	})
 	require.NoError(t, err)
 	require.Equal(t, 1, len(userNodes))
+
+	logger.Info("Next test passed,closing...")
 }
