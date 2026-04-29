@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"net/http"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/auth"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/bootstrap"
 	client "github.com/XRay-Addons/xrayman/nodeman/internal/clients/node"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/config"
@@ -18,6 +17,7 @@ import (
 	a "github.com/XRay-Addons/xrayman/nodeman/internal/infra/app"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/httpclient"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/poolsyncer"
+	auth "github.com/XRay-Addons/xrayman/nodeman/internal/service/auth"
 	nodes "github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
 	subscr "github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
 	users "github.com/XRay-Addons/xrayman/nodeman/internal/service/users"
@@ -39,7 +39,6 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 
 	var db *sql.DB
 	var storage *dbstorage.Storage
-	var authService *auth.Service
 
 	var httpClient *httpclient.ClientFactory
 	var poolClient *client.PoolClient
@@ -48,6 +47,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 
 	var syncJob *syncman.SyncMan
 
+	var authService *auth.Service
 	var usersService *users.Service
 	var nodesService *nodes.Service
 	var subscrService *subscr.Service
@@ -78,20 +78,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 				return
 			}, nil,
 		),
-		// auth service
-		a.WithComponent("auth",
-			func(ctx context.Context) (err error) {
-				authService, err = auth.New(storage.AuthStorage())
-				return
-			}, nil,
-		),
-		// bootstrap
-		a.WithComponent("bootstrap",
-			func(ctx context.Context) (err error) {
-				err = bootstrap.Bootstrap(ctx, bootstrap.Config{}, authService)
-				return
-			}, nil,
-		),
+
 		// nodes http client
 		a.WithComponent("nodes http client",
 			func(context.Context) (err error) {
@@ -134,21 +121,36 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// nodes service
 		a.WithComponent("nodes service",
 			func(context.Context) (err error) {
-				nodesService, err = nodes.New(poolSyncer, storage.ServiceStorage())
+				nodesService, err = nodes.New(poolSyncer, storage.NodesStorage())
 				return
 			}, nil,
 		),
 		// users service
 		a.WithComponent("users service",
 			func(context.Context) (err error) {
-				usersService, err = users.New(poolSyncer, storage.ServiceStorage())
+				usersService, err = users.New(poolSyncer, storage.UsersStorage())
 				return
 			}, nil,
 		),
 		// subscr service
 		a.WithComponent("subscr service",
 			func(context.Context) (err error) {
-				subscrService, err = subscr.New(storage.ServiceStorage(), subscr.WithLogger(log))
+				subscrService, err = subscr.New(storage.SubscrStorage(), subscr.WithLogger(log))
+				return
+			}, nil,
+		),
+		// auth service
+		a.WithComponent("auth service",
+			func(ctx context.Context) (err error) {
+				authService, err = auth.New(storage.AuthStorage())
+				return
+			}, nil,
+		),
+
+		// bootstrap
+		a.WithComponent("bootstrap",
+			func(ctx context.Context) (err error) {
+				err = bootstrap.Bootstrap(ctx, bootstrap.Config{}, authService)
 				return
 			}, nil,
 		),

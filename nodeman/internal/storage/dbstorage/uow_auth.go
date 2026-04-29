@@ -3,8 +3,8 @@ package dbstorage
 import (
 	"context"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/auth"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service/auth"
 )
 
 const adminID = 0
@@ -56,5 +56,3 @@ func (uow *uowctx) SetAdmin(ctx context.Context, a *auth.Auth) error {
 
 	return nil
 }
-
-

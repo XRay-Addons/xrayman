@@ -39,13 +39,13 @@ func (s *Service) AuthAdmin(ctx context.Context, password string) error {
 }
 
 func (s *Service) SetAdmin(ctx context.Context, password string) error {
-		if s == nil {
+	if s == nil {
 		return errdefs.NewNilCall()
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return  errdefs.WrapWithStack(err)
+		return errdefs.WrapWithStack(err)
 	}
 
 	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {

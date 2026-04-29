@@ -3,7 +3,7 @@ package memstorage
 import (
 	"context"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/auth"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service/auth"
 )
 
 func (s *Storage) GetAdmin(ctx context.Context) (*auth.Auth, error) {

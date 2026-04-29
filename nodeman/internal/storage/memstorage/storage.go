@@ -4,10 +4,10 @@ import (
 	"context"
 	"sync"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/auth"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/poolsyncer"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service/auth"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/users"
