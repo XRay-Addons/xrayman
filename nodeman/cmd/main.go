@@ -5,7 +5,7 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/app"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/config"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/logging"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/logging"
 	"go.uber.org/zap"
 )
 
