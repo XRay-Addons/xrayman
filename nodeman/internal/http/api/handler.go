@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	genapi "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
 )

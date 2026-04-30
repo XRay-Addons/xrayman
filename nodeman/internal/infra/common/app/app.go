@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/tx"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/tx"
 	"github.com/oklog/run"
 	"go.uber.org/zap"
 )
@@ -77,7 +77,7 @@ func New(opts ...Option) *App {
 func (app *App) Run() (err error) {
 	// CTRL + C - cancelable context
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
-	defer cancel();
+	defer cancel()
 	app.log.Info("App starting, press Ctrl+C to cancel...")
 
 	// init app components
@@ -214,7 +214,6 @@ func (app *App) run(ctx context.Context) error {
 			},
 		)
 	}
-
 
 	done := make(chan struct{})
 	g.Add(

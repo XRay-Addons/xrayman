@@ -94,7 +94,7 @@ func TestApp_Run_InitInterrupted(t *testing.T) {
 	initErr := errdefs.New("init timeout error")
 	initFn := func(ctx context.Context) error {
 		select {
-		case <-	time.After(2 * time.Second):
+		case <-time.After(2 * time.Second):
 			return nil
 		case <-ctx.Done():
 			return initErr

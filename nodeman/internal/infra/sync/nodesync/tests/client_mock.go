@@ -5,8 +5,8 @@ import (
 	"math/rand/v2"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/nodesyncer"
 )
 
 // implement node emulator for tests
@@ -22,7 +22,7 @@ func NewClientMock() *ClientMock {
 	}
 }
 
-var _ nodesyncer.Client = (*ClientMock)(nil)
+var _ nodesync.Client = (*ClientMock)(nil)
 
 func (c *ClientMock) CheckStatus(ctx context.Context) (models.NodeStatus, error) {
 	return c.Status, nil

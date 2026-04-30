@@ -6,7 +6,7 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
-//go:generate mockgen -source=service.go -destination=./mocks/mock_nodes_service.go -package=mocks
+//go:generate mockgen -source=nodes_service.go -destination=./mocks/mock_nodes_service.go -package=mocks
 type NodesService interface {
 	NewNode(ctx context.Context, p models.NewNodeParams) (*models.NewNodeResult, error)
 	StartNode(ctx context.Context, p models.StartNodeParams) (*models.StartNodeResult, error)

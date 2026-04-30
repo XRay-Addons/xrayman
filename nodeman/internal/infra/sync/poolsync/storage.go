@@ -1,9 +1,9 @@
-package poolsyncer
+package poolsync
 
 import (
 	"context"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/uow"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/uow"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 

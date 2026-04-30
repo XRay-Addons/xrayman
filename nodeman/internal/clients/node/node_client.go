@@ -1,4 +1,4 @@
-package node
+package nodesync
 
 import (
 	"context"
@@ -6,15 +6,15 @@ import (
 	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/clients/node/converter"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/nodesyncer"
 )
 
 type NodeClient struct {
 	client *api.Client
 }
 
-var _ nodesyncer.Client = (*NodeClient)(nil)
+var _ nodesync.Client = (*NodeClient)(nil)
 
 func (c *NodeClient) Start(ctx context.Context, users []models.UserProfile) (
 	*models.ClientConfigTemplate, error,

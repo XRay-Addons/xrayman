@@ -11,8 +11,8 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest"
 
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/poolsyncer"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/users"
@@ -122,7 +122,7 @@ func TestDBStorage(t *testing.T) {
 	// request pending syncs:
 	// Running Node: expected one - running node 1 and disabled user 1)
 	var pendingSyncs []models.UserSyncStatus
-	err = s.PoolSyncStorage().DoUoW(ctx, func(uowctx poolsyncer.UoWContext) (err error) {
+	err = s.PoolSyncStorage().DoUoW(ctx, func(uowctx poolsync.UoWContext) (err error) {
 		pendingSyncs, err = uowctx.FindPendingSyncs(ctx, runningNode.ID)
 		return
 	})
@@ -134,7 +134,7 @@ func TestDBStorage(t *testing.T) {
 	}, pendingSyncs[0])
 
 	// Stopped Node: expected one - running node 1 and disabled user 1)
-	err = s.PoolSyncStorage().DoUoW(ctx, func(uowctx poolsyncer.UoWContext) (err error) {
+	err = s.PoolSyncStorage().DoUoW(ctx, func(uowctx poolsync.UoWContext) (err error) {
 		pendingSyncs, err = uowctx.FindPendingSyncs(ctx, stoppedNode.ID)
 		return
 	})
@@ -152,7 +152,7 @@ func TestDBStorage(t *testing.T) {
 			Status: models.UserStatusEnabled,
 		},
 	}
-	err = s.PoolSyncStorage().DoUoW(ctx, func(uowctx poolsyncer.UoWContext) error {
+	err = s.PoolSyncStorage().DoUoW(ctx, func(uowctx poolsync.UoWContext) error {
 		return uowctx.UpdateNodeUsers(ctx, runningNode.ID, syncsPatch)
 	})
 	require.NoError(t, err)

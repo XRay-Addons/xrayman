@@ -1,5 +1,5 @@
 import { syncUsers } from "@/state/users";
-import { syncNodes } from "@/state/nodes";
+import { syncNodes } from "@/state/nodesyncs";
 
 class ServerPoll {
   private timer: number | null = null;

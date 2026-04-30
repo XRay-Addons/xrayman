@@ -4,12 +4,12 @@ import (
 	"context"
 	"testing"
 
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/nodesyncer"
 	"github.com/stretchr/testify/require"
 )
 
-func TestNodeSyncer(t *testing.T) {
+func Testnodesync(t *testing.T) {
 	nUsers := 10
 	nRuns := 100
 	nRunOps := 100
@@ -22,14 +22,14 @@ func TestNodeSyncer(t *testing.T) {
 		for range nRunOps {
 			// apply random operation, then sync
 			storage.RandomExternalOperation()
-			_ = nodesyncer.SyncState(context.TODO(), client, storage)
+			_ = nodesync.SyncState(context.TODO(), client, storage)
 		}
 
-		checkFullConsistency(t, client, storage);
+		checkFullConsistency(t, client, storage)
 	}
 }
 
-func TestNodeSyncer_UnstableStorage(t *testing.T) {
+func Testnodesync_UnstableStorage(t *testing.T) {
 	nUsers := 10
 	nRuns := 100
 	nRunOps := 100
@@ -45,19 +45,19 @@ func TestNodeSyncer_UnstableStorage(t *testing.T) {
 		for range nRunOps {
 			// apply random operation, then sync
 			storage.RandomExternalOperation()
-			_ = nodesyncer.SyncState(context.TODO(), client, storage) // #nosec
+			_ = nodesync.SyncState(context.TODO(), client, storage) // #nosec
 		}
 
 		// disable instability for one check to fix state
 		storage.Instability = 0.
-		err := nodesyncer.SyncState(context.TODO(), client, storage)
+		err := nodesync.SyncState(context.TODO(), client, storage)
 		require.NoError(t, err)
 
-		checkFullConsistency(t, client, storage.BaseStorage);
+		checkFullConsistency(t, client, storage.BaseStorage)
 	}
 }
 
-func TestNodeSyncer_UnstableStorage_UnstableNode(t *testing.T) {
+func Testnodesync_UnstableStorage_UnstableNode(t *testing.T) {
 	nUsers := 10
 	nRuns := 1000
 	nRunOps := 10
@@ -74,23 +74,23 @@ func TestNodeSyncer_UnstableStorage_UnstableNode(t *testing.T) {
 		for range nRunOps {
 			// apply random operation, then sync
 			storage.RandomExternalOperation()
-			_ = nodesyncer.SyncState(context.TODO(), client, storage) // #nosec
+			_ = nodesync.SyncState(context.TODO(), client, storage) // #nosec
 		}
 
 		// disable storage instability for one check to fix state
 		storage.Instability = 0.
-		err := nodesyncer.SyncState(context.TODO(), client, storage)
+		err := nodesync.SyncState(context.TODO(), client, storage)
 		if err != nil {
 			checkStorageConsistency(t, client.BaseClient, storage.BaseStorage)
 		} else {
-			checkFullConsistency(t, client.BaseClient, storage.BaseStorage);
+			checkFullConsistency(t, client.BaseClient, storage.BaseStorage)
 		}
 
 		client.Instability = 0.
-		err = nodesyncer.SyncState(context.TODO(), client, storage)
+		err = nodesync.SyncState(context.TODO(), client, storage)
 		require.NoError(t, err)
 
-		checkFullConsistency(t, client.BaseClient, storage.BaseStorage);
+		checkFullConsistency(t, client.BaseClient, storage.BaseStorage)
 	}
 }
 

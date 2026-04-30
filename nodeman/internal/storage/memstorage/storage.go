@@ -5,8 +5,8 @@ import (
 	"sync"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/poolsyncer"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/auth"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
@@ -80,7 +80,7 @@ func (s *subscrStorage) DoUoW(ctx context.Context, fn subscr.UoWFn) error {
 }
 
 // poolsync storage proxy
-func (s *Storage) PoolSyncStorage() poolsyncer.Storage {
+func (s *Storage) PoolSyncStorage() poolsync.Storage {
 	return &poolsyncStorage{storage: s}
 }
 
@@ -88,9 +88,9 @@ type poolsyncStorage struct {
 	storage *Storage
 }
 
-var _ poolsyncer.Storage = (*poolsyncStorage)(nil)
+var _ poolsync.Storage = (*poolsyncStorage)(nil)
 
-func (s *poolsyncStorage) DoUoW(ctx context.Context, fn poolsyncer.UoWFn) error {
+func (s *poolsyncStorage) DoUoW(ctx context.Context, fn poolsync.UoWFn) error {
 	return s.storage.doLocked(ctx, func() error {
 		return fn(s.storage)
 	})

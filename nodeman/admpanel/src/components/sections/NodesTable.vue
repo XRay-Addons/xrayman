@@ -9,13 +9,8 @@
 </template>
 
 <script setup lang="ts">
-import ExtendedTable, {
-  type ExtendedColumn,
-} from "@/components/ui/TableExt.vue";
-import type {
-  Node as APINode,
-  NodeStatus as APINodeStatus,
-} from "@/api/generated/types.gen";
+import ExtendedTable, { type ExtendedColumn } from "@/components/ui/TableExt.vue";
+import type { Node as APINode, NodeStatus as APINodeStatus } from "@/api/generated/types.gen";
 import { onMounted, type VNode, computed } from "vue";
 import {
   i18nateColumns,
@@ -29,7 +24,7 @@ import {
   ensureDeleteBtn,
   mergeActionBtns,
 } from "@/lib/table-ext-elements";
-import { nodes, nodesLoading, reloadNodes } from "@/state/nodes";
+import { nodes, nodesLoading, reloadNodes } from "@/state/nodesyncs";
 import { startNode, stopNode } from "@/api/client";
 import { serverErrorNotification } from "@/runtime/notifications/errors";
 

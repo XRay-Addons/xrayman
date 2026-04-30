@@ -6,7 +6,7 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
-//go:generate mockgen -source=service.go -destination=./mocks/mock_users_service.go -package=mocks
+//go:generate mockgen -source=users_service.go -destination=./mocks/mock_users_service.go -package=mocks
 type UsersService interface {
 	NewUser(ctx context.Context, p models.NewUserParams) (*models.User, error)
 	GetUser(ctx context.Context, p models.GetUserParams) (*models.User, bool, error)

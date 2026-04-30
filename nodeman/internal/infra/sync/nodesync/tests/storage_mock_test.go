@@ -6,8 +6,8 @@ import (
 	"math/rand/v2"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/nodesyncer"
 )
 
 // simple storage mock with random extrnal operations emulation
@@ -123,9 +123,9 @@ func (s *StorageMock) apply(patch *StorageMockPatch) error {
 	return nil
 }
 
-var _ nodesyncer.Storage = (*StorageMock)(nil)
+var _ nodesync.Storage = (*StorageMock)(nil)
 
-func (s *StorageMock) DoUoW(ctx context.Context, fn nodesyncer.UoWFn) error {
+func (s *StorageMock) DoUoW(ctx context.Context, fn nodesync.UoWFn) error {
 	uow := &StorageMockPatch{
 		parent: s,
 	}
@@ -142,7 +142,7 @@ type StorageMockPatch struct {
 	usersReplace *[]models.UserStatusPatch
 }
 
-var _ nodesyncer.UoWContext = (*StorageMockPatch)(nil)
+var _ nodesync.UoWContext = (*StorageMockPatch)(nil)
 
 func (s *StorageMockPatch) GetNodeStatus(ctx context.Context) (
 	target models.NodeStatus, current models.NodeStatus, err error,
@@ -179,7 +179,7 @@ func (s *StorageMockPatch) SetClientConfig(ctx context.Context, cfg models.Clien
 	return nil
 }
 
-func (s *StorageMockPatch) Do(ctx context.Context, fn nodesyncer.UoWFn) error {
+func (s *StorageMockPatch) Do(ctx context.Context, fn nodesync.UoWFn) error {
 	if err := fn(s); err != nil {
 		return err
 	}
@@ -199,7 +199,7 @@ func NewUnstableStorageMock(nUsers int) *UnstableStorageMock {
 	}
 }
 
-func (s *UnstableStorageMock) DoUoW(ctx context.Context, fn nodesyncer.UoWFn) error {
+func (s *UnstableStorageMock) DoUoW(ctx context.Context, fn nodesync.UoWFn) error {
 	// some times this method returns error
 	if s.BaseStorage.rand.Float32() < s.Instability {
 		return errdefs.New("unstable storage")

@@ -18,9 +18,9 @@ const DefaultCompressionLevel = 2
 
 func WithHandler(path string, h http.Handler) Option {
 	return func(r *routerOptions) {
-		r.handlers = append( r.handlers,
-			handler{ 
-				path: path,
+		r.handlers = append(r.handlers,
+			handler{
+				path:    path,
 				handler: h,
 			},
 		)
@@ -60,7 +60,7 @@ func New(options ...Option) (http.Handler, error) {
 	// add middleware from chi
 	r := chi.NewRouter()
 
-		// CORS middleware - разрешаем все
+	// CORS middleware - разрешаем все
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"*"}, // разрешаем все домены
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
@@ -75,9 +75,9 @@ func New(options ...Option) (http.Handler, error) {
 	r.Use(chimw.Timeout(ro.requestTimeout))
 	r.Use(chimw.Recoverer)
 	r.Use(chimw.NewCompressor(ro.compressionLvl).Handler)
-	
+
 	// add handler after middlewares
-	for _, h :=  range ro.handlers {
+	for _, h := range ro.handlers {
 		if h.handler == nil {
 			return nil, errdefs.NewNilArg(fmt.Sprintf("%s handler", h.path))
 		}
@@ -88,15 +88,15 @@ func New(options ...Option) (http.Handler, error) {
 }
 
 type handler struct {
-    path    string
-    handler http.Handler
+	path    string
+	handler http.Handler
 }
 
 type routerOptions struct {
-    handlers []handler
+	handlers       []handler
 	requestTimeout time.Duration
 	compressionLvl int
-	log            *zap.Logger	
+	log            *zap.Logger
 }
 
 type Option func(*routerOptions)

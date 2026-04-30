@@ -1,11 +1,11 @@
-package poolsyncer
+package poolsync
 
 import (
 	"context"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	node "github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/nodesyncer"
 )
 
 type nodeStorage struct {
@@ -13,9 +13,9 @@ type nodeStorage struct {
 	nodeID models.NodeID
 }
 
-var _ nodesyncer.Storage = (*nodeStorage)(nil)
+var _ node.Storage = (*nodeStorage)(nil)
 
-func (s *nodeStorage) DoUoW(ctx context.Context, fn nodesyncer.UoWFn) error {
+func (s *nodeStorage) DoUoW(ctx context.Context, fn node.UoWFn) error {
 	return s.base.DoUoW(ctx, func(uowctx UoWContext) error {
 		nodeUoWCtx := &PoolNodeUoWContext{
 			base:   uowctx,
@@ -33,7 +33,7 @@ type PoolNodeUoWContext struct {
 	nodeID models.NodeID
 }
 
-var _ nodesyncer.UoWContext = (*PoolNodeUoWContext)(nil)
+var _ node.UoWContext = (*PoolNodeUoWContext)(nil)
 
 func (c *PoolNodeUoWContext) GetNodeStatus(ctx context.Context) (
 	target models.NodeStatus, current models.NodeStatus, err error,

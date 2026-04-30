@@ -1,21 +1,21 @@
-package node
+package nodesync
 
 /*import (
 	"context"
 	"net/http/httptest"
 	"testing"
 
-	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
-	mocks "github.com/XRay-Addons/xrayman/nodeman/internal/clients/node/mocks"
+	api "github.com/XRay-Addons/xrayman/nodesync/pkg/api/http/gen"
+	mocks "github.com/XRay-Addons/xrayman/nodeman/internal/clients/nodesync/mocks"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
 
-//go:generate mockgen -destination=./mocks/mock_security_handler.go -package=mocks github.com/XRay-Addons/xrayman/node/pkg/api/http/gen SecurityHandler
-//go:generate mockgen -destination=./mocks/mock_security_source.go -package=mocks github.com/XRay-Addons/xrayman/node/pkg/api/http/gen SecuritySource
-//go:generate mockgen -destination=./mocks/mock_handler.go -package=mocks github.com/XRay-Addons/xrayman/node/pkg/api/http/gen Handler
+//go:generat/*e mockgen -destination=./mocks/mock_security_handler.go -package=mocks github.com/XRay-Addons/xrayman/nodesync/pkg/api/http/gen SecurityHandler
+//go:generat/*e mockgen -destination=./mocks/mock_security_source.go -package=mocks github.com/XRay-Addons/xrayman/nodesync/pkg/api/http/gen SecuritySource
+//go:generat/*e mockgen -destination=./mocks/mock_handler.go -package=mocks github.com/XRay-Addons/xrayman/nodesync/pkg/api/http/gen Handler
 
 func TestNodeClient(t *testing.T) {
 	ctrl := gomock.NewController(t)

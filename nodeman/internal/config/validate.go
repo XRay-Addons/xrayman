@@ -70,10 +70,10 @@ func checkDBConn(c Config) error {
 }
 
 func checkPaths(c Config) error {
-	if( !strings.HasPrefix(c.APIPrefix, "/" ) ) {
+	if !strings.HasPrefix(c.APIPrefix, "/") {
 		return errdefs.New("api prefix invalid")
 	}
-	if( !strings.HasPrefix(c.UserSPAPrefix, "/" ) ) {
+	if !strings.HasPrefix(c.UserSPAPrefix, "/") {
 		return errdefs.New("user spa prefix invalid")
 	}
 	return nil

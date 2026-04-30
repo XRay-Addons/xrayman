@@ -14,9 +14,9 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/router"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/server"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/spa"
-	a "github.com/XRay-Addons/xrayman/nodeman/internal/infra/app"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/httpclient"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/poolsyncer"
+	a "github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/app"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/httpclient"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
 	auth "github.com/XRay-Addons/xrayman/nodeman/internal/service/auth"
 	nodes "github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
 	subscr "github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
@@ -43,7 +43,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 	var httpClient *httpclient.ClientFactory
 	var poolClient *client.PoolClient
 
-	var poolSyncer poolsyncer.Syncer
+	var poolSyncer poolsync.Syncer
 
 	var syncJob *syncman.SyncMan
 
@@ -101,7 +101,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// pool syncer
 		a.WithComponent("pool syncer",
 			func(context.Context) (err error) {
-				poolSyncer, err = poolsyncer.New(poolClient, storage.PoolSyncStorage())
+				poolSyncer, err = poolsync.New(poolClient, storage.PoolSyncStorage())
 				return
 			}, nil,
 		),
@@ -168,6 +168,8 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 				return
 			}, nil,
 		),
+
+		// security handler
 
 		// api handler
 		a.WithComponent("api handler",
