@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"net/http"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/bootstrap"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/app/bootstrap"
 	client "github.com/XRay-Addons/xrayman/nodeman/internal/clients/node"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/config"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
