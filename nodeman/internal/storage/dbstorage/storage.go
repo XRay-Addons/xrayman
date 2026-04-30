@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/poolsyncer"
@@ -12,6 +13,7 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/users"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/storage/dbstorage/migrations"
+	"github.com/sethvargo/go-retry"
 	"go.uber.org/zap"
 )
 
@@ -40,7 +42,11 @@ func WithLogger(l *zap.Logger) option {
 	}
 }
 
-func New(ctx context.Context, db *sql.DB, opts ...option) (*Storage, error) {
+func New(ctx context.Context, db *sql.DB, opts ...option) (s *Storage, err error) {
+	if db == nil {
+		return nil, errdefs.NewNilArg("db")
+	}
+
 	cfg := options{
 		migrate: false,
 		log:     zap.NewNop(),
@@ -49,19 +55,35 @@ func New(ctx context.Context, db *sql.DB, opts ...option) (*Storage, error) {
 		o(&cfg)
 	}
 
-	if db == nil {
-		return nil, errdefs.NewNilArg("db")
-	}
-
 	if cfg.migrate {
-		if err := migrations.ApplyMigrations(ctx, db, true, cfg.log); err != nil {
-			return nil, err
+		if err = applyMigrations(ctx, db, cfg.log); err != nil {
+			return
 		}
 	}
 
 	return &Storage{
 		db: db,
 	}, nil
+}
+
+func applyMigrations(ctx context.Context, db *sql.DB, log *zap.Logger) error {
+	const retryInterval = 100 * time.Millisecond
+	b := retry.NewConstant(retryInterval)
+
+	return retry.Do(ctx, b, func(ctx context.Context) error {
+		err := migrations.ApplyMigrations(ctx, db, log)
+		if err == nil {
+			log.Warn("migration successed")
+			return nil
+		}
+		err = translatePgErr(err)
+		if errors.Is(err, errdefs.ErrTemporaryUnavailable) {
+			log.Warn("migrations retryable fail", zap.Error(err))
+			return retry.RetryableError(err)
+		}
+		log.Warn("migrations unretryable fail", zap.Error(err))
+		return nil
+	})
 }
 
 // nodes storage proxy
@@ -154,6 +176,9 @@ func (s *Storage) doTx(ctx context.Context, fn func(uowctx *uowctx) error) (err 
 	if s == nil {
 		return errdefs.NewNilCall()
 	}
+	defer func() {
+		err = translatePgErr(err)
+	}()
 
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {

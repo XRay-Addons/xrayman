@@ -25,10 +25,10 @@ func LoadConfig() (*Config, error) {
 
 func defaultConfig() *Config {
 	return &Config{
-		Endpoint: "localhost:80",
-		certsDir: defaultCertsDir(),
+		Endpoint:      "localhost:80",
+		certsDir:      defaultCertsDir(),
 		UserSPAPrefix: "/u",
-		APIPrefix: "/api",
+		APIPrefix:     "/api",
 	}
 }
 
@@ -55,6 +55,8 @@ should contains nodeman.crt nodeman.key ca.crt`)
 		`user SPA path prefix`)
 	fs.StringVar(&c.APIPrefix, "apipref", c.APIPrefix,
 		`api path prefix`)
+	fs.StringVar(&c.AdminPassword, "admpass", c.AdminPassword,
+		`admin password to change`)
 
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		return errdefs.WrapWithStack(err)

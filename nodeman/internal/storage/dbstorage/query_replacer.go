@@ -30,6 +30,10 @@ var (
 		"{user_status_disabled}", models.UserStatusDisabled.StringInt(),
 		"{node_status_running}", models.NodeStatusRunning.StringInt(),
 
+		"{admin_auth}", AdminAuthTable,
+		"{admin_id}", AdminIdCol,
+		"{password_hash}", PasswordHashCol,
+
 		"{created_at}", CreatedAtCol,
 		"{updated_at}", UpdatedAtCol,
 		"{deleted_at}", DeletedAtCol,

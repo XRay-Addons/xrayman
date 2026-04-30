@@ -28,6 +28,11 @@ const (
 )
 
 const (
+	AdminAuthTable  = "admin_auth"
+	AdminIdCol      = "admin_id"
+	PasswordHashCol = "password_hash"
+)
+const (
 	CreatedAtCol = "created_at"
 	UpdatedAtCol = "updated_at"
 	DeletedAtCol = "deleted_at"

@@ -8,10 +8,6 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
-type SqlDb struct {
-	db  *sql.DB
-}
-
 type option func(options *options)
 
 type options struct {
@@ -63,4 +59,3 @@ func Close(db *sql.DB) error {
 	}
 	return nil
 }
-

@@ -6,6 +6,7 @@ type Config struct {
 	certsDir      string `env:"CERTS_DIR"`
 	UserSPAPrefix string `env:"USER_SPA_PREFIX"`
 	APIPrefix     string `env:"API_PREFIX"`
+	AdminPassword string `env:"ADMIN_PASSWORD"`
 	nodemanCrt    string
 	nodemanKey    string
 	rootCrt       string

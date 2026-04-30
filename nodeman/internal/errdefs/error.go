@@ -45,7 +45,23 @@ func (b *baseError) Error() string {
 	if b == nil || b.err == nil {
 		return ""
 	}
-	text := b.err.Error()
+	return b.err.Error()
+}
+
+func (b *baseError) Format(f fmt.State, verb rune) {
+	if b == nil || b.err == nil {
+		return
+	}
+
+	format := "%" + string(verb)
+	fmt.Fprintf(f, format, b.err.Error())
+	if f.Flag('+') {
+		fmt.Fprintf(f, format, b.details())
+	}
+}
+
+func (b *baseError) details() string {
+	text := ""
 	if len(b.stack) > 0 {
 		text = fmt.Sprintf("-> %s:\n\t%s", strings.Join(b.stack, "\n-> "), text)
 	}

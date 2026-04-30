@@ -19,7 +19,7 @@ func Withf(details string, args ...any) option {
 }
 
 func WithStack() option {
-	const wrappingTraceDepth = 3
+	const wrappingTraceDepth = 4
 	return func(e *baseError) {
 		e.stack = getTrace(wrappingTraceDepth)
 	}
@@ -43,7 +43,7 @@ func WithOgen() option {
 		if errors.As(e.err, &sc) {
 			e.with = append(e.with, fmt.Sprintf("Status: %d", sc.StatusCode()))
 		} else {
-			e.with = append(e.with, "Status: Transport error");
+			e.with = append(e.with, "Status: Transport error")
 		}
 		// add url path if exists
 		var ue *url.Error

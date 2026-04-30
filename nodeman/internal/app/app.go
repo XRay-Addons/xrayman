@@ -150,7 +150,9 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// bootstrap
 		a.WithComponent("bootstrap",
 			func(ctx context.Context) (err error) {
-				err = bootstrap.Bootstrap(ctx, bootstrap.Config{}, authService)
+				err = bootstrap.Bootstrap(ctx, bootstrap.Config{
+					AdminPassword: cfg.AdminPassword,
+				}, authService, log)
 				return
 			}, nil,
 		),

@@ -14,7 +14,7 @@ func (uow *uowctx) GetAdmin(ctx context.Context) (*models.Auth, error) {
 	query := queryReplacer.Replace(`
 		SELECT
 			{admin_id},
-			{password_hash},
+			{password_hash}
 		FROM {admin_auth}
 		WHERE {admin_id} = $1
 		  AND {deleted_at} IS NULL
@@ -42,7 +42,7 @@ func (uow *uowctx) SetAdmin(ctx context.Context, a *models.Auth) error {
 			{password_hash},
 			{updated_at}
 		) VALUES ($1, $2, now())
-		ON CONFLICT ({id})
+		ON CONFLICT ({admin_id})
 		DO UPDATE
 		SET
 			{password_hash} = EXCLUDED.{password_hash},

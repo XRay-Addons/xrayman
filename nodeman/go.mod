@@ -79,6 +79,7 @@ require (
 require (
 	github.com/fergusstrange/embedded-postgres v1.32.0
 	github.com/gosimple/unidecode v1.0.1 // indirect
+	github.com/jackc/pgerrcode v0.0.0-20250907135507-afb5586c32a6
 	github.com/jackc/pgx/v4 v4.18.3
 	github.com/jackc/pgx/v5 v5.7.5
 	github.com/lib/pq v1.10.9

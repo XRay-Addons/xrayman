@@ -81,7 +81,8 @@ func (s *syncer) syncNodes(ctx context.Context, nodes []syncingNode) models.Pool
 func syncNode(ctx context.Context, node syncingNode) models.NodeSyncResult {
 	syncErr := nodesyncer.SyncState(ctx, node.client, node.storage)
 	if syncErr != nil {
-		syncErr = errdefs.WrapWithf(syncErr, "nodeID: %v", node.node.ID)
+		syncErr = errdefs.WrapWithStack(
+			errdefs.WrapWithf(syncErr, "nodeID: %v", node.node.ID))
 	}
 	return models.NodeSyncResult{
 		ID:       node.node.ID,
