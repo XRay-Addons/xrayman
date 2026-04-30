@@ -17,13 +17,13 @@ import (
 	a "github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/app"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/httpclient"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/jobs/syncman"
 	auth "github.com/XRay-Addons/xrayman/nodeman/internal/service/auth"
 	nodes "github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
 	subscr "github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
 	users "github.com/XRay-Addons/xrayman/nodeman/internal/service/users"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/storage/dbstorage"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/storage/dbstorage/sqldb"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/syncman"
 
 	"go.uber.org/zap"
 )
@@ -104,18 +104,6 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 				poolSyncer, err = poolsync.New(poolClient, storage.PoolSyncStorage())
 				return
 			}, nil,
-		),
-
-		// background syncer
-		a.WithComponent("background sync job",
-			func(context.Context) (err error) {
-				syncJob, err = syncman.New(poolSyncer, syncman.WithLogger(log))
-				return
-			},
-			func(ctx context.Context) (err error) {
-				err = syncJob.Close()
-				return
-			},
 		),
 
 		// nodes service
@@ -206,12 +194,30 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 			}, nil,
 		),
 
+		// background syncer
+		a.WithComponent("background sync",
+			func(context.Context) (err error) {
+				syncJob, err = syncman.New(poolSyncer, syncman.WithLogger(log))
+				return
+			}, nil,
+		),
+
+		// ------------ RUNNERS ------------- //
 		a.WithRunner("http server",
 			func() (err error) {
 				return httpServer.Listen()
 			},
 			func(ctx context.Context) error {
 				return httpServer.Shutdown(ctx)
+			},
+		),
+		// background syncer
+		a.WithRunner("background sync job",
+			func() (err error) {
+				return syncJob.Run()
+			},
+			func(context.Context) (err error) {
+				return syncJob.Stop()
 			},
 		),
 

@@ -46,11 +46,9 @@ func New(syncer PoolSyncer, options ...Option) (*SyncMan, error) {
 		return nil, errdefs.NewNilArg("syncer")
 	}
 	// init default options
-	ctx, cancel := context.WithCancel(context.Background())
 	m := &SyncMan{
 		syncer:   syncer,
 		interval: defaultSyncInterval,
-		cancel:   cancel,
 		log:      zap.NewNop(),
 	}
 	// apply options
@@ -58,17 +56,26 @@ func New(syncer PoolSyncer, options ...Option) (*SyncMan, error) {
 		o(m)
 	}
 
-	// run sync loop
-	m.wg.Add(1)
-	go func() {
-		defer m.wg.Done()
-		m.syncLoop(ctx)
-	}()
-
 	return m, nil
 }
 
-func (m *SyncMan) Close() error {
+func (m *SyncMan) Run() error {
+	if m == nil {
+		return errdefs.NewNilCall()
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	m.cancel = cancel
+
+	// run sync loop
+	m.wg.Add(1)
+	defer m.wg.Done()
+	m.syncLoop(ctx)
+
+	return ctx.Err()
+}
+
+func (m *SyncMan) Stop() error {
 	if m == nil {
 		return nil
 	}
