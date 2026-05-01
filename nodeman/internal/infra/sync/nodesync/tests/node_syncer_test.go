@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Testnodesync(t *testing.T) {
+func TestNodeSync(t *testing.T) {
 	nUsers := 10
 	nRuns := 100
 	nRunOps := 100
@@ -29,7 +29,7 @@ func Testnodesync(t *testing.T) {
 	}
 }
 
-func Testnodesync_UnstableStorage(t *testing.T) {
+func TestNodeSync_UnstableStorage(t *testing.T) {
 	nUsers := 10
 	nRuns := 100
 	nRunOps := 100
@@ -57,7 +57,7 @@ func Testnodesync_UnstableStorage(t *testing.T) {
 	}
 }
 
-func Testnodesync_UnstableStorage_UnstableNode(t *testing.T) {
+func TestNodeSync_UnstableStorage_UnstableNode(t *testing.T) {
 	nUsers := 10
 	nRuns := 1000
 	nRunOps := 10
