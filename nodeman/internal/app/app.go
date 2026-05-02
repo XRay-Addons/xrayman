@@ -125,7 +125,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// jwt
 		a.WithComponent("jwt",
 			func(context.Context) (err error) {
-				authJWT, err = jwt.New("secret string from cinfig")
+				authJWT, err = jwt.New(cfg.JWTSecret)
 				return
 			}, nil,
 		),

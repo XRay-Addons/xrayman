@@ -7,6 +7,7 @@ type Config struct {
 	UserSPAPrefix string `env:"USER_SPA_PREFIX"`
 	APIPrefix     string `env:"API_PREFIX"`
 	AdminPassword string `env:"ADMIN_PASSWORD"`
+	JWTSecret     string `env:"JWT_SECRET"`
 	nodemanCrt    string
 	nodemanKey    string
 	rootCrt       string

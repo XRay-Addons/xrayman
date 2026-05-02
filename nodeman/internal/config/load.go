@@ -57,6 +57,8 @@ should contains nodeman.crt nodeman.key ca.crt`)
 		`api path prefix`)
 	fs.StringVar(&c.AdminPassword, "admpass", c.AdminPassword,
 		`admin password to change`)
+	fs.StringVar(&c.JWTSecret, "jwt", c.JWTSecret,
+		`jwt secret`)
 
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		return errdefs.WrapWithStack(err)

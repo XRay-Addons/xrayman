@@ -22,6 +22,9 @@ func Validate(c Config) error {
 	if err := checkPaths(c); err != nil {
 		return err
 	}
+	if err := checkAuth(c); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -75,6 +78,13 @@ func checkPaths(c Config) error {
 	}
 	if !strings.HasPrefix(c.UserSPAPrefix, "/") {
 		return errdefs.New("user spa prefix invalid")
+	}
+	return nil
+}
+
+func checkAuth(c Config) error {
+	if c.JWTSecret == "" {
+		return errdefs.New("jwt secret invalid")
 	}
 	return nil
 }
