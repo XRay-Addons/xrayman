@@ -34,6 +34,7 @@ export const auth = <ThrowOnError extends boolean = false>(options: Options<Auth
  * Create a new node
  */
 export const newNode = <ThrowOnError extends boolean = false>(options: Options<NewNodeData, ThrowOnError>) => (options.client ?? client).post<NewNodeResponses, NewNodeErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/nodes/new',
     ...options,
     headers: {
@@ -46,6 +47,7 @@ export const newNode = <ThrowOnError extends boolean = false>(options: Options<N
  * Start a node
  */
 export const startNode = <ThrowOnError extends boolean = false>(options: Options<StartNodeData, ThrowOnError>) => (options.client ?? client).post<StartNodeResponses, StartNodeErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/nodes/start',
     ...options,
     headers: {
@@ -58,6 +60,7 @@ export const startNode = <ThrowOnError extends boolean = false>(options: Options
  * Stop a node
  */
 export const stopNode = <ThrowOnError extends boolean = false>(options: Options<StopNodeData, ThrowOnError>) => (options.client ?? client).post<StopNodeResponses, StopNodeErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/nodes/stop',
     ...options,
     headers: {
@@ -70,6 +73,7 @@ export const stopNode = <ThrowOnError extends boolean = false>(options: Options<
  * Delete a node
  */
 export const deleteNode = <ThrowOnError extends boolean = false>(options: Options<DeleteNodeData, ThrowOnError>) => (options.client ?? client).post<DeleteNodeResponses, DeleteNodeErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/nodes/delete',
     ...options,
     headers: {
@@ -103,6 +107,7 @@ export const newUser = <ThrowOnError extends boolean = false>(options: Options<N
  * Enable a user on all nodes
  */
 export const enableUser = <ThrowOnError extends boolean = false>(options: Options<EnableUserData, ThrowOnError>) => (options.client ?? client).post<EnableUserResponses, EnableUserErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/user/enable',
     ...options,
     headers: {
@@ -115,6 +120,7 @@ export const enableUser = <ThrowOnError extends boolean = false>(options: Option
  * Disable a user from all nodes
  */
 export const disableUser = <ThrowOnError extends boolean = false>(options: Options<DisableUserData, ThrowOnError>) => (options.client ?? client).post<DisableUserResponses, DisableUserErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/user/disable',
     ...options,
     headers: {
@@ -127,6 +133,7 @@ export const disableUser = <ThrowOnError extends boolean = false>(options: Optio
  * Delete a user from all nodes
  */
 export const deleteUser = <ThrowOnError extends boolean = false>(options: Options<DeleteUserData, ThrowOnError>) => (options.client ?? client).post<DeleteUserResponses, DeleteUserErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/user/delete',
     ...options,
     headers: {
@@ -138,4 +145,8 @@ export const deleteUser = <ThrowOnError extends boolean = false>(options: Option
 /**
  * List all users
  */
-export const listUsers = <ThrowOnError extends boolean = false>(options?: Options<ListUsersData, ThrowOnError>) => (options?.client ?? client).get<ListUsersResponses, ListUsersErrors, ThrowOnError>({ url: '/users', ...options });
+export const listUsers = <ThrowOnError extends boolean = false>(options?: Options<ListUsersData, ThrowOnError>) => (options?.client ?? client).get<ListUsersResponses, ListUsersErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/users',
+    ...options
+});
