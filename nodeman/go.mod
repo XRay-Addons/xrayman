@@ -78,6 +78,8 @@ require (
 
 require (
 	github.com/fergusstrange/embedded-postgres v1.32.0
+	github.com/gofrs/uuid v4.4.0+incompatible
+	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/jackc/pgerrcode v0.0.0-20250907135507-afb5586c32a6
 	github.com/jackc/pgx/v4 v4.18.3

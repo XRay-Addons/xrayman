@@ -6,6 +6,7 @@ package api
 type OperationName = string
 
 const (
+	AuthOperation        OperationName = "Auth"
 	DeleteNodeOperation  OperationName = "DeleteNode"
 	DeleteUserOperation  OperationName = "DeleteUser"
 	DisableUserOperation OperationName = "DisableUser"

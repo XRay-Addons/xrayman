@@ -12,13 +12,16 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/api"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/router"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/security"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/server"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/spa"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/auth/jwt"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/auth/password"
 	a "github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/app"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/httpclient"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/jobs/syncman"
-	auth "github.com/XRay-Addons/xrayman/nodeman/internal/service/auth"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service/auth"
 	nodes "github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
 	subscr "github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
 	users "github.com/XRay-Addons/xrayman/nodeman/internal/service/users"
@@ -43,6 +46,9 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 	var httpClient *httpclient.ClientFactory
 	var poolClient *client.PoolClient
 
+	var pwd *password.Password
+	var authJWT *jwt.JWT
+
 	var poolSyncer poolsync.Syncer
 
 	var syncJob *syncman.SyncMan
@@ -53,8 +59,11 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 	var subscrService *subscr.Service
 
 	var h *handler.Handler
+	var s *security.Handler
 	var apiHandler http.Handler
-	var userHandler http.Handler
+	var userpageHandler http.Handler
+	//var securityHandler
+
 	var r http.Handler
 	var httpServer *server.HttpServer
 
@@ -106,6 +115,21 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 			}, nil,
 		),
 
+		// password
+		a.WithComponent("password",
+			func(ctx context.Context) (err error) {
+				pwd, err = password.New(storage.PasswordStorage())
+				return
+			}, nil,
+		),
+		// jwt
+		a.WithComponent("jwt",
+			func(context.Context) (err error) {
+				authJWT, err = jwt.New("secret string from cinfig")
+				return
+			}, nil,
+		),
+
 		// nodes service
 		a.WithComponent("nodes service",
 			func(context.Context) (err error) {
@@ -130,7 +154,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// auth service
 		a.WithComponent("auth service",
 			func(ctx context.Context) (err error) {
-				authService, err = auth.New(storage.AuthStorage())
+				authService, err = auth.New(pwd, authJWT)
 				return
 			}, nil,
 		),
@@ -138,9 +162,10 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// bootstrap
 		a.WithComponent("bootstrap",
 			func(ctx context.Context) (err error) {
-				err = bootstrap.Bootstrap(ctx, bootstrap.Config{
+				bootstrapCfg := bootstrap.Config{
 					AdminPassword: cfg.AdminPassword,
-				}, authService, log)
+				}
+				err = bootstrap.Bootstrap(ctx, bootstrapCfg, pwd, log)
 				return
 			}, nil,
 		),
@@ -152,17 +177,24 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 					usersService,
 					nodesService,
 					subscrService,
+					authService,
 					handler.WithLogger(log))
 				return
 			}, nil,
 		),
 
 		// security handler
+		a.WithComponent("security",
+			func(context.Context) (err error) {
+				s, err = security.New(authJWT)
+				return
+			}, nil,
+		),
 
 		// api handler
 		a.WithComponent("api handler",
 			func(context.Context) (err error) {
-				apiHandler, err = api.NewHandler(h)
+				apiHandler, err = api.NewHandler(h, s)
 				return
 			}, nil,
 		),
@@ -170,7 +202,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 		// user spa handler
 		a.WithComponent("spa handler",
 			func(context.Context) (err error) {
-				userHandler, err = spa.NewHandler(cfg.UserSPAPrefix, cfg.APIPrefix)
+				userpageHandler, err = spa.NewHandler(cfg.UserSPAPrefix, cfg.APIPrefix)
 				return
 			}, nil,
 		),
@@ -180,7 +212,7 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 			func(context.Context) (err error) {
 				r, err = router.New(
 					router.WithHandler(cfg.APIPrefix, apiHandler),
-					router.WithHandler(cfg.UserSPAPrefix, userHandler),
+					router.WithHandler(cfg.UserSPAPrefix, userpageHandler),
 					router.WithLogger(log))
 				return
 			}, nil,

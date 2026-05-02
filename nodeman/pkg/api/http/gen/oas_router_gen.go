@@ -61,6 +61,26 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 			switch elem[0] {
+			case 'a': // Prefix: "auth"
+
+				if l := len("auth"); len(elem) >= l && elem[0:l] == "auth" {
+					elem = elem[l:]
+				} else {
+					break
+				}
+
+				if len(elem) == 0 {
+					// Leaf node.
+					switch r.Method {
+					case "POST":
+						s.handleAuthRequest([0]string{}, elemIsEscaped, w, r)
+					default:
+						s.notAllowed(w, r, "POST")
+					}
+
+					return
+				}
+
 			case 'n': // Prefix: "nodes"
 
 				if l := len("nodes"); len(elem) >= l && elem[0:l] == "nodes" {
@@ -530,6 +550,30 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 				break
 			}
 			switch elem[0] {
+			case 'a': // Prefix: "auth"
+
+				if l := len("auth"); len(elem) >= l && elem[0:l] == "auth" {
+					elem = elem[l:]
+				} else {
+					break
+				}
+
+				if len(elem) == 0 {
+					// Leaf node.
+					switch method {
+					case "POST":
+						r.name = AuthOperation
+						r.summary = "Authenticate and return JWT"
+						r.operationID = "Auth"
+						r.pathPattern = "/auth"
+						r.args = args
+						r.count = 0
+						return r, true
+					default:
+						return
+					}
+				}
+
 			case 'n': // Prefix: "nodes"
 
 				if l := len("nodes"); len(elem) >= l && elem[0:l] == "nodes" {

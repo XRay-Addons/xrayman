@@ -21,64 +21,64 @@ const { class: extraClass = "", "content-class": contentClass = "" } = Astro.pro
       <slot name="page" />
     </div>
   </dialog>
-
-  <script>
-    import { PartedElement } from "@/runtime/dom/parted-element";
-
-    class BtnDialog extends PartedElement {
-      private button!: HTMLButtonElement;
-      private dialog!: HTMLDialogElement;
-      private page!: HTMLElement;
-
-      connectedCallback() {
-        this.button = this.pt<HTMLButtonElement>("app-dialog-button");
-        this.dialog = this.pt<HTMLDialogElement>("app-dialog");
-        this.page = this.pt<HTMLElement>("app-dialog-page");
-
-        this.button.onclick = async () => {
-          this.dialog.showModal();
-        };
-
-        this.dialog.addEventListener("close", () => {
-          this.reset();
-        });
-
-        const overlay = this.pt<HTMLElement>("app-dialog-overlay");
-        overlay.onclick = () => {
-          this.dialog.close();
-          this.reset();
-        };
-      }
-
-      disconnectedCallback() {}
-
-      private reset() {
-        Array.from(this.page.children).forEach((el) => {
-          const resettable = el as any;
-          if (typeof resettable.reset === "function") {
-            resettable.reset();
-          }
-        });
-      }
-    }
-
-    customElements.define("btn-dialog", BtnDialog);
-  </script>
-
-  <style>
-    .app-dialog {
-      background: transparent;
-      border: none;
-      width: 100%;
-      padding: 0;
-    }
-    .app-dialog::backdrop {
-      background: transparent;
-    }
-    .app-dialog-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(255, 255, 255, 0.5);
-    }
-  </style>
 </btn-dialog>
+
+<script>
+  import { PartedElement } from "@/runtime/dom/parted-element";
+
+  class BtnDialog extends PartedElement {
+    private button!: HTMLButtonElement;
+    private dialog!: HTMLDialogElement;
+    private page!: HTMLElement;
+
+    connectedCallback() {
+      this.button = this.pt<HTMLButtonElement>("app-dialog-button");
+      this.dialog = this.pt<HTMLDialogElement>("app-dialog");
+      this.page = this.pt<HTMLElement>("app-dialog-page");
+
+      this.button.onclick = async () => {
+        this.dialog.showModal();
+      };
+
+      this.dialog.addEventListener("close", () => {
+        this.reset();
+      });
+
+      const overlay = this.pt<HTMLElement>("app-dialog-overlay");
+      overlay.onclick = () => {
+        this.dialog.close();
+        this.reset();
+      };
+    }
+
+    disconnectedCallback() {}
+
+    private reset() {
+      Array.from(this.page.children).forEach((el) => {
+        const resettable = el as any;
+        if (typeof resettable.reset === "function") {
+          resettable.reset();
+        }
+      });
+    }
+  }
+
+  customElements.define("btn-dialog", BtnDialog);
+</script>
+
+<style>
+  .app-dialog {
+    background: transparent;
+    border: none;
+    width: 100%;
+    padding: 0;
+  }
+  .app-dialog::backdrop {
+    background: transparent;
+  }
+  .app-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.5);
+  }
+</style>

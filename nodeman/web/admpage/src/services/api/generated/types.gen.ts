@@ -129,6 +129,50 @@ export type NewNodeRequest = {
     AccessKey: string;
 };
 
+export type AuthResponse = {
+    /**
+     * JWT access token
+     */
+    access_token: string;
+    token_type: string;
+    /**
+     * Token lifetime in seconds
+     */
+    expires_in: number;
+};
+
+export type AuthRequest = {
+    /**
+     * password
+     */
+    password: string;
+};
+
+export type AuthData = {
+    body: AuthRequest;
+    path?: never;
+    query?: never;
+    url: '/auth';
+};
+
+export type AuthErrors = {
+    /**
+     * General Error
+     */
+    default: Error;
+};
+
+export type AuthError = AuthErrors[keyof AuthErrors];
+
+export type AuthResponses = {
+    /**
+     * Successfully authenticated
+     */
+    200: AuthResponse;
+};
+
+export type AuthResponse2 = AuthResponses[keyof AuthResponses];
+
 export type NewNodeData = {
     body: NewNodeRequest;
     path?: never;

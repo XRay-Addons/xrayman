@@ -7,12 +7,12 @@ import (
 	genapi "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
 )
 
-func NewHandler(h genapi.Handler) (http.Handler, error) {
+func NewHandler(h genapi.Handler, s genapi.SecurityHandler) (http.Handler, error) {
 	if h == nil {
 		return nil, errdefs.NewNilArg("api.Handler")
 	}
 
-	apiHandler, err := genapi.NewServer(h)
+	apiHandler, err := genapi.NewServer(h, s)
 	if err != nil {
 		return nil, errdefs.WrapWithStack(err)
 	}

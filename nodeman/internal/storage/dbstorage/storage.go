@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/auth/password"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service/auth"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/users"
@@ -154,18 +154,18 @@ func (s *poolsyncStorage) DoUoW(ctx context.Context, fn poolsync.UoWFn) error {
 	})
 }
 
-// auth storage proxy
-func (s *Storage) AuthStorage() auth.Storage {
-	return &authStorage{storage: s}
+// password storage proxy
+func (s *Storage) PasswordStorage() password.Storage {
+	return &passwordStorage{storage: s}
 }
 
-var _ auth.Storage = (*authStorage)(nil)
+var _ password.Storage = (*passwordStorage)(nil)
 
-type authStorage struct {
+type passwordStorage struct {
 	storage *Storage
 }
 
-func (s *authStorage) DoUoW(ctx context.Context, fn auth.UoWFn) error {
+func (s *passwordStorage) DoUoW(ctx context.Context, fn password.UoWFn) error {
 	return s.storage.doTx(ctx, func(uowctx *uowctx) error {
 		return fn(uowctx)
 	})

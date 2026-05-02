@@ -9,6 +9,26 @@ import (
 	jx "github.com/go-faster/jx"
 )
 
+func ConvertAuthRequest(source *gen.AuthRequest) (*models.AuthParams, error) {
+	var pModelsAuthParams *models.AuthParams
+	if source != nil {
+		var modelsAuthParams models.AuthParams
+		modelsAuthParams.Password = (*source).Password
+		pModelsAuthParams = &modelsAuthParams
+	}
+	return pModelsAuthParams, nil
+}
+func ConvertAuthResult(source *models.AuthResult) *gen.AuthResponse {
+	var pApiAuthResponse *gen.AuthResponse
+	if source != nil {
+		var apiAuthResponse gen.AuthResponse
+		apiAuthResponse.AccessToken = (*source).AccessToken
+		apiAuthResponse.TokenType = (*source).TokenType
+		apiAuthResponse.ExpiresIn = ConvertExpireTime((*source).ExpiresIn)
+		pApiAuthResponse = &apiAuthResponse
+	}
+	return pApiAuthResponse
+}
 func ConvertDeleteNodeRequest(source *gen.DeleteNodeRequest) (*models.DeleteNodeParams, error) {
 	var pModelsDeleteNodeParams *models.DeleteNodeParams
 	if source != nil {

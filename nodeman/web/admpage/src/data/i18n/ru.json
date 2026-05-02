@@ -138,5 +138,15 @@
         "actions": "Actions"
       }
     }
+  },
+
+  "login": {
+    "title": {
+      "authorize": "Энтер Пассворд"
+    },
+    "password": {
+      "placeholder": "11111!1",
+      "button": "Аутх!"
+    }
   }
 }

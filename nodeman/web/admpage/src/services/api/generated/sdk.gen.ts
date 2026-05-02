@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { DeleteNodeData, DeleteNodeErrors, DeleteNodeResponses, DeleteUserData, DeleteUserErrors, DeleteUserResponses, DisableUserData, DisableUserErrors, DisableUserResponses, EnableUserData, EnableUserErrors, EnableUserResponses, ListNodesData, ListNodesErrors, ListNodesResponses, ListUsersData, ListUsersErrors, ListUsersResponses, NewNodeData, NewNodeErrors, NewNodeResponses, NewUserData, NewUserErrors, NewUserResponses, StartNodeData, StartNodeErrors, StartNodeResponses, StopNodeData, StopNodeErrors, StopNodeResponses } from './types.gen';
+import type { AuthData, AuthErrors, AuthResponses, DeleteNodeData, DeleteNodeErrors, DeleteNodeResponses, DeleteUserData, DeleteUserErrors, DeleteUserResponses, DisableUserData, DisableUserErrors, DisableUserResponses, EnableUserData, EnableUserErrors, EnableUserResponses, ListNodesData, ListNodesErrors, ListNodesResponses, ListUsersData, ListUsersErrors, ListUsersResponses, NewNodeData, NewNodeErrors, NewNodeResponses, NewUserData, NewUserErrors, NewUserResponses, StartNodeData, StartNodeErrors, StartNodeResponses, StopNodeData, StopNodeErrors, StopNodeResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -17,6 +17,18 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
      */
     meta?: Record<string, unknown>;
 };
+
+/**
+ * Authenticate and return JWT
+ */
+export const auth = <ThrowOnError extends boolean = false>(options: Options<AuthData, ThrowOnError>) => (options.client ?? client).post<AuthResponses, AuthErrors, ThrowOnError>({
+    url: '/auth',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Create a new node
@@ -69,7 +81,11 @@ export const deleteNode = <ThrowOnError extends boolean = false>(options: Option
 /**
  * List all nodes
  */
-export const listNodes = <ThrowOnError extends boolean = false>(options?: Options<ListNodesData, ThrowOnError>) => (options?.client ?? client).get<ListNodesResponses, ListNodesErrors, ThrowOnError>({ url: '/nodes', ...options });
+export const listNodes = <ThrowOnError extends boolean = false>(options?: Options<ListNodesData, ThrowOnError>) => (options?.client ?? client).get<ListNodesResponses, ListNodesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/nodes',
+    ...options
+});
 
 /**
  * Create a new user

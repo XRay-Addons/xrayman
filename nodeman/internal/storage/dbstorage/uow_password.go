@@ -10,7 +10,7 @@ import (
 const adminID = 0
 
 // auth.UoWContext impl
-func (uow *uowctx) GetAdmin(ctx context.Context) (*models.Auth, error) {
+func (uow *uowctx) GetAuth(ctx context.Context) (*models.Auth, error) {
 	query := queryReplacer.Replace(`
 		SELECT
 			{admin_id},
@@ -35,7 +35,7 @@ func (uow *uowctx) GetAdmin(ctx context.Context) (*models.Auth, error) {
 	return &auth, nil
 }
 
-func (uow *uowctx) SetAdmin(ctx context.Context, a *models.Auth) error {
+func (uow *uowctx) SetAuth(ctx context.Context, a models.Auth) error {
 	query := queryReplacer.Replace(`
 		INSERT INTO {admin_auth} (
 			{admin_id},

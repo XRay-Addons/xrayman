@@ -4,6 +4,33 @@ info:
   version: 1.0.0
 
 paths:
+  /auth:
+    post:
+      summary: Authenticate and return JWT
+      operationId: Auth
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthRequest"
+      responses:
+        "200":
+          description: Successfully authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "default":
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      tags:
+        - admpage
+
   /nodes/new:
     post:
       summary: Create a new node
@@ -128,6 +155,8 @@ paths:
                 $ref: "#/components/schemas/Error"
       tags:
         - admpage
+      security:
+        - BearerAuth: []
 
   /user/new:
     post:
@@ -315,7 +344,40 @@ paths:
                 $ref: "#/components/schemas/Error"
 
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
+    AuthRequest:
+      type: object
+      required:
+        - password
+      properties:
+        password:
+          type: string
+          format: password
+          description: password
+
+    AuthResponse:
+      type: object
+      required:
+        - access_token
+        - token_type
+        - expires_in
+      properties:
+        access_token:
+          type: string
+          description: JWT access token
+        token_type:
+          type: string
+          example: Bearer
+        expires_in:
+          type: integer
+          description: Token lifetime in seconds
+
     NodeID:
       type: integer
 

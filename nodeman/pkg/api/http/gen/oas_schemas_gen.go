@@ -13,6 +13,86 @@ func (s *ErrorStatusCode) Error() string {
 	return fmt.Sprintf("code %d: %+v", s.StatusCode, s.Response)
 }
 
+// Ref: #/components/schemas/AuthRequest
+type AuthRequest struct {
+	// Password.
+	Password string `json:"password"`
+}
+
+// GetPassword returns the value of Password.
+func (s *AuthRequest) GetPassword() string {
+	return s.Password
+}
+
+// SetPassword sets the value of Password.
+func (s *AuthRequest) SetPassword(val string) {
+	s.Password = val
+}
+
+// Ref: #/components/schemas/AuthResponse
+type AuthResponse struct {
+	// JWT access token.
+	AccessToken string `json:"access_token"`
+	TokenType   string `json:"token_type"`
+	// Token lifetime in seconds.
+	ExpiresIn int `json:"expires_in"`
+}
+
+// GetAccessToken returns the value of AccessToken.
+func (s *AuthResponse) GetAccessToken() string {
+	return s.AccessToken
+}
+
+// GetTokenType returns the value of TokenType.
+func (s *AuthResponse) GetTokenType() string {
+	return s.TokenType
+}
+
+// GetExpiresIn returns the value of ExpiresIn.
+func (s *AuthResponse) GetExpiresIn() int {
+	return s.ExpiresIn
+}
+
+// SetAccessToken sets the value of AccessToken.
+func (s *AuthResponse) SetAccessToken(val string) {
+	s.AccessToken = val
+}
+
+// SetTokenType sets the value of TokenType.
+func (s *AuthResponse) SetTokenType(val string) {
+	s.TokenType = val
+}
+
+// SetExpiresIn sets the value of ExpiresIn.
+func (s *AuthResponse) SetExpiresIn(val int) {
+	s.ExpiresIn = val
+}
+
+type BearerAuth struct {
+	Token string
+	Roles []string
+}
+
+// GetToken returns the value of Token.
+func (s *BearerAuth) GetToken() string {
+	return s.Token
+}
+
+// GetRoles returns the value of Roles.
+func (s *BearerAuth) GetRoles() []string {
+	return s.Roles
+}
+
+// SetToken sets the value of Token.
+func (s *BearerAuth) SetToken(val string) {
+	s.Token = val
+}
+
+// SetRoles sets the value of Roles.
+func (s *BearerAuth) SetRoles(val []string) {
+	s.Roles = val
+}
+
 type ClientConfigItem jx.Raw
 
 // Ref: #/components/schemas/ClientConfigTemplate

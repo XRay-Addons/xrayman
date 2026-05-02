@@ -14,10 +14,10 @@ type Config struct {
 	AdminPassword string
 }
 
-func Bootstrap(ctx context.Context, cfg Config, auth AuthService, log *zap.Logger) error {
+func Bootstrap(ctx context.Context, cfg Config, pwd Password, log *zap.Logger) error {
 	if cfg.AdminPassword != "" {
 		if err := withRetry(ctx, func(ctx context.Context) error {
-			err := auth.SetAdmin(ctx, cfg.AdminPassword)
+			err := pwd.Update(ctx, cfg.AdminPassword)
 			if errors.Is(err, errdefs.ErrTemporaryUnavailable) {
 				return retry.RetryableError(err)
 			}

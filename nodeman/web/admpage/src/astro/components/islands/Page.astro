@@ -4,6 +4,7 @@ import Title from "../primitives/Title.astro";
 import UsersTableCard from "./UsersTableCard.astro";
 import NodesTableCard from "./NodesTableCard.astro";
 import I18NText from "../primitives/I18nText.astro";
+import AuthDialog from "./AuthDialog.astro";
 ---
 
 <script>
@@ -13,6 +14,7 @@ import I18NText from "../primitives/I18nText.astro";
   initRandomThemeFeature();
 </script>
 
+<AuthDialog />
 <PageCenter class="col-12 col-xl-10">
   <Title class="col-6 mb-2">
     <I18NText data-i18n="title.main" />

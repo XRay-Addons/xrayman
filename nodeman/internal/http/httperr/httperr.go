@@ -14,7 +14,7 @@ var (
 	ErrInternalServerError = new(http.StatusInternalServerError,
 		"internal server error")
 	ErrAuthToken = new(http.StatusUnauthorized,
-		"invalid auth token", "try another one")
+		"invalid authorization", "try another one")
 	ErrUnknown = new(http.StatusInternalServerError,
 		"unknown error", "we really don't know")
 	ErrUserNotFound = new(http.StatusNotFound,

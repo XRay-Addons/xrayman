@@ -1,0 +1,111 @@
+---
+import PageCenter from "../primitives/PageCenter.astro";
+import Title from "../primitives/Title.astro";
+import I18NText from "../primitives/I18nText.astro";
+import Card from "../primitives/Card.astro";
+import InputGroup from "../primitives/InputGroup.astro";
+---
+
+<script>
+  import { initRandomThemeFeature } from "@/features/random-theme";
+  import { updateDOMPalette } from "@/runtime/dom/palette-dom";
+  updateDOMPalette();
+  initRandomThemeFeature();
+</script>
+
+<app-login-page>
+  <dialog class="auth-dialog" data-part="auth-dialog">
+    <div class="auth-dialog-overlay"></div>
+    <div class="hv-center">
+      <Card class="col-sm-12 col-md-6 col-lg-4">
+        <Title class="col-6 mb-2">
+          <I18NText data-i18n="login.title.authorize" />
+        </Title>
+        <InputGroup
+          inputProps={{
+            "data-i18n-placeholder": "login.password.placeholder",
+          }}
+          ,
+          buttonProps={{
+            "data-i18n": "login.password.button",
+          }}
+          ,
+          data-part="password-input"
+        />
+      </Card>
+    </div>
+  </dialog>
+</app-login-page>
+
+<script>
+  import { type InputGroupElement } from "@/astro/components/types/InputGroup";
+  import { auth } from "@/services/api/client";
+  import { notifyApiError } from "@/runtime/notifications/errors";
+  import { PartedElement } from "@/runtime/dom/parted-element";
+  import { authMan, loginRequiredEvent } from "@/services/api/auth-man";
+
+  class LoginPage extends PartedElement {
+    private pwdInputEl!: InputGroupElement;
+    private dialogEl!: HTMLDialogElement;
+
+    connectedCallback() {
+      this.pwdInputEl = this.pt<InputGroupElement>("password-input");
+      this.dialogEl = this.pt<HTMLDialogElement>("auth-dialog");
+
+      // keep auth window till success
+      this.pwdInputEl.onClick(async (pwd: string) => {
+        if (pwd.length == 0) {
+          return;
+        }
+
+        const response = await auth(pwd);
+        if (!response.ok) {
+          notifyApiError("auth", response.reason);
+        } else {
+          this.close();
+          authMan.onLoginSuccess(response.data.access_token);
+        }
+      });
+
+      // disable window closing
+      this.dialogEl.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      });
+
+      window.addEventListener(loginRequiredEvent, this.open);
+    }
+
+    disconnectedCallback() {}
+
+    private open = () => {
+      this.dialogEl.showModal();
+    };
+
+    private close() {
+      this.dialogEl.close();
+    }
+  }
+
+  customElements.define("app-login-page", LoginPage);
+</script>
+
+<style>
+  .auth-dialog {
+    background: transparent;
+    border: none;
+    width: 100%;
+    padding: 0;
+  }
+
+  .auth-dialog::backdrop {
+    background: transparent;
+  }
+  .auth-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.5);
+  }
+</style>

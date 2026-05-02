@@ -9,6 +9,7 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/httperr"
 	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
 	chimw "github.com/go-chi/chi/v5/middleware"
+	"github.com/ogen-go/ogen/ogenerrors"
 	"go.uber.org/zap"
 )
 
@@ -16,6 +17,7 @@ type Handler struct {
 	us  UsersService
 	ns  NodesService
 	ss  SubscrService
+	as  AuthService
 	log *zap.Logger
 }
 
@@ -36,6 +38,7 @@ func New(
 	us UsersService,
 	ns NodesService,
 	ss SubscrService,
+	as AuthService,
 	opts ...option,
 ) (*Handler, error) {
 	if us == nil {
@@ -51,6 +54,7 @@ func New(
 		us:  us,
 		ns:  ns,
 		ss:  ss,
+		as:  as,
 		log: zap.NewNop(),
 	}
 	for _, o := range opts {
@@ -62,11 +66,16 @@ func New(
 func (h *Handler) NewError(ctx context.Context, err error) *api.ErrorStatusCode {
 	// use passed HttpErr or default unknown
 	httpErr := httperr.ErrUnknown
-	if ok := errors.As(err, &httpErr); !ok {
+	if errors.As(err, &httpErr) {
 		// all errors pass to this handler, many of them are consequences
 		// of errors processed and logged before, others come here
 		h.logError(ctx, err)
 	}
+	if errors.Is(err, ogenerrors.ErrSecurityRequirementIsNotSatisfied) {
+		// non-httperr ogen errors
+		httpErr = httperr.ErrAuthToken
+	}
+
 	statusCodeErr := api.ErrorStatusCode(*httpErr)
 	return &statusCodeErr
 }

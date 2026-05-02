@@ -1,4 +1,4 @@
-package auth
+package password
 
 import (
 	"context"
@@ -8,8 +8,8 @@ import (
 )
 
 type UoWContext interface {
-	GetAdmin(context.Context) (*models.Auth, error)
-	SetAdmin(context.Context, *models.Auth) error
+	GetAuth(ctx context.Context) (*models.Auth, error)
+	SetAuth(ctx context.Context, auth models.Auth) error
 }
 
 type UoWFn = uow.Fn[UoWContext]

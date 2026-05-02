@@ -1,5 +1,3 @@
-import { ref } from "vue";
-
 export type Language = "en" | "ru";
 
 let language: Language = "ru";

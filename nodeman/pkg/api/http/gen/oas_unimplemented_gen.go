@@ -13,6 +13,15 @@ type UnimplementedHandler struct{}
 
 var _ Handler = UnimplementedHandler{}
 
+// Auth implements Auth operation.
+//
+// Authenticate and return JWT.
+//
+// POST /auth
+func (UnimplementedHandler) Auth(ctx context.Context, req *AuthRequest) (r *AuthResponse, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // DeleteNode implements DeleteNode operation.
 //
 // Delete a node.

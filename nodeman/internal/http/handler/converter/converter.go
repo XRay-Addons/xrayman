@@ -2,6 +2,7 @@ package converter
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
@@ -11,6 +12,7 @@ import (
 // goverter:converter
 // goverter:output:format function
 // goverter:output:file ./converter_generated.go
+// goverter:extend ConvertExpireTime
 // goverter:extend ConvertNodeID RConvertNodeID
 // goverter:extend ConvertNodeStatusResult
 // goverter:extend ConvertAccessKey RConvertAccessKey
@@ -19,6 +21,9 @@ import (
 //
 //go:generate goverter gen .
 type Converter interface {
+	ConvertAuthRequest(r *api.AuthRequest) (*models.AuthParams, error)
+	ConvertAuthResult(r *models.AuthResult) *api.AuthResponse
+
 	ConvertNewNodeRequest(r *api.NewNodeRequest) (*models.NewNodeParams, error)
 	ConvertNewNodeResult(r *models.NewNodeResult) *api.NewNodeResponse
 
@@ -47,6 +52,10 @@ type Converter interface {
 	ConvertUserSubRequest(r *api.UserSubParams) (*models.UserSubParams, error)
 	// goverter:map ClientConfigs Response
 	ConvertUserSubResult(r *models.UserSubResult) (*api.UserSubResponseHeaders, error)
+}
+
+func ConvertExpireTime(i time.Duration) int {
+	return int(i.Seconds())
 }
 
 func ConvertNodeID(i models.NodeID) api.NodeID {

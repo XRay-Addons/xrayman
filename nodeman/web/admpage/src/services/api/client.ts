@@ -1,7 +1,8 @@
-import { API_REASON, type ApiReason } from "./api-reason";
-import { config } from "@/config/config";
-import { client } from "./generated/client.gen";
+import { handleAPI, type ApiResult } from "./handle-api";
+import { setupClient } from "./client-setup";
+
 import {
+  auth as _auth,
   listUsers as _listUsers,
   enableUser as _enableUser,
   disableUser as _disableUser,
@@ -13,19 +14,16 @@ import {
   newNode as _newNode,
   deleteNode as _deleteNode,
 } from "./generated/sdk.gen";
-import type { Error, User, Node } from "./generated/types.gen";
+import type { User, Node, AuthResponse } from "./generated/types.gen";
 
-client.setConfig({
-  //baseUrl: config.API_URLPATH,
-  baseUrl: "http://localhost:80/api",
-});
+setupClient();
 
-export type ApiResult<T> = { ok: true; data: T } | { ok: false; reason: ApiReason };
-
-type ApiResponse<T> = ({ data: T; error: undefined } | { data: undefined; error: Error }) & {
-  request: Request;
-  response: Response;
-};
+export async function auth(pwd: string): Promise<ApiResult<AuthResponse>> {
+  return handleAPI(
+    () => _auth({ body: { password: pwd } }),
+    (data) => data,
+  );
+}
 
 export async function listUsers(): Promise<ApiResult<Array<User>>> {
   return handleAPI(
@@ -62,7 +60,7 @@ export async function deleteUser(id: number): Promise<ApiResult<void>> {
   );
 }
 
-export async function listNodes(): Promise<ApiResult<Array<APINode>>> {
+export async function listNodes(): Promise<ApiResult<Array<Node>>> {
   return handleAPI(
     () => _listNodes(),
     (data) => data.Nodes,
@@ -86,7 +84,7 @@ export async function stopNode(id: number): Promise<ApiResult<void>> {
 export async function newNode(endpoint: string, accessKey: string): Promise<ApiResult<Node>> {
   return handleAPI(
     () => _newNode({ body: { Endpoint: endpoint, AccessKey: accessKey } }),
-    (data) => data,
+    (data) => data.Node,
   );
 }
 
@@ -95,48 +93,4 @@ export async function deleteNode(id: number): Promise<ApiResult<void>> {
     () => _deleteNode({ body: { ID: id } }),
     (data) => {},
   );
-}
-
-async function handleAPI<T, R>(
-  apiCall: () => Promise<ApiResponse<T>>,
-  transform: (data: T) => R,
-): Promise<ApiResult<R>> {
-  try {
-    console.log("call api");
-    const resp = await apiCall();
-    console.log("call api response:", resp);
-
-    if (!resp.error) {
-      return {
-        ok: true,
-        data: transform(resp.data),
-      };
-    }
-    console.log("api call error:", resp.error);
-
-    const status = resp.response.status;
-    let reason: ApiReason;
-
-    switch (status) {
-      case 400:
-        reason = API_REASON.BAD_REQUEST;
-        break;
-      case 401:
-        reason = API_REASON.UNAUTHORIZED;
-        break;
-      case 403:
-        reason = API_REASON.FORBIDDEN;
-        break;
-      case 404:
-        reason = API_REASON.NOT_FOUND;
-        break;
-      default:
-        reason = API_REASON.UNKNOWN;
-    }
-
-    return { ok: false, reason };
-  } catch (error) {
-    console.log("api call error:", error);
-    return { ok: false, reason: API_REASON.NETWORK };
-  }
 }

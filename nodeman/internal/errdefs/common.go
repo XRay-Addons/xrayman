@@ -7,6 +7,7 @@ var (
 	ErrNilArg               = errors.New("nil argument passed")
 	ErrConnection           = errors.New("connection")
 	ErrTemporaryUnavailable = errors.New("temporary unavailable")
+	ErrAccessDenied         = errors.New("access denied")
 )
 
 func NewNilCall() error {
@@ -15,4 +16,9 @@ func NewNilCall() error {
 
 func NewNilArg(name string) error {
 	return Wrap(ErrNilArg, WithStack(), Withf("argument name: %s", name))
+}
+
+// TODO: NewAccessDenied
+func NewAccessDenied() error {
+	return WrapWithStack(ErrAccessDenied)
 }

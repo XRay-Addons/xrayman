@@ -5,56 +5,37 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type Service struct {
-	storage Storage
+	pwd Password
+	jwt JWT
 }
 
-func New(s Storage) (*Service, error) {
-	if s == nil {
-		return nil, errdefs.NewNilArg("s")
+func New(pwd Password, jwt JWT) (*Service, error) {
+	if pwd == nil {
+		return nil, errdefs.NewNilArg("pwd")
+	}
+	if jwt == nil {
+		return nil, errdefs.NewNilArg("jwt")
 	}
 	return &Service{
-		storage: s,
+		pwd: pwd,
+		jwt: jwt,
 	}, nil
 }
 
-func (s *Service) AuthAdmin(ctx context.Context, password string) error {
+func (s *Service) Auth(ctx context.Context, p models.AuthParams) (*models.AuthResult, error) {
 	if s == nil {
-		return errdefs.NewNilCall()
+		return nil, errdefs.NewNilCall()
 	}
-	var admin *models.Auth
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		admin, err = uowctx.GetAdmin(ctx)
-		return
-	}); err != nil {
-		return err
-	}
-
-	if err := bcrypt.CompareHashAndPassword(admin.PasswordHash, []byte(password)); err != nil {
-		return errdefs.WrapWithStack(err)
-	}
-	return nil
-}
-
-func (s *Service) SetAdmin(ctx context.Context, password string) error {
-	if s == nil {
-		return errdefs.NewNilCall()
-	}
-
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	err := s.pwd.Verify(ctx, p.Password)
 	if err != nil {
-		return errdefs.WrapWithStack(err)
+		return nil, err
 	}
-
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		err = uowctx.SetAdmin(ctx, &models.Auth{PasswordHash: hash})
-		return
-	}); err != nil {
-		return err
+	token, err := s.jwt.GenerateToken()
+	if err != nil {
+		return nil, err
 	}
-
-	return nil
+	return &token, nil
 }
