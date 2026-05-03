@@ -1,12 +1,11 @@
 ---
 import "bootstrap/dist/css/bootstrap.min.css";
-import "../styles/colors.css";
-import "../styles/depths.css";
-import "../styles/typography.css";
-import "../styles/globals.css";
-import "../styles/uireset.css";
-import "../styles/noselect.css";
-import "../styles/centering.css";
+import "@xrayman/shared/styles/uireset.css";
+import "@xrayman/shared/styles/tokens.css";
+import "@xrayman/shared/styles/centering.css";
+import "@xrayman/shared/styles/globals.css";
+import "@xrayman/shared/styles/noselect.css";
+import "@xrayman/shared/styles/typography.css";
 ---
 
 <html>
@@ -20,14 +19,16 @@ import "../styles/centering.css";
     />
 
     <title data-i18n="title.main"></title>
+
+    <script src="@/runtime/init.ts"></script>
   </head>
   <body>
     <slot />
     <script>
-      import { startI18nObserver } from "../lib/i18n";
-      import { fixIOSActive } from "../lib/ios-active-fix";
-      startI18nObserver();
-      fixIOSActive();
+      //import { startI18nObserver } from "../lib/i18n";
+      //import { fixIOSActive } from "../lib/ios-active-fix";
+      //startI18nObserver();
+      //fixIOSActive();
     </script>
   </body>
 </html>

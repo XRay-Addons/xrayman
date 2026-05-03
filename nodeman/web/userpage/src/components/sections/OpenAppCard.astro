@@ -1,8 +1,8 @@
 ---
-import Card from "@/components/ui/Card.astro";
-import Info from "@/components/ui/Info.astro";
-import ButtonsGroup from "@/components/ui/ButtonsGroup.astro";
-import Button from "@/components/ui/Button.astro";
+import Card from "@xrayman/shared/astro/components/primitives/Card.astro";
+import Info from "@xrayman/shared/astro/components/primitives/Info.astro";
+import Button from "@xrayman/shared/astro/components/primitives/Button.astro";
+import I18NText from "@xrayman/shared/astro/components/primitives/I18nText.astro";
 ---
 
 <open-app-card>
@@ -11,11 +11,13 @@ import Button from "@/components/ui/Button.astro";
       <strong>3.</strong>
       <span data-i18n="runapp.info"></span>
     </Info>
-    <ButtonsGroup>
-      <Button part="run-app-btn">
-        <span data-i18n="runapp.btn"></span>
+
+    <div class="row g-0 justify-content-center">
+      <Button data-part="run-app-btn" class="col-6 col-lg-4">
+        <I18NText data-i18n="runapp.btn" />
       </Button>
-    </ButtonsGroup>
+    </div>
+
     <Info>
       <strong>PS.</strong>
       <span data-i18n="runapp.ps"></span>
@@ -24,11 +26,13 @@ import Button from "@/components/ui/Button.astro";
 </open-app-card>
 
 <script>
-  import { UserUtils } from "@/lib/user-utils";
+  import { UserUtils } from "@/runtime/user/user-utils";
   import { config } from "@/config/config";
-  import { stateSignal } from "@/lib/state-signals";
+  import { stateSignal } from "@/state/signals";
+  import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
+  import { State } from "@/state/state";
 
-  class OpenAppCard extends HTMLElement {
+  class OpenAppCard extends PartedElement {
     private unsub?: () => void;
     private openHappFn?: () => void;
 
@@ -37,11 +41,10 @@ import Button from "@/components/ui/Button.astro";
     }
 
     connectedCallback() {
-      const btnEl = this.querySelector<HTMLButtonElement>('[part="run-app-btn"]');
-      if (!btnEl) return;
+      const btnEl = this.pt<HTMLButtonElement>("run-app-btn");
 
       this.unsub = stateSignal.subscribe((state) => {
-        if (state.status !== "logged-in") {
+        if (state.status !== State.LoggedIn) {
           this.openHappFn = () => {};
           return;
         }

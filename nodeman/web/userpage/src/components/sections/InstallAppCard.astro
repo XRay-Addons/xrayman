@@ -1,24 +1,26 @@
 ---
 import ButtonsGroup from "@/components/ui/ButtonsGroup.astro";
-import Card from "@/components/ui/Card.astro";
-import Info from "@/components/ui/Info.astro";
-import Button from "@/components/ui/Button.astro";
+import Card from "@xrayman/shared/astro/components/primitives/Card.astro";
+import Info from "@xrayman/shared/astro/components/primitives/Info.astro";
+import Button from "@xrayman/shared/astro/components/primitives/Button.astro";
 
 import PLATFORM_BUTTONS from "@/data/platform-apps.json";
 const buttonsJson = JSON.stringify(PLATFORM_BUTTONS);
 ---
 
 <install-app-card data-platform-buttons={buttonsJson}>
-  <Card class="mb-2" part="install-app-card">
+  <Card class="mb-2" data-part="install-app-card">
     <Info>
       <strong>2.</strong>
       <span data-i18n="installapp.info"></span>
     </Info>
     <ButtonsGroup part="install-app-btns">
       <template part="install-app-btn-template">
-        <Button part="install-app-btn">
-          <span part="install-app-btn-text"></span>
-        </Button>
+        <div class="col-6">
+          <Button>
+            <span part="install-app-btn-text"></span>
+          </Button>
+        </div>
       </template>
     </ButtonsGroup>
   </Card>
@@ -58,11 +60,11 @@ const buttonsJson = JSON.stringify(PLATFORM_BUTTONS);
 
       buttons.forEach((data) => {
         const fragment = template.content.cloneNode(true) as DocumentFragment;
-        const btn = fragment.querySelector<HTMLButtonElement>('[part="install-app-btn"]');
+        //const btn = fragment.querySelector<HTMLButtonElement>('[part="install-app-btn"]');
         const text = fragment.querySelector<HTMLSpanElement>('[part="install-app-btn-text"]');
-        if (!btn || !text) return;
+        if (!text) return;
 
-        btn.addEventListener("click", () => window.open(data.url, "_blank", "noopener"));
+        //btn.addEventListener("click", () => window.open(data.url, "_blank", "noopener"));
         text.dataset.i18n = data.text;
 
         frag.appendChild(fragment);

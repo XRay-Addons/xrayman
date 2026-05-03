@@ -4,17 +4,12 @@
 
 <user-controller> </user-controller>
 
-<style>
-  page-content {
-    display: contents;
-  }
-</style>
-
 <script>
-  import { ProfileURL, ProfileStorage, UserUtils } from "@/lib/user-utils";
-  import { stateSignal } from "@/lib/state-signals";
+  import { ProfileURL, ProfileStorage } from "@/runtime/user/user-utils";
+  import { stateSignal } from "@/state/signals";
   import { getUser } from "@/services/api/client";
-  import { API_REASON } from "@/lib/types";
+  import { API_REASON } from "@xrayman/shared/services/api/api-reason";
+  import { State } from "@/state/state";
 
   class UserController extends HTMLElement {
     private unsub?: () => void;
@@ -23,18 +18,17 @@
       // url user priority
       const userID = ProfileURL.parse() || ProfileStorage.parse();
       if (!userID) {
-        stateSignal.set({ status: "logged-out" });
+        stateSignal.set({ status: State.LoggedOut });
         return;
       }
-      const userResponse = await getUser(userID);
+      const userResponse = await getUser(userID.id, userID.name);
       if (userResponse.ok) {
-        const user = UserUtils.makeUser(userResponse.data);
-        stateSignal.set({ status: "logged-in", data: user });
+        stateSignal.set({ status: State.LoggedIn, data: userResponse.data });
       } else if (userResponse.ok == false && userResponse.reason == API_REASON.NOT_FOUND) {
-        stateSignal.set({ status: "logged-out" });
+        stateSignal.set({ status: State.LoggedOut });
       } else if (userResponse.ok == false) {
         stateSignal.set({
-          status: "server-error",
+          status: State.ServerError,
           reason: userResponse.reason,
         });
       }
@@ -42,10 +36,10 @@
 
     connectedCallback() {
       this.unsub = stateSignal.subscribe((state) => {
-        if (state.status === "logged-in") {
+        if (state.status === State.LoggedIn) {
           ProfileURL.set(state.data);
           ProfileStorage.set(state.data);
-        } else if (state.status === "logged-out") {
+        } else if (state.status === State.LoggedOut) {
           ProfileURL.reset();
           ProfileStorage.reset();
         } else if (state.status == "idle") {

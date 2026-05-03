@@ -13,14 +13,15 @@ import OpenAppCard from "./OpenAppCard.astro";
 </page-logged-in>
 
 <script>
-  import { stateSignal } from "@/lib/state-signals";
+  import { stateSignal } from "@/state/signals";
+  import { State } from "@/state/state";
 
   class PageLoggedIn extends HTMLElement {
     private unsub?: () => void;
 
     connectedCallback() {
       stateSignal.subscribe((state) => {
-        this.hidden = !(state.status === "logged-in");
+        this.hidden = !(state.status === State.LoggedIn);
       });
     }
 

@@ -19,7 +19,8 @@ const errorColor = "white";
 </style>
 
 <script>
-  import { stateSignal } from "@/lib/state-signals";
+  import { stateSignal } from "@/state/signals";
+  import { State } from "@/state/state";
 
   class ServerError extends HTMLElement {
     private unsub?: () => void;
@@ -29,7 +30,7 @@ const errorColor = "white";
       if (!reasonSpan) return;
 
       this.unsub = stateSignal.subscribe((state) => {
-        if (state.status === "server-error") {
+        if (state.status === State.ServerError) {
           const i18nReason = `servererror.reason.${state.reason}`;
           reasonSpan.setAttribute("data-i18n", i18nReason);
           return;

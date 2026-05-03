@@ -1,58 +1,61 @@
 ---
-import Card from "@/components/ui/Card.astro";
-import Info from "@/components/ui/Info.astro";
-import InputGroup from "@/components/ui/InputGroup.astro";
-import InputText from "@/components/ui/InputText.astro";
-import InputButton from "@/components/ui/InputButton.astro";
+import Card from "@xrayman/shared/astro/components/primitives/Card.astro";
+import Info from "@xrayman/shared/astro/components/primitives/Info.astro";
+import InputGroup from "@xrayman/shared/astro/components/primitives/InputGroup.astro";
+import I18NText from "@xrayman/shared/astro/components/primitives/I18nText.astro";
 ---
 
-<choose-name-card>
-  <Card class="mb-2">
-    <Info data-i18n="choosename.info" />
-    <InputGroup>
-      <InputText slot="input" data-i18n-placeholder="choosename.placeholder" part="name-input" />
-      <InputButton slot="button" part="name-input-btn" data-i18n="choosename.btntext" />
-    </InputGroup>
+<choose-name-card class="h-center">
+  <Card class="col-12 mb-2">
+    <Info>
+      <I18NText data-i18n="choosename.info" />
+    </Info>
+
+    <InputGroup
+      inputProps={{
+        "data-i18n-placeholder": "choosename.placeholder",
+      }}
+      ,
+      buttonProps={{
+        "data-i18n": "choosename.btntext",
+      }}
+      ,
+      data-part="name-input"
+      ,
+    />
   </Card>
 </choose-name-card>
 
-<style>
-  title-logged-in {
-    display: contents;
-  }
-</style>
-
 <script>
+  import { type InputGroupElement } from "@xrayman/shared/astro/components/types/InputGroup";
   import { newUser } from "@/services/api/client";
-  import { UserUtils } from "@/lib/user-utils";
-  import { stateSignal } from "@/lib/state-signals";
+  import { stateSignal } from "@/state/signals";
+  import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
+  import { State } from "@/state/state";
 
-  class ChooseNameCard extends HTMLElement {
+  class ChooseNameCard extends PartedElement {
     connectedCallback() {
-      const inputEl = this.querySelector<HTMLInputElement>('[part="name-input"]');
-      const btnEl = this.querySelector<HTMLButtonElement>('[part="name-input-btn"]');
-      if (!inputEl || !btnEl) return;
+      const nameInputEl = this.pt<InputGroupElement>("name-input");
 
-      const onSubmit = async () => {
-        const displayName = inputEl.value.trim();
-        if (!displayName) return;
+      nameInputEl.onClick(async (displayName: string) => {
+        if (displayName.length == 0) {
+          return;
+        }
 
-        const userResponse = await newUser(displayName);
-        if (userResponse.ok) {
-          const user = UserUtils.makeUser(userResponse.data);
-          stateSignal.set({ status: "logged-in", data: user });
-        } else if (userResponse.ok == false) {
+        const response = await newUser(displayName);
+        if (response.ok) {
+          stateSignal.set({ status: State.LoggedIn, data: response.data });
+        } else if (response.ok == false) {
           // WTF typescript conditions
           stateSignal.set({
             status: "server-error",
-            reason: userResponse.reason,
+            reason: response.reason,
           });
         }
-      };
-
-      btnEl.addEventListener("click", onSubmit);
-      inputEl.addEventListener("keydown", (e) => e.key === "Enter" && onSubmit());
+      });
     }
+
+    disconnectedCallback() {}
   }
 
   customElements.define("choose-name-card", ChooseNameCard);

@@ -69,15 +69,15 @@ import I18NText from "@xrayman/shared/astro/components/primitives/I18nText.astro
       this.successResultEl = this.pt<HTMLElement>("success-result");
       this.userpageOutputEl = this.pt<CopyGroupElement>("result-userpage")!;
 
-      this.nameInputEl.onClick(async (name: string) => {
-        if (name.length == 0) {
+      this.nameInputEl.onClick(async (displayName: string) => {
+        if (displayName.length == 0) {
           return;
         }
         // reset and hide
         this.successResultEl.setAttribute("hidden", "true");
         this.userpageOutputEl.setValue("");
 
-        const response = await newUser(name);
+        const response = await newUser(displayName);
         if (!response.ok) {
           notifyApiError("new_user", response.reason);
           return;

@@ -1,0 +1,19 @@
+---
+import PageLoggedIn from "./PageLoggedIn.astro";
+import PageCenter from "@xrayman/shared/astro/components/primitives/PageCenter.astro";
+import PageLoggedOut from "./PageLoggedOut.astro";
+import PageServerError from "./PageServerError.astro";
+import UserController from "./UserController.astro";
+---
+
+<script>
+  import { useRandomTheme } from "@/features/use-random-theme";
+  useRandomTheme();
+</script>
+
+<UserController />
+<PageCenter class="col-12 col-md-6 col-lg-4">
+  <PageLoggedOut />
+  <PageLoggedIn />
+  <PageServerError />
+</PageCenter>

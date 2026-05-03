@@ -1,9 +1,10 @@
-import { User, UserAPIData, UserID } from "./types";
-import { PathTools } from "./path-utils";
+import { UserID } from "./user-id";
+import { type User } from "@/services/api/generated/types.gen";
+import { PathTools } from "../utils/path-utils";
 
 export const ProfileURL = {
   make(user: User): string {
-    return PathTools.userpagePath(`./${user.id}-${user.name}`);
+    return PathTools.userpagePath(`./${user.Profile.ID}-${user.Profile.Name}`);
   },
   set(user: User): void {
     history.pushState(null, "", this.make(user));
@@ -26,7 +27,7 @@ const STORAGE_KEY = "user";
 
 export const ProfileStorage = {
   set(user: User): void {
-    const data: UserID = { id: user.id, name: user.name };
+    const data: UserID = { id: user.Profile.ID, name: user.Profile.Name };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   },
   reset() {
@@ -51,14 +52,6 @@ export const ProfileStorage = {
 
 export const UserUtils = {
   subscriptionURL(user: User): string {
-    return PathTools.apiPath(`./sub/${user.id}-${user.name}`);
-  },
-
-  makeUser(userData: UserAPIData): User {
-    return {
-      id: userData.id,
-      name: userData.name,
-      displayName: userData.displayName,
-    };
+    return PathTools.apiPath(`./sub/${user.Profile.ID}-${user.Profile.Name}`);
   },
 };

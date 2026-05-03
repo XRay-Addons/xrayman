@@ -1,11 +1,11 @@
 ---
-import Title from "@/components/ui/Title.astro";
+import Title from "@xrayman/shared/astro/components/primitives/Title.astro";
 ---
 
 <title-logged-in>
-  <Title class="mb-2">
+  <Title class="col-6 mb-2">
     <span data-i18n="title.hello"></span>
-    <span part="username"></span>
+    <span data-part="username"></span>
   </Title>
 </title-logged-in>
 
@@ -16,18 +16,18 @@ import Title from "@/components/ui/Title.astro";
 </style>
 
 <script>
-  import { stateSignal } from "@/lib/state-signals";
+  import { stateSignal } from "@/state/signals";
+  import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
+  import { State } from "@/state/state";
 
-  class TitleLoggedIn extends HTMLElement {
+  class TitleLoggedIn extends PartedElement {
     private unsub?: () => void;
 
     connectedCallback() {
-      const usernameEl = this.querySelector<HTMLElement>('[part="username"]');
-      if (!usernameEl) return;
-
+      const usernameEl = this.pt<HTMLSpanElement>("username");
       this.unsub = stateSignal.subscribe((state) => {
-        if (state.status === "logged-in") {
-          usernameEl.textContent = state.data.displayName;
+        if (state.status === State.LoggedIn) {
+          usernameEl.textContent = state.data.Profile.DisplayName;
         } else {
           usernameEl.textContent = "";
         }

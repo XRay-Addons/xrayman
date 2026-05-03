@@ -1,9 +1,7 @@
 ---
-import Card from "@/components/ui/Card.astro";
-import Info from "@/components/ui/Info.astro";
-import InputGroup from "@/components/ui/InputGroup.astro";
-import InputText from "@/components/ui/InputText.astro";
-import InputButton from "@/components/ui/InputButton.astro";
+import Card from "@xrayman/shared/astro/components/primitives/Card.astro";
+import Info from "@xrayman/shared/astro/components/primitives/Info.astro";
+import CopyGroup from "@xrayman/shared/astro/components/primitives/CopyGroup.astro";
 ---
 
 <user-page-card>
@@ -12,36 +10,36 @@ import InputButton from "@/components/ui/InputButton.astro";
       <strong>1.</strong>
       <span data-i18n="userurl.info"></span>
     </Info>
-    <InputGroup>
-      <InputText slot="input" part="user-url-input" readonly />
-      <InputButton slot="button" part="user-url-btn" data-i18n="userurl.btntext" />
-    </InputGroup>
+
+    <CopyGroup
+      buttonProps={{
+        "data-i18n": "userurl.btntext",
+      }}
+      ,
+      data-part="result-userpage"
+    />
   </Card>
 </user-page-card>
 
 <script>
-  import { ProfileURL } from "@/lib/user-utils";
-  import { stateSignal } from "@/lib/state-signals";
+  import { ProfileURL } from "@/runtime/user/user-utils";
+  import { stateSignal } from "@/state/signals";
+  import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
+  import { type CopyGroupElement } from "@xrayman/shared/astro/components/types/CopyGroup";
+  import { State } from "@/state/state";
 
-  class UserPageCard extends HTMLElement {
+  class UserPageCard extends PartedElement {
     private unsub?: () => void;
 
     connectedCallback() {
-      const inputEl = this.querySelector<HTMLInputElement>('[part="user-url-input"]');
-      const btnEl = this.querySelector<HTMLButtonElement>('[part="user-url-btn"]');
-      if (!inputEl || !btnEl) return;
+      const userpageOutputEl = this.pt<CopyGroupElement>("result-userpage")!;
 
       this.unsub = stateSignal.subscribe((state) => {
-        if (state.status === "logged-in") {
-          inputEl.value = ProfileURL.make(state.data);
+        if (state.status === State.LoggedIn) {
+          userpageOutputEl.setValue(ProfileURL.make(state.data));
         } else {
-          inputEl.value = "";
+          userpageOutputEl.setValue("");
         }
-      });
-
-      btnEl.addEventListener("click", async (e: Event) => {
-        e.preventDefault();
-        navigator.clipboard.writeText(inputEl.value);
       });
     }
 

@@ -24,6 +24,7 @@ export default defineConfig({
     resolve: {
       alias: {
         "@": path.resolve("./src"),
+        "@xrayman/shared": path.resolve("../shared/src"),
       },
     },
   },
