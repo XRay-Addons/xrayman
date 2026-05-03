@@ -1,5 +1,5 @@
 export abstract class PartedElement extends HTMLElement {
-  public pt<T extends Element>(name: string): T {
+  protected pt<T extends Element>(name: string): T {
     return pt<T>(this, name);
   }
 }

@@ -1,8 +1,8 @@
 ---
-import Card from "@xrayman/shared/astro/components/primitives/Card.astro";
-import Info from "@xrayman/shared/astro/components/primitives/Info.astro";
-import InputGroup from "@xrayman/shared/astro/components/primitives/InputGroup.astro";
-import I18NText from "@xrayman/shared/astro/components/primitives/I18nText.astro";
+import Card from "@xrayman/shared/astro/primitives/Card.astro";
+import Info from "@xrayman/shared/astro/primitives/Info.astro";
+import InputGroup from "@xrayman/shared/astro/primitives/InputGroup.astro";
+import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 ---
 
 <choose-name-card class="h-center">
@@ -27,7 +27,7 @@ import I18NText from "@xrayman/shared/astro/components/primitives/I18nText.astro
 </choose-name-card>
 
 <script>
-  import { type InputGroupElement } from "@xrayman/shared/astro/components/types/InputGroup";
+  import { type InputGroupElement } from "@xrayman/shared/astro/types/InputGroup";
   import { newUser } from "@/services/api/client";
   import { stateSignal } from "@/state/signals";
   import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";

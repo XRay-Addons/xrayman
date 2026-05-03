@@ -1,7 +1,7 @@
 ---
-import Card from "@xrayman/shared/astro/components/primitives/Card.astro";
-import Info from "@xrayman/shared/astro/components/primitives/Info.astro";
-import CopyGroup from "@xrayman/shared/astro/components/primitives/CopyGroup.astro";
+import Card from "@xrayman/shared/astro/primitives/Card.astro";
+import Info from "@xrayman/shared/astro/primitives/Info.astro";
+import CopyGroup from "@xrayman/shared/astro/primitives/CopyGroup.astro";
 ---
 
 <user-page-card>
@@ -27,7 +27,7 @@ import CopyGroup from "@xrayman/shared/astro/components/primitives/CopyGroup.ast
   import { ProfileURL } from "@/runtime/user/user-utils";
   import { stateSignal } from "@/state/signals";
   import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
-  import { type CopyGroupElement } from "@xrayman/shared/astro/components/types/CopyGroup";
+  import { type CopyGroupElement } from "@xrayman/shared/astro/types/CopyGroup";
   import { State } from "@/state/state";
 
   class UserPageCard extends PartedElement {
