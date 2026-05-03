@@ -1,28 +1,17 @@
-import { ref, shallowRef, type ShallowRef } from "vue";
+import { shallowRef, type ShallowRef } from "vue";
+import { type Palette, PaletteItem } from "@xrayman/shared/features/random-theme";
 
-export enum PaletteItem {
-  BG = "BG",
-  Card = "Card",
-  Title = "Title",
-  Button = "Button",
-  Input = "Input",
-  Table = "Table",
-  Success = "Success",
-}
-
-let paletteValue = {
-  [PaletteItem.BG]: "#feffa3",
-  [PaletteItem.Card]: "#d4ffea",
-  [PaletteItem.Title]: "#ffd4e5",
-  [PaletteItem.Button]: "#eecbff",
-  [PaletteItem.Input]: "#dbdcff",
-  [PaletteItem.Table]: "#d4ffea",
-  [PaletteItem.Success]: "#feffa3",
+let paletteValue: Palette = {
+  [PaletteItem.BG]: "transparent",
+  [PaletteItem.Card]: "transparent",
+  [PaletteItem.Title]: "transparent",
+  [PaletteItem.Button]: "transparent",
+  [PaletteItem.Input]: "transparent",
+  [PaletteItem.Table]: "transparent",
+  [PaletteItem.Success]: "transparent",
 };
 
 const palette = shallowRef(paletteValue);
-
-export type Palette = typeof paletteValue;
 
 export function getPaletteState() {
   return palette.value;

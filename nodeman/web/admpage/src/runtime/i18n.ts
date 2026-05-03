@@ -1,7 +1,7 @@
 import { createI18n } from "vue-i18n";
 import en from "@/data/i18n/en.json";
 import ru from "@/data/i18n/ru.json";
-import { getLanguageState, type Language } from "@/state/language";
+import { getLanguageState } from "@/state/language";
 
 const i18n = createI18n({
   legacy: false,

@@ -1,12 +1,12 @@
 /* colors */
 :root {
-  --bg-color: transparent;
-  --card-color: transparent;
-  --title-color: transparent;
-  --button-color: transparent;
-  --input-color: transparent;
-  --table-color: transparent; /* not used in astro */
-  --success-color: transparent;
+  --bg-color: #feffa3;
+  --card-color: #d4ffea;
+  --title-color: #ffd4e5;
+  --button-color: #eecbff;
+  --input-color: #dbdcff;
+  --table-color: #d4ffea;
+  --success-color: #feffa3;
 }
 
 /* surface depths */

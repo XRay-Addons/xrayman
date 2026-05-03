@@ -8,10 +8,8 @@ import AuthDialog from "./AuthDialog.astro";
 ---
 
 <script>
-  import { initRandomThemeFeature } from "@/features/random-theme";
-  import { updateDOMPalette } from "@/runtime/dom/palette-dom";
-  updateDOMPalette();
-  initRandomThemeFeature();
+  import { useRandomTheme } from "@/features/use-random-theme";
+  useRandomTheme();
 </script>
 
 <AuthDialog />

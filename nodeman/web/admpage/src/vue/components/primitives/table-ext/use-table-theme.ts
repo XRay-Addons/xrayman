@@ -1,9 +1,10 @@
-import { type Palette, PaletteItem } from "@/state/palette";
+import { type Palette, PaletteItem } from "@xrayman/shared/features/random-theme";
 import { type ShallowRef, computed } from "vue";
 import Color from "colorjs.io";
 
 export function useTableTheme(paletteRef: ShallowRef<Palette>) {
   return computed(() => {
+    console.log(paletteRef.value);
     const mainColor = new Color(paletteRef.value[PaletteItem.Table]);
     const textColor = contrastedColor(mainColor);
 
