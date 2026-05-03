@@ -1,15 +1,15 @@
 {
-  "name": "xrayman-userpage",
+  "name": "userpage",
+  "private": true,
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "generate": "openapi-ts",
-    "predev": "npm run generate",
+    "api:generate": "openapi-ts",
+    "predev": "pnpm run api:generate",
     "dev": "astro dev",
-    "prebuild": "npm run generate",
+    "prebuild": "pnpm run api:generate",
     "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
+    "preview": "astro preview"
   },
   "dependencies": {
     "@hey-api/client-fetch": "^0.13.1",

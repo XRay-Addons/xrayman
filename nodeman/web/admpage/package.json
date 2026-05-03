@@ -1,20 +1,21 @@
 {
   "name": "admpage",
+  "private": true,
   "type": "module",
   "version": "0.0.1",
+  "scripts": {
+    "api:generate": "openapi-ts",
+    "predev": "pnpm run api:generate",
+    "dev": "astro dev",
+    "prebuild": "pnpm run api:generate",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
   "engines": {
     "node": ">=22.12.0"
   },
-  "scripts": {
-    "api:generate": "openapi-ts",
-    "predev": "npm run api:generate",
-    "dev": "astro dev",
-    "prebuild": "npm run api:generate",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
-  },
   "dependencies": {
+    "@ant-design/icons-vue": "^7.0.1",
     "@astrojs/vue": "^6.0.1",
     "@primeuix/themes": "^2.0.3",
     "@tanstack/table-core": "^8.21.3",

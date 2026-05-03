@@ -15,8 +15,8 @@ export default defineConfig({
       HTML: true,
     }),
   ],
-  outDir: process.env.NODEMAN_WEB_DIST || "./dist",
   build: {
+    outDir: "./dist",
     minify: true,
   },
 });
