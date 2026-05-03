@@ -11,13 +11,15 @@ import CopyGroup from "@xrayman/shared/astro/components/primitives/CopyGroup.ast
       <span data-i18n="userurl.info"></span>
     </Info>
 
-    <CopyGroup
-      buttonProps={{
-        "data-i18n": "userurl.btntext",
-      }}
-      ,
-      data-part="result-userpage"
-    />
+    <div class="row h-center g-0 w-100">
+      <CopyGroup
+        button-props={{
+          "data-i18n": "userurl.btntext",
+        }}
+        data-part="result-userpage"
+        class="col-12 col-md-10 col-lg-8"
+      />
+    </div>
   </Card>
 </user-page-card>
 

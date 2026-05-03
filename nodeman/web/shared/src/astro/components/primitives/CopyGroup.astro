@@ -1,24 +1,45 @@
 ---
 import InputGroup from "./InputGroup.astro";
 
-const { inputProps = {}, buttonProps = {}, ...rest } = Astro.props;
+type HTMLProps = Record<string, unknown>;
+
+interface Props {
+  "input-props"?: HTMLProps;
+  "button-props"?: HTMLProps;
+  "data-part"?: string;
+
+  [key: string]: unknown; // WTF ts can't guess types
+}
+
+const {
+  "input-props": inputProps = {},
+  "button-props": buttonProps = {},
+  "data-part": dataPart = "",
+  ...rest
+} = Astro.props;
 
 const { class: _ic, style: _is, "data-part": _dpInput, ...safeInputProps } = inputProps;
 
 const { class: _bc, style: _bs, "data-part": _dpButton, ...safeButtonProps } = buttonProps;
 ---
 
-<copy-group {...rest}>
+<copy-group data-part={dataPart}>
   <InputGroup
-    inputProps={{
+    input-props={{
       readonly: "true",
       ...inputProps,
     }}
-    ,
-    buttonProps={buttonProps}
+    button-props={buttonProps}
     data-part="input-group"
+    {...rest}
   />
 </copy-group>
+
+<style lang="css">
+  copy-group {
+    display: contents;
+  }
+</style>
 
 <script>
   import { type CopyGroupElement } from "../types/CopyGroup";

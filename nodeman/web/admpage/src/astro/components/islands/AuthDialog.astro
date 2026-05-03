@@ -5,13 +5,6 @@ import Card from "@xrayman/shared/astro/components/primitives/Card.astro";
 import InputGroup from "@xrayman/shared/astro/components/primitives/InputGroup.astro";
 ---
 
-<script>
-  import { initRandomThemeFeature } from "@/features/random-theme";
-  import { updateDOMPalette } from "@/runtime/dom/palette-dom";
-  updateDOMPalette();
-  initRandomThemeFeature();
-</script>
-
 <app-login-page>
   <dialog class="auth-dialog" data-part="auth-dialog">
     <div class="auth-dialog-overlay"></div>
@@ -21,14 +14,12 @@ import InputGroup from "@xrayman/shared/astro/components/primitives/InputGroup.a
           <I18NText data-i18n="login.title.authorize" />
         </Title>
         <InputGroup
-          inputProps={{
+          input-props={{
             "data-i18n-placeholder": "login.password.placeholder",
           }}
-          ,
-          buttonProps={{
+          button-props={{
             "data-i18n": "login.password.button",
           }}
-          ,
           data-part="password-input"
         />
       </Card>

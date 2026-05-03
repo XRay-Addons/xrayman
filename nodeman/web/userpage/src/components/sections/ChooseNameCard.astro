@@ -11,18 +11,18 @@ import I18NText from "@xrayman/shared/astro/components/primitives/I18nText.astro
       <I18NText data-i18n="choosename.info" />
     </Info>
 
-    <InputGroup
-      inputProps={{
-        "data-i18n-placeholder": "choosename.placeholder",
-      }}
-      ,
-      buttonProps={{
-        "data-i18n": "choosename.btntext",
-      }}
-      ,
-      data-part="name-input"
-      ,
-    />
+    <div class="row h-center g-0 w-100">
+      <InputGroup
+        input-props={{
+          "data-i18n-placeholder": "choosename.placeholder",
+        }}
+        button-props={{
+          "data-i18n": "choosename.btntext",
+        }}
+        data-part="name-input"
+        class="col-12 col-md-8"
+      />
+    </div>
   </Card>
 </choose-name-card>
 

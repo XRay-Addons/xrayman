@@ -10,7 +10,7 @@ const { class: extraClass, styles: __, ...rest } = Astro.props;
 ---
 
 <Surface depth="var(--button-depth)" color="var(--button-color)" class={extraClass} dynamic>
-  <button class="ui-reset-button noselect w-100 text-md p-2" {...rest}>
+  <button class="ui-reset-button noselect w-100 h-100 text-md p-2" {...rest}>
     <slot />
   </button>
 </Surface>
