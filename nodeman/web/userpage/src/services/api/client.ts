@@ -1,5 +1,5 @@
-import { UserID, UserAPIData, ApiReason, API_REASON } from "../lib/types";
-import { config } from "../config/config";
+import { UserID, UserAPIData, ApiReason, API_REASON } from "../../lib/types";
+import { config } from "../../config/config";
 import { client } from "./generated/client.gen";
 import { newUser as _newUser, getUser as _getUser } from "./generated/sdk.gen";
 import { Error } from "./generated/types.gen";
@@ -8,21 +8,14 @@ client.setConfig({
   baseUrl: config.API_URLPATH,
 });
 
-export type ApiResult<T> =
-  | { ok: true; data: T }
-  | { ok: false; reason: ApiReason };
+export type ApiResult<T> = { ok: true; data: T } | { ok: false; reason: ApiReason };
 
-type ApiResponse<T> = (
-  | { data: T; error: undefined }
-  | { data: undefined; error: Error }
-) & {
+type ApiResponse<T> = ({ data: T; error: undefined } | { data: undefined; error: Error }) & {
   request: Request;
   response: Response;
 };
 
-export async function newUser(
-  displayName: string,
-): Promise<ApiResult<UserAPIData>> {
+export async function newUser(displayName: string): Promise<ApiResult<UserAPIData>> {
   return handleAPI(
     () => _newUser({ body: { DisplayName: displayName } }),
     (data) => ({
