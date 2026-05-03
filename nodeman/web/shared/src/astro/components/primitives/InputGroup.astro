@@ -17,28 +17,52 @@ const { class: _bc, style: _bs, "data-part": _dpButton, ...safeButtonProps } = b
 ---
 
 <input-group {...rest}>
-  <div class="row w-100 g-0">
+  <div class="row g-0">
     <div class="group-input-wrap">
       <Surface depth="var(--input-depth)" color="var(--input-color)" class="h-100">
         <input
           data-part="input"
           type="text"
-          class="ui-reset-input group-input text-md p-2 h-100"
+          class="ui-reset-input group-input text-md p-2 h-100 w-100"
           {...safeInputProps}
         />
       </Surface>
     </div>
 
     <div class="group-btn-wrap">
-      <Surface depth="var(--input-depth)" color="var(--input-color)" dynamic class="h-100">
+      <Surface
+        depth="var(--input-depth)"
+        color="var(--input-color)"
+        dynamic
+        class="group-btn-wrap h-100"
+      >
         <button
           data-part="button"
-          class="ui-reset-button noselect group-btn text-md p-2 h-100"
+          class="ui-reset-button noselect group-btn text-md p-2 h-100 w-100"
           {...safeButtonProps}></button>
       </Surface>
     </div>
   </div>
 </input-group>
+
+<style>
+  .group-input-wrap {
+    width: 75%;
+  }
+  .group-btn-wrap {
+    width: calc(25% + var(--input-depth));
+    margin-left: calc(-1 * var(--input-depth));
+  }
+
+  .group-input {
+  }
+
+  .group-btn {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+</style>
 
 <script>
   import { type InputGroupElement, type OnClickFn } from "../types/InputGroup";
@@ -81,24 +105,3 @@ const { class: _bc, style: _bs, "data-part": _dpButton, ...safeButtonProps } = b
 
   customElements.define("input-group", InputGroup);
 </script>
-
-<style>
-  .group-input-wrap {
-    width: 75%;
-  }
-  .group-btn-wrap {
-    width: calc(25% + var(--input-depth));
-    margin-left: calc(-1 * var(--input-depth));
-  }
-
-  .group-input {
-    width: 100%;
-  }
-
-  .group-btn {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
-  }
-</style>
