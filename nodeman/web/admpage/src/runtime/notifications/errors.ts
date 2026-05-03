@@ -1,5 +1,5 @@
 import { t } from "@/runtime/i18n";
-import { type ApiReason } from "@/services/api/api-reason";
+import { type ApiReason } from "@xrayman/shared/services/api/api-reason";
 
 type NotificationFn = (message: string, description?: string) => void;
 
