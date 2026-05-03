@@ -8,8 +8,8 @@ const { ...rest } = Astro.props;
 
 <script>
   class EqHeight extends HTMLElement {
-    mo: MutationObserver | null;
-    ro: ResizeObserver | null;
+    mo?: MutationObserver;
+    ro?: ResizeObserver;
 
     connectedCallback() {
       const equalize = () => {
@@ -24,6 +24,7 @@ const { ...rest } = Astro.props;
           children.forEach((el) => (el.style.height = `${max}px`));
         });
       };
+      equalize();
 
       this.ro = new ResizeObserver(equalize);
       this.mo = new MutationObserver(equalize);
@@ -34,15 +35,13 @@ const { ...rest } = Astro.props;
         subtree: true,
         characterData: true,
       });
-
-      equalize();
     }
 
     disconnectedCallback() {
       this.ro?.disconnect();
       this.mo?.disconnect();
-      this.ro = null;
-      this.mo = null;
+      this.ro = undefined;
+      this.mo = undefined;
     }
   }
 

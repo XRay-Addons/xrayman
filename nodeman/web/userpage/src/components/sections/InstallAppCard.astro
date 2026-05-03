@@ -1,5 +1,5 @@
 ---
-import ButtonsGroup from "@/components/ui/ButtonsGroup.astro";
+import EqHeight from "@xrayman/shared/astro/components/primitives/EqHeight.astro";
 import Card from "@xrayman/shared/astro/components/primitives/Card.astro";
 import Info from "@xrayman/shared/astro/components/primitives/Info.astro";
 import Button from "@xrayman/shared/astro/components/primitives/Button.astro";
@@ -14,65 +14,66 @@ const buttonsJson = JSON.stringify(PLATFORM_BUTTONS);
       <strong>2.</strong>
       <span data-i18n="installapp.info"></span>
     </Info>
-    <ButtonsGroup part="install-app-btns">
-      <template part="install-app-btn-template">
-        <div class="col-6">
-          <Button>
-            <span part="install-app-btn-text"></span>
-          </Button>
-        </div>
-      </template>
-    </ButtonsGroup>
+
+    <div class="h-center w-100">
+      <EqHeight data-part="install-app-btns" class="row g-1 col-12 col-md-10 col-lg-8">
+        <template data-part="install-app-btn-template">
+          <div class="col-6">
+            <Button class="w-100 h-100" data-part="install-app-btn">
+              <span data-part="install-app-btn-text"></span>
+            </Button>
+          </div>
+        </template>
+      </EqHeight>
+    </div>
   </Card>
+
+  <script>
+    import { PartedElement, pt } from "@xrayman/shared/runtime/dom/parted-element";
+
+    class InstallAppCard extends PartedElement {
+      connectedCallback() {
+        const raw = this.dataset.platformButtons;
+        if (!raw) return;
+
+        const PLATFORM_BUTTONS = JSON.parse(raw);
+
+        const platform = this.detectPlatform();
+        const buttons = PLATFORM_BUTTONS[platform] ?? [];
+
+        this.renderButtons(buttons);
+      }
+
+      detectPlatform() {
+        const ua = navigator.userAgent.toLowerCase();
+        if (/iphone|ipad|ipod/.test(ua)) return "ios";
+        if (/macintosh/.test(ua)) return "macos";
+        if (/android/.test(ua)) return "android";
+        if (/windows/.test(ua)) return "windows";
+        return "unknown";
+      }
+
+      renderButtons(buttons: any[]) {
+        const btnTemplate = this.pt<HTMLTemplateElement>("install-app-btn-template");
+        const btnsSection = this.pt<HTMLElement>("install-app-btns");
+
+        const frag = document.createDocumentFragment();
+
+        buttons.forEach((data) => {
+          const fragment = btnTemplate.content.cloneNode(true) as HTMLElement;
+          const btn = pt<HTMLButtonElement>(fragment, "install-app-btn");
+          const text = pt<HTMLSpanElement>(fragment, "install-app-btn-text");
+
+          btn.addEventListener("click", () => window.open(data.url, "_blank", "noopener"));
+          text.dataset.i18n = data.text;
+
+          frag.appendChild(fragment);
+        });
+
+        btnsSection.replaceChildren(frag);
+      }
+    }
+
+    customElements.define("install-app-card", InstallAppCard);
+  </script>
 </install-app-card>
-
-<script>
-  class InstallAppCard extends HTMLElement {
-    connectedCallback() {
-      const raw = this.dataset.platformButtons;
-      if (!raw) return;
-
-      const PLATFORM_BUTTONS = JSON.parse(raw);
-
-      const platform = this.detectPlatform();
-      const buttons = PLATFORM_BUTTONS[platform] ?? [];
-
-      this.renderButtons(buttons);
-    }
-
-    detectPlatform() {
-      const ua = navigator.userAgent.toLowerCase();
-      if (/iphone|ipad|ipod/.test(ua)) return "ios";
-      if (/macintosh/.test(ua)) return "macos";
-      if (/android/.test(ua)) return "android";
-      if (/windows/.test(ua)) return "windows";
-      return "unknown";
-    }
-
-    renderButtons(buttons: any[]) {
-      const template = this.querySelector<HTMLTemplateElement>('[part="install-app-btn-template"]');
-      if (!template) return;
-
-      const parent = template.parentElement;
-      if (!parent) return;
-
-      const frag = document.createDocumentFragment();
-
-      buttons.forEach((data) => {
-        const fragment = template.content.cloneNode(true) as DocumentFragment;
-        //const btn = fragment.querySelector<HTMLButtonElement>('[part="install-app-btn"]');
-        const text = fragment.querySelector<HTMLSpanElement>('[part="install-app-btn-text"]');
-        if (!text) return;
-
-        //btn.addEventListener("click", () => window.open(data.url, "_blank", "noopener"));
-        text.dataset.i18n = data.text;
-
-        frag.appendChild(fragment);
-      });
-
-      parent.replaceChildren(frag);
-    }
-  }
-
-  customElements.define("install-app-card", InstallAppCard);
-</script>
