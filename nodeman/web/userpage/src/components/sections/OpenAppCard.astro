@@ -1,8 +1,8 @@
 ---
-import Card from "../ui/Card.astro";
-import Info from "../ui/Info.astro";
-import ButtonsGroup from "../ui/ButtonsGroup.astro";
-import Button from "../ui/Button.astro";
+import Card from "@/components/ui/Card.astro";
+import Info from "@/components/ui/Info.astro";
+import ButtonsGroup from "@/components/ui/ButtonsGroup.astro";
+import Button from "@/components/ui/Button.astro";
 ---
 
 <open-app-card>
@@ -24,9 +24,9 @@ import Button from "../ui/Button.astro";
 </open-app-card>
 
 <script>
-  import { UserUtils } from "../../lib/user-utils";
-  import { config } from "../../config/config";
-  import { stateSignal } from "../../lib/state-signals";
+  import { UserUtils } from "@/lib/user-utils";
+  import { config } from "@/config/config";
+  import { stateSignal } from "@/lib/state-signals";
 
   class OpenAppCard extends HTMLElement {
     private unsub?: () => void;
@@ -37,9 +37,7 @@ import Button from "../ui/Button.astro";
     }
 
     connectedCallback() {
-      const btnEl = this.querySelector<HTMLButtonElement>(
-        '[part="run-app-btn"]',
-      );
+      const btnEl = this.querySelector<HTMLButtonElement>('[part="run-app-btn"]');
       if (!btnEl) return;
 
       this.unsub = stateSignal.subscribe((state) => {

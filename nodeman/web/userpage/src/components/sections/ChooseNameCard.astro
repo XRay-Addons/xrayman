@@ -1,25 +1,17 @@
 ---
-import Card from "../ui/Card.astro";
-import Info from "../ui/Info.astro";
-import InputGroup from "../ui/InputGroup.astro";
-import InputText from "../ui/InputText.astro";
-import InputButton from "../ui/InputButton.astro";
+import Card from "@/components/ui/Card.astro";
+import Info from "@/components/ui/Info.astro";
+import InputGroup from "@/components/ui/InputGroup.astro";
+import InputText from "@/components/ui/InputText.astro";
+import InputButton from "@/components/ui/InputButton.astro";
 ---
 
 <choose-name-card>
   <Card class="mb-2">
     <Info data-i18n="choosename.info" />
     <InputGroup>
-      <InputText
-        slot="input"
-        data-i18n-placeholder="choosename.placeholder"
-        part="name-input"
-      />
-      <InputButton
-        slot="button"
-        part="name-input-btn"
-        data-i18n="choosename.btntext"
-      />
+      <InputText slot="input" data-i18n-placeholder="choosename.placeholder" part="name-input" />
+      <InputButton slot="button" part="name-input-btn" data-i18n="choosename.btntext" />
     </InputGroup>
   </Card>
 </choose-name-card>
@@ -31,18 +23,14 @@ import InputButton from "../ui/InputButton.astro";
 </style>
 
 <script>
-  import { newUser } from "../../api/client";
-  import { UserUtils } from "../../lib/user-utils";
-  import { stateSignal } from "../../lib/state-signals";
+  import { newUser } from "@/services/api/client";
+  import { UserUtils } from "@/lib/user-utils";
+  import { stateSignal } from "@/lib/state-signals";
 
   class ChooseNameCard extends HTMLElement {
     connectedCallback() {
-      const inputEl = this.querySelector<HTMLInputElement>(
-        '[part="name-input"]',
-      );
-      const btnEl = this.querySelector<HTMLButtonElement>(
-        '[part="name-input-btn"]',
-      );
+      const inputEl = this.querySelector<HTMLInputElement>('[part="name-input"]');
+      const btnEl = this.querySelector<HTMLButtonElement>('[part="name-input-btn"]');
       if (!inputEl || !btnEl) return;
 
       const onSubmit = async () => {
@@ -63,10 +51,7 @@ import InputButton from "../ui/InputButton.astro";
       };
 
       btnEl.addEventListener("click", onSubmit);
-      inputEl.addEventListener(
-        "keydown",
-        (e) => e.key === "Enter" && onSubmit(),
-      );
+      inputEl.addEventListener("keydown", (e) => e.key === "Enter" && onSubmit());
     }
   }
 

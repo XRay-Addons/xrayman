@@ -11,10 +11,10 @@
 </style>
 
 <script>
-  import { ProfileURL, ProfileStorage, UserUtils } from "../../lib/user-utils";
-  import { stateSignal } from "../../lib/state-signals";
-  import { getUser } from "../../api/client";
-  import { API_REASON } from "../../lib/types";
+  import { ProfileURL, ProfileStorage, UserUtils } from "@/lib/user-utils";
+  import { stateSignal } from "@/lib/state-signals";
+  import { getUser } from "@/services/api/client";
+  import { API_REASON } from "@/lib/types";
 
   class UserController extends HTMLElement {
     private unsub?: () => void;
@@ -30,10 +30,7 @@
       if (userResponse.ok) {
         const user = UserUtils.makeUser(userResponse.data);
         stateSignal.set({ status: "logged-in", data: user });
-      } else if (
-        userResponse.ok == false &&
-        userResponse.reason == API_REASON.NOT_FOUND
-      ) {
+      } else if (userResponse.ok == false && userResponse.reason == API_REASON.NOT_FOUND) {
         stateSignal.set({ status: "logged-out" });
       } else if (userResponse.ok == false) {
         stateSignal.set({

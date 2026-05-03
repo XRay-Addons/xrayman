@@ -2,6 +2,10 @@
   "include": ["src"],
   "compilerOptions": {
     "module": "ESNext",
-    "moduleResolution": "bundler"
+    "moduleResolution": "bundler",
+    "strict": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   }
 }

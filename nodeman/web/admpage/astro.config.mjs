@@ -1,5 +1,6 @@
 import { defineConfig } from "astro/config";
 import vue from "@astrojs/vue";
+import path from "node:path";
 
 export default defineConfig({
   output: "static",
@@ -14,7 +15,8 @@ export default defineConfig({
   vite: {
     resolve: {
       alias: {
-        "@": "/src",
+        "@": path.resolve("./src"),
+        "@xrayman/shared": path.resolve("../shared/src"),
       },
     },
   },

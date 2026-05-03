@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@hey-api/client-fetch": "^0.13.1",
+    "@web/shared": "workspace:*",
     "@zokki/astro-purgecss": "^1.0.4",
     "astro": "^5.17.1",
     "astro-compress": "^2.4.0",

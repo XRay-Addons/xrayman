@@ -1,5 +1,5 @@
 ---
-import Title from "../ui/Title.astro";
+import Title from "@/components/ui/Title.astro";
 ---
 
 <title-logged-in>
@@ -16,7 +16,7 @@ import Title from "../ui/Title.astro";
 </style>
 
 <script>
-  import { stateSignal } from "../../lib/state-signals";
+  import { stateSignal } from "@/lib/state-signals";
 
   class TitleLoggedIn extends HTMLElement {
     private unsub?: () => void;

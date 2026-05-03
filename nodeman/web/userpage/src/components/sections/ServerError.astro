@@ -1,5 +1,5 @@
 ---
-import ErrorImg from "../ui/ErrorImg.astro";
+import ErrorImg from "@/components/ui/ErrorImg.astro";
 
 const errorImg = "./error.gif";
 const errorColor = "white";
@@ -19,15 +19,13 @@ const errorColor = "white";
 </style>
 
 <script>
-  import { stateSignal } from "../../lib/state-signals";
+  import { stateSignal } from "@/lib/state-signals";
 
   class ServerError extends HTMLElement {
     private unsub?: () => void;
 
     connectedCallback() {
-      const reasonSpan = this.querySelector<HTMLSpanElement>(
-        '[part="servererror.reason"]',
-      );
+      const reasonSpan = this.querySelector<HTMLSpanElement>('[part="servererror.reason"]');
       if (!reasonSpan) return;
 
       this.unsub = stateSignal.subscribe((state) => {

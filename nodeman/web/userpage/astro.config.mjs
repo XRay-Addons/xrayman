@@ -3,6 +3,7 @@ import { purgecss } from "@zokki/astro-purgecss";
 import relativeLinks from "astro-relative-links";
 import process from "process";
 import compress from "astro-compress";
+import path from "node:path";
 
 export default defineConfig({
   output: "static",
@@ -18,5 +19,12 @@ export default defineConfig({
   build: {
     outDir: "./dist",
     minify: true,
+  },
+  vite: {
+    resolve: {
+      alias: {
+        "@": path.resolve("./src"),
+      },
+    },
   },
 });

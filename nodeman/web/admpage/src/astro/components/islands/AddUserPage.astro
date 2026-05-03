@@ -1,11 +1,11 @@
 ---
-import Info from "@/astro/components/primitives/Info.astro";
-import InputGroup from "../primitives/InputGroup.astro";
-import CopyGroup from "../primitives/CopyGroup.astro";
-import Card from "../primitives/Card.astro";
-import Title from "../primitives/Title.astro";
-import SuccessMsg from "../primitives/SuccessMsg.astro";
-import I18NText from "../primitives/I18nText.astro";
+import Info from "@xrayman/shared/astro/components/primitives/Info.astro";
+import InputGroup from "@xrayman/shared/astro/components/primitives/InputGroup.astro";
+import CopyGroup from "@xrayman/shared/astro/components/primitives/CopyGroup.astro";
+import Card from "@xrayman/shared/astro/components/primitives/Card.astro";
+import Title from "@xrayman/shared/astro/components/primitives/Title.astro";
+import SuccessMsg from "@xrayman/shared/astro/components/primitives/SuccessMsg.astro";
+import I18NText from "@xrayman/shared/astro/components/primitives/I18nText.astro";
 ---
 
 <add-user-page class="w-100 d-flex justify-content-center">
@@ -51,13 +51,13 @@ import I18NText from "../primitives/I18nText.astro";
 </add-user-page>
 
 <script>
-  import { type InputGroupElement } from "@/astro/components/types/InputGroup";
-  import { type CopyGroupElement } from "@/astro/components/types/CopyGroup";
+  import { type InputGroupElement } from "@xrayman/shared/astro/components/types/InputGroup";
+  import { type CopyGroupElement } from "@xrayman/shared/astro/components/types/CopyGroup";
+  import type { ResettableElement } from "@xrayman/shared/astro/components/types/Resettable";
   import { newUser } from "@/services/api/client";
   import { notifyApiError } from "@/runtime/notifications/errors";
   import { reloadUsers } from "@/actions/users";
-  import type { ResettableElement } from "../types/Resettable";
-  import { PartedElement } from "@/runtime/dom/parted-element";
+  import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
 
   class AddUserPage extends PartedElement implements ResettableElement {
     private nameInputEl!: InputGroupElement;

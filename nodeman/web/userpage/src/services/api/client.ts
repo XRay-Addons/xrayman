@@ -5,7 +5,7 @@ import { newUser as _newUser, getUser as _getUser } from "./generated/sdk.gen";
 import { Error } from "./generated/types.gen";
 
 client.setConfig({
-  baseUrl: config.API_URLPATH,
+  baseUrl: "http://localhost:80/api", //config.API_URLPATH,
 });
 
 export type ApiResult<T> = { ok: true; data: T } | { ok: false; reason: ApiReason };

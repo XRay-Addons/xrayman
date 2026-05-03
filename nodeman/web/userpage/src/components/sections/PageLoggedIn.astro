@@ -13,7 +13,7 @@ import OpenAppCard from "./OpenAppCard.astro";
 </page-logged-in>
 
 <script>
-  import { stateSignal } from "../../lib/state-signals";
+  import { stateSignal } from "@/lib/state-signals";
 
   class PageLoggedIn extends HTMLElement {
     private unsub?: () => void;

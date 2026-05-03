@@ -1,0 +1,9 @@
+{
+  "name": "@xrayman/shared",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./runtime/*": "./src/runtime/*",
+    "./components/*": "./src/components/*"
+  }
+}

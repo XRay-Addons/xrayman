@@ -1,11 +1,18 @@
 {
   "extends": "astro/tsconfigs/strict",
-  "include": [".astro/types.d.ts", "**/*"],
+  "include": [
+    ".astro/types.d.ts",
+    "**/*",
+    "../shared/src/runtime/dom/i18nate-dom.ts",
+    "../shared/src/runtime/dom/i18nate-observer.ts",
+    "../shared/src/runtime/dom/i18nate-tools.ts"
+  ],
   "exclude": ["dist"],
 
   "compilerOptions": {
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@xrayman/shared/*": ["../shared/src/*"]
     }
   }
 }

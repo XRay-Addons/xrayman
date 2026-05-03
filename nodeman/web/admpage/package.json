@@ -19,6 +19,7 @@
     "@astrojs/vue": "^6.0.1",
     "@primeuix/themes": "^2.0.3",
     "@tanstack/table-core": "^8.21.3",
+    "@web/shared": "workspace:*",
     "ant-design-vue": "^4.2.6",
     "astro": "^6.1.7",
     "bootstrap": "^5.3.8",

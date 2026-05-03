@@ -7,7 +7,7 @@ import ServerError from "./ServerError.astro";
 </page-server-error>
 
 <script>
-  import { stateSignal } from "../../lib/state-signals";
+  import { stateSignal } from "@/lib/state-signals";
 
   class PageServerError extends HTMLElement {
     private unsub?: () => void;

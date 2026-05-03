@@ -1,9 +1,8 @@
 ---
-import PageCenter from "../primitives/PageCenter.astro";
-import Title from "../primitives/Title.astro";
-import I18NText from "../primitives/I18nText.astro";
-import Card from "../primitives/Card.astro";
-import InputGroup from "../primitives/InputGroup.astro";
+import Title from "@xrayman/shared/astro/components/primitives/Title.astro";
+import I18NText from "@xrayman/shared/astro/components/primitives/I18nText.astro";
+import Card from "@xrayman/shared/astro/components/primitives/Card.astro";
+import InputGroup from "@xrayman/shared/astro/components/primitives/InputGroup.astro";
 ---
 
 <script>
@@ -38,10 +37,10 @@ import InputGroup from "../primitives/InputGroup.astro";
 </app-login-page>
 
 <script>
-  import { type InputGroupElement } from "@/astro/components/types/InputGroup";
+  import { type InputGroupElement } from "@xrayman/shared/astro/components/types/InputGroup";
   import { auth } from "@/services/api/client";
   import { notifyApiError } from "@/runtime/notifications/errors";
-  import { PartedElement } from "@/runtime/dom/parted-element";
+  import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
   import { authMan, loginRequiredEvent } from "@/services/api/auth-man";
 
   class LoginPage extends PartedElement {
