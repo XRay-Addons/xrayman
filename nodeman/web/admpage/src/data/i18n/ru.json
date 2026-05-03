@@ -26,7 +26,7 @@
       "info": "User added successfully!",
       "userpage": {
         "info": "User page URL",
-        "copy-button": ""
+        "copy-button": "Copy!"
       }
     },
     "button": {
