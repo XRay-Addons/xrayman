@@ -4,5 +4,5 @@
     "moduleResolution": "bundler",
     "strict": true
   },
-  "include": ["src"]
+  "include": ["src", "../admpage/src/services/api/handle-api.ts"]
 }

@@ -1,5 +1,4 @@
 import { Notyf } from "notyf";
-import { setErrorHandler } from "./errors";
 
 const notyf = new Notyf({
   duration: 6000,
