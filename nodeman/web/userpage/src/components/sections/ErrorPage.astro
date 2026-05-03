@@ -1,0 +1,45 @@
+---
+import LazyImg from "@xrayman/shared/astro/primitives/LazyImg.astro";
+
+interface Props {
+  src: string;
+  color?: string;
+  class?: string;
+}
+
+const { src, color = "white", ...rest } = Astro.props;
+
+const styleVars = {
+  ...(color && { "--text-color": color }),
+};
+---
+
+<div class="error-page" {...rest} style={styleVars}>
+  <LazyImg class="w-100 d-block" src={src} />
+
+  <div class="error-page-text">
+    <div class="p-2 w-100 text-align-left">
+      <slot />
+    </div>
+  </div>
+</div>
+
+<style>
+  .error-page {
+    position: relative;
+  }
+
+  .error-page-text {
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+
+    color: var(--text-color);
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.7);
+  }
+</style>

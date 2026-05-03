@@ -1,15 +1,15 @@
 ---
-import ErrorImg from "@/components/ui/ErrorImg.astro";
+import ErrorPage from "./ErrorPage.astro";
 
 const errorImg = "./error.gif";
 const errorColor = "white";
 ---
 
 <server-error>
-  <ErrorImg src={errorImg} color={errorColor}>
+  <ErrorPage src={errorImg} color={errorColor}>
     <div data-i18n="servererror.main"></div>
     <div part="servererror.reason"></div>
-  </ErrorImg>
+  </ErrorPage>
 </server-error>
 
 <style>
@@ -21,13 +21,13 @@ const errorColor = "white";
 <script>
   import { stateSignal } from "@/state/signals";
   import { State } from "@/state/state";
+  import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
 
-  class ServerError extends HTMLElement {
+  class ServerError extends PartedElement {
     private unsub?: () => void;
 
     connectedCallback() {
-      const reasonSpan = this.querySelector<HTMLSpanElement>('[part="servererror.reason"]');
-      if (!reasonSpan) return;
+      const reasonSpan = this.pt<HTMLSpanElement>("servererror.reason");
 
       this.unsub = stateSignal.subscribe((state) => {
         if (state.status === State.ServerError) {
