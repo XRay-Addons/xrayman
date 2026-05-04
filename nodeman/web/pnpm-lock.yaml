@@ -26,7 +26,7 @@ importers:
       '@tanstack/table-core':
         specifier: ^8.21.3
         version: 8.21.3
-      '@web/shared':
+      '@xrayman/shared':
         specifier: workspace:*
         version: link:../shared
       ant-design-vue:
@@ -61,14 +61,18 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  shared: {}
+  shared:
+    dependencies:
+      notyf:
+        specifier: ^3.10.0
+        version: 3.10.0
 
   userpage:
     dependencies:
       '@hey-api/client-fetch':
         specifier: ^0.13.1
         version: 0.13.1(@hey-api/openapi-ts@0.95.0(magicast@0.5.2)(typescript@5.9.3))
-      '@web/shared':
+      '@xrayman/shared':
         specifier: workspace:*
         version: link:../shared
       '@zokki/astro-purgecss':
@@ -98,6 +102,9 @@ importers:
       nanostores:
         specifier: ^1.2.0
         version: 1.3.0
+      notyf:
+        specifier: ^3.10.0
+        version: 3.10.0
       openapi-fetch:
         specifier: ^0.17.0
         version: 0.17.0

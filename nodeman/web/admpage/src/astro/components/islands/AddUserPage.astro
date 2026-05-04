@@ -52,7 +52,7 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
   import { type CopyGroupElement } from "@xrayman/shared/astro/types/CopyGroup";
   import type { ResettableElement } from "@xrayman/shared/astro/types/Resettable";
   import { newUser } from "@/services/api/client";
-  import { notifyApiError } from "@/runtime/notifications/errors";
+  import { notifyApiError } from "@/runtime/notifications/use-notifications";
   import { reloadUsers } from "@/actions/users";
   import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
 

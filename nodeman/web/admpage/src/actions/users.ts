@@ -1,6 +1,6 @@
 import { listUsers } from "@/services/api/client";
 import { users, usersLoading } from "@/state/users";
-import { notifyApiError } from "@/runtime/notifications/errors";
+import { notifyApiError } from "@/runtime/notifications/use-notifications";
 
 export async function reloadUsers({
   quiet = false,

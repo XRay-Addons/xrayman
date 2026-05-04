@@ -47,9 +47,9 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 
   <script>
     import { newNode } from "@/services/api/client";
-    import { notifyApiError } from "@/runtime/notifications/errors";
+    import { notifyApiError } from "@/runtime/notifications/use-notifications";
     import { reloadNodes } from "@/actions/nodes";
-    import type { ResettableElement } from "../types/Resettable";
+    import type { ResettableElement } from "@xrayman/shared/astro/types/Resettable";
     import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
 
     class AddNodePage extends PartedElement implements ResettableElement {

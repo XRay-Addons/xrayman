@@ -2,7 +2,7 @@ import { enableUser, disableUser, deleteUser } from "@/services/api/client";
 import { reloadUsers } from "@/actions/users";
 import { type User } from "@/services/api/generated/types.gen";
 import { type BtnAction } from "../../primitives/table-ext/render-primitives";
-import { notifyApiError } from "@/runtime/notifications/errors";
+import { notifyApiError } from "@/runtime/notifications/use-notifications";
 
 export function enableUserAction(user: User): BtnAction {
   return async () => {

@@ -9,7 +9,9 @@ export default defineConfig({
   output: "static",
   integrations: [
     relativeLinks(),
-    purgecss(),
+    purgecss({
+      rejected: true,
+    }),
     compress({
       JavaScript: true,
       CSS: true,

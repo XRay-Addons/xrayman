@@ -1,6 +1,6 @@
 import { listNodes } from "@/services/api/client";
 import { nodes, nodesLoading } from "@/state/nodes";
-import { notifyApiError } from "@/runtime/notifications/errors";
+import { notifyApiError } from "@/runtime/notifications/use-notifications";
 
 export async function reloadNodes({
   quiet = false,

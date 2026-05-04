@@ -8,7 +8,7 @@ const errorColor = "white";
 <server-error>
   <ErrorPage src={errorImg} color={errorColor}>
     <div data-i18n="servererror.main"></div>
-    <div part="servererror.reason"></div>
+    <div data-part="servererror.reason"></div>
   </ErrorPage>
 </server-error>
 
@@ -27,10 +27,10 @@ const errorColor = "white";
     private unsub?: () => void;
 
     connectedCallback() {
-      const reasonSpan = this.pt<HTMLSpanElement>("servererror.reason");
-
+      const reasonSpan = this.pt<HTMLElement>("servererror.reason");
       this.unsub = stateSignal.subscribe((state) => {
         if (state.status === State.ServerError) {
+          console.log("state = server error");
           const i18nReason = `servererror.reason.${state.reason}`;
           reasonSpan.setAttribute("data-i18n", i18nReason);
           return;

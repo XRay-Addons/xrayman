@@ -23,7 +23,12 @@
       }
       const userResponse = await getUser(userID.id, userID.name);
       if (userResponse.ok) {
-        stateSignal.set({ status: State.LoggedIn, data: userResponse.data });
+        if (userResponse.data.TargetStatus === "enabled") {
+          stateSignal.set({ status: State.LoggedIn, data: userResponse.data });
+        } else {
+          // user disabled or deleted or whateverelse
+          stateSignal.set({ status: State.LoggedOut });
+        }
       } else if (userResponse.ok == false && userResponse.reason == API_REASON.NOT_FOUND) {
         stateSignal.set({ status: State.LoggedOut });
       } else if (userResponse.ok == false) {

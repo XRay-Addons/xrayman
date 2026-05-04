@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@hey-api/client-fetch": "^0.13.1",
-    "@web/shared": "workspace:*",
+    "@xrayman/shared": "workspace:*",
     "@zokki/astro-purgecss": "^1.0.4",
     "astro": "^5.17.1",
     "astro-compress": "^2.4.0",
@@ -23,6 +23,7 @@
     "bootstrap": "^5.3.8",
     "cssnano": "^7.1.4",
     "nanostores": "^1.2.0",
+    "notyf": "^3.10.0",
     "openapi-fetch": "^0.17.0",
     "postcss-import": "^16.1.1",
     "postcss-url": "^8.0.0"

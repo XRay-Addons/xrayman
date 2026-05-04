@@ -5,5 +5,8 @@
   "exports": {
     "./runtime/*": "./src/runtime/*",
     "./components/*": "./src/components/*"
+  },
+  "dependencies": {
+    "notyf": "^3.10.0"
   }
 }

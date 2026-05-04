@@ -32,6 +32,7 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
   import { stateSignal } from "@/state/signals";
   import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
   import { State } from "@/state/state";
+  import { notifyApiError, notifyError } from "@/runtime/notifications/use-notifications";
 
   class ChooseNameCard extends PartedElement {
     connectedCallback() {
@@ -47,10 +48,7 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
           stateSignal.set({ status: State.LoggedIn, data: response.data });
         } else if (response.ok == false) {
           // WTF typescript conditions
-          stateSignal.set({
-            status: "server-error",
-            reason: response.reason,
-          });
+          notifyApiError("new_user", response.reason);
         }
       });
     }

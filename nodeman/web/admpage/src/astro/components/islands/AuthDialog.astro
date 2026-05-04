@@ -30,7 +30,7 @@ import InputGroup from "@xrayman/shared/astro/primitives/InputGroup.astro";
 <script>
   import { type InputGroupElement } from "@xrayman/shared/astro/types/InputGroup";
   import { auth } from "@/services/api/client";
-  import { notifyApiError } from "@/runtime/notifications/errors";
+  import { notifyApiError } from "@/runtime/notifications/use-notifications";
   import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
   import { authMan, loginRequiredEvent } from "@/services/api/auth-man";
 
