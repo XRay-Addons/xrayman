@@ -1,4 +1,4 @@
-export function createPoll(pollFn: () => Promise<void>, interval = 320000) {
+export function createPoll(pollFn: () => Promise<void>, interval = 3200) {
   let stopped = false;
   let timer: number | null = null;
 

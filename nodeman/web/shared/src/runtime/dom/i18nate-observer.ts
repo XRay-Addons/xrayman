@@ -1,4 +1,4 @@
-import { i18nateElement, type T } from "./i18nate-tools";
+import { i18nateElement, i18nateTree, type T } from "./i18nate-tools";
 
 export class I18nObserver {
   private observer: MutationObserver | null = null;
@@ -19,25 +19,26 @@ export class I18nObserver {
     });
   }
 
-  stop() {
-    this.observer?.disconnect();
-    this.observer = null;
-  }
-
   private processMutation = (mutation: MutationRecord) => {
-    const { type, addedNodes, target } = mutation;
+    const { type, addedNodes, target, attributeName } = mutation;
 
     switch (type) {
       case "childList":
         addedNodes.forEach(
-          (node) => node instanceof HTMLElement && i18nateElement(node as HTMLElement, this.t),
+          (node) => node instanceof HTMLElement && i18nateTree(node as HTMLElement, this.t),
         );
         break;
       case "attributes":
-        if (target instanceof HTMLElement) {
-          i18nateElement(target, this.t);
-        }
+        // not actually used for now
+        //if (target instanceof HTMLElement) {
+        //  i18nateElement(target, this.t);
+        //}
         break;
     }
   };
+
+  stop() {
+    this.observer?.disconnect();
+    this.observer = null;
+  }
 }
