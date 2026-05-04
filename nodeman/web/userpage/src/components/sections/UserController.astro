@@ -10,6 +10,7 @@
   import { getUser } from "@/services/api/client";
   import { API_REASON } from "@xrayman/shared/services/api/api-reason";
   import { State } from "@/state/state";
+  import { notifyError } from "@/runtime/notifications/use-notifications";
 
   class UserController extends HTMLElement {
     private unsub?: () => void;
@@ -26,6 +27,7 @@
         if (userResponse.data.TargetStatus === "enabled") {
           stateSignal.set({ status: State.LoggedIn, data: userResponse.data });
         } else {
+          notifyError("client.error.disabled");
           // user disabled or deleted or whateverelse
           stateSignal.set({ status: State.LoggedOut });
         }
