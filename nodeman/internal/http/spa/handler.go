@@ -11,7 +11,7 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 )
 
-//go:embed dist/*
+//go:embed userpage/*
 var distFS embed.FS
 
 const configPath = "/config.js"
@@ -22,7 +22,7 @@ const configTemplate = `
 `
 
 func NewHandler(spaPrefix, apiPrefix string) (http.Handler, error) {
-	distSub, err := fs.Sub(distFS, "dist")
+	distSub, err := fs.Sub(distFS, "userpage")
 	if err != nil {
 		return nil, errdefs.WrapWithStack(err)
 	}

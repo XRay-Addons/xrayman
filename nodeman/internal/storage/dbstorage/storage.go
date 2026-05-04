@@ -67,7 +67,7 @@ func New(ctx context.Context, db *sql.DB, opts ...option) (s *Storage, err error
 }
 
 func applyMigrations(ctx context.Context, db *sql.DB, log *zap.Logger) error {
-	const retryInterval = 100 * time.Millisecond
+	const retryInterval = 1000 * time.Millisecond
 	b := retry.NewConstant(retryInterval)
 
 	return retry.Do(ctx, b, func(ctx context.Context) error {

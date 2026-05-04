@@ -1,5 +1,6 @@
 import { defineConfig } from "astro/config";
 import { purgecss } from "@zokki/astro-purgecss";
+import purgecss from "astro-purgecss";
 import relativeLinks from "astro-relative-links";
 import process from "process";
 import compress from "astro-compress";
@@ -9,9 +10,7 @@ export default defineConfig({
   output: "static",
   integrations: [
     relativeLinks(),
-    purgecss({
-      rejected: true,
-    }),
+    purgecss(),
     compress({
       JavaScript: true,
       CSS: true,

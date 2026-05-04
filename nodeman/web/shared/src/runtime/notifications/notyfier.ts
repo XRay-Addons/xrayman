@@ -5,7 +5,7 @@ export class Notyfier {
 
   constructor() {
     this.notyf = new Notyf({
-      duration: 6000,
+      duration: 6000000,
       position: { x: "right", y: "bottom" },
       dismissible: true,
     });

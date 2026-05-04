@@ -84,6 +84,9 @@ importers:
       astro-compress:
         specifier: ^2.4.0
         version: 2.4.1(@types/node@25.6.0)(jiti@2.6.1)(rollup@4.60.2)(typescript@5.9.3)(yaml@2.8.3)
+      astro-purgecss:
+        specifier: ^6.0.1
+        version: 6.0.1(astro@5.18.1(@types/node@25.6.0)(jiti@2.6.1)(lightningcss@1.32.0)(rollup@4.60.2)(terser@5.46.1)(typescript@5.9.3)(yaml@2.8.3))(purgecss@8.0.0)
       astro-relative-links:
         specifier: ^0.4.2
         version: 0.4.2(astro@5.18.1(@types/node@25.6.0)(jiti@2.6.1)(lightningcss@1.32.0)(rollup@4.60.2)(terser@5.46.1)(typescript@5.9.3)(yaml@2.8.3))
@@ -112,6 +115,9 @@ importers:
         specifier: ^16.1.1
         version: 16.1.1(postcss@8.5.13)
       postcss-url:
+        specifier: ^8.0.0
+        version: 8.0.0
+      purgecss:
         specifier: ^8.0.0
         version: 8.0.0
     devDependencies:
@@ -1459,6 +1465,12 @@ packages:
 
   astro-compress@2.4.1:
     resolution: {integrity: sha512-bKPNuajD05ecjiZy/8nqTEOWErFttH/j+adWrvXTARcMieCdI5UdBvvhr+8lrpCXFImiYTwUongj2cDywlSW2Q==}
+
+  astro-purgecss@6.0.1:
+    resolution: {integrity: sha512-R+0twl4sGaiOlreLYI0Zel/cHcCW3SUqD7PIcY0l/YSE8JsrC2r/s6x60F3jJeUskXZlUiyljG1BxtvveslVyA==}
+    peerDependencies:
+      astro: ^6.0.0
+      purgecss: ^8.0.0
 
   astro-relative-links@0.4.2:
     resolution: {integrity: sha512-YXwnmZz47yxiIIxWR10LwpGlqvGTERJ7JWX2lFRINTg/sFaPkqTx9xNM50W1+9FNMMxtTn7C8YNW5yDVX33Vzw==}
@@ -5193,6 +5205,11 @@ snapshots:
       - typescript
       - uploadthing
       - yaml
+
+  astro-purgecss@6.0.1(astro@5.18.1(@types/node@25.6.0)(jiti@2.6.1)(lightningcss@1.32.0)(rollup@4.60.2)(terser@5.46.1)(typescript@5.9.3)(yaml@2.8.3))(purgecss@8.0.0):
+    dependencies:
+      astro: 5.18.1(@types/node@25.6.0)(jiti@2.6.1)(lightningcss@1.32.0)(rollup@4.60.2)(terser@5.46.1)(typescript@5.9.3)(yaml@2.8.3)
+      purgecss: 8.0.0
 
   astro-relative-links@0.4.2(astro@5.18.1(@types/node@25.6.0)(jiti@2.6.1)(lightningcss@1.32.0)(rollup@4.60.2)(terser@5.46.1)(typescript@5.9.3)(yaml@2.8.3)):
     dependencies:
