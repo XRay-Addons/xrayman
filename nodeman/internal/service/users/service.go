@@ -131,12 +131,22 @@ func (s *Service) DeleteUser(ctx context.Context, p models.DeleteUserParams) (
 	if s == nil {
 		return nil, errdefs.NewNilCall()
 	}
+	// disable user before deleting
+	if err := s.setUserStatus(ctx, p.ID, models.UserStatusDisabled); err != nil {
+		return nil, err
+	}
+
 	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		err = uowctx.DeleteUser(ctx, p.ID)
+		if err = uowctx.DeleteUser(ctx, p.ID); err != nil {
+			return
+		}
 		return
 	}); err != nil {
 		return nil, err
 	}
+
+	_ = s.syncAllNodes(ctx)
+
 	return &models.DeleteUserResult{}, nil
 }
 

@@ -101,12 +101,19 @@ func (s *Service) DeleteNode(ctx context.Context, p models.DeleteNodeParams) (
 	if s == nil {
 		return nil, errdefs.NewNilCall()
 	}
+
+	// stop node before deleting
+	if err := s.setNodeStatus(ctx, p.ID, models.NodeStatusStopped); err != nil {
+		return nil, err
+	}
+
 	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
 		err = uowctx.DeleteNode(ctx, p.ID)
 		return
 	}); err != nil {
 		return nil, err
 	}
+
 	return &models.DeleteNodeResult{}, nil
 }
 
