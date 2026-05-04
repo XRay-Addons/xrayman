@@ -135,6 +135,15 @@ func ConvertNewUserRequest(source *gen.NewUserRequest) (*models.NewUserParams, e
 	}
 	return pModelsNewUserParams, nil
 }
+func ConvertProfile(source models.UserProfile) gen.UserProfile {
+	var apiUserProfile gen.UserProfile
+	apiUserProfile.ID = ConvertUserID(source.ID)
+	apiUserProfile.Name = source.Name
+	apiUserProfile.DisplayName = source.DisplayName
+	apiUserProfile.VlessUUID = source.VlessUUID
+	apiUserProfile.SubscriptionPath = GetUserSubscription(source)
+	return apiUserProfile
+}
 func ConvertStartNodeRequest(source *gen.StartNodeRequest) (*models.StartNodeParams, error) {
 	var pModelsStartNodeParams *models.StartNodeParams
 	if source != nil {
@@ -243,17 +252,9 @@ func modelsNodeToApiNode(source models.Node) gen.Node {
 	apiNode.TargetStatus = ConvertNodeStatusResult(source.TargetStatus)
 	return apiNode
 }
-func modelsUserProfileToApiUserProfile(source models.UserProfile) gen.UserProfile {
-	var apiUserProfile gen.UserProfile
-	apiUserProfile.ID = ConvertUserID(source.ID)
-	apiUserProfile.Name = source.Name
-	apiUserProfile.DisplayName = source.DisplayName
-	apiUserProfile.VlessUUID = source.VlessUUID
-	return apiUserProfile
-}
 func modelsUserToApiUser(source models.User) gen.User {
 	var apiUser gen.User
-	apiUser.Profile = modelsUserProfileToApiUserProfile(source.Profile)
+	apiUser.Profile = ConvertProfile(source.Profile)
 	apiUser.TargetStatus = ConvertUserStatusResult(source.TargetStatus)
 	return apiUser
 }

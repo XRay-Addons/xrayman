@@ -6,7 +6,7 @@ import {
   makeMonospace,
   i18nateColumns,
 } from "@/vue/components/primitives/table-ext/render-primitives";
-import { renderTag, renderActions } from "./rendering";
+import { renderTag, renderActions, renderApiUrl } from "./rendering";
 
 export function useUsersTableColumns(i18nPrefix: string) {
   return computed(() => {
@@ -39,6 +39,14 @@ export function useUsersTableColumns(i18nPrefix: string) {
         ellipsis: true,
         width: "8ch",
         customRender: ({ text }) => makeCopyable(makeMonospace(text), text),
+        extended: true,
+      },
+      {
+        key: "subscription",
+        dataIndex: ["Profile", "SubscriptionPath"],
+        ellipsis: true,
+        width: "16ch",
+        customRender: ({ text }) => renderApiUrl(text),
         extended: true,
       },
       {

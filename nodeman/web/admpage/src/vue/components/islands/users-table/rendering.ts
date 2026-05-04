@@ -1,5 +1,5 @@
 import { type UserStatus, type User } from "@/services/api/generated";
-
+import { MakeApiUrl } from "@xrayman/shared/runtime/paths/paths";
 import {
   enabledTag,
   disabledTag,
@@ -10,6 +10,11 @@ import {
   mergeActionBtns,
 } from "@/vue/components/primitives/table-ext/render-primitives";
 import { enableUserAction, disableUserAction, deleteUserAction } from "./btn-actions";
+
+import {
+  makeCopyable,
+  makeMonospace,
+} from "@/vue/components/primitives/table-ext/render-primitives";
 
 import { type VNode } from "vue";
 
@@ -35,4 +40,9 @@ export function renderActions(status: UserStatus, user: User) {
   actions.push(ensureDeleteBtn("table.users.actions", deleteUserAction(user)));
 
   return mergeActionBtns(actions);
+}
+
+export function renderApiUrl(text: string) {
+  text = MakeApiUrl(text);
+  return makeCopyable(makeMonospace(text), text);
 }

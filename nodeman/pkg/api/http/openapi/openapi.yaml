@@ -549,11 +549,14 @@ components:
           type: string
         VlessUUID:
           type: string
+        SubscriptionPath:
+          type: string
       required:
         - ID
         - Name
         - DisplayName
         - VlessUUID
+        - SubscriptionPath
 
     User:
       type: object

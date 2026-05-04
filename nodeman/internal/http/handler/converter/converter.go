@@ -52,6 +52,9 @@ type Converter interface {
 	ConvertUserSubRequest(r *api.UserSubParams) (*models.UserSubParams, error)
 	// goverter:map ClientConfigs Response
 	ConvertUserSubResult(r *models.UserSubResult) (*api.UserSubResponseHeaders, error)
+
+	// goverter:map . SubscriptionPath | GetUserSubscription
+	ConvertProfile(r models.UserProfile) api.UserProfile
 }
 
 func ConvertExpireTime(i time.Duration) int {
@@ -114,6 +117,10 @@ func ConvertUserStatusResult(source models.UserStatus) api.UserStatus {
 		panic(fmt.Sprintf("unexpected enum element: %v", source))
 	}
 	return response
+}
+
+func GetUserSubscription(source models.UserProfile) string {
+	return source.SubscriptionURL()
 }
 
 /*func ConvertClientConfig(source models.Subscription) (api.Subscription, error) {

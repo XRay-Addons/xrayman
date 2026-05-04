@@ -105,6 +105,7 @@
         "target-status": "Target Status",
         "name": "ИМЯ",
         "vless-uuid": "VLESS UUID",
+        "subscription": "Subscription",
         "actions": "Actions"
       }
     },

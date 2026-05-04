@@ -1,20 +1,20 @@
 import { UserID } from "./user-id";
 import { type User } from "@/services/api/generated/types.gen";
-import { PathTools } from "../utils/path-utils";
+import { MakePageUrl } from "@xrayman/shared/runtime/paths/paths";
 
 export const ProfileURL = {
   make(user: User): string {
-    return PathTools.userpagePath(`./${user.Profile.ID}-${user.Profile.Name}`);
+    return MakePageUrl(`./${user.Profile.ID}-${user.Profile.Name}`);
   },
   set(user: User): void {
     history.pushState(null, "", this.make(user));
   },
   reset() {
-    const absPath = PathTools.userpagePath(`./`);
+    const absPath = MakePageUrl(`./`);
     history.pushState(null, "", absPath);
   },
   parse(): UserID | null {
-    const prefix = PathTools.userpagePath(`./`);
+    const prefix = MakePageUrl(`./`);
     const path = window.location.href;
     const match = path.match(new RegExp(`${prefix}(\\d+)-(.+)$`));
     if (!match) return null;
@@ -47,11 +47,5 @@ export const ProfileStorage = {
     } catch {
       return null;
     }
-  },
-};
-
-export const UserUtils = {
-  subscriptionURL(user: User): string {
-    return PathTools.apiPath(`./sub/${user.Profile.ID}-${user.Profile.Name}`);
   },
 };

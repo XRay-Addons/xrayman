@@ -38,6 +38,7 @@
         "target-status": "Target Status",
         "name": "Name",
         "vless-uuid": "VLESS UUID",
+        "subscription": "Subscription",
         "actions": "Actions"
       }
     },

@@ -18,6 +18,10 @@ func (u UserProfile) VlessEmail() string {
 	return fmt.Sprintf("%d-%s", u.ID, u.Name)
 }
 
+func (u UserProfile) SubscriptionURL() string {
+	return fmt.Sprintf("/sub/%d-%s", u.ID, u.Name)
+}
+
 type UserStatus int
 
 const (
