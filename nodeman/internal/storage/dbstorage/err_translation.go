@@ -22,6 +22,12 @@ func translatePgErr(err error) error {
 		return err
 	}
 
+	var pgParseErr *pgconn.ParseConfigError
+	if errors.As(err, &pgParseErr) {
+		// invalid config, unreteyable
+		return err
+	}
+
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) {
 		// whitelist of unretryable pg errors
@@ -36,6 +42,7 @@ func translatePgErr(err error) error {
 			}
 		}
 	}
+
 	return errdefs.Wrap(errdefs.ErrTemporaryUnavailable,
 		errdefs.WithStack(), errdefs.With(err.Error()))
 }

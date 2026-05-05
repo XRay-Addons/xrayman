@@ -21,20 +21,6 @@ type options struct {
 	log   *zap.Logger
 }
 
-/*func WithRetry() option {
-	return func(o *options) {
-		o.retry = true
-	}
-}
-
-func WithLogger(log *zap.Logger) option {
-	return func(o *options) {
-		if log != nil {
-			o.log = log
-		}
-	}
-}*/
-
 func ApplyMigrations(ctx context.Context, db *sql.DB, log *zap.Logger) error {
 	if db == nil {
 		return errdefs.NewNilArg("db")
@@ -51,25 +37,7 @@ func ApplyMigrations(ctx context.Context, db *sql.DB, log *zap.Logger) error {
 		return errdefs.WrapWithStack(err)
 	}
 
-	//if !retry {
-	// migrate without retries
 	return migrate(ctx, db)
-	//}
-
-	/*// retry with policy till success or cancel
-	const inintalRetry = 100 * time.Millisecond
-	const maxRetry = 2 * time.Second
-	b := goretry.WithMaxDuration(maxRetry,
-		goretry.NewFibonacci(inintalRetry))
-
-	return goretry.Do(ctx, b, func(ctx context.Context) error {
-		if err := migrate(ctx, db); err != nil {
-			log.Warn("migration attempt", zap.Error(err))
-			return err
-		}
-		log.Warn("migration successed")
-		return nil
-	})*/
 }
 
 // zap.logger to goose.logger adapter

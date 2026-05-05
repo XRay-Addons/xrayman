@@ -81,8 +81,7 @@ func applyMigrations(ctx context.Context, db *sql.DB, log *zap.Logger) error {
 			log.Warn("migrations retryable fail", zap.Error(err))
 			return retry.RetryableError(err)
 		}
-		log.Warn("migrations unretryable fail", zap.Error(err))
-		return nil
+		return err
 	})
 }
 

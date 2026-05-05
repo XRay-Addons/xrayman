@@ -76,8 +76,11 @@ func checkPaths(c Config) error {
 	if !strings.HasPrefix(c.APIPrefix, "/") {
 		return errdefs.New("api prefix invalid")
 	}
-	if !strings.HasPrefix(c.UserSPAPrefix, "/") {
+	if !strings.HasPrefix(c.UserSpaPrefix, "/") {
 		return errdefs.New("user spa prefix invalid")
+	}
+	if !strings.HasPrefix(c.AdminSpaPrefix, "/") {
+		return errdefs.New("admin spa prefix invalid")
 	}
 	return nil
 }

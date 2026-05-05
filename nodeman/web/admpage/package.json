@@ -31,6 +31,9 @@
   },
   "devDependencies": {
     "@hey-api/openapi-ts": "^0.96.0",
+    "astro-compress": "^2.4.1",
+    "astro-purgecss": "^6.0.1",
+    "astro-relative-links": "^0.4.2",
     "typescript": "^5.9.3"
   }
 }

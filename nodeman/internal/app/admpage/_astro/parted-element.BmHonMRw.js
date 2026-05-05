@@ -1,0 +1,1 @@
+class n extends HTMLElement{pt(t){return a(this,t)}}function a(t,r){const a=t.querySelector(`[data-part="${r}"]`);if(!a)throw new Error(`<${t.tagName}> missing data-part="${r}"`);return a}export{n as P};

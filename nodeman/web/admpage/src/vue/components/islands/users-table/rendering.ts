@@ -1,5 +1,6 @@
 import { type UserStatus, type User } from "@/services/api/generated";
-import { MakeApiUrl } from "@xrayman/shared/runtime/paths/paths";
+import { MakeApiUrl } from "@/runtime/utils/paths";
+
 import {
   enabledTag,
   disabledTag,

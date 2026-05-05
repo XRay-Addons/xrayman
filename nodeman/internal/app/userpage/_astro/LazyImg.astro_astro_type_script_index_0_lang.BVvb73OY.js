@@ -1,0 +1,1 @@
+import{P as i}from"./parted-element.X8A7siIP.js";class n extends i{connectedCallback(){const s=this.pt("image");this.obs=new IntersectionObserver(([e],t)=>{e.isIntersecting&&(s.src=s.dataset.src,t.disconnect())}),this.obs.observe(s)}disconnectedCallback(){this.obs?.disconnect(),this.obs=void 0}}customElements.define("lazy-img",n);

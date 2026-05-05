@@ -1,10 +1,10 @@
 import { UserID } from "./user-id";
 import { type User } from "@/services/api/generated/types.gen";
-import { MakePageUrl } from "@xrayman/shared/runtime/paths/paths";
+import { MakePageUrl } from "@/runtime/utils/paths";
 
 export const ProfileURL = {
   make(user: User): string {
-    return MakePageUrl(`./${user.Profile.ID}-${user.Profile.Name}`);
+    return MakePageUrl(`${user.Profile.ID}-${user.Profile.Name}`);
   },
   set(user: User): void {
     history.pushState(null, "", this.make(user));

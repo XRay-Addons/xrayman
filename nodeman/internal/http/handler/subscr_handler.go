@@ -21,8 +21,10 @@ func (h *Handler) UserSub(ctx context.Context, req api.UserSubParams) (
 	}
 	sub, exists, err := h.ss.GetUserSub(ctx, *p)
 	if err != nil {
+		h.logError(ctx, err)
 		return nil, err
 	}
+
 	if !exists {
 		return nil, httperr.ErrUserNotFound
 	}

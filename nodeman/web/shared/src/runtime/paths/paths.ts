@@ -2,21 +2,13 @@
 //  USERPAGE_URLPATH: (window as any).__SPA_URL__ ?? "/",
 
 function makeURL(components: string[]): string {
-  var current = window.location.origin;
+  // remove start and end "/"
   for (var i = 0; i < components.length; i++) {
-    if (current.endsWith("/")) {
-      current = new URL(components[i], current).toString();
-    } else {
-      current = new URL(components[i], current + "/").toString();
-    }
+    components[i] = components[i].replace(/^\/|\/$/g, "");
   }
-  return current;
+  return new URL(components.join("/"), window.location.origin).toString();
 }
 
-export function MakeApiUrl(path: string): string {
-  return makeURL([(window as any).__API_URL__ ?? "/api", path]);
-}
-
-export function MakePageUrl(path: string): string {
-  return makeURL([(window as any).__SPA_URL__ ?? "/u", path]);
+export function MakeFullUrl(prefix: string, path: string): string {
+  return makeURL([prefix, path]);
 }

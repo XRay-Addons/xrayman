@@ -4,7 +4,9 @@
   "type": "module",
   "exports": {
     "./runtime/*": "./src/runtime/*",
-    "./components/*": "./src/components/*"
+    "./astro/*": "./src/astro/*",
+    "./features/*": "./src/features/*",
+    "./services/*": "./src/services/*"
   },
   "dependencies": {
     "notyf": "^3.10.0"

@@ -1,11 +1,12 @@
 import { getAuthToken } from "@/state/token";
 import { client } from "./generated/client.gen";
 import { authMan } from "./auth-man";
+import { config } from "@/config/config";
 
 export function setupClient() {
   client.setConfig({
     auth: getToken,
-    baseUrl: "http://localhost:80/api",
+    baseUrl: config.ApiPrefix,
     fetch: authFetch,
   });
 }

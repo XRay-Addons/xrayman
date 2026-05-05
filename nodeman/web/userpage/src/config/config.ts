@@ -1,5 +1,5 @@
 export const config = {
-  API_URLPATH: (window as any).__API_URL__ ?? "/api",
-  USERPAGE_URLPATH: (window as any).__SPA_URL__ ?? "/",
+  ApiPrefix: (window as any).__CONFIG__.api_prefix ?? "/api",
+  UserPagePrefix: (window as any).__CONFIG__.user_prefix ?? "/u",
   HAPP_INTENT: "happ://add/",
 };

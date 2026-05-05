@@ -25,10 +25,11 @@ func LoadConfig() (*Config, error) {
 
 func defaultConfig() *Config {
 	return &Config{
-		Endpoint:      "localhost:80",
-		certsDir:      defaultCertsDir(),
-		UserSPAPrefix: "/u",
-		APIPrefix:     "/api",
+		Endpoint:       "localhost:80",
+		certsDir:       defaultCertsDir(),
+		UserSpaPrefix:  "/u",
+		AdminSpaPrefix: "/adm",
+		APIPrefix:      "/api",
 	}
 }
 
@@ -51,8 +52,10 @@ func readCLIParams(c *Config) error {
 should contains nodeman.crt nodeman.key ca.crt`)
 	fs.StringVar(&c.DBConn, "db", c.DBConn,
 		`db connection string`)
-	fs.StringVar(&c.UserSPAPrefix, "userpref", c.UserSPAPrefix,
+	fs.StringVar(&c.UserSpaPrefix, "userspa", c.UserSpaPrefix,
 		`user SPA path prefix`)
+	fs.StringVar(&c.AdminSpaPrefix, "adminspa", c.AdminSpaPrefix,
+		`admin SPA path prefix`)
 	fs.StringVar(&c.APIPrefix, "apipref", c.APIPrefix,
 		`api path prefix`)
 	fs.StringVar(&c.AdminPassword, "admpass", c.AdminPassword,

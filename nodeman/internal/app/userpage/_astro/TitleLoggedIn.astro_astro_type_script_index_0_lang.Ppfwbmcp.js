@@ -1,0 +1,1 @@
+import{s,S as n}from"./signals.C0G5qw4j.js";import{P as a}from"./parted-element.X8A7siIP.js";class i extends a{connectedCallback(){const t=this.pt("username");this.unsub=s.subscribe(s=>{s.status===n.LoggedIn?t.textContent=s.data.Profile.DisplayName:t.textContent=""})}disconnectedCallback(){this.unsub?.()}}customElements.define("title-logged-in",i);

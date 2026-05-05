@@ -1,0 +1,1 @@
+import{m as a,a as l}from"./use-notifications.DEVX3cgq.js";import{r as t}from"./reactivity.esm-bundler.BUABPLzh.js";const r=t([]),e=t(!1);async function f({quiet:o=!1}={}){if(o){const s=await a();s.ok&&(r.value=s.data);return}e.value=!0;try{const s=await a();s.ok?r.value=s.data:l("get_users",s.reason)}finally{e.value=!1}}export{r as a,f as r,e as u};

@@ -3,6 +3,8 @@ package app
 import (
 	"context"
 	"database/sql"
+	"embed"
+	"io/fs"
 	"net/http"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/app/bootstrap"
@@ -14,7 +16,6 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/router"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/security"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/server"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/http/spa"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/auth/jwt"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/auth/password"
 	a "github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/app"
@@ -34,6 +35,12 @@ import (
 type App struct {
 	app *a.App
 }
+
+//go:embed userpage/**
+var userpageFS embed.FS
+
+//go:embed admpage/**
+var admpageFS embed.FS
 
 func New(cfg config.Config, log *zap.Logger) (*App, error) {
 	if log == nil {
@@ -61,8 +68,8 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 	var h *handler.Handler
 	var s *security.Handler
 	var apiHandler http.Handler
-	var userpageHandler http.Handler
-	//var securityHandler
+	var userpageSpa fs.FS
+	var admpageSpa fs.FS
 
 	var r http.Handler
 	var httpServer *server.HttpServer
@@ -199,20 +206,45 @@ func New(cfg config.Config, log *zap.Logger) (*App, error) {
 			}, nil,
 		),
 
-		// user spa handler
-		a.WithComponent("spa handler",
+		// userpage spa
+		a.WithComponent("userpage spa",
 			func(context.Context) (err error) {
-				userpageHandler, err = spa.NewHandler(cfg.UserSPAPrefix, cfg.APIPrefix)
-				return
+				userpageSpa, err = fs.Sub(userpageFS, "userpage")
+				if err != nil {
+					return errdefs.WrapWithStack(err)
+				}
+				return nil
+			}, nil,
+		),
+
+		// adminpage spa
+
+		a.WithComponent("adminpage spa",
+			func(context.Context) (err error) {
+				admpageSpa, err = fs.Sub(admpageFS, "admpage")
+				if err != nil {
+					return errdefs.WrapWithStack(err)
+				}
+				return nil
 			}, nil,
 		),
 
 		// router
 		a.WithComponent("router",
 			func(context.Context) (err error) {
+				userpageCfg := map[string]string{
+					"api_prefix":  cfg.APIPrefix,
+					"user_prefix": cfg.UserSpaPrefix,
+				}
+				admpageCfg := map[string]string{
+					"api_prefix":   cfg.APIPrefix,
+					"admin_prefix": cfg.AdminSpaPrefix,
+				}
+
 				r, err = router.New(
 					router.WithHandler(cfg.APIPrefix, apiHandler),
-					router.WithHandler(cfg.UserSPAPrefix, userpageHandler),
+					router.WithSPA(cfg.UserSpaPrefix, userpageSpa, userpageCfg),
+					router.WithSPA(cfg.AdminSpaPrefix, admpageSpa, admpageCfg),
 					router.WithLogger(log))
 				return
 			}, nil,

@@ -1,0 +1,1 @@
+function a(n){for(var o=0;o<n.length;o++)n[o]=n[o].replace(/^\/|\/$/g,"");return new URL(n.join("/"),window.location.origin).toString()}function e(n,o){return a([n,o])}export{e as M};

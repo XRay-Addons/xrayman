@@ -1,13 +1,15 @@
 import { defineConfig } from "astro/config";
-import { purgecss } from "@zokki/astro-purgecss";
 import purgecss from "astro-purgecss";
 import relativeLinks from "astro-relative-links";
-import process from "process";
 import compress from "astro-compress";
 import path from "node:path";
 
 export default defineConfig({
   output: "static",
+  build: {
+    outDir: "./dist",
+    minify: true,
+  },
   integrations: [
     relativeLinks(),
     purgecss(),
@@ -17,15 +19,17 @@ export default defineConfig({
       HTML: true,
     }),
   ],
-  build: {
-    outDir: "./dist",
-    minify: true,
-  },
   vite: {
     resolve: {
       alias: {
         "@": path.resolve("./src"),
         "@xrayman/shared": path.resolve("../shared/src"),
+      },
+    },
+    experimental: {
+      renderBuiltUrl(filename, { hostType, type, ssr }) {
+        // for relative paths inside vite framework files
+        return { relative: true };
       },
     },
   },

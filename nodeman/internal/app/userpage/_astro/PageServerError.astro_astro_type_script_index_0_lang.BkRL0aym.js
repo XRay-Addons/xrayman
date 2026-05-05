@@ -1,0 +1,1 @@
+import{s,S as r}from"./signals.C0G5qw4j.js";class t extends HTMLElement{connectedCallback(){this.unsub=s.subscribe(s=>{this.hidden=s.status!==r.ServerError})}disconnectedCallback(){this.unsub?.()}}customElements.define("page-server-error",t);
