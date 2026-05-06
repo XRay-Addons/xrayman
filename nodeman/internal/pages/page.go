@@ -4,6 +4,7 @@ import (
 	"io/fs"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/router"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/spa"
 	"github.com/go-chi/chi/v5"
 )
@@ -12,6 +13,8 @@ type Page struct {
 	content fs.FS
 	config  any
 }
+
+var _ router.SPA = (*Page)(nil)
 
 func new(contentFS fs.FS, contentDir string, config any) (*Page, error) {
 	content, err := fs.Sub(contentFS, contentDir)
