@@ -1,1 +1,0 @@
-import{s,S as t}from"./signals.C0G5qw4j.js";class a extends HTMLElement{connectedCallback(){this.unsub=s.subscribe(s=>{this.hidden=s.status!==t.LoggedOut})}disconnectedCallback(){this.unsub?.()}}customElements.define("page-logged-out",a);

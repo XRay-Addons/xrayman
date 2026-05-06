@@ -1,1 +1,0 @@
-import{s as e,a,R as b}from"./palette.WRQXVHPx.js";function t(f){e(f),a(f)}const c=[["#4b3832","#854442","#fff4e6","#3c2f2f","#be9b7b"],["#ffb3ba","#ffdfba","#ffffba","#baffc9","#bae1ff"],["#96ceb4","#ffeead","#ff6f69","#ffcc5c","#88d8b0"],["#a8e6cf","#dcedc1","#ffd3b6","#ffaaa5","#ff8b94"],["#011f4b","#03396c","#005b96","#6497b1","#b3cde0"]];function s(){new b(c,t)}s();

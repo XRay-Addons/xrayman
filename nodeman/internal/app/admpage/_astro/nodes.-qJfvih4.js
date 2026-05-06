@@ -1,1 +1,0 @@
-import{g as s,a as n}from"./use-notifications.DEVX3cgq.js";import{r as t}from"./reactivity.esm-bundler.BUABPLzh.js";const e=t([]),o=t(!1);async function f({quiet:r=!1}={}){if(r){const a=await s();a.ok&&(e.value=a.data);return}o.value=!0;try{const a=await s();a.ok?e.value=a.data:n("get_nodes",a.reason)}finally{o.value=!1}}export{e as a,o as n,f as r};

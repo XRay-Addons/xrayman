@@ -47,8 +47,10 @@ func newTestDB(t *testing.T, l *zap.Logger) (
 	connStr := "host=localhost port=5434 user=test password=test dbname=testdb sslmode=disable"
 	db, err := sqldb.New(connStr)
 	require.NoError(t, err, "failed to open db")
-	s, err = New(context.TODO(), db, WithMigration(), WithLogger(l))
+	s, err = New(context.TODO(), db)
 	require.NoError(t, err, "failed to create storage")
+	err = s.Migrage(context.TODO(), WithLogger(l))
+	require.NoError(t, err, "failed to migrate storage")
 
 	cleanup = func() {
 		_ = sqldb.Close(db)

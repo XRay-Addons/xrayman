@@ -1,1 +1,0 @@
-import{s,S as t}from"./signals.C0G5qw4j.js";class n extends HTMLElement{connectedCallback(){s.subscribe(s=>{this.hidden=s.status!==t.LoggedIn})}disconnectedCallback(){this.unsub?.()}}customElements.define("page-logged-in",n);

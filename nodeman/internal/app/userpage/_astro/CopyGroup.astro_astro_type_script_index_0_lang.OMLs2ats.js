@@ -1,1 +1,0 @@
-import{P as r}from"./parted-element.X8A7siIP.js";class o extends r{setValue(t){this.inputGroupEl.setValue(t)}connectedCallback(){this.inputGroupEl=this.pt("input-group"),this.inputGroupEl.onClick(async t=>{try{await navigator.clipboard.writeText(t)}catch(t){console.error("Clipboard error",t)}})}disconnectedCallback(){}}customElements.define("copy-group",o);

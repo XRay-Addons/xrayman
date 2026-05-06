@@ -2,12 +2,8 @@ package app
 
 import (
 	"context"
-	"database/sql"
-	"embed"
-	"io/fs"
-	"net/http"
+	"errors"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/app/bootstrap"
 	client "github.com/XRay-Addons/xrayman/nodeman/internal/clients/node"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/config"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
@@ -18,14 +14,15 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/server"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/auth/jwt"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/auth/password"
-	a "github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/app"
+	appcore "github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/app"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/httpclient"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/jobs/syncman"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/pages"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/auth"
-	nodes "github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
-	subscr "github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
-	users "github.com/XRay-Addons/xrayman/nodeman/internal/service/users"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service/users"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/storage/dbstorage"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/storage/dbstorage/sqldb"
 
@@ -33,264 +30,206 @@ import (
 )
 
 type App struct {
-	app *a.App
+	base *appcore.App
 }
 
-//go:embed userpage/**
-var userpageFS embed.FS
-
-//go:embed admpage/**
-var admpageFS embed.FS
-
-func New(cfg config.Config, log *zap.Logger) (*App, error) {
+func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 	if log == nil {
 		return nil, errdefs.NewNilArg("log")
 	}
 
-	var db *sql.DB
-	var storage *dbstorage.Storage
+	baseApp := appcore.New(appcore.WithLogger(log))
+	defer func() {
+		if err != nil {
+			err = errors.Join(err, baseApp.Close())
+		}
+	}()
 
-	var httpClient *httpclient.ClientFactory
-	var poolClient *client.PoolClient
+	///////////////////////////////////////////////////////////////////////////
+	// create app components
 
-	var pwd *password.Password
-	var authJWT *jwt.JWT
+	// db
+	db, err := sqldb.New(cfg.DBConn)
+	if err != nil {
+		return
+	}
+	baseApp.AddCloser(func(context.Context) error {
+		db.Close()
+		return nil
+	})
 
-	var poolSyncer poolsync.Syncer
+	// storage
+	storage, err := dbstorage.New(context.TODO(), db)
+	if err != nil {
+		return
+	}
 
-	var syncJob *syncman.SyncMan
+	// nodes http client
+	nodesClient := httpclient.NewClientFactory()
+	baseApp.AddCloser(func(context.Context) error {
+		nodesClient.Close()
+		return nil
+	})
 
-	var authService *auth.Service
-	var usersService *users.Service
-	var nodesService *nodes.Service
-	var subscrService *subscr.Service
+	// pool client
+	poolClient, err := client.NewPoolClient(
+		client.WithHTTPClient(nodesClient))
+	if err != nil {
+		return
+	}
 
-	var h *handler.Handler
-	var s *security.Handler
-	var apiHandler http.Handler
-	var userpageSpa fs.FS
-	var admpageSpa fs.FS
+	// pool syncer
+	poolSyncer, err := poolsync.New(
+		poolClient, storage.PoolSyncStorage())
+	if err != nil {
+		return
+	}
 
-	var r http.Handler
-	var httpServer *server.HttpServer
+	// password
+	pwd, err := password.New(storage.PasswordStorage())
+	if err != nil {
+		return
+	}
 
-	app := a.New(
-		// db
-		a.WithComponent("db",
-			func(ctx context.Context) (err error) {
-				db, err = sqldb.New(cfg.DBConn)
-				return
-			},
-			func(context.Context) (err error) {
-				err = sqldb.Close(db)
-				return
-			},
-		),
-		// storage
-		a.WithComponent("storage",
-			func(ctx context.Context) (err error) {
-				storage, err = dbstorage.New(ctx, db,
-					dbstorage.WithLogger(log), dbstorage.WithMigration())
-				return
-			}, nil,
-		),
+	// JWT
+	authJWT, err := jwt.New(cfg.JWTSecret)
+	if err != nil {
+		return
+	}
 
-		// nodes http client
-		a.WithComponent("nodes http client",
-			func(context.Context) (err error) {
-				httpClient = httpclient.NewClientFactory()
-				return
-			},
-			func(context.Context) error {
-				httpClient.Close()
-				return nil
-			},
-		),
-		// pool client
-		a.WithComponent("pool client",
-			func(context.Context) (err error) {
-				poolClient, err = client.NewPoolClient(client.WithHTTPClient(httpClient))
-				return
-			}, nil,
-		),
+	// nodes service
+	nodesService, err := nodes.New(
+		poolSyncer, storage.NodesStorage())
+	if err != nil {
+		return
+	}
 
-		// pool syncer
-		a.WithComponent("pool syncer",
-			func(context.Context) (err error) {
-				poolSyncer, err = poolsync.New(poolClient, storage.PoolSyncStorage())
-				return
-			}, nil,
-		),
+	// users service
+	usersService, err := users.New(
+		poolSyncer, storage.UsersStorage())
+	if err != nil {
+		return
+	}
 
-		// password
-		a.WithComponent("password",
-			func(ctx context.Context) (err error) {
-				pwd, err = password.New(storage.PasswordStorage())
-				return
-			}, nil,
-		),
-		// jwt
-		a.WithComponent("jwt",
-			func(context.Context) (err error) {
-				authJWT, err = jwt.New(cfg.JWTSecret)
-				return
-			}, nil,
-		),
+	// subscr service
+	subscrService, err := subscr.New(
+		storage.SubscrStorage(), subscr.WithLogger(log))
+	if err != nil {
+		return
+	}
 
-		// nodes service
-		a.WithComponent("nodes service",
-			func(context.Context) (err error) {
-				nodesService, err = nodes.New(poolSyncer, storage.NodesStorage())
-				return
-			}, nil,
-		),
-		// users service
-		a.WithComponent("users service",
-			func(context.Context) (err error) {
-				usersService, err = users.New(poolSyncer, storage.UsersStorage())
-				return
-			}, nil,
-		),
-		// subscr service
-		a.WithComponent("subscr service",
-			func(context.Context) (err error) {
-				subscrService, err = subscr.New(storage.SubscrStorage(), subscr.WithLogger(log))
-				return
-			}, nil,
-		),
-		// auth service
-		a.WithComponent("auth service",
-			func(ctx context.Context) (err error) {
-				authService, err = auth.New(pwd, authJWT)
-				return
-			}, nil,
-		),
+	// auth service
+	authService, err := auth.New(pwd, authJWT)
+	if err != nil {
+		return
+	}
 
-		// bootstrap
-		a.WithComponent("bootstrap",
-			func(ctx context.Context) (err error) {
-				bootstrapCfg := bootstrap.Config{
-					AdminPassword: cfg.AdminPassword,
-				}
-				err = bootstrap.Bootstrap(ctx, bootstrapCfg, pwd, log)
-				return
-			}, nil,
-		),
+	// requests handler
+	requestsHandler, err := handler.New(
+		usersService,
+		nodesService,
+		subscrService,
+		authService,
+		handler.WithLogger(log))
+	if err != nil {
+		return
+	}
 
-		// handler
-		a.WithComponent("handler",
-			func(context.Context) (err error) {
-				h, err = handler.New(
-					usersService,
-					nodesService,
-					subscrService,
-					authService,
-					handler.WithLogger(log))
-				return
-			}, nil,
-		),
+	// security handler
+	securityHandler, err := security.New(authJWT)
+	if err != nil {
+		return
+	}
 
-		// security handler
-		a.WithComponent("security",
-			func(context.Context) (err error) {
-				s, err = security.New(authJWT)
-				return
-			}, nil,
-		),
+	// api handler
+	apiHandler, err := api.NewHandler(
+		requestsHandler, securityHandler)
+	if err != nil {
+		return
+	}
 
-		// api handler
-		a.WithComponent("api handler",
-			func(context.Context) (err error) {
-				apiHandler, err = api.NewHandler(h, s)
-				return
-			}, nil,
-		),
+	// userpage spa
+	userpageSpa, err := pages.NewUserPage(
+		cfg.APIPrefix, cfg.UserSpaPrefix)
+	if err != nil {
+		return
+	}
+	// admpage spa
+	admpageSpa, err := pages.NewAdmPage(
+		cfg.APIPrefix, cfg.AdminSpaPrefix, cfg.UserSpaPrefix)
+	if err != nil {
+		return
+	}
 
-		// userpage spa
-		a.WithComponent("userpage spa",
-			func(context.Context) (err error) {
-				userpageSpa, err = fs.Sub(userpageFS, "userpage")
-				if err != nil {
-					return errdefs.WrapWithStack(err)
-				}
-				return nil
-			}, nil,
-		),
+	// router
+	r, err := router.New(
+		router.WithHandler(cfg.APIPrefix, apiHandler),
+		router.WithSPA(cfg.UserSpaPrefix, userpageSpa),
+		router.WithSPA(cfg.AdminSpaPrefix, admpageSpa),
+		router.WithLogger(log))
+	if err != nil {
+		return
+	}
 
-		// adminpage spa
+	// http server
+	httpServer, err := server.New(cfg.Endpoint, r)
+	if err != nil {
+		return
+	}
 
-		a.WithComponent("adminpage spa",
-			func(context.Context) (err error) {
-				admpageSpa, err = fs.Sub(admpageFS, "admpage")
-				if err != nil {
-					return errdefs.WrapWithStack(err)
-				}
-				return nil
-			}, nil,
-		),
+	// background sync job
+	syncJob, err := syncman.New(poolSyncer, syncman.WithLogger(log))
+	if err != nil {
+		return
+	}
 
-		// router
-		a.WithComponent("router",
-			func(context.Context) (err error) {
-				userpageCfg := map[string]string{
-					"api_prefix":  cfg.APIPrefix,
-					"user_prefix": cfg.UserSpaPrefix,
-				}
-				admpageCfg := map[string]string{
-					"api_prefix":   cfg.APIPrefix,
-					"admin_prefix": cfg.AdminSpaPrefix,
-				}
+	///////////////////////////////////////////////////////////////////////////
+	// bootstrap app components
 
-				r, err = router.New(
-					router.WithHandler(cfg.APIPrefix, apiHandler),
-					router.WithSPA(cfg.UserSpaPrefix, userpageSpa, userpageCfg),
-					router.WithSPA(cfg.AdminSpaPrefix, admpageSpa, admpageCfg),
-					router.WithLogger(log))
-				return
-			}, nil,
-		),
+	// migrate db
+	baseApp.AddBootstrap("migrated db", func(ctx context.Context) error {
+		return storage.Migrage(ctx, dbstorage.WithLogger(log))
+	}, func(err error) bool {
+		return errors.Is(err, errdefs.ErrTemporaryUnavailable)
+	})
 
-		// http server
-		a.WithComponent("http server",
-			func(context.Context) (err error) {
-				httpServer, err = server.New(cfg.Endpoint, r)
-				return
-			}, nil,
-		),
+	// set password
+	baseApp.AddBootstrap("set password", func(ctx context.Context) error {
+		if cfg.AdminPassword == "" {
+			return nil
+		}
+		return pwd.Update(ctx, cfg.AdminPassword)
+	}, func(err error) bool {
+		return errors.Is(err, errdefs.ErrTemporaryUnavailable)
+	})
 
-		// background syncer
-		a.WithComponent("background sync",
-			func(context.Context) (err error) {
-				syncJob, err = syncman.New(poolSyncer, syncman.WithLogger(log))
-				return
-			}, nil,
-		),
+	///////////////////////////////////////////////////////////////////////////
+	// run app components
 
-		// ------------ RUNNERS ------------- //
-		a.WithRunner("http server",
-			func() (err error) {
-				return httpServer.Listen()
-			},
-			func(ctx context.Context) error {
-				return httpServer.Shutdown(ctx)
-			},
-		),
-		// background syncer
-		a.WithRunner("background sync job",
-			func() (err error) {
-				return syncJob.Run()
-			},
-			func(context.Context) (err error) {
-				return syncJob.Stop()
-			},
-		),
-
-		// logger
-		a.WithLogger(log),
+	// http server
+	baseApp.AddRunner("http server",
+		func() (err error) {
+			return httpServer.Listen()
+		},
+		func(ctx context.Context) error {
+			return httpServer.Shutdown(ctx)
+		},
 	)
 
+	// background syncer
+	baseApp.AddRunner("background sync",
+		func() (err error) {
+			return syncJob.Run()
+		},
+		func(context.Context) error {
+			return syncJob.Stop()
+		},
+	)
+
+	///////////////////////////////////////////////////////////////////////////
+
 	return &App{
-		app: app,
+		base: baseApp,
 	}, nil
 }
 
@@ -298,5 +237,10 @@ func (app *App) Run() error {
 	if app == nil {
 		return errdefs.NewNilCall()
 	}
-	return app.app.Run()
+
+	if err := app.base.Bootstrap(); err != nil {
+		return err
+	}
+
+	return app.base.Run()
 }

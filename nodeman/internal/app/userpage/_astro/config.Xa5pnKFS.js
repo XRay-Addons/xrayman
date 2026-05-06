@@ -1,1 +1,0 @@
-const _={ApiPrefix:window.__CONFIG__.api_prefix??"/api",UserPagePrefix:window.__CONFIG__.user_prefix??"/u",HAPP_INTENT:"happ://add/"};export{_ as c};

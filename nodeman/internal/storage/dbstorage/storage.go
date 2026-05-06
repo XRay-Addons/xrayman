@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"time"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/auth/password"
@@ -13,7 +12,6 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/users"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/storage/dbstorage/migrations"
-	"github.com/sethvargo/go-retry"
 	"go.uber.org/zap"
 )
 
@@ -21,17 +19,20 @@ type Storage struct {
 	db *sql.DB
 }
 
+func New(ctx context.Context, db *sql.DB) (s *Storage, err error) {
+	if db == nil {
+		return nil, errdefs.NewNilArg("db")
+	}
+
+	return &Storage{
+		db: db,
+	}, nil
+}
+
 type option func(o *options)
 
 type options struct {
-	migrate bool
-	log     *zap.Logger
-}
-
-func WithMigration() option {
-	return func(o *options) {
-		o.migrate = true
-	}
+	log *zap.Logger
 }
 
 func WithLogger(l *zap.Logger) option {
@@ -42,47 +43,19 @@ func WithLogger(l *zap.Logger) option {
 	}
 }
 
-func New(ctx context.Context, db *sql.DB, opts ...option) (s *Storage, err error) {
-	if db == nil {
-		return nil, errdefs.NewNilArg("db")
-	}
-
+func (s *Storage) Migrage(ctx context.Context, opts ...option) error {
 	cfg := options{
-		migrate: false,
-		log:     zap.NewNop(),
+		log: zap.NewNop(),
 	}
 	for _, o := range opts {
 		o(&cfg)
 	}
 
-	if cfg.migrate {
-		if err = applyMigrations(ctx, db, cfg.log); err != nil {
-			return
-		}
+	if err := migrations.ApplyMigrations(ctx, s.db, cfg.log); err != nil {
+		return translatePgErr(err)
 	}
 
-	return &Storage{
-		db: db,
-	}, nil
-}
-
-func applyMigrations(ctx context.Context, db *sql.DB, log *zap.Logger) error {
-	const retryInterval = 1000 * time.Millisecond
-	b := retry.NewConstant(retryInterval)
-
-	return retry.Do(ctx, b, func(ctx context.Context) error {
-		err := migrations.ApplyMigrations(ctx, db, log)
-		if err == nil {
-			log.Warn("migration successed")
-			return nil
-		}
-		err = translatePgErr(err)
-		if errors.Is(err, errdefs.ErrTemporaryUnavailable) {
-			log.Warn("migrations retryable fail", zap.Error(err))
-			return retry.RetryableError(err)
-		}
-		return err
-	})
+	return nil
 }
 
 // nodes storage proxy
