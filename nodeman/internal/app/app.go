@@ -31,7 +31,7 @@ import (
 )
 
 type App struct {
-	base *appcore.App
+	core *appcore.App
 }
 
 const JWTIssuer = "nodeman"
@@ -41,16 +41,15 @@ func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 		return nil, errdefs.NilArg("log")
 	}
 
-	baseApp := appcore.New(appcore.WithLogger(log))
+	app = &App{
+		core: appcore.New(appcore.WithLogger(log)),
+	}
+
 	defer func() {
 		if err != nil {
-			err = errors.Join(err, baseApp.Close())
+			err = errors.Join(err, app.core.Close())
 		}
 	}()
-
-	app = &App{
-		base: baseApp,
-	}
 
 	///////////////////////////////////////////////////////////////////////////
 	// create app components - chaotic good init order
@@ -95,14 +94,14 @@ func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 	// bootstrap app components
 
 	// migrate db
-	baseApp.AddBootstrap("migrated db", func(ctx context.Context) error {
+	app.core.AddBootstrap("migrated db", func(ctx context.Context) error {
 		return infra.storage.Migrage(ctx, dbstorage.WithLogger(log))
 	}, func(err error) bool {
 		return errors.Is(err, errdefs.ErrTemporaryUnavailable)
 	})
 
 	// set password
-	baseApp.AddBootstrap("set password", func(ctx context.Context) error {
+	app.core.AddBootstrap("set password", func(ctx context.Context) error {
 		if cfg.AdminPassword == "" {
 			return nil
 		}
@@ -115,7 +114,7 @@ func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 	// run app components
 
 	// http server
-	baseApp.AddRunner("http server",
+	app.core.AddRunner("http server",
 		func() (err error) {
 			return httpServer.Listen()
 		},
@@ -125,7 +124,7 @@ func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 	)
 
 	// background syncer
-	baseApp.AddRunner("background sync",
+	app.core.AddRunner("background sync",
 		func() (err error) {
 			return syncJob.Run()
 		},
@@ -152,7 +151,7 @@ func (a *App) initInfra(cfg config.Config) (infra *infrasturcture, err error) {
 	if err != nil {
 		return
 	}
-	a.base.AddCloser(func(context.Context) error {
+	a.core.AddCloser(func(context.Context) error {
 		db.Close()
 		return nil
 	})
@@ -163,7 +162,6 @@ func (a *App) initInfra(cfg config.Config) (infra *infrasturcture, err error) {
 	}
 
 	// JWT
-
 	if infra.authJWT, err = jwt.New(cfg.JWTSecret, jwt.WithIssuer(JWTIssuer)); err != nil {
 		return
 	}
@@ -173,7 +171,7 @@ func (a *App) initInfra(cfg config.Config) (infra *infrasturcture, err error) {
 func (a *App) initPoolSyncer(infra infrasturcture) (ps poolsync.Syncer, err error) {
 	// nodes http client
 	nc := httpclient.NewClientFactory()
-	a.base.AddCloser(func(context.Context) error {
+	a.core.AddCloser(func(context.Context) error {
 		nc.Close()
 		return nil
 	})
@@ -275,6 +273,7 @@ func (a *App) initHttpServer(
 
 	return
 }
+
 func (a *App) initHandler(s services, authJWT *jwt.JWT, log *zap.Logger) (h http.Handler, err error) {
 	// requests handler
 	reqH, err := handler.New(
@@ -306,9 +305,9 @@ func (app *App) Run() error {
 		return errdefs.NilCall()
 	}
 
-	if err := app.base.Bootstrap(); err != nil {
+	if err := app.core.Bootstrap(); err != nil {
 		return err
 	}
 
-	return app.base.Run()
+	return app.core.Run()
 }
