@@ -1,21 +1,15 @@
 package errdefs
 
-/*func WithOgen() option {
-	return func(e *baseError) {
-		// add status code if exists
-		e.with = append(e.with, e.err.Error())
-		var sc interface{ StatusCode() int }
-		if errors.As(e.err, &sc) {
-			e.with = append(e.with, fmt.Sprintf("Status: %d", sc.StatusCode()))
-		} else {
-			e.with = append(e.with, "Status: Transport error")
-		}
-		// add url path if exists
-		var ue *url.Error
-		if errors.As(e.err, &ue) {
-			e.with = append(e.with, fmt.Sprintf("URL: %s", ue.URL))
-		}
-		// replace error
-		e.err = ErrConnection
-	}
-}*/
+import (
+	"fmt"
+
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
+)
+
+func WithFile(filename string) xerr.Option {
+	return xerr.With(fmt.Sprintf("file: %s", filename))
+}
+
+func WrapWithFile(err error, path string) error {
+	return xerr.Wrap(err, WithFile(path))
+}
