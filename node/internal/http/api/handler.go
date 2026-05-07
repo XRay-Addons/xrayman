@@ -3,8 +3,8 @@ package api
 import (
 	"net/http"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
-	genapi "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
+	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
+	genapi "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
 )
 
 func NewHandler(h genapi.Handler, s genapi.SecurityHandler) (http.Handler, error) {

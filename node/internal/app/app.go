@@ -6,38 +6,25 @@ import (
 
 	"github.com/XRay-Addons/xrayman/node/internal/config"
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/node/internal/http/api"
 	"github.com/XRay-Addons/xrayman/node/internal/http/handler"
-	"github.com/XRay-Addons/xrayman/node/internal/http/router"
 	"github.com/XRay-Addons/xrayman/node/internal/http/security"
-	"github.com/XRay-Addons/xrayman/node/internal/http/server"
-	appcore "github.com/XRay-Addons/xrayman/node/internal/infra/app"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/auth/jwt"
+	appcore "github.com/XRay-Addons/xrayman/node/internal/infra/common/app"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/common/http/router"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/common/http/server"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/secrets"
 	"github.com/XRay-Addons/xrayman/node/internal/infra/tlscfg"
-	"github.com/XRay-Addons/xrayman/node/internal/secrets"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/xray/xrayapi"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/xray/xraycfg"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/xray/xrayservice"
 	"github.com/XRay-Addons/xrayman/node/internal/service"
-	"github.com/XRay-Addons/xrayman/node/internal/xray/xrayapi"
-	"github.com/XRay-Addons/xrayman/node/internal/xray/xraycfg"
-
-	"github.com/XRay-Addons/xrayman/node/internal/xray/xrayservice"
-
 	"go.uber.org/zap"
 )
 
 type App struct {
 	base *appcore.App
 }
-
-const minconfig = `xray
-{
-  "log": {
-    "loglevel": "warning"
-  },
-  "inbounds": [],
-  "outbounds": [
-    {
-      "protocol": "freedom"
-    }
-  ]
-}`
 
 func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 	if log == nil {
@@ -110,18 +97,37 @@ func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 		return
 	}
 
+	// jwt
+	jwt, err := jwt.New(sec.AccessKey.AccessSecret)
+	if err != nil {
+		return
+	}
+
 	// security
-	jwtsec := sec.AccessKey.AccessSecret
-	apiSec := security.New(jwtsec)
+	apiSec, err := security.New(jwt)
+	if err != nil {
+		return
+	}
+
+	// api handler
+	apiHandler, err := api.NewHandler(h, apiSec)
+	if err != nil {
+		return
+	}
 
 	// router
-	r, err := router.New(h, apiSec, router.WithLogger(log))
+	r, err := router.New(
+		router.WithHandler("/", apiHandler),
+		router.WithLogger(log))
+	if err != nil {
+		return
+	}
 	if err != nil {
 		return
 	}
 
 	// http server
-	httpServer, err := server.New(cfg.Endpoint, r, tlsCfg)
+	httpServer, err := server.New(cfg.Endpoint, r, server.WithTLS(tlsCfg))
 	if err != nil {
 		return
 	}

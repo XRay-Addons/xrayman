@@ -16,15 +16,17 @@ type Converter interface {
 	ConvertStartRequest(source *api.StartRequest) *models.StartParams
 	ConvertStartResult(source *models.StartResult) *api.StartResponse
 	ConvertEditUsersRequest(source *api.EditUsersRequest) *models.EditUsersParams
+	ConvertStatusResult(source *models.StatusResult) *api.StatusResponse
 }
 
+// TODO: fix generator
 // gonverter can't generate it :((
 func ConvertStatusResult(source *models.StatusResult) *api.StatusResponse {
 	var response api.StatusResponse
 	switch source.ServiceStatus {
-	case models.ServiceRunning:
+	case models.ServiceStatusRunning:
 		response.ServiceStatus = api.ServiceStatusRunning
-	case models.ServiceStopped:
+	case models.ServiceStatusStopped:
 		response.ServiceStatus = api.ServiceStatusStopped
 	default:
 		panic(fmt.Sprintf("unexpected enum element: %v", source))

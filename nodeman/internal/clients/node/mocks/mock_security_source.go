@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
+	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
 	gomock "go.uber.org/mock/gomock"
 )
 

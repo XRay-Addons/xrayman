@@ -22,7 +22,24 @@ const (
 	defaultMaxHeaderBytes    = 1 << 20 // 1 MB
 )
 
-func New(endpoint string, handler http.Handler, tls *tls.Config) (*HttpServer, error) {
+type options struct {
+	tls *tls.Config
+}
+
+type option = func(o *options)
+
+func WithTLS(tls *tls.Config) option {
+	return func(o *options) {
+		o.tls = tls
+	}
+}
+
+func New(endpoint string, handler http.Handler, opts ...option) (*HttpServer, error) {
+	cfg := options{}
+	for _, o := range opts {
+		o(&cfg)
+	}
+
 	if handler == nil {
 		return nil, errdefs.NewNilArg("handler")
 	}
@@ -31,7 +48,7 @@ func New(endpoint string, handler http.Handler, tls *tls.Config) (*HttpServer, e
 		server: http.Server{
 			Addr:      endpoint,
 			Handler:   handler,
-			TLSConfig: tls,
+			TLSConfig: cfg.tls,
 
 			ReadHeaderTimeout: defaultReadHeaderTimeout,
 			ReadTimeout:       defaultReadTimeout,

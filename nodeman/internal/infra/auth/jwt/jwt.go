@@ -5,81 +5,74 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/security"
+	jwtools "github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/http/jwt"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/auth"
-	"github.com/golang-jwt/jwt/v5"
 )
 
 type JWT struct {
 	secret []byte
-	ttl    time.Duration
-	issuer string
+	config config
 }
 
 var _ (auth.JWT) = (*JWT)(nil)
 var _ (security.JWT) = (*JWT)(nil)
 
 const defaultTTL = 72 * time.Hour
-const defaultIssuer = "xrayman-nodeman"
-const adminSubject = "admin"
+const defaultIssuer = "issuer"
+
 const bearerTokenType = "Bearer"
 
-func New(secret string) (*JWT, error) {
+type config struct {
+	ttl    time.Duration
+	issuer string
+}
+
+type option = func(o *config)
+
+func WithTTL(ttl time.Duration) option {
+	return func(o *config) {
+		o.ttl = ttl
+	}
+}
+
+func WithIssuer(issuer string) option {
+	return func(o *config) {
+		o.issuer = issuer
+	}
+}
+
+func New(secret string, opts ...option) (*JWT, error) {
 	if secret == "" {
 		return nil, errdefs.NewNilArg("secret")
 	}
-	return &JWT{
-		secret: []byte(secret),
+	cfg := config{
 		ttl:    defaultTTL,
 		issuer: defaultIssuer,
+	}
+	for _, o := range opts {
+		o(&cfg)
+	}
+
+	return &JWT{
+		secret: []byte(secret),
+		config: cfg,
 	}, nil
 }
 
-func (j *JWT) GenerateToken() (models.AuthResult, error) {
-	now := time.Now()
-	exp := now.Add(j.ttl)
-
-	claims := jwt.RegisteredClaims{
-		Issuer:    j.issuer,
-		IssuedAt:  jwt.NewNumericDate(now),
-		ExpiresAt: jwt.NewNumericDate(exp),
-		Subject:   adminSubject,
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	signed, err := token.SignedString(j.secret)
+func (j *JWT) GenerateToken(subject string) (*models.AuthResult, error) {
+	token, err := jwtools.GenerateToken(j.secret, j.config.issuer,
+		jwtools.WithSubject(subject))
 	if err != nil {
-		return models.AuthResult{}, err
+		return nil, err
 	}
-
-	return models.AuthResult{
-		AccessToken: signed,
+	return &models.AuthResult{
+		AccessToken: token,
 		TokenType:   bearerTokenType,
-		ExpiresIn:   j.ttl,
+		ExpiresIn:   j.config.ttl,
 	}, nil
 }
 
 func (j *JWT) ValidateToken(tokenString string) error {
-	// Parse the token
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return j.secret, nil
-	})
-	// check parsing
-	if err != nil {
-		return err
-	}
-	// check method
-	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-		return errdefs.NewAccessDenied()
-	}
-	// check claims
-	if iss, err := token.Claims.GetIssuer(); err != nil || iss != j.issuer {
-		return errdefs.NewAccessDenied()
-	}
-	if exp, err := token.Claims.GetExpirationTime(); err != nil || exp.Before(time.Now()) {
-		return errdefs.NewAccessDenied()
-	}
-
-	return nil
+	return jwtools.ValidateToken(tokenString, j.secret, j.config.issuer)
 }

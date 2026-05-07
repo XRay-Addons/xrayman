@@ -5,5 +5,5 @@ import (
 )
 
 type JWT interface {
-	GenerateToken() (models.AuthResult, error)
+	GenerateToken(subject string) (*models.AuthResult, error)
 }

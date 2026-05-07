@@ -76,14 +76,14 @@ func (s *XRayService) Stop(ctx context.Context) error {
 
 func (s *XRayService) Status(ctx context.Context) (models.ServiceStatus, error) {
 	if s == nil {
-		return models.ServiceStopped, errdefs.NewNilCall()
+		return models.ServiceStatusStopped, errdefs.NewNilCall()
 	}
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	if xray.GetXrayState() {
-		return models.ServiceRunning, nil
+		return models.ServiceStatusRunning, nil
 	} else {
-		return models.ServiceStopped, nil
+		return models.ServiceStatusStopped, nil
 	}
 }

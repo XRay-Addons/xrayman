@@ -10,13 +10,13 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/api"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/http/router"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/security"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/server"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/auth/jwt"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/auth/password"
 	appcore "github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/app"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/httpclient"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/http/router"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/httpclient"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/jobs/syncman"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/pages"
@@ -33,6 +33,8 @@ import (
 type App struct {
 	base *appcore.App
 }
+
+const JWTIssuer = "nodeman"
 
 func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 	if log == nil {
@@ -161,7 +163,8 @@ func (a *App) initInfra(cfg config.Config) (infra *infrasturcture, err error) {
 	}
 
 	// JWT
-	if infra.authJWT, err = jwt.New(cfg.JWTSecret); err != nil {
+
+	if infra.authJWT, err = jwt.New(cfg.JWTSecret, jwt.WithIssuer(JWTIssuer)); err != nil {
 		return
 	}
 	return infra, nil

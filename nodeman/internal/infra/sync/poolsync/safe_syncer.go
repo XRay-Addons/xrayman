@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/waveexec"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/waveexec"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 

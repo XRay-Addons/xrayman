@@ -1,6 +1,6 @@
 package security
 
-import (
+/*import (
 	"context"
 
 	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
@@ -20,4 +20,4 @@ func (b *Backdoor) HandleBearerAuth(ctx context.Context,
 	operationName api.OperationName, t api.BearerAuth,
 ) (context.Context, error) {
 	return ctx, nil
-}
+}*/

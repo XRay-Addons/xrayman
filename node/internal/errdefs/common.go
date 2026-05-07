@@ -3,9 +3,11 @@ package errdefs
 import "github.com/go-faster/errors"
 
 var (
-	ErrNilCall = errors.New("nil object call")
-	ErrNilArg  = errors.New("nil argument passed")
-	ErrUnknown = errors.New("unknown error")
+	ErrNilCall              = errors.New("nil object call")
+	ErrNilArg               = errors.New("nil argument passed")
+	ErrConnection           = errors.New("connection")
+	ErrTemporaryUnavailable = errors.New("temporary unavailable")
+	ErrAccessDenied         = errors.New("access denied")
 )
 
 func NewNilCall() error {
@@ -16,6 +18,7 @@ func NewNilArg(name string) error {
 	return Wrap(ErrNilArg, WithStack(), Withf("argument name: %s", name))
 }
 
-func NewUnknown(details string) error {
-	return Wrap(ErrUnknown, WithStack(), Withf("details: %s", details))
+// TODO: NewAccessDenied
+func NewAccessDenied() error {
+	return WrapWithStack(ErrAccessDenied)
 }

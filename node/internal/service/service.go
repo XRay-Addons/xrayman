@@ -42,14 +42,13 @@ func New(
 	}, nil
 }
 
-func (s *Service) Start(ctx context.Context, params models.StartParams) (*models.StartResult, error) {
+func (s *Service) Start(ctx context.Context,
+	params models.StartParams,
+) (*models.StartResult, error) {
 	if s == nil {
 		return nil, errdefs.NewNilCall()
 	}
 
-	for _, u := range params.Users {
-		fmt.Println("start vless uuid: ", u.VlessUUID)
-	}
 	// get server config
 	cfg, err := s.serverCfg.GetUsersCfg(params.Users)
 	if err != nil {
@@ -74,7 +73,9 @@ func (s *Service) Start(ctx context.Context, params models.StartParams) (*models
 	}, nil
 }
 
-func (s *Service) Stop(ctx context.Context, params models.StopParams) (*models.StopResult, error) {
+func (s *Service) Stop(ctx context.Context,
+	params models.StopParams,
+) (*models.StopResult, error) {
 	if s == nil {
 		return nil, errdefs.NewNilCall()
 	}
@@ -82,13 +83,16 @@ func (s *Service) Stop(ctx context.Context, params models.StopParams) (*models.S
 	if err := s.xrayAPI.Disconnect(ctx); err != nil {
 		return nil, err
 	}
+	// stop server
 	if err := s.xrayService.Stop(ctx); err != nil {
 		return nil, err
 	}
 	return &models.StopResult{}, nil
 }
 
-func (s *Service) Status(ctx context.Context, params models.StatusParams) (*models.StatusResult, error) {
+func (s *Service) Status(ctx context.Context,
+	params models.StatusParams,
+) (*models.StatusResult, error) {
 	if s == nil {
 		return nil, errdefs.NewNilCall()
 	}
@@ -99,7 +103,9 @@ func (s *Service) Status(ctx context.Context, params models.StatusParams) (*mode
 	return &models.StatusResult{ServiceStatus: status}, nil
 }
 
-func (s *Service) EditUsers(ctx context.Context, params models.EditUsersParams) (*models.EditUsersResult, error) {
+func (s *Service) EditUsers(ctx context.Context,
+	params models.EditUsersParams,
+) (*models.EditUsersResult, error) {
 	if s == nil {
 		return nil, errdefs.NewNilCall()
 	}

@@ -4,8 +4,8 @@ import (
 	"io/fs"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/http/router"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/spa"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/http/router"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/spa"
 	"github.com/go-chi/chi/v5"
 )
 

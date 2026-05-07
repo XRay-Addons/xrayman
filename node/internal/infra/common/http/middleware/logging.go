@@ -4,14 +4,17 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/XRay-Addons/xrayman/node/internal/http/constants"
 	chimw "github.com/go-chi/chi/v5/middleware"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
+const (
+	RequestIDLogTag = "requestID"
+)
+
 // create middleware for requests and responses logging
-func Logger(log *zap.Logger) Middleware {
+func Logger(log *zap.Logger) func(http.Handler) http.Handler {
 	if log == nil {
 		log = zap.NewNop()
 	}
@@ -23,7 +26,7 @@ func Logger(log *zap.Logger) Middleware {
 
 			defer func() {
 				log.Log(getLogLevel(ww.Status()), "request",
-					zap.String(constants.RequestIDLogTag, chimw.GetReqID(r.Context())),
+					zap.String(RequestIDLogTag, chimw.GetReqID(r.Context())),
 					zap.String("uri", r.URL.Path),
 					zap.String("method", r.Method),
 					zap.Int("status", ww.Status()),

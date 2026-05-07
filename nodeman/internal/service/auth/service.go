@@ -12,6 +12,8 @@ type Service struct {
 	jwt JWT
 }
 
+const adminTokenSubject = "admin"
+
 func New(pwd Password, jwt JWT) (*Service, error) {
 	if pwd == nil {
 		return nil, errdefs.NewNilArg("pwd")
@@ -33,9 +35,9 @@ func (s *Service) Auth(ctx context.Context, p models.AuthParams) (*models.AuthRe
 	if err != nil {
 		return nil, err
 	}
-	token, err := s.jwt.GenerateToken()
+	token, err := s.jwt.GenerateToken(adminTokenSubject)
 	if err != nil {
 		return nil, err
 	}
-	return &token, nil
+	return token, nil
 }

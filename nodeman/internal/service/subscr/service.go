@@ -5,8 +5,8 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/jxext"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/template"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/jxext"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/template"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	"github.com/go-faster/jx"
 	"go.uber.org/zap"

@@ -5,39 +5,30 @@ import (
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/node/internal/http/httperr"
-	"github.com/XRay-Addons/xrayman/node/internal/models"
 	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
-	"github.com/golang-jwt/jwt"
 )
 
 type Handler struct {
-	secret models.AccessSecret
+	jwt JWT
 }
 
 var _ api.SecurityHandler = (*Handler)(nil)
 
-func New(secret models.AccessSecret) *Handler {
-	return &Handler{secret: secret}
+func New(jwt JWT) (*Handler, error) {
+	if jwt == nil {
+		return nil, errdefs.NewNilArg("jwt")
+	}
+	return &Handler{jwt: jwt}, nil
 }
 
-func (s *Handler) HandleBearerAuth(ctx context.Context,
+func (h *Handler) HandleBearerAuth(ctx context.Context,
 	operationName api.OperationName, t api.BearerAuth,
 ) (context.Context, error) {
-	parsedToken, err := jwt.Parse(
-		t.GetToken(),
-		func(t *jwt.Token) (interface{}, error) {
-			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, errdefs.New("unexpected signing method",
-					errdefs.Withf("method: %v", t.Header["alg"]),
-					errdefs.WithoutStack())
-			}
-			return s.secret[:], nil
-		},
-	)
-
-	if err != nil || !parsedToken.Valid {
-		return nil, httperr.ErrAuthToken
+	if h == nil || h.jwt == nil {
+		return ctx, errdefs.NewNilCall()
 	}
-
+	if err := h.jwt.ValidateToken(t.GetToken()); err != nil {
+		return ctx, httperr.ErrAuthToken
+	}
 	return ctx, nil
 }

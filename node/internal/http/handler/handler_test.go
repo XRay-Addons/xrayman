@@ -49,7 +49,7 @@ func TestHandler(t *testing.T) {
 			mockSetup: func(m *mocks.MockService) {
 				m.EXPECT().
 					Status(gomock.Any(), gomock.Any()).
-					Return(&models.StatusResult{ServiceStatus: models.ServiceRunning}, nil)
+					Return(&models.StatusResult{ServiceStatus: models.ServiceStatusRunning}, nil)
 			},
 			expectedCode: http.StatusOK,
 			expectedBody: `{"serviceStatus":"running"}`,

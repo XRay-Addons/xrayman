@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 
-	mw "github.com/XRay-Addons/xrayman/nodeman/internal/http/middleware"
+	mw "github.com/XRay-Addons/xrayman/node/internal/infra/common/http/middleware"
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
 	"go.uber.org/zap"
