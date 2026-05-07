@@ -3,6 +3,7 @@ package dbstorage
 import (
 	"context"
 	"fmt"
+	"net"
 	"os"
 	"testing"
 	"time"
@@ -21,6 +22,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func freePort() (int, error) {
+	l, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		return 0, err
+	}
+	defer l.Close()
+
+	addr := l.Addr().(*net.TCPAddr)
+	return addr.Port, nil
+}
+
 func newTestDB(t *testing.T, l *zap.Logger) (
 	s *Storage,
 	postgres *embeddedpostgres.EmbeddedPostgres,
@@ -30,6 +42,9 @@ func newTestDB(t *testing.T, l *zap.Logger) (
 
 	dataDir := fmt.Sprintf("%s/pg_temp_%d", os.TempDir(), time.Now().UnixNano())
 
+	port, err := freePort()
+	require.NoError(t, err)
+
 	postgres = embeddedpostgres.NewDatabase(
 		embeddedpostgres.DefaultConfig().
 			Version(embeddedpostgres.V15).
@@ -37,14 +52,14 @@ func newTestDB(t *testing.T, l *zap.Logger) (
 			Username("test").
 			Password("test").
 			Database("testdb").
-			Port(5434),
+			Port(uint32(port)),
 		//Logger(zap.NewStdLog(l).Writer()) - not working
 	)
 
-	err := postgres.Start()
+	err = postgres.Start()
 	require.NoError(t, err, "failed to start embedded postgres")
 
-	connStr := "host=localhost port=5434 user=test password=test dbname=testdb sslmode=disable"
+	connStr := fmt.Sprintf("host=localhost port=%d user=test password=test dbname=testdb sslmode=disable", port)
 	db, err := sqldb.New(connStr)
 	require.NoError(t, err, "failed to open db")
 	s, err = New(context.TODO(), db)
