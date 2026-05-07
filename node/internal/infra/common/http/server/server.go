@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/common/xerr"
 )
 
 type HttpServer struct {
@@ -41,7 +41,7 @@ func New(endpoint string, handler http.Handler, opts ...option) (*HttpServer, er
 	}
 
 	if handler == nil {
-		return nil, errdefs.NewNilArg("handler")
+		return nil, xerr.NilArg("handler")
 	}
 
 	return &HttpServer{
@@ -61,7 +61,7 @@ func New(endpoint string, handler http.Handler, opts ...option) (*HttpServer, er
 
 func (s *HttpServer) Listen() error {
 	if s == nil {
-		return errdefs.NewNilCall()
+		return xerr.NilCall()
 	}
 
 	var err error
@@ -72,7 +72,7 @@ func (s *HttpServer) Listen() error {
 		err = s.server.ListenAndServe()
 	}
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 	return nil
 }
@@ -86,7 +86,7 @@ func (s *HttpServer) Shutdown(ctx context.Context) error {
 		return nil
 	}
 	if err := s.server.Close(); err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 	return nil
 }

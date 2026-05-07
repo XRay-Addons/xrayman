@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/common/xerr"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest"
@@ -96,7 +96,7 @@ func TestApp_BootstrapFail(t *testing.T) {
 		_ = p.Signal(syscall.SIGINT)
 	}()
 
-	bootstrapErr := errdefs.New("init timeout error")
+	bootstrapErr := xerr.New("init timeout error")
 	bootstrapFn := func(ctx context.Context) error {
 		select {
 		case <-time.After(2 * time.Second):
@@ -131,7 +131,7 @@ func TestApp_RunFail(t *testing.T) {
 	}()
 
 	// bootstrap (2 seconds)
-	bootstrapErr := errdefs.New("init timeout error")
+	bootstrapErr := xerr.New("init timeout error")
 	bootstrapFn := func(ctx context.Context) error {
 		select {
 		case <-time.After(2 * time.Second):

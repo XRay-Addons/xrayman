@@ -3,7 +3,7 @@ package jwtval
 import (
 	"time"
 
-	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/common/xerr"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -72,14 +72,14 @@ func ValidateToken(tok string, sec []byte, iss string) error {
 	}
 	// check method
 	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-		return errdefs.NewAccessDenied()
+		return xerr.New("invalid singing method")
 	}
 	// check claims
 	if claimIss, err := token.Claims.GetIssuer(); err != nil || claimIss != iss {
-		return errdefs.NewAccessDenied()
+		return xerr.Newf("invalid issuer: %s", claimIss)
 	}
 	if exp, err := token.Claims.GetExpirationTime(); err != nil || exp.Before(time.Now()) {
-		return errdefs.NewAccessDenied()
+		return xerr.Newf("invalid exp time: %v", exp.Time)
 	}
 
 	return nil
