@@ -5,8 +5,8 @@ import (
 	"errors"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/http/constants"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/httperr"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/http/middleware"
 	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
 	chimw "github.com/go-chi/chi/v5/middleware"
 	"github.com/ogen-go/ogen/ogenerrors"
@@ -85,7 +85,7 @@ func (h *Handler) logError(ctx context.Context, err error) {
 		return
 	}
 	h.log.Error("handler request",
-		zap.String(constants.RequestIDLogTag, chimw.GetReqID(ctx)),
+		zap.String(middleware.RequestIDLogTag, chimw.GetReqID(ctx)),
 		zap.Error(err),
 	)
 }
