@@ -8,16 +8,16 @@ type Config struct {
 	PersistentDir string `env:"PERSISTENT_DIR"`
 }
 
-func (c *Config) XRayExec() string {
-	return path.Join(c.XRayDir, "xray")
+func (c *Config) XRayData() string {
+	return c.XRayDir
 }
 
 func (c *Config) XRayServer() string {
-	return path.Join(c.XRayDir, "xray_server.json")
+	return path.Join(c.PersistentDir, "xray_server.json")
 }
 
 func (c *Config) XRayClient() string {
-	return path.Join(c.XRayDir, "xray_client.json")
+	return path.Join(c.PersistentDir, "xray_client.json")
 }
 
 /*func (c *Config) HasCerts() bool {

@@ -2,8 +2,7 @@ package app
 
 import (
 	"context"
-	"crypto/tls"
-	"net/http"
+	"errors"
 
 	"github.com/XRay-Addons/xrayman/node/internal/config"
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
@@ -11,157 +10,142 @@ import (
 	"github.com/XRay-Addons/xrayman/node/internal/http/router"
 	"github.com/XRay-Addons/xrayman/node/internal/http/security"
 	"github.com/XRay-Addons/xrayman/node/internal/http/server"
-	"github.com/XRay-Addons/xrayman/node/internal/http/tlscfg"
-	a "github.com/XRay-Addons/xrayman/node/internal/infra/app"
+	appcore "github.com/XRay-Addons/xrayman/node/internal/infra/app"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/tlscfg"
 	"github.com/XRay-Addons/xrayman/node/internal/secrets"
 	"github.com/XRay-Addons/xrayman/node/internal/service"
 	"github.com/XRay-Addons/xrayman/node/internal/xray/xrayapi"
 	"github.com/XRay-Addons/xrayman/node/internal/xray/xraycfg"
+
 	"github.com/XRay-Addons/xrayman/node/internal/xray/xrayservice"
-	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
 
 	"go.uber.org/zap"
 )
 
 type App struct {
-	app *a.App
+	base *appcore.App
 }
 
-func New(cfg config.Config, log *zap.Logger) (*App, error) {
+const minconfig = `xray
+{
+  "log": {
+    "loglevel": "warning"
+  },
+  "inbounds": [],
+  "outbounds": [
+    {
+      "protocol": "freedom"
+    }
+  ]
+}`
+
+func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 	if log == nil {
 		return nil, errdefs.NewNilArg("log")
 	}
 
-	var sec *secrets.Secrets
-	var srvCfg *xraycfg.ServerCfg
-	var clientCfg *xraycfg.ClientConfig
-	var tlsCfg *tls.Config
-	var xrayService *xrayservice.XRayService
-	var xrayAPI *xrayapi.XRayApi
+	baseApp := appcore.New(appcore.WithLogger(log))
+	defer func() {
+		if err != nil {
+			err = errors.Join(err, baseApp.Close())
+		}
+	}()
+	app = &App{
+		base: baseApp,
+	}
 
-	var s *service.Service
-	var h *handler.Handler
-	var apiSec api.SecurityHandler
-	var r http.Handler
+	// secrets config
+	sec, err := secrets.Init(cfg.PersistentDir)
+	if err != nil {
+		return
+	}
+	log.Info("node access", zap.String("key", sec.AccessKey.String()))
 
-	var httpServer *server.HttpServer
+	// server config
+	srvCfg, err := xraycfg.NewServerCfg(cfg.XRayServer())
+	if err != nil {
+		return
+	}
 
-	app := a.New(
-		// secrets config
-		a.WithComponent("secrets",
-			func() (err error) {
-				sec, err = secrets.Init(cfg.PersistentDir)
-				if err != nil {
-					return
-				}
-				log.Info("node access", zap.String("key", sec.AccessKey.String()))
-				return
-			}, nil,
-		),
-		// server config
-		a.WithComponent("server cfg",
-			func() (err error) {
-				srvCfg, err = xraycfg.NewServerCfg(cfg.XRayServer())
-				return
-			}, nil,
-		),
-		// client config
-		a.WithComponent("client cfg",
-			func() (err error) {
-				clientCfg, err = xraycfg.NewClientConfig(cfg.XRayClient())
-				return
-			}, nil,
-		),
-		// TLS config
-		a.WithComponent("tls cfg",
-			func() (err error) {
-				tlsCfg, err = tlscfg.Load(sec.Cert, sec.Key)
-				return
-			}, nil,
-		),
-		// xray service
-		a.WithComponent("xray service",
-			func() (err error) {
-				xrayService, err = xrayservice.New(cfg.XRayExec(), cfg.XRayServer(), log)
-				return err
-			},
-			func(ctx context.Context) error {
-				return xrayService.Close(ctx)
-			},
-		),
-		// xray api
-		a.WithComponent("xray api",
-			func() (err error) {
-				xrayAPI, err = xrayapi.New(srvCfg.GetApiURL(), srvCfg.GetInbounds(),
-					xrayapi.WithLogger(log))
-				return
-			},
-			func(ctx context.Context) error {
-				return xrayAPI.Close(ctx)
-			},
-		),
-		// service
-		a.WithComponent("service",
-			func() (err error) {
-				s, err = service.New(srvCfg, clientCfg, xrayService, xrayAPI)
-				return
-			}, nil,
-		),
-		// handler
-		a.WithComponent("handler",
-			func() (err error) {
-				h, err = handler.New(s, log)
-				return
-			}, nil,
-		),
-		// security
-		a.WithComponent("security",
-			func() (err error) {
-				jwtsec := sec.AccessKey.AccessSecret
-				apiSec = security.New(jwtsec)
-				return
-			}, nil,
-		),
-		// router
-		a.WithComponent("router",
-			func() (err error) {
-				r, err = router.New(h, apiSec, router.WithLogger(log))
-				return
-			}, nil,
-		),
+	// client config
+	clientCfg, err := xraycfg.NewClientConfig(cfg.XRayClient())
+	if err != nil {
+		return
+	}
 
-		// http server
-		a.WithComponent("http server",
-			func() (err error) {
-				httpServer, err = server.New(cfg.Endpoint, r, tlsCfg)
-				return
-			}, nil,
-		),
+	// TLS config
+	tlsCfg, err := tlscfg.Load(sec.Cert, sec.Key)
+	if err != nil {
+		return
+	}
 
-		a.WithRunner("http server",
-			func() (err error) {
-				return httpServer.Listen()
-			},
-			func(ctx context.Context) error {
-				return httpServer.Shutdown(ctx)
-			},
-		),
+	// xray service
+	xrayService, err := xrayservice.New(log)
+	if err != nil {
+		return
+	}
+	app.base.AddCloser(func(ctx context.Context) error {
+		return xrayService.Close(ctx)
+	})
 
-		// logger
-		a.WithLogger(log),
+	// xray api
+	xrayAPI, err := xrayapi.New(srvCfg.GetApiURL(), srvCfg.GetInbounds(),
+		xrayapi.WithLogger(log))
+	if err != nil {
+		return
+	}
+	app.base.AddCloser(func(ctx context.Context) error {
+		return xrayAPI.Close(ctx)
+	})
 
-		// cancel by Ctrl+C
-		a.WithSignalCancel(),
+	// service
+	s, err := service.New(srvCfg, clientCfg, xrayService, xrayAPI)
+	if err != nil {
+		return
+	}
+
+	// handler
+	h, err := handler.New(s, log)
+	if err != nil {
+		return
+	}
+
+	// security
+	jwtsec := sec.AccessKey.AccessSecret
+	apiSec := security.New(jwtsec)
+
+	// router
+	r, err := router.New(h, apiSec, router.WithLogger(log))
+	if err != nil {
+		return
+	}
+
+	// http server
+	httpServer, err := server.New(cfg.Endpoint, r, tlsCfg)
+	if err != nil {
+		return
+	}
+
+	app.base.AddRunner("http server",
+		func() (err error) {
+			return httpServer.Listen()
+		},
+		func(ctx context.Context) error {
+			return httpServer.Shutdown(ctx)
+		},
 	)
 
-	return &App{
-		app: app,
-	}, nil
+	return
 }
 
 func (app *App) Run() error {
 	if app == nil {
 		return errdefs.NewNilCall()
 	}
-	return app.app.Run()
+
+	if err := app.base.Bootstrap(); err != nil {
+		return err
+	}
+
+	return app.base.Run()
 }

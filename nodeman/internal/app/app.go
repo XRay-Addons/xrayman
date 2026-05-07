@@ -134,9 +134,7 @@ func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 
 	///////////////////////////////////////////////////////////////////////////
 
-	return &App{
-		base: baseApp,
-	}, nil
+	return
 }
 
 type infrasturcture struct {

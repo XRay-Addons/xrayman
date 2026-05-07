@@ -38,7 +38,7 @@ func WithLogger(log *zap.Logger) Option {
 }
 
 const (
-	defaultSyncInterval = 5 * time.Second
+	defaultSyncInterval = 60 * time.Second
 )
 
 func New(syncer PoolSyncer, options ...Option) (*SyncMan, error) {

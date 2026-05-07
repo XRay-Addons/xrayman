@@ -1,0 +1,6 @@
+[submodule "node/libxray"]
+	path = node/libxray
+	url = https://github.com/xtls/libxray
+[submodule "testxray/libxray"]
+	path = testxray/libxray
+	url = https://github.com/xtls/libxray

@@ -3,70 +3,48 @@ package app
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/node/internal/infra/tx"
 	"github.com/oklog/run"
+	"github.com/sethvargo/go-retry"
 	"go.uber.org/zap"
 )
 
-type InitFn = func() error
-type CloseFn = func(ctx context.Context) error
-type RunFn = func() error
+type runFn = func() error
+type closeFn = func(context.Context) error
+
+type bootstrapFn = func(context.Context) error
+type retryFn = func(error) bool
+
+type bootstrap struct {
+	name  string
+	fn    bootstrapFn
+	retry retryFn
+}
+
+type runner struct {
+	name  string
+	run   runFn
+	close closeFn
+}
 
 type App struct {
-	components []component
-	runners    []runner
-	log        *zap.Logger
-
+	log           *zap.Logger
 	cancelTimeout time.Duration
+
+	closers    []closeFn
+	bootstraps []bootstrap
+	runners    []runner
+
+	ctx    context.Context
+	cancel context.CancelFunc
 }
 
 type Option func(app *App)
-
-func WithComponent(name string, init InitFn, close CloseFn) Option {
-	return func(app *App) {
-		app.components = append(app.components, component{
-			init:  app.initComponenFn(init, name),
-			close: app.closeComponentFn(close, name),
-		})
-	}
-}
-
-func WithRunner(name string, run RunFn, close CloseFn) Option {
-	return func(app *App) {
-		app.runners = append(app.runners, runner{
-			run:   app.runRunnerFn(run, name),
-			close: app.stopRunnerFn(close, name),
-		})
-	}
-}
-
-func WithSignalCancel() Option {
-	return func(app *App) {
-		sigCh := make(chan os.Signal, 1)
-		app.runners = append(app.runners, runner{
-			run: func() error {
-				app.log.Info("Press Ctrl+C to stop the server...")
-				signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
-				if sig := <-sigCh; sig != nil {
-					return errdefs.New("received interript signal",
-						errdefs.WithoutStack())
-				}
-				return nil
-			},
-			close: func(error) {
-				signal.Stop(sigCh)
-				close(sigCh)
-				signal.Reset(syscall.SIGINT, syscall.SIGTERM)
-			},
-		})
-	}
-}
 
 func WithLogger(l *zap.Logger) Option {
 	return func(app *App) {
@@ -91,119 +69,28 @@ func New(opts ...Option) *App {
 		log:           zap.NewNop(),
 		cancelTimeout: defaultCancelTimeout,
 	}
+
 	for _, o := range opts {
 		o(app)
 	}
+
+	app.ctx, app.cancel = signal.NotifyContext(context.Background(),
+		os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	app.log.Info("App starting, press Ctrl+C to cancel...")
+
 	return app
 }
 
-func (app *App) Run() (err error) {
-	// init app components
-	if initErr := app.init(); initErr != nil {
-		return initErr
-	}
-	defer func() {
-		if closeErr := app.close(); closeErr != nil {
-			err = errors.Join(err, closeErr)
-		}
-	}()
+func (a *App) Close() error {
+	defer a.cancel()
 
-	// run runners
-	if runErr := app.run(); runErr != nil {
-		return runErr
-	}
-
-	return nil
-}
-
-type component struct {
-	init  func() error
-	close func(ctx context.Context) error
-}
-
-type runner struct {
-	run   func() error
-	close func(error)
-}
-
-func (app *App) initComponenFn(init InitFn, name string) func() error {
-	return func() (err error) {
-		if init == nil {
-			return nil
-		}
-		defer func() { logOp(app.log, name, "init", err) }()
-		return init()
-	}
-}
-
-func (app *App) closeComponentFn(close CloseFn, name string) func(ctx context.Context) error {
-	return func(ctx context.Context) (err error) {
-		if close == nil {
-			return nil
-		}
-		defer func() { logOp(app.log, name, "close", err) }()
-
-		return close(ctx)
-	}
-}
-
-func (app *App) runRunnerFn(runner RunFn, name string) func() error {
-	return func() (err error) {
-		logOp(app.log, name, "start", nil)
-		defer func() { logOp(app.log, name, "stopped", err) }()
-		return runner()
-	}
-}
-
-func (app *App) stopRunnerFn(close CloseFn, name string) func(error) {
-	return func(error) {
-		if close == nil {
-			return
-		}
-
-		ctx, cancel := context.WithTimeout(context.Background(), app.cancelTimeout)
-		defer cancel()
-
-		err := close(ctx)
-		defer func() { logOp(app.log, name, "close", err) }()
-	}
-}
-
-func logOp(log *zap.Logger, name, op string, err error) {
-	if err == nil {
-		log.Info("app operation", zap.String("item", name), zap.String("op", op))
-	} else {
-		log.Error("app operation", zap.String("item", name), zap.String("op", op), zap.Error(err))
-	}
-}
-
-func (app *App) init() error {
-	// init app as transaction.
-	// tx rollback time limited, init - unlimited
-	initTx := tx.New(
-		tx.WithRollbackTimeout(app.cancelTimeout),
-	)
-	for _, c := range app.components {
-		initTx.AddItem(
-			func(context.Context) error { return c.init() },
-			func(ctx context.Context) error { return c.close(ctx) },
-		)
-	}
-
-	if err := initTx.Run(context.Background()); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (app *App) close() error {
 	var closeErrs []error
-	for i := len(app.components) - 1; i >= 0; i-- {
-		ctx, cancel := context.WithTimeout(context.Background(), app.cancelTimeout)
-		defer cancel()
+	for i := len(a.closers) - 1; i >= 0; i-- {
+		ctx, cancel := context.WithTimeout(context.Background(), a.cancelTimeout)
+		err := a.closers[i](ctx)
+		cancel()
 
-		if err := app.components[i].close(ctx); err != nil {
+		if err != nil {
 			closeErrs = append(closeErrs, err)
 		}
 	}
@@ -215,15 +102,102 @@ func (app *App) close() error {
 	return errors.Join(closeErrs...)
 }
 
-func (app *App) run() error {
-	var g run.Group
-	for _, runner := range app.runners {
-		g.Add(runner.run, runner.close)
-	}
+func (a *App) AddBootstrap(name string,
+	fn func(context.Context) error, retry func(error) bool,
+) {
+	a.bootstraps = append(a.bootstraps, bootstrap{
+		name:  name,
+		fn:    fn,
+		retry: retry,
+	})
+}
 
-	if err := g.Run(); err != nil {
-		return err
+func (a *App) AddCloser(c func(context.Context) error) {
+	if c != nil {
+		a.closers = append(a.closers, c)
+	}
+}
+
+func (a *App) AddRunner(name string,
+	r func() error, c func(context.Context) error,
+) {
+	a.runners = append(a.runners, runner{
+		name:  name,
+		run:   r,
+		close: c,
+	})
+}
+
+func (a *App) Bootstrap() (err error) {
+	const retryInterval = 1000 * time.Millisecond
+	backoff := retry.NewConstant(retryInterval)
+
+	for _, bs := range a.bootstraps {
+		if err = retry.Do(a.ctx, backoff, func(ctx context.Context) error {
+			err := bs.fn(a.ctx)
+			if err != nil && bs.retry != nil && bs.retry(err) {
+				a.log.Warn(fmt.Sprintf("bootstrap %s: retry", bs.name), zap.Error(err))
+				return retry.RetryableError(err)
+			}
+			return err
+		}); err != nil {
+			return err
+		}
 	}
 
 	return nil
+}
+
+func (a *App) Run() (err error) {
+	// CTRL + C - cancelable context
+	a.log.Info("App started, press Ctrl+C to cancel...")
+
+	var g run.Group
+
+	// run runners, collect errors
+	var runErrs = make([]error, len(a.runners))
+	var closeErrs = make([]error, len(a.runners))
+	for i, r := range a.runners {
+		runFn := func() error {
+			a.log.Info(fmt.Sprintf("run %s...", r.name))
+			if r.run == nil {
+				return nil
+			}
+			runErrs[i] = r.run()
+			return runErrs[i]
+		}
+		closeFn := func(error) {
+			a.log.Info(fmt.Sprintf("stop %s...", r.name))
+			if r.close == nil {
+				return
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), a.cancelTimeout)
+			closeErrs[i] = r.close(ctx)
+			cancel()
+		}
+		g.Add(runFn, closeFn)
+	}
+
+	// wait for cancel
+	done := make(chan struct{})
+	g.Add(
+		func() error {
+			select {
+			case <-a.ctx.Done():
+				return nil
+			case <-done:
+				return nil
+			}
+		},
+		func(error) {
+			close(done)
+		},
+	)
+
+	// all errors collected, ignore this (it's first of runner errors)
+	_ = g.Run()
+
+	// join all errors
+	allErrors := append(runErrs, closeErrs...)
+	return errors.Join(allErrors...)
 }

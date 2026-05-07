@@ -12,7 +12,7 @@ func Validate(c Config) error {
 		return errdefs.Wrap(err, errdefs.WithStack(),
 			errdefs.Withf("invalid endpoint %s", c.Endpoint))
 	}
-	if err := checkExecutable(c.XRayExec()); err != nil {
+	if err := checkDir(c.XRayData()); err != nil {
 		return err
 	}
 	if err := checkFile(c.XRayServer()); err != nil {
@@ -25,41 +25,24 @@ func Validate(c Config) error {
 	return nil
 }
 
-func checkExecutable(path string) error {
+func checkFile(path string) error {
 	info, err := os.Stat(path)
 	if err != nil {
-		return errdefs.Wrap(err, errdefs.WithStack(), errdefs.WithFile(path))
+		return errdefs.WrapWithStack(err)
 	}
 	if !info.Mode().IsRegular() {
-		return errdefs.New("executable is not regular file",
-			errdefs.WithFile(path))
-	}
-	perm := info.Mode().Perm()
-	if perm&0111 != 0 {
-		return nil
-	}
-	return errdefs.New("file is not executable for current user",
-		errdefs.WithFile(path))
-}
-
-func checkFile(path string) error {
-	exists, err := checkFileExists(path)
-	if err != nil {
-		return errdefs.Wrap(err, errdefs.WithStack(), errdefs.WithFile(path))
-	}
-	if !exists {
-		return errdefs.New("file not exists", errdefs.WithFile(path))
+		return errdefs.New("file is not regular", errdefs.WithFile(path))
 	}
 	return nil
 }
 
-func checkFileExists(path string) (bool, error) {
+func checkDir(path string) error {
 	info, err := os.Stat(path)
 	if err != nil {
-		return false, nil
+		return errdefs.WrapWithStack(err)
 	}
-	if !info.Mode().IsRegular() {
-		return false, errdefs.New("file is not regular", errdefs.WithFile(path))
+	if !info.Mode().IsDir() {
+		return errdefs.New("file is not dir", errdefs.WithFile(path))
 	}
-	return true, nil
+	return nil
 }
