@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
+	"github.com/XRay-Addons/xrayman/common/http/middleware"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/httperr"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/http/middleware"
 	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
 	chimw "github.com/go-chi/chi/v5/middleware"
 	"github.com/ogen-go/ogen/ogenerrors"

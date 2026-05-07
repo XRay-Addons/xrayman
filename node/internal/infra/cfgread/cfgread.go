@@ -3,7 +3,7 @@ package cfgread
 import (
 	"os"
 
-	"github.com/XRay-Addons/xrayman/node/internal/infra/common/xerr"
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/tidwall/gjson"
 )
 

@@ -4,7 +4,7 @@ import (
 	"database/sql/driver"
 	"encoding/base64"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
+	"github.com/XRay-Addons/xrayman/common/xerr"
 )
 
 type CertHash = [32]byte

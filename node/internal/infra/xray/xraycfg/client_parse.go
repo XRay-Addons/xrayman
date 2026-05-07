@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/XRay-Addons/xrayman/node/internal/infra/common/xerr"
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 	"github.com/go-faster/jx"
 	"github.com/tidwall/gjson"

@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
 	pool "github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"

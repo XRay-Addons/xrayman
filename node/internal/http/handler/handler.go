@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 
+	"github.com/XRay-Addons/xrayman/common/http/middleware"
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/node/internal/http/handler/converter"
 	"github.com/XRay-Addons/xrayman/node/internal/http/httperr"
-	"github.com/XRay-Addons/xrayman/node/internal/infra/common/http/middleware"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
 	chimw "github.com/go-chi/chi/v5/middleware"

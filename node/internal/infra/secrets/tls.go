@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/XRay-Addons/xrayman/node/internal/infra/common/xerr"
+	"github.com/XRay-Addons/xrayman/common/xerr"
 )
 
 func ensureTLS(dir string, iss string, exp time.Duration) (cert, key []byte, err error) {

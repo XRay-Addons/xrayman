@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/auth/password"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"

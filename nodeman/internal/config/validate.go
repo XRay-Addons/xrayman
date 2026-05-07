@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 )
 
 func Validate(c Config) error {

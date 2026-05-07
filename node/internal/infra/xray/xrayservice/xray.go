@@ -4,8 +4,8 @@ import (
 	"context"
 	"sync"
 
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/node/internal/infra/common/xerr"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 	xray "github.com/xtls/libxray/xray"
 	"go.uber.org/zap"

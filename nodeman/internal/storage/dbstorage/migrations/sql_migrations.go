@@ -6,8 +6,8 @@ import (
 	"embed"
 	"fmt"
 
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 	"github.com/pressly/goose/v3"
 	"go.uber.org/zap"
 )

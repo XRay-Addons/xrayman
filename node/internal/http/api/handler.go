@@ -3,8 +3,8 @@ package api
 import (
 	"net/http"
 
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/node/internal/infra/common/xerr"
 	genapi "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
 )
 

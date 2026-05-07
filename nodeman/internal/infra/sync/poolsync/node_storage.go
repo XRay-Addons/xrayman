@@ -3,7 +3,7 @@ package poolsync
 import (
 	"context"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	node "github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )

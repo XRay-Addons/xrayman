@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/XRay-Addons/xrayman/node/internal/infra/common/xerr"
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	handlerService "github.com/xtls/xray-core/app/proxyman/command"
 	statsService "github.com/xtls/xray-core/app/stats/command"
 	"github.com/xtls/xray-core/common/protocol"

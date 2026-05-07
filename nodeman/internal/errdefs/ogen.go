@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
+	"github.com/XRay-Addons/xrayman/common/xerr"
 )
 
 func OgenErr(err error) error {

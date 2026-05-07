@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
+	"github.com/XRay-Addons/xrayman/common/xerr"
 )
 
 type NodeSyncResult struct {

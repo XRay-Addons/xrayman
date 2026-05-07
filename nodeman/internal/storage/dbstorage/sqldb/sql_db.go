@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 

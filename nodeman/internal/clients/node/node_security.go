@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
+	jwtools "github.com/XRay-Addons/xrayman/common/http/jwt"
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
-	jwtools "github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/http/jwt"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 

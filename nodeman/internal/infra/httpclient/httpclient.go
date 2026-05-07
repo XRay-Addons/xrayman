@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 )
 
 type Option func(opts *config)

@@ -6,7 +6,7 @@ import (
 	"path"
 	"runtime"
 
-	"github.com/XRay-Addons/xrayman/node/internal/infra/common/xerr"
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/caarlos0/env/v6"
 )
 

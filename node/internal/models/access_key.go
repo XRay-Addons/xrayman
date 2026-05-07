@@ -3,7 +3,7 @@ package models
 import (
 	"encoding/base64"
 
-	"github.com/XRay-Addons/xrayman/node/internal/infra/common/xerr"
+	"github.com/XRay-Addons/xrayman/common/xerr"
 )
 
 type CertHash = [32]byte

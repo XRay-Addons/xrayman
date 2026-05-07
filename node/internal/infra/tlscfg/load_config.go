@@ -3,7 +3,7 @@ package tlscfg
 import (
 	"crypto/tls"
 
-	"github.com/XRay-Addons/xrayman/node/internal/infra/common/xerr"
+	"github.com/XRay-Addons/xrayman/common/xerr"
 )
 
 func Load(nodeCrt, nodeKey []byte) (*tls.Config, error) {

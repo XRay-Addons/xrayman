@@ -3,8 +3,8 @@ package pages
 import (
 	"io/fs"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/http/router"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
+	"github.com/XRay-Addons/xrayman/common/http/router"
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/spa"
 	"github.com/go-chi/chi/v5"
 )

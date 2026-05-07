@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
+	"github.com/XRay-Addons/xrayman/common/xerr"
 )
 
 // WaveExecutor coordinates execution of a single function (Fn) in "waves".

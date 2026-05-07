@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest"
@@ -99,7 +99,7 @@ func TestApp_BootstrapFail(t *testing.T) {
 	bootstrapErr := xerr.New("init timeout error")
 	bootstrapFn := func(ctx context.Context) error {
 		select {
-		case <-time.After(20 * time.Second):
+		case <-time.After(2 * time.Second):
 			return nil
 		case <-ctx.Done():
 			logger.Error("bootstrap error")
@@ -108,7 +108,7 @@ func TestApp_BootstrapFail(t *testing.T) {
 	}
 
 	app.AddBootstrap("bs1", bootstrapFn, nil)
-	err := app.Bootstrap()
+	err := app.Run()
 	require.ErrorIs(t, err, bootstrapErr)
 }
 

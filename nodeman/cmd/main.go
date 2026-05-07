@@ -3,9 +3,9 @@ package main
 import (
 	stdlog "log"
 
+	"github.com/XRay-Addons/xrayman/common/logging"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/app"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/config"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/logging"
 	"go.uber.org/zap"
 )
 

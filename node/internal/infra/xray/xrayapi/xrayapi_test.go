@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/XRay-Addons/xrayman/node/internal/infra/common/logging"
+	"github.com/XRay-Addons/xrayman/common/logging"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

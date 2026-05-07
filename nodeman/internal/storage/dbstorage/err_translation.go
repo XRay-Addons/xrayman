@@ -5,8 +5,8 @@ import (
 
 	"errors"
 
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 	errcode "github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 )

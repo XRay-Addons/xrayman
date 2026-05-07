@@ -1,7 +1,7 @@
 package errdefs
 
 import (
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
+	"github.com/XRay-Addons/xrayman/common/xerr"
 )
 
 var (

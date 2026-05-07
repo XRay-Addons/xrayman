@@ -3,9 +3,9 @@ package jwt
 import (
 	"time"
 
+	jwtools "github.com/XRay-Addons/xrayman/common/http/jwt"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/security"
-	jwtools "github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/http/jwt"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/auth"
 )

@@ -3,7 +3,7 @@ package errdefs
 import (
 	"fmt"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
+	"github.com/XRay-Addons/xrayman/common/xerr"
 )
 
 func WithFile(filename string) xerr.Option {

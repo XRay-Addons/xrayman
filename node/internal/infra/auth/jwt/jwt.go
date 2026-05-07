@@ -5,8 +5,8 @@ import (
 
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 
+	jwtools "github.com/XRay-Addons/xrayman/common/http/jwt"
 	"github.com/XRay-Addons/xrayman/node/internal/http/security"
-	jwtools "github.com/XRay-Addons/xrayman/node/internal/infra/common/http/jwt"
 )
 
 type JWT struct {
