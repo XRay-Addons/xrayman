@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/common/xerr"
 )
 
 func ensureTLS(dir string, iss string, exp time.Duration) (cert, key []byte, err error) {
@@ -38,16 +38,16 @@ func readTLS(dir string) (cert, key []byte, err error) {
 
 	cert, err = os.ReadFile(certPath) // #nosec
 	if err != nil {
-		return nil, nil, errdefs.WrapWithStack(err)
+		return nil, nil, xerr.WrapWithStack(err)
 	}
 
 	key, err = os.ReadFile(keyPath) // #nosec
 	if err != nil {
-		return nil, nil, errdefs.WrapWithStack(err)
+		return nil, nil, xerr.WrapWithStack(err)
 	}
 
 	if _, err := tls.X509KeyPair(cert, key); err != nil {
-		return nil, nil, errdefs.WrapWithStack(err)
+		return nil, nil, xerr.WrapWithStack(err)
 	}
 
 	return cert, key, nil
@@ -55,14 +55,14 @@ func readTLS(dir string) (cert, key []byte, err error) {
 
 func writeTLS(dir string, cert, key []byte) error {
 	if err := os.MkdirAll(dir, 0o700); err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 
 	if err := os.WriteFile(filepath.Join(dir, CertFile), cert, 0o600); err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 	if err := os.WriteFile(filepath.Join(dir, KeyFile), key, 0o600); err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 
 	return nil
@@ -72,12 +72,12 @@ func generateTLS(issuer string, exp time.Duration) (certPEM, keyPEM []byte, err 
 	const tlsLength = 2048
 	priv, err := rsa.GenerateKey(rand.Reader, tlsLength)
 	if err != nil {
-		return nil, nil, errdefs.WrapWithStack(err)
+		return nil, nil, xerr.WrapWithStack(err)
 	}
 
 	serial, err := rand.Int(rand.Reader, big.NewInt(1<<62)) //nolint:mnd
 	if err != nil {
-		return nil, nil, errdefs.WrapWithStack(err)
+		return nil, nil, xerr.WrapWithStack(err)
 	}
 
 	template := x509.Certificate{
@@ -94,7 +94,7 @@ func generateTLS(issuer string, exp time.Duration) (certPEM, keyPEM []byte, err 
 
 	certDER, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
 	if err != nil {
-		return nil, nil, errdefs.WrapWithStack(err)
+		return nil, nil, xerr.WrapWithStack(err)
 	}
 
 	certPEM = pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certDER})

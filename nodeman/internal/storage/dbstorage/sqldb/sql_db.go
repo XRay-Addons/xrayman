@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
@@ -38,7 +38,7 @@ func New(dbConn string, opts ...option) (sqldb *sql.DB, err error) {
 	// sql.open not actually conntects, just check dbConn string
 	db, err := sql.Open("pgx", dbConn)
 	if err != nil {
-		return nil, errdefs.WrapWithStack(err)
+		return nil, xerr.WrapWithStack(err)
 	}
 
 	// apply options
@@ -55,7 +55,7 @@ func Close(db *sql.DB) error {
 		return nil
 	}
 	if err := db.Close(); err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 	return nil
 }

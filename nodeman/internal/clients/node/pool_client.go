@@ -7,6 +7,7 @@ import (
 
 	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
 	pool "github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
@@ -60,14 +61,14 @@ func (c *PoolClient) GetNodeClient(ctx context.Context,
 	cfg models.NodeConnectionInfo,
 ) (nodesync.Client, error) {
 	if c == nil {
-		return nil, errdefs.NewNilCall()
+		return nil, errdefs.NilCall()
 	}
 
 	var err error
 	var httpClient *http.Client
 	if c.httpClient != nil {
 		if httpClient, err = c.httpClient.GetNodeClient(cfg.AccessKey.CertHash); err != nil {
-			return nil, errdefs.WrapWithStack(err)
+			return nil, xerr.WrapWithStack(err)
 		}
 	}
 
@@ -79,7 +80,7 @@ func (c *PoolClient) GetNodeClient(ctx context.Context,
 	client, err := api.NewClient(cfg.Endpoint,
 		nodeSec, api.WithClient(httpClient))
 	if err != nil {
-		return nil, errdefs.WrapWithStack(err)
+		return nil, xerr.WrapWithStack(err)
 	}
 	return &NodeClient{
 		client: client,

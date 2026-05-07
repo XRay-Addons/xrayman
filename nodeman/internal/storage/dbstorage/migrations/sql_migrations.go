@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 	"github.com/pressly/goose/v3"
 	"go.uber.org/zap"
 )
@@ -23,7 +24,7 @@ type options struct {
 
 func ApplyMigrations(ctx context.Context, db *sql.DB, log *zap.Logger) error {
 	if db == nil {
-		return errdefs.NewNilArg("db")
+		return errdefs.NilArg("db")
 	}
 
 	goose.SetBaseFS(embedMigrations)
@@ -34,7 +35,7 @@ func ApplyMigrations(ctx context.Context, db *sql.DB, log *zap.Logger) error {
 	}()
 
 	if err := goose.SetDialect("postgres"); err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 
 	return migrate(ctx, db)
@@ -61,7 +62,7 @@ func gooseLogger(l *zap.Logger) goose.Logger {
 
 func migrate(ctx context.Context, db *sql.DB) error {
 	if err := goose.UpContext(ctx, db, "migrations"); err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 	return nil
 }

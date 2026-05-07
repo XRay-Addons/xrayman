@@ -16,10 +16,10 @@ const adminTokenSubject = "admin"
 
 func New(pwd Password, jwt JWT) (*Service, error) {
 	if pwd == nil {
-		return nil, errdefs.NewNilArg("pwd")
+		return nil, errdefs.NilArg("pwd")
 	}
 	if jwt == nil {
-		return nil, errdefs.NewNilArg("jwt")
+		return nil, errdefs.NilArg("jwt")
 	}
 	return &Service{
 		pwd: pwd,
@@ -29,7 +29,7 @@ func New(pwd Password, jwt JWT) (*Service, error) {
 
 func (s *Service) Auth(ctx context.Context, p models.AuthParams) (*models.AuthResult, error) {
 	if s == nil {
-		return nil, errdefs.NewNilCall()
+		return nil, errdefs.NilCall()
 	}
 	err := s.pwd.Verify(ctx, p.Password)
 	if err != nil {

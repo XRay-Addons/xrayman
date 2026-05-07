@@ -7,11 +7,12 @@ import (
 	"strings"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 )
 
 func Validate(c Config) error {
 	if _, err := net.ResolveTCPAddr("tcp", c.Endpoint); err != nil {
-		return errdefs.New("invalid endpoint", errdefs.Withf("endpoint: %s", c.Endpoint))
+		return xerr.New("invalid endpoint", xerr.Withf("endpoint: %s", c.Endpoint))
 	}
 	if err := checkCerts(c); err != nil {
 		return err
@@ -35,7 +36,7 @@ func checkFileExists(path string) (bool, error) {
 		return false, nil
 	}
 	if !info.Mode().IsRegular() {
-		return false, errdefs.New("file is not regular",
+		return false, xerr.New("file is not regular",
 			errdefs.WithFile(path))
 	}
 	return true, nil
@@ -61,33 +62,33 @@ func checkCerts(c Config) error {
 		return nil
 	}
 
-	return errdefs.New("cert files inconsistency",
-		errdefs.Withf("inconsistency: %s", existsDescription))
+	return xerr.New("cert files inconsistency",
+		xerr.Withf("inconsistency: %s", existsDescription))
 }
 
 func checkDBConn(c Config) error {
 	if len(c.DBConn) == 0 {
-		return errdefs.New("dbconn string invalid")
+		return xerr.New("dbconn string invalid")
 	}
 	return nil
 }
 
 func checkPaths(c Config) error {
 	if !strings.HasPrefix(c.APIPrefix, "/") {
-		return errdefs.New("api prefix invalid")
+		return xerr.New("api prefix invalid")
 	}
 	if !strings.HasPrefix(c.UserSpaPrefix, "/") {
-		return errdefs.New("user spa prefix invalid")
+		return xerr.New("user spa prefix invalid")
 	}
 	if !strings.HasPrefix(c.AdminSpaPrefix, "/") {
-		return errdefs.New("admin spa prefix invalid")
+		return xerr.New("admin spa prefix invalid")
 	}
 	return nil
 }
 
 func checkAuth(c Config) error {
 	if c.JWTSecret == "" {
-		return errdefs.New("jwt secret invalid")
+		return xerr.New("jwt secret invalid")
 	}
 	return nil
 }

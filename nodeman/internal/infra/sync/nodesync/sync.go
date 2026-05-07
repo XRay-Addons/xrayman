@@ -8,10 +8,10 @@ import (
 
 func SyncState(ctx context.Context, client Client, storage Storage) error {
 	if client == nil {
-		return errdefs.NewNilArg("client")
+		return errdefs.NilArg("client")
 	}
 	if storage == nil {
-		return errdefs.NewNilArg("storage")
+		return errdefs.NilArg("storage")
 	}
 	s := syncer{
 		storage: storage,

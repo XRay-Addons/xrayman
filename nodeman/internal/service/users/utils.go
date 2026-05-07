@@ -1,7 +1,7 @@
 package users
 
 import (
-	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 	"github.com/google/uuid"
 	"github.com/gosimple/slug"
 )
@@ -9,7 +9,7 @@ import (
 func generateVlessUUID() (string, error) {
 	id, err := uuid.NewRandom()
 	if err != nil {
-		return "", errdefs.WrapWithStack(err)
+		return "", xerr.WrapWithStack(err)
 	}
 	return id.String(), nil
 }

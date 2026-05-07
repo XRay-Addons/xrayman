@@ -23,10 +23,10 @@ var _ api.Handler = (*Handler)(nil)
 
 func New(s Service, log *zap.Logger) (*Handler, error) {
 	if s == nil {
-		return nil, errdefs.NewNilArg("s")
+		return nil, errdefs.NilArg("s")
 	}
 	if log == nil {
-		return nil, errdefs.NewNilArg("log")
+		return nil, errdefs.NilArg("log")
 	}
 	return &Handler{
 		service: s,
@@ -36,7 +36,7 @@ func New(s Service, log *zap.Logger) (*Handler, error) {
 
 func (h *Handler) Start(ctx context.Context, req *api.StartRequest) (_ *api.StartResponse, err error) {
 	if h == nil || h.service == nil {
-		return nil, errdefs.NewNilCall()
+		return nil, errdefs.NilCall()
 	}
 
 	p := converter.ConvertStartRequest(req)
@@ -50,7 +50,7 @@ func (h *Handler) Start(ctx context.Context, req *api.StartRequest) (_ *api.Star
 
 func (h *Handler) Stop(ctx context.Context) error {
 	if h == nil || h.service == nil {
-		return errdefs.NewNilCall()
+		return errdefs.NilCall()
 	}
 	_, err := h.service.Stop(ctx, models.StopParams{})
 	if err != nil {
@@ -62,7 +62,7 @@ func (h *Handler) Stop(ctx context.Context) error {
 
 func (h *Handler) GetStatus(ctx context.Context) (*api.StatusResponse, error) {
 	if h == nil || h.service == nil {
-		return nil, errdefs.NewNilCall()
+		return nil, errdefs.NilCall()
 	}
 	status, err := h.service.Status(ctx, models.StatusParams{})
 	if err != nil {
@@ -74,7 +74,7 @@ func (h *Handler) GetStatus(ctx context.Context) (*api.StatusResponse, error) {
 
 func (h *Handler) EditUsers(ctx context.Context, req *api.EditUsersRequest) error {
 	if h == nil || h.service == nil {
-		return errdefs.NewNilCall()
+		return errdefs.NilCall()
 	}
 	p := converter.ConvertEditUsersRequest(req)
 	_, err := h.service.EditUsers(ctx, *p)

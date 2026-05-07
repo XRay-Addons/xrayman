@@ -22,16 +22,16 @@ func New(
 	xrayAPI XRayAPI,
 ) (*Service, error) {
 	if serverCfg == nil {
-		return nil, errdefs.NewNilArg("serverCfg")
+		return nil, errdefs.NilArg("serverCfg")
 	}
 	if clientCfg == nil {
-		return nil, errdefs.NewNilArg("clientCfg")
+		return nil, errdefs.NilArg("clientCfg")
 	}
 	if xrayService == nil {
-		return nil, errdefs.NewNilArg("xrayService")
+		return nil, errdefs.NilArg("xrayService")
 	}
 	if xrayAPI == nil {
-		return nil, errdefs.NewNilArg("xrayAPI")
+		return nil, errdefs.NilArg("xrayAPI")
 	}
 
 	return &Service{
@@ -46,7 +46,7 @@ func (s *Service) Start(ctx context.Context,
 	params models.StartParams,
 ) (*models.StartResult, error) {
 	if s == nil {
-		return nil, errdefs.NewNilCall()
+		return nil, errdefs.NilCall()
 	}
 
 	// get server config
@@ -77,7 +77,7 @@ func (s *Service) Stop(ctx context.Context,
 	params models.StopParams,
 ) (*models.StopResult, error) {
 	if s == nil {
-		return nil, errdefs.NewNilCall()
+		return nil, errdefs.NilCall()
 	}
 	// disconnect from server api
 	if err := s.xrayAPI.Disconnect(ctx); err != nil {
@@ -94,7 +94,7 @@ func (s *Service) Status(ctx context.Context,
 	params models.StatusParams,
 ) (*models.StatusResult, error) {
 	if s == nil {
-		return nil, errdefs.NewNilCall()
+		return nil, errdefs.NilCall()
 	}
 	status, err := s.xrayService.Status(ctx)
 	if err != nil {
@@ -107,7 +107,7 @@ func (s *Service) EditUsers(ctx context.Context,
 	params models.EditUsersParams,
 ) (*models.EditUsersResult, error) {
 	if s == nil {
-		return nil, errdefs.NewNilCall()
+		return nil, errdefs.NilCall()
 	}
 
 	for _, u := range params.Add {

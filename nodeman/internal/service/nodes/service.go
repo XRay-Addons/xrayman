@@ -21,10 +21,10 @@ func New(poolSyncer poolsync.Syncer,
 	storage Storage,
 ) (*Service, error) {
 	if poolSyncer == nil {
-		return nil, errdefs.NewNilArg("poolSyncer")
+		return nil, errdefs.NilArg("poolSyncer")
 	}
 	if storage == nil {
-		return nil, errdefs.NewNilArg("storage")
+		return nil, errdefs.NilArg("storage")
 	}
 
 	return &Service{
@@ -37,7 +37,7 @@ func (s *Service) NewNode(ctx context.Context, p models.NewNodeParams) (
 	*models.NewNodeResult, error,
 ) {
 	if s == nil {
-		return nil, errdefs.NewNilCall()
+		return nil, errdefs.NilCall()
 	}
 	var node models.Node
 	node.Config.ConnectionInfo.Endpoint = p.Endpoint
@@ -81,7 +81,7 @@ func (s *Service) ListNodes(ctx context.Context, p models.ListNodeParams) (
 	*models.ListNodeResult, error,
 ) {
 	if s == nil {
-		return nil, errdefs.NewNilCall()
+		return nil, errdefs.NilCall()
 	}
 	var nodes []models.Node
 	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
@@ -99,7 +99,7 @@ func (s *Service) DeleteNode(ctx context.Context, p models.DeleteNodeParams) (
 	*models.DeleteNodeResult, error,
 ) {
 	if s == nil {
-		return nil, errdefs.NewNilCall()
+		return nil, errdefs.NilCall()
 	}
 
 	// stop node before deleting
@@ -121,7 +121,7 @@ func (s *Service) setNodeStatus(ctx context.Context,
 	id models.NodeID, status models.NodeStatus,
 ) error {
 	if s == nil {
-		return errdefs.NewNilCall()
+		return errdefs.NilCall()
 	}
 	// set target node state to storage
 	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {

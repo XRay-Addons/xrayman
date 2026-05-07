@@ -1,4 +1,4 @@
-package errdefs
+package xerr
 
 func WrapWith(err error, details string) error {
 	return Wrap(err, With(details))
@@ -10,8 +10,4 @@ func WrapWithf(err error, details string, args ...any) error {
 
 func WrapWithStack(err error) error {
 	return Wrap(err, WithStack())
-}
-
-func WrapWithFile(err error, path string) error {
-	return Wrap(err, WithFile(path))
 }

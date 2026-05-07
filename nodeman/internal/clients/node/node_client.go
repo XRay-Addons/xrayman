@@ -20,7 +20,7 @@ func (c *NodeClient) Start(ctx context.Context, users []models.UserProfile) (
 	*models.ClientConfigTemplate, error,
 ) {
 	if c == nil || c.client == nil {
-		return nil, errdefs.NewNilCall()
+		return nil, errdefs.NilCall()
 	}
 
 	startRequest := api.StartRequest{Users: converter.ConvertUsers(users)}
@@ -34,7 +34,7 @@ func (c *NodeClient) Start(ctx context.Context, users []models.UserProfile) (
 
 func (c *NodeClient) Stop(ctx context.Context) error {
 	if c == nil || c.client == nil {
-		return errdefs.NewNilCall()
+		return errdefs.NilCall()
 	}
 
 	if err := c.client.Stop(ctx); err != nil {
@@ -45,7 +45,7 @@ func (c *NodeClient) Stop(ctx context.Context) error {
 
 func (c *NodeClient) CheckStatus(ctx context.Context) (models.NodeStatus, error) {
 	if c == nil || c.client == nil {
-		return models.NodeStatusUnknown, errdefs.NewNilCall()
+		return models.NodeStatusUnknown, errdefs.NilCall()
 	}
 
 	status, err := c.client.GetStatus(ctx)
@@ -57,7 +57,7 @@ func (c *NodeClient) CheckStatus(ctx context.Context) (models.NodeStatus, error)
 
 func (c *NodeClient) UpdateUsers(ctx context.Context, update models.NodeUsersUpdate) error {
 	if c == nil || c.client == nil {
-		return errdefs.NewNilCall()
+		return errdefs.NilCall()
 	}
 
 	editRequest := converter.ConvertUsersUpdate(update)
@@ -68,5 +68,5 @@ func (c *NodeClient) UpdateUsers(ctx context.Context, update models.NodeUsersUpd
 }
 
 func wrapOgenErr(err error) error {
-	return errdefs.Wrap(err, errdefs.WithOgen(), errdefs.WithStack())
+	return errdefs.OgenErr(err)
 }

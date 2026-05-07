@@ -14,7 +14,7 @@ func (h *Handler) Auth(ctx context.Context, req *api.AuthRequest) (
 	*api.AuthResponse, error,
 ) {
 	if h == nil || h.ns == nil {
-		return nil, errdefs.NewNilCall()
+		return nil, errdefs.NilCall()
 	}
 	p, err := converter.ConvertAuthRequest(req)
 	if err != nil {

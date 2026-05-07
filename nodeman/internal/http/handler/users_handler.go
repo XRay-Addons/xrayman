@@ -12,7 +12,7 @@ import (
 
 func (h *Handler) NewUser(ctx context.Context, req *api.NewUserRequest) (*api.User, error) {
 	if h == nil || h.us == nil {
-		return nil, errdefs.NewNilCall()
+		return nil, errdefs.NilCall()
 	}
 	p, err := converter.ConvertNewUserRequest(req)
 	if err != nil {
@@ -28,7 +28,7 @@ func (h *Handler) NewUser(ctx context.Context, req *api.NewUserRequest) (*api.Us
 
 func (h *Handler) GetUser(ctx context.Context, req api.GetUserParams) (*api.User, error) {
 	if h == nil || h.us == nil {
-		return nil, errdefs.NewNilCall()
+		return nil, errdefs.NilCall()
 	}
 	p, err := converter.ConvertGetUserRequest(&req)
 	if err != nil {
@@ -47,7 +47,7 @@ func (h *Handler) GetUser(ctx context.Context, req api.GetUserParams) (*api.User
 
 func (h *Handler) ListUsers(ctx context.Context) (*api.ListUsersResponse, error) {
 	if h == nil || h.us == nil {
-		return nil, errdefs.NewNilCall()
+		return nil, errdefs.NilCall()
 	}
 	res, err := h.us.ListUsers(ctx, models.ListUserParams{})
 	if err != nil {
@@ -59,7 +59,7 @@ func (h *Handler) ListUsers(ctx context.Context) (*api.ListUsersResponse, error)
 
 func (h *Handler) EnableUser(ctx context.Context, req *api.EnableUserRequest) error {
 	if h == nil || h.us == nil {
-		return errdefs.NewNilCall()
+		return errdefs.NilCall()
 	}
 	p, err := converter.ConvertEnableUserRequest(req)
 	if err != nil {
@@ -75,7 +75,7 @@ func (h *Handler) EnableUser(ctx context.Context, req *api.EnableUserRequest) er
 
 func (h *Handler) DisableUser(ctx context.Context, req *api.DisableUserRequest) error {
 	if h == nil || h.us == nil {
-		return errdefs.NewNilCall()
+		return errdefs.NilCall()
 	}
 	p, err := converter.ConvertDisableUserRequest(req)
 	if err != nil {
@@ -91,7 +91,7 @@ func (h *Handler) DisableUser(ctx context.Context, req *api.DisableUserRequest) 
 
 func (h *Handler) DeleteUser(ctx context.Context, req *api.DeleteUserRequest) error {
 	if h == nil || h.us == nil {
-		return errdefs.NewNilCall()
+		return errdefs.NilCall()
 	}
 	p, err := converter.ConvertDeleteUserRequest(req)
 	if err != nil {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/common/xerr"
 	handlerService "github.com/xtls/xray-core/app/proxyman/command"
 	statsService "github.com/xtls/xray-core/app/stats/command"
 	"github.com/xtls/xray-core/common/protocol"
@@ -28,7 +28,7 @@ func addUser(
 		return nil
 	}
 
-	return errdefs.WrapWithStack(err)
+	return xerr.WrapWithStack(err)
 }
 
 func removeUser(
@@ -46,7 +46,7 @@ func removeUser(
 	if err != nil && strings.Contains(err.Error(), notFoundErrPattern) {
 		return nil
 	}
-	return errdefs.WrapWithStack(err)
+	return xerr.WrapWithStack(err)
 }
 
 func ping(
@@ -55,7 +55,7 @@ func ping(
 ) error {
 	_, err := ssClient.GetSysStats(ctx, &statsService.SysStatsRequest{})
 	if err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 
 	return nil

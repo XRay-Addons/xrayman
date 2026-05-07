@@ -115,7 +115,7 @@ func (s *passwordStorage) DoUoW(ctx context.Context, fn password.UoWFn) error {
 
 func (s *Storage) doLocked(ctx context.Context, fn func() error) error {
 	if s == nil {
-		return errdefs.NewNilCall()
+		return errdefs.NilCall()
 	}
 	s.lock.Lock()
 	defer s.lock.Unlock()

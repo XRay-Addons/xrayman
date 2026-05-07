@@ -5,6 +5,7 @@ import (
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/node/internal/infra/cfgread"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/common/xerr"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 )
 
@@ -19,7 +20,7 @@ func NewClientConfig(path string) (*ClientConfig, error) {
 	}
 	_, err = template.New("validate").Parse(rawTemplate)
 	if err != nil {
-		return nil, errdefs.WrapWithStack(err)
+		return nil, xerr.WrapWithStack(err)
 	}
 
 	cfgTemplate, err := parseClientConfig(rawTemplate)
@@ -46,7 +47,7 @@ func NewClientConfig(path string) (*ClientConfig, error) {
 
 func (cfg *ClientConfig) GetTemplate() (*models.ClientConfigTemplate, error) {
 	if cfg == nil {
-		return nil, errdefs.NewNilCall()
+		return nil, errdefs.NilCall()
 	}
 	return &cfg.cfg, nil
 }

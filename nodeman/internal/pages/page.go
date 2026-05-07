@@ -3,8 +3,8 @@ package pages
 import (
 	"io/fs"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/http/router"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/spa"
 	"github.com/go-chi/chi/v5"
 )
@@ -19,7 +19,7 @@ var _ router.SPA = (*Page)(nil)
 func new(contentFS fs.FS, contentDir string, config any) (*Page, error) {
 	content, err := fs.Sub(contentFS, contentDir)
 	if err != nil {
-		return nil, errdefs.WrapWithStack(err)
+		return nil, xerr.WrapWithStack(err)
 	}
 	return &Page{content: content, config: config}, nil
 }

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/common/xerr"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 	"github.com/go-faster/jx"
 	"github.com/tidwall/gjson"
@@ -15,7 +15,7 @@ func parseClientConfig(in string) ([]models.ClientConfigTemplateItem, error) {
 	if err := jx.DecodeStr(in).Arr(func(d *jx.Decoder) error {
 		cfgItem, err := d.Raw()
 		if err != nil {
-			return errdefs.WrapWithStack(err)
+			return xerr.WrapWithStack(err)
 		}
 		out = append(out, cfgItem)
 		return nil
@@ -106,27 +106,25 @@ func extractTemplateVar(s string) (string, error) {
 	templateVar := strings.TrimSpace(s)
 	// trim "{{", "}}"
 	if !strings.HasPrefix(templateVar, "{{") || !strings.HasSuffix(templateVar, "}}") {
-		return "", errdefs.New("invalid template format",
-			errdefs.Withf("template format: %s", s))
+		return "", xerr.Newf("invalid template format: %s", s)
 	}
 	templateVar = templateVar[2 : len(templateVar)-2]
 	// trim spaces again
 	templateVar = strings.TrimSpace(templateVar)
 	// trim "."
 	if !strings.HasPrefix(templateVar, ".") {
-		return "", errdefs.New("template variable should start with '.'")
+		return "", xerr.New("template variable should start with '.'")
 	}
 	templateVar = templateVar[1:]
 	if templateVar == "" {
-		return "", errdefs.New("empty variable name")
+		return "", xerr.New("empty variable name")
 	}
 	return templateVar, nil
 }
 
 func getSingleValue(values []string) (string, error) {
 	if len(values) > 1 {
-		return "", errdefs.New("multiple name field templates found",
-			errdefs.Withf("name fields: %v", values))
+		return "", xerr.Newf("multiple name field templates found: %v", values)
 	}
 	for _, value := range values {
 		return value, nil

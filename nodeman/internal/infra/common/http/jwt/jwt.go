@@ -72,14 +72,14 @@ func ValidateToken(tok string, sec []byte, iss string) error {
 	}
 	// check method
 	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-		return errdefs.NewAccessDenied()
+		return errdefs.AccessDenied()
 	}
 	// check claims
 	if claimIss, err := token.Claims.GetIssuer(); err != nil || claimIss != iss {
-		return errdefs.NewAccessDenied()
+		return errdefs.AccessDenied()
 	}
 	if exp, err := token.Claims.GetExpirationTime(); err != nil || exp.Before(time.Now()) {
-		return errdefs.NewAccessDenied()
+		return errdefs.AccessDenied()
 	}
 
 	return nil

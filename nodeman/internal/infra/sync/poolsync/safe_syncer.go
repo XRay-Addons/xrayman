@@ -21,10 +21,10 @@ var _ Syncer = (*safeSyncer)(nil)
 
 func New(client Client, storage Storage) (Syncer, error) {
 	if client == nil {
-		return nil, errdefs.NewNilArg("client")
+		return nil, errdefs.NilArg("client")
 	}
 	if storage == nil {
-		return nil, errdefs.NewNilArg("storage")
+		return nil, errdefs.NilArg("storage")
 	}
 	unsafeSyncer := syncer{
 		storage: storage,

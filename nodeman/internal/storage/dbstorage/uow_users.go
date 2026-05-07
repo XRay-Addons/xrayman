@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
@@ -28,7 +28,7 @@ func (uow *uowctx) NewUser(ctx context.Context, user *models.User) error {
 		user.TargetStatus,
 	).Scan(&user.Profile.ID)
 	if err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 
 	return nil
@@ -61,7 +61,7 @@ func (uow *uowctx) GetUser(ctx context.Context, id models.UserID) (*models.User,
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, false, nil
 		}
-		return nil, false, errdefs.WrapWithStack(err)
+		return nil, false, xerr.WrapWithStack(err)
 	}
 
 	return &user, true, nil
@@ -82,7 +82,7 @@ func (uow *uowctx) ListUsers(ctx context.Context) ([]models.User, error) {
 
 	rows, err := uow.tx.QueryContext(ctx, query)
 	if err != nil {
-		return nil, errdefs.WrapWithStack(err)
+		return nil, xerr.WrapWithStack(err)
 	}
 	defer rows.Close()
 
@@ -97,13 +97,13 @@ func (uow *uowctx) ListUsers(ctx context.Context) ([]models.User, error) {
 			&user.TargetStatus,
 		)
 		if err != nil {
-			return nil, errdefs.WrapWithStack(err)
+			return nil, xerr.WrapWithStack(err)
 		}
 		users = append(users, user)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, errdefs.WrapWithStack(err)
+		return nil, xerr.WrapWithStack(err)
 	}
 
 	return users, nil
@@ -121,7 +121,7 @@ func (uow *uowctx) SetTargetUserStatus(ctx context.Context, id models.UserID, st
 
 	_, err := uow.tx.ExecContext(ctx, query, status, id)
 	if err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 
 	return nil
@@ -137,7 +137,7 @@ func (uow *uowctx) DeleteUser(ctx context.Context, id models.UserID) error {
 
 	_, err := uow.tx.ExecContext(ctx, query, id)
 	if err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 
 	return nil

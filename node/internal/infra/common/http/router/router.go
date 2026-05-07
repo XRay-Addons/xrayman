@@ -83,7 +83,7 @@ func New(options ...Option) (http.Handler, error) {
 	// add handler after middlewares
 	for _, h := range ro.handlers {
 		if h.handler == nil {
-			return nil, xerr.NewNilArg(fmt.Sprintf("%s handler", h.path))
+			return nil, xerr.NilArg(fmt.Sprintf("%s handler", h.path))
 		}
 		chiMountHandler(r, h.path, h.handler)
 	}
@@ -91,7 +91,7 @@ func New(options ...Option) (http.Handler, error) {
 	// add SPAs after middlewares
 	for _, spa := range ro.spas {
 		if spa.page == nil {
-			return nil, xerr.NewNilArg(fmt.Sprintf("%s spa", spa.path))
+			return nil, xerr.NilArg(fmt.Sprintf("%s spa", spa.path))
 		}
 		if err := spa.page.Mount(r, spa.path); err != nil {
 			return nil, err

@@ -31,7 +31,7 @@ var _ handler.SubscrService = (*Service)(nil)
 
 func New(storage Storage, opts ...option) (*Service, error) {
 	if storage == nil {
-		return nil, errdefs.NewNilArg("storage")
+		return nil, errdefs.NilArg("storage")
 	}
 	s := &Service{
 		storage: storage,
@@ -47,7 +47,7 @@ func (s *Service) GetUserSub(ctx context.Context,
 	p models.UserSubParams,
 ) (*models.UserSubResult, bool, error) {
 	if s == nil || s.storage == nil {
-		return nil, false, errdefs.NewNilCall()
+		return nil, false, errdefs.NilCall()
 	}
 
 	// find user

@@ -4,17 +4,17 @@ import (
 	"bytes"
 	"text/template"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 )
 
 func RenderTemplate(tmpl string, data any) ([]byte, error) {
 	t, err := template.New("inline").Parse(tmpl)
 	if err != nil {
-		return nil, errdefs.WrapWithStack(err)
+		return nil, xerr.WrapWithStack(err)
 	}
 	var buf bytes.Buffer
 	if err := t.Execute(&buf, data); err != nil {
-		return nil, errdefs.WrapWithStack(err)
+		return nil, xerr.WrapWithStack(err)
 	}
 	return buf.Bytes(), nil
 }

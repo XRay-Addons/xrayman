@@ -1,6 +1,6 @@
 package xerr
 
-func Wrap(base error, opts ...option) error {
+func Wrap(base error, opts ...Option) error {
 	if base == nil {
 		return base
 	}

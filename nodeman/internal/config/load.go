@@ -6,7 +6,7 @@ import (
 	"path"
 	"runtime"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 	"github.com/caarlos0/env/v6"
 )
 
@@ -64,7 +64,7 @@ should contains nodeman.crt nodeman.key ca.crt`)
 		`jwt secret`)
 
 	if err := fs.Parse(os.Args[1:]); err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 
 	return nil
@@ -72,7 +72,7 @@ should contains nodeman.crt nodeman.key ca.crt`)
 
 func readEnvParams(c *Config) error {
 	if err := env.Parse(c); err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 	return nil
 }

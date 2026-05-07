@@ -13,7 +13,7 @@ func (h *Handler) UserSub(ctx context.Context, req api.UserSubParams) (
 	*api.UserSubResponseHeaders, error,
 ) {
 	if h == nil || h.ss == nil {
-		return nil, errdefs.NewNilCall()
+		return nil, errdefs.NilCall()
 	}
 	p, err := converter.ConvertUserSubRequest(&req)
 	if err != nil {

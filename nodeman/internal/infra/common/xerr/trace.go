@@ -1,4 +1,4 @@
-package errdefs
+package xerr
 
 import (
 	"fmt"

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/rand/v2"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
@@ -202,7 +202,7 @@ func NewUnstableStorageMock(nUsers int) *UnstableStorageMock {
 func (s *UnstableStorageMock) DoUoW(ctx context.Context, fn nodesync.UoWFn) error {
 	// some times this method returns error
 	if s.BaseStorage.rand.Float32() < s.Instability {
-		return errdefs.New("unstable storage")
+		return xerr.New("unstable storage")
 	}
 	// some times states changes from external
 	if s.BaseStorage.rand.Float32() < s.Instability {

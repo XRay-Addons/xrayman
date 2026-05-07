@@ -4,7 +4,7 @@ import (
 	"database/sql/driver"
 	"encoding/base64"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 )
 
 type CertHash = [32]byte
@@ -26,10 +26,10 @@ func (k *AccessKey) UnmarshalText(text []byte) error {
 	raw := make([]byte, base64.StdEncoding.DecodedLen(len(text)))
 	n, err := base64.StdEncoding.Decode(raw, text)
 	if err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 	if n != len(k.CertHash)+len(k.AccessSecret) {
-		return errdefs.New("invalid access key length")
+		return xerr.New("invalid access key length")
 	}
 	copy(k.CertHash[:], raw[:len(k.CertHash)])
 	copy(k.AccessSecret[:], raw[len(k.CertHash):])
@@ -58,10 +58,10 @@ func (k *AccessKey) Scan(src any) error {
 	}
 	b, ok := src.([]byte)
 	if !ok {
-		return errdefs.New("invalid type for AccessKey")
+		return xerr.New("invalid type for AccessKey")
 	}
 	if len(b) != 64 {
-		return errdefs.New("invalid length for AccessKey")
+		return xerr.New("invalid length for AccessKey")
 	}
 	copy(k.CertHash[:], b[:len(k.CertHash)])
 	copy(k.AccessSecret[:], b[len(k.CertHash):])

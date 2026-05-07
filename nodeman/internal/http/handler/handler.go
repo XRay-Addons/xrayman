@@ -42,13 +42,13 @@ func New(
 	opts ...option,
 ) (*Handler, error) {
 	if us == nil {
-		return nil, errdefs.NewNilArg("us")
+		return nil, errdefs.NilArg("us")
 	}
 	if ns == nil {
-		return nil, errdefs.NewNilArg("ns")
+		return nil, errdefs.NilArg("ns")
 	}
 	if ss == nil {
-		return nil, errdefs.NewNilArg("ss")
+		return nil, errdefs.NilArg("ss")
 	}
 	handler := &Handler{
 		us:  us,

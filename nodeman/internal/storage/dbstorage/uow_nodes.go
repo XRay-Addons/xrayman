@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
@@ -33,7 +33,7 @@ func (uow *uowctx) NewNode(ctx context.Context, node *models.Node) error {
 	).Scan(&node.ID)
 
 	if err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 
 	return nil
@@ -69,7 +69,7 @@ func (uow *uowctx) GetNode(ctx context.Context, id models.NodeID) (*models.Node,
 			// нет записи
 			return nil, false, nil
 		}
-		return nil, false, errdefs.WrapWithStack(err)
+		return nil, false, xerr.WrapWithStack(err)
 	}
 
 	n.Config.ClientConfigTemplate = models.ClientConfigTemplate(clientConfigTemplate)
@@ -92,7 +92,7 @@ func (uow *uowctx) ListNodes(ctx context.Context) ([]models.Node, error) {
 
 	rows, err := uow.tx.QueryContext(ctx, query)
 	if err != nil {
-		return nil, errdefs.WrapWithStack(err)
+		return nil, xerr.WrapWithStack(err)
 	}
 	defer rows.Close()
 
@@ -109,14 +109,14 @@ func (uow *uowctx) ListNodes(ctx context.Context) ([]models.Node, error) {
 			&n.TargetStatus,
 		)
 		if err != nil {
-			return nil, errdefs.WrapWithStack(err)
+			return nil, xerr.WrapWithStack(err)
 		}
 		n.Config.ClientConfigTemplate = models.ClientConfigTemplate(clientConfigTemplate)
 		nodes = append(nodes, n)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, errdefs.WrapWithStack(err)
+		return nil, xerr.WrapWithStack(err)
 	}
 
 	return nodes, nil
@@ -134,7 +134,7 @@ func (uow *uowctx) SetTargetNodeStatus(ctx context.Context, id models.NodeID, st
 
 	_, err := uow.tx.ExecContext(ctx, query, status, id)
 	if err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 
 	return nil
@@ -152,7 +152,7 @@ func (uow *uowctx) SetCurrentNodeStatus(ctx context.Context, id models.NodeID, s
 
 	_, err := uow.tx.ExecContext(ctx, query, status, id)
 	if err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 
 	return nil
@@ -171,7 +171,7 @@ func (uow *uowctx) SetClientConfig(ctx context.Context, id models.NodeID, cfg mo
 
 	_, err := uow.tx.ExecContext(ctx, query, dbCfg, id)
 	if err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 
 	return nil
@@ -187,7 +187,7 @@ func (uow *uowctx) DeleteNode(ctx context.Context, id models.NodeID) error {
 
 	_, err := uow.tx.ExecContext(ctx, query, id)
 	if err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 
 	return nil

@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
-
 	mw "github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/http/middleware"
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
@@ -83,7 +82,7 @@ func New(options ...Option) (http.Handler, error) {
 	// add handler after middlewares
 	for _, h := range ro.handlers {
 		if h.handler == nil {
-			return nil, errdefs.NewNilArg(fmt.Sprintf("%s handler", h.path))
+			return nil, errdefs.NilArg(fmt.Sprintf("%s handler", h.path))
 		}
 		chiMountHandler(r, h.path, h.handler)
 	}
@@ -91,7 +90,7 @@ func New(options ...Option) (http.Handler, error) {
 	// add SPAs after middlewares
 	for _, spa := range ro.spas {
 		if spa.page == nil {
-			return nil, errdefs.NewNilArg(fmt.Sprintf("%s spa", spa.path))
+			return nil, errdefs.NilArg(fmt.Sprintf("%s spa", spa.path))
 		}
 		if err := spa.page.Mount(r, spa.path); err != nil {
 			return nil, err

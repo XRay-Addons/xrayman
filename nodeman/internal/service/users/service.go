@@ -22,10 +22,10 @@ func New(poolSyncer poolsync.Syncer,
 ) (*Service, error) {
 
 	if poolSyncer == nil {
-		return nil, errdefs.NewNilArg("poolSyncer")
+		return nil, errdefs.NilArg("poolSyncer")
 	}
 	if storage == nil {
-		return nil, errdefs.NewNilArg("storage")
+		return nil, errdefs.NilArg("storage")
 	}
 
 	return &Service{
@@ -38,7 +38,7 @@ func (s *Service) NewUser(ctx context.Context, p models.NewUserParams) (
 	*models.User, error,
 ) {
 	if s == nil {
-		return nil, errdefs.NewNilCall()
+		return nil, errdefs.NilCall()
 	}
 	vlessUUID, err := generateVlessUUID()
 	if err != nil {
@@ -68,7 +68,7 @@ func (s *Service) GetUser(ctx context.Context, p models.GetUserParams) (
 	*models.User, bool, error,
 ) {
 	if s == nil {
-		return nil, false, errdefs.NewNilCall()
+		return nil, false, errdefs.NilCall()
 	}
 
 	// find user with given id
@@ -93,7 +93,7 @@ func (s *Service) ListUsers(ctx context.Context, p models.ListUserParams) (
 	*models.ListUsersResult, error,
 ) {
 	if s == nil {
-		return nil, errdefs.NewNilCall()
+		return nil, errdefs.NilCall()
 	}
 	var users []models.User
 	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
@@ -129,7 +129,7 @@ func (s *Service) DeleteUser(ctx context.Context, p models.DeleteUserParams) (
 	*models.DeleteUserResult, error,
 ) {
 	if s == nil {
-		return nil, errdefs.NewNilCall()
+		return nil, errdefs.NilCall()
 	}
 	// disable user before deleting
 	if err := s.setUserStatus(ctx, p.ID, models.UserStatusDisabled); err != nil {
@@ -154,7 +154,7 @@ func (s *Service) setUserStatus(ctx context.Context,
 	id models.UserID, status models.UserStatus,
 ) error {
 	if s == nil {
-		return errdefs.NewNilCall()
+		return errdefs.NilCall()
 	}
 	// set target user state to storage
 	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {

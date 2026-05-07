@@ -4,7 +4,7 @@ import (
 	"context"
 	"math/rand/v2"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
@@ -53,7 +53,7 @@ func (c *ClientMock) UpdateUsers(ctx context.Context,
 	upd models.NodeUsersUpdate,
 ) error {
 	if c.Status != models.NodeStatusRunning {
-		return errdefs.New("node not running")
+		return xerr.New("node not running")
 	}
 	for _, u := range upd.Add {
 		c.Users[u] = struct{}{}
@@ -80,7 +80,7 @@ func NewUnstableClientMock() *UnstableClientMock {
 
 func (c *UnstableClientMock) CheckStatus(ctx context.Context) (models.NodeStatus, error) {
 	if c.rand.Float32() < c.Instability {
-		return models.NodeStatusUnknown, errdefs.New("random client fail")
+		return models.NodeStatusUnknown, xerr.New("random client fail")
 	}
 	if c.rand.Float32() < c.Instability {
 		if err := c.Stop(ctx); err != nil {
@@ -94,14 +94,14 @@ func (c *UnstableClientMock) Start(ctx context.Context, users []models.UserProfi
 	*models.ClientConfigTemplate, error,
 ) {
 	if c.rand.Float32() < c.Instability {
-		return nil, errdefs.New("random client fail")
+		return nil, xerr.New("random client fail")
 	}
 	return c.BaseClient.Start(ctx, users)
 }
 
 func (c *UnstableClientMock) Stop(ctx context.Context) error {
 	if c.rand.Float32() < c.Instability {
-		return errdefs.New("random client fail")
+		return xerr.New("random client fail")
 	}
 	return c.BaseClient.Stop(ctx)
 }
@@ -110,7 +110,7 @@ func (c *UnstableClientMock) UpdateUsers(ctx context.Context,
 	upd models.NodeUsersUpdate,
 ) error {
 	if c.rand.Float32() < c.Instability {
-		return errdefs.New("random client fail")
+		return xerr.New("random client fail")
 	}
 	return c.BaseClient.UpdateUsers(ctx, upd)
 }

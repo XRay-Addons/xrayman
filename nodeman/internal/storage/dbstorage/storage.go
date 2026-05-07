@@ -7,6 +7,7 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/auth/password"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
@@ -21,7 +22,7 @@ type Storage struct {
 
 func New(ctx context.Context, db *sql.DB) (s *Storage, err error) {
 	if db == nil {
-		return nil, errdefs.NewNilArg("db")
+		return nil, errdefs.NilArg("db")
 	}
 
 	return &Storage{
@@ -146,7 +147,7 @@ func (s *passwordStorage) DoUoW(ctx context.Context, fn password.UoWFn) error {
 // main doTx impl
 func (s *Storage) doTx(ctx context.Context, fn func(uowctx *uowctx) error) (err error) {
 	if s == nil {
-		return errdefs.NewNilCall()
+		return errdefs.NilCall()
 	}
 	defer func() {
 		err = translatePgErr(err)
@@ -154,18 +155,18 @@ func (s *Storage) doTx(ctx context.Context, fn func(uowctx *uowctx) error) (err 
 
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 
 	defer func() {
 		if err != nil {
 			if rbErr := tx.Rollback(); rbErr != nil {
-				err = errors.Join(err, errdefs.WrapWithStack(rbErr))
+				err = errors.Join(err, xerr.WrapWithStack(rbErr))
 			}
 			return
 		}
 		if commitErr := tx.Commit(); commitErr != nil {
-			err = errdefs.WrapWithStack(commitErr)
+			err = xerr.WrapWithStack(commitErr)
 		}
 	}()
 

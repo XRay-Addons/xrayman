@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
@@ -16,7 +17,7 @@ type syncer struct {
 
 func (s *syncer) SyncPoolState(ctx context.Context) (*models.PoolSyncResult, error) {
 	if s == nil {
-		return nil, errdefs.NewNilCall()
+		return nil, errdefs.NilCall()
 	}
 	nodes, err := s.listSyncingNodes(ctx)
 	if err != nil {
@@ -81,8 +82,8 @@ func (s *syncer) syncNodes(ctx context.Context, nodes []syncingNode) models.Pool
 func syncNode(ctx context.Context, node syncingNode) models.NodeSyncResult {
 	syncErr := nodesync.SyncState(ctx, node.client, node.storage)
 	if syncErr != nil {
-		syncErr = errdefs.WrapWithStack(
-			errdefs.WrapWithf(syncErr, "nodeID: %v", node.node.ID))
+		syncErr = xerr.WrapWithStack(
+			xerr.WrapWithf(syncErr, "nodeID: %v", node.node.ID))
 	}
 	return models.NodeSyncResult{
 		ID:       node.node.ID,

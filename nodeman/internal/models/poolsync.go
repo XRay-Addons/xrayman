@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 )
 
 type NodeSyncResult struct {
@@ -22,5 +22,5 @@ func (r *PoolSyncResult) GetNodeErr(id NodeID) error {
 			return node.Err
 		}
 	}
-	return errdefs.New("node not found", errdefs.Withf("node id: %v", id))
+	return xerr.New("node not found", xerr.Withf("node id: %v", id))
 }

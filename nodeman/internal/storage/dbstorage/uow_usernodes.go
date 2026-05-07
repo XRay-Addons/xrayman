@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
@@ -26,7 +26,7 @@ func (uow *uowctx) FindPendingSyncs(ctx context.Context, id models.NodeID) ([]mo
 
 	rows, err := uow.tx.QueryContext(ctx, query, id)
 	if err != nil {
-		return nil, errdefs.WrapWithStack(err)
+		return nil, xerr.WrapWithStack(err)
 	}
 	defer rows.Close()
 
@@ -42,13 +42,13 @@ func (uow *uowctx) FindPendingSyncs(ctx context.Context, id models.NodeID) ([]mo
 			&us.CurrentStatus,
 		)
 		if err != nil {
-			return nil, errdefs.WrapWithStack(err)
+			return nil, xerr.WrapWithStack(err)
 		}
 		result = append(result, us)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, errdefs.WrapWithStack(err)
+		return nil, xerr.WrapWithStack(err)
 	}
 
 	return result, nil
@@ -62,7 +62,7 @@ func (uow *uowctx) SetNodeUsers(ctx context.Context, id models.NodeID, patch []m
 		WHERE {node_id} = $1
 	`)
 	if _, err := uow.tx.ExecContext(ctx, delQuery, id); err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 
 	if len(patch) == 0 {
@@ -85,7 +85,7 @@ func (uow *uowctx) SetNodeUsers(ctx context.Context, id models.NodeID, patch []m
 
 	q := fmt.Sprintf(insertQuery, strings.Join(placeholders, ","))
 	if _, err := uow.tx.ExecContext(ctx, q, values...); err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 
 	return nil
@@ -113,7 +113,7 @@ func (uow *uowctx) UpdateNodeUsers(ctx context.Context, id models.NodeID, patch 
 
 	q := fmt.Sprintf(insertQuery, strings.Join(placeholders, ","))
 	if _, err := uow.tx.ExecContext(ctx, q, values...); err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 
 	return nil
@@ -139,7 +139,7 @@ func (uow *uowctx) GetUserNodes(ctx context.Context, id models.UserID) ([]models
 
 	rows, err := uow.tx.QueryContext(ctx, query, id)
 	if err != nil {
-		return nil, errdefs.WrapWithStack(err)
+		return nil, xerr.WrapWithStack(err)
 	}
 	defer rows.Close()
 
@@ -156,14 +156,14 @@ func (uow *uowctx) GetUserNodes(ctx context.Context, id models.UserID) ([]models
 			&n.TargetStatus,
 		)
 		if err != nil {
-			return nil, errdefs.WrapWithStack(err)
+			return nil, xerr.WrapWithStack(err)
 		}
 		n.Config.ClientConfigTemplate = models.ClientConfigTemplate(clientConfigTemplate)
 		nodes = append(nodes, n)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, errdefs.WrapWithStack(err)
+		return nil, xerr.WrapWithStack(err)
 	}
 
 	return nodes, nil

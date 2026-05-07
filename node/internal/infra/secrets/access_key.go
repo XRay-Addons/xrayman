@@ -9,7 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/common/xerr"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 )
 
@@ -46,16 +46,16 @@ func ensureAccessKey(dir string) (*models.AccessKey, error) {
 func getCertHash(dir string) (*models.CertHash, error) {
 	certPEM, err := os.ReadFile(filepath.Join(dir, CertFile)) // #nosec
 	if err != nil {
-		return nil, errdefs.WrapWithStack(err)
+		return nil, xerr.WrapWithStack(err)
 	}
 	block, _ := pem.Decode(certPEM)
 	if block == nil {
-		return nil, errdefs.New("get cert hash: invalid certificate PEM")
+		return nil, xerr.New("get cert hash: invalid certificate PEM")
 	}
 
 	cert, err := x509.ParseCertificate(block.Bytes)
 	if err != nil {
-		return nil, errdefs.WrapWithStack(err)
+		return nil, xerr.WrapWithStack(err)
 	}
 
 	certHash := sha256.Sum256(cert.Raw)
@@ -70,11 +70,11 @@ type accessKeyWrapper struct {
 func readAccessKey(dir string) (*models.AccessKey, error) {
 	data, err := os.ReadFile(filepath.Join(dir, AccessFile)) // #nosec
 	if err != nil {
-		return nil, errdefs.WrapWithStack(err)
+		return nil, xerr.WrapWithStack(err)
 	}
 	var wrapper accessKeyWrapper
 	if err := json.Unmarshal(data, &wrapper); err != nil {
-		return nil, errdefs.WrapWithStack(err)
+		return nil, xerr.WrapWithStack(err)
 	}
 	return &wrapper.AccessKey, nil
 }
@@ -84,10 +84,10 @@ func writeAccessKey(dir string, key models.AccessKey) error {
 
 	data, err := json.MarshalIndent(&wrapper, "", "  ")
 	if err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 	if err := os.WriteFile(filepath.Join(dir, AccessFile), data, 0600); err != nil { //nolint:mnd
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 	return nil
 }
@@ -95,7 +95,7 @@ func writeAccessKey(dir string, key models.AccessKey) error {
 func generateAccessSecret() (*models.AccessSecret, error) {
 	var secret models.AccessSecret
 	if _, err := rand.Read(secret[:]); err != nil {
-		return nil, errdefs.WrapWithStack(err)
+		return nil, xerr.WrapWithStack(err)
 	}
 	return &secret, nil
 }

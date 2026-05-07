@@ -3,7 +3,7 @@ package poolsync
 import (
 	"context"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 	node "github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
@@ -22,7 +22,7 @@ func (s *nodeStorage) DoUoW(ctx context.Context, fn node.UoWFn) error {
 			nodeID: s.nodeID,
 		}
 		if err := fn(nodeUoWCtx); err != nil {
-			return errdefs.WrapWithf(err, "node: %v", s.nodeID)
+			return xerr.WrapWithf(err, "node: %v", s.nodeID)
 		}
 		return nil
 	})
@@ -43,7 +43,7 @@ func (c *PoolNodeUoWContext) GetNodeStatus(ctx context.Context) (
 		return
 	}
 	if !exists {
-		err = errdefs.New("node not exists")
+		err = xerr.New("node not exists")
 		return
 	}
 	target = node.TargetStatus

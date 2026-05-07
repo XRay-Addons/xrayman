@@ -14,7 +14,7 @@ type PoolSecurity struct {
 
 func (ps *PoolSecurity) GetNodeSecurity(secret models.AccessSecret) (*NodeSecurity, error) {
 	if ps == nil {
-		return nil, errdefs.NewNilCall()
+		return nil, errdefs.NilCall()
 	}
 	return &NodeSecurity{
 		secret:     secret,

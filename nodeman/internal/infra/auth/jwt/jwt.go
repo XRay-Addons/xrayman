@@ -44,7 +44,7 @@ func WithIssuer(issuer string) option {
 
 func New(secret string, opts ...option) (*JWT, error) {
 	if secret == "" {
-		return nil, errdefs.NewNilArg("secret")
+		return nil, errdefs.NilArg("secret")
 	}
 	cfg := config{
 		ttl:    defaultTTL,

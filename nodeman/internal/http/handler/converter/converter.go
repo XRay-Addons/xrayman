@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
 )
@@ -72,7 +72,7 @@ func RConvertNodeID(i api.NodeID) models.NodeID {
 func ConvertAccessKey(s string) (models.AccessKey, error) {
 	var accessKey models.AccessKey
 	if err := accessKey.UnmarshalText([]byte(s)); err != nil {
-		return accessKey, errdefs.WrapWithStack(err)
+		return accessKey, xerr.WrapWithStack(err)
 	}
 	return accessKey, nil
 }
@@ -126,7 +126,7 @@ func GetUserSubscription(source models.UserProfile) string {
 /*func ConvertClientConfig(source models.Subscription) (api.Subscription, error) {
 	var s api.Subscription
 	if err := json.Unmarshal([]byte(source), &s); err != nil {
-		return nil, errdefs.WrapWithStack(err)
+		return nil, xerr.WrapWithStack(err)
 	}
 	return s, nil
 }*/

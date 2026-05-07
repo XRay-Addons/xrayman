@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/common/xerr"
 	"github.com/XRay-Addons/xrayman/node/internal/infra/grpcconn"
 	"github.com/XRay-Addons/xrayman/node/internal/infra/tx"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
@@ -78,7 +79,7 @@ func (api *XRayApi) Close(ctx context.Context) error {
 	api.ssClient = nil
 
 	if err := api.apiConn.Close(ctx); err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 	api.apiConn = nil
 
@@ -87,28 +88,28 @@ func (api *XRayApi) Close(ctx context.Context) error {
 
 func (api *XRayApi) Connect(ctx context.Context) error {
 	if api == nil {
-		return errdefs.NewNilCall()
+		return errdefs.NilCall()
 	}
 
 	api.mu.Lock()
 	defer api.mu.Unlock()
 
 	if err := api.apiConn.Connect(ctx); err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 	return nil
 }
 
 func (api *XRayApi) Disconnect(ctx context.Context) error {
 	if api == nil {
-		return errdefs.NewNilCall()
+		return errdefs.NilCall()
 	}
 
 	api.mu.Lock()
 	defer api.mu.Unlock()
 
 	if err := api.apiConn.Disconnect(ctx); err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 	return nil
 }
@@ -118,7 +119,7 @@ func (api *XRayApi) EditUsers(
 	add, remove []models.User,
 ) error {
 	if api == nil || api.hsClient == nil {
-		return errdefs.NewNilCall()
+		return errdefs.NilCall()
 	}
 
 	api.mu.Lock()
@@ -169,7 +170,7 @@ func (api *XRayApi) removeFn(inTag string, userEmail string) tx.Fn {
 
 func (api *XRayApi) Ping(ctx context.Context) error {
 	if api == nil || api.ssClient == nil {
-		return errdefs.NewNilCall()
+		return errdefs.NilCall()
 	}
 
 	api.mu.Lock()

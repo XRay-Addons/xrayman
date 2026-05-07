@@ -1,7 +1,7 @@
 package xrayapi
 
 import (
-	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/common/xerr"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 	"github.com/xtls/xray-core/common/protocol"
 	"github.com/xtls/xray-core/common/serial"
@@ -20,8 +20,7 @@ func getInboundUser(u models.User, in models.InboundType) (*protocol.User, error
 			Account: serial.ToTypedMessage(vlessAccunt),
 		}, nil
 	default:
-		return nil, errdefs.New("unsupported inbound",
-			errdefs.Withf("inbound: %v", in))
+		return nil, xerr.Newf("unsupported inbound: %v", in)
 	}
 }
 
@@ -39,7 +38,6 @@ func getVlessAccount(u models.User, in models.InboundType) (*vless.Account, erro
 			Encryption: "none",
 		}, nil
 	default:
-		return nil, errdefs.New("unsupported inbound",
-			errdefs.Withf("inbound: %v", in))
+		return nil, xerr.Newf("unsupported inbound: %v", in)
 	}
 }

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 )
 
 type Option func(opts *config)
@@ -71,7 +72,7 @@ func (cf *ClientFactory) Close() {
 
 func (cf *ClientFactory) GetNodeClient(certHash CertHash) (*http.Client, error) {
 	if cf == nil {
-		return nil, errdefs.NewNilCall()
+		return nil, errdefs.NilCall()
 	}
 
 	// fast check with RLock
@@ -119,15 +120,15 @@ func (cf *ClientFactory) newHttpClient(certHash CertHash) *http.Client {
 func verifyPeerFn(certHash CertHash) func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
 	return func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
 		if len(rawCerts) == 0 {
-			return errdefs.New("no certificate provided")
+			return xerr.New("no certificate provided")
 		}
 		cert, err := x509.ParseCertificate(rawCerts[0])
 		if err != nil {
-			return errdefs.WrapWithStack(err)
+			return xerr.WrapWithStack(err)
 		}
 		sum := sha256Sum(cert.Raw)
 		if sum != certHash {
-			return errdefs.New("certificate pinning failed")
+			return xerr.New("certificate pinning failed")
 		}
 		return nil
 	}

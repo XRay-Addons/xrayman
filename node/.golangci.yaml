@@ -57,7 +57,7 @@ linters:
       # See https://github.com/tomarrell/wrapcheck#configuration for more information.
       # Default: [".Errorf(", "errors.New(", "errors.Unwrap(", "errors.Join(", ".Wrap(", ".Wrapf(", ".WithMessage(", ".WithMessagef(", ".WithStack("]
       ignore-sigs:
-        - errdefs.New ## New, NewNilArg, NewNilCall...
+        - errdefs.New ## New, NilArg, NilCall...
         - errdefs.Wrap ## Wrap, WrapWithStack, WrapWith,...
         - errors.Join(
 
@@ -77,4 +77,3 @@ linters:
       ignored-numbers:
         - "0o600"
         - "0o700"
-

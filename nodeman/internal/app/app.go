@@ -38,7 +38,7 @@ const JWTIssuer = "nodeman"
 
 func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 	if log == nil {
-		return nil, errdefs.NewNilArg("log")
+		return nil, errdefs.NilArg("log")
 	}
 
 	baseApp := appcore.New(appcore.WithLogger(log))
@@ -303,7 +303,7 @@ func (a *App) initHandler(s services, authJWT *jwt.JWT, log *zap.Logger) (h http
 
 func (app *App) Run() error {
 	if app == nil {
-		return errdefs.NewNilCall()
+		return errdefs.NilCall()
 	}
 
 	if err := app.base.Bootstrap(); err != nil {

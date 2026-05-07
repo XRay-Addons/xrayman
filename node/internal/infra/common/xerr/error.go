@@ -29,8 +29,8 @@ import (
 //  WithoutStack()
 //
 // - common error types:
-// NewNilCall for nil object call
-// NewNilArg(name string) for nil arg passed
+// NilCall for nil object call
+// NilArg(name string) for nil arg passed
 
 type baseError struct {
 	err   error

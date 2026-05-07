@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/common/xerr"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
@@ -25,7 +26,7 @@ var _ grpc.ClientConnInterface = (*GRPCConn)(nil)
 
 func New(target string, log *zap.Logger) (*GRPCConn, error) {
 	if log == nil {
-		return nil, errdefs.NewNilArg("log")
+		return nil, errdefs.NilArg("log")
 	}
 
 	return &GRPCConn{
@@ -36,7 +37,7 @@ func New(target string, log *zap.Logger) (*GRPCConn, error) {
 
 func (c *GRPCConn) Connect(ctx context.Context) error {
 	if c == nil {
-		return errdefs.NewNilCall()
+		return errdefs.NilCall()
 	}
 
 	c.mu.Lock()
@@ -50,7 +51,7 @@ func (c *GRPCConn) Connect(ctx context.Context) error {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 
 	// start connecting
@@ -71,7 +72,7 @@ func (c *GRPCConn) Connect(ctx context.Context) error {
 			if closeErr := conn.Close(); closeErr != nil {
 				c.log.Warn("grcp connection close", zap.Error(closeErr))
 			}
-			return errdefs.WrapWithStack(ctx.Err())
+			return xerr.WrapWithStack(ctx.Err())
 		}
 		state = conn.GetState()
 	}
@@ -79,7 +80,7 @@ func (c *GRPCConn) Connect(ctx context.Context) error {
 
 func (c *GRPCConn) Disconnect(ctx context.Context) error {
 	if c == nil {
-		return errdefs.NewNilCall()
+		return errdefs.NilCall()
 	}
 
 	c.mu.Lock()
@@ -95,7 +96,7 @@ func (c *GRPCConn) Disconnect(ctx context.Context) error {
 		return nil
 	}
 	if err := c.conn.Close(); err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 	return nil
 }
@@ -115,14 +116,14 @@ func (c *GRPCConn) Invoke(
 	opts ...grpc.CallOption,
 ) error {
 	if c == nil || c.conn == nil {
-		return errdefs.NewNilCall()
+		return errdefs.NilCall()
 	}
 
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
 	if err := c.conn.Invoke(ctx, method, args, reply, opts...); err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 	return nil
 }
@@ -134,7 +135,7 @@ func (c *GRPCConn) NewStream(
 	opts ...grpc.CallOption,
 ) (grpc.ClientStream, error) {
 	if c == nil || c.conn == nil {
-		return nil, errdefs.NewNilCall()
+		return nil, errdefs.NilCall()
 	}
 
 	c.mu.RLock()
@@ -142,7 +143,7 @@ func (c *GRPCConn) NewStream(
 
 	stream, err := c.conn.NewStream(ctx, desc, method, opts...)
 	if err != nil {
-		return nil, errdefs.WrapWithStack(err)
+		return nil, xerr.WrapWithStack(err)
 	}
 	return stream, nil
 }

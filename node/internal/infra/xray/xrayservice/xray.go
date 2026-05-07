@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/common/xerr"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 	xray "github.com/xtls/libxray/xray"
 	"go.uber.org/zap"
@@ -18,7 +19,7 @@ type XRayService struct {
 // TODO: WithLogger
 func New(log *zap.Logger) (*XRayService, error) {
 	if log == nil {
-		return nil, errdefs.NewNilCall()
+		return nil, errdefs.NilCall()
 	}
 
 	return &XRayService{
@@ -34,21 +35,21 @@ func (s *XRayService) Close(ctx context.Context) error {
 	defer s.mu.Unlock()
 
 	if err := xray.StopXray(); err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 	return nil
 }
 
 func (s *XRayService) Start(ctx context.Context, config string) error {
 	if s == nil {
-		return errdefs.NewNilCall()
+		return errdefs.NilCall()
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	// close existed service
 	if err := xray.StopXray(); err != nil {
-		err = errdefs.WrapWithStack(err)
+		err = xerr.WrapWithStack(err)
 		s.log.Warn("xray stopping error, leak possible", zap.Error(err))
 	}
 
@@ -63,20 +64,20 @@ func (s *XRayService) Start(ctx context.Context, config string) error {
 
 func (s *XRayService) Stop(ctx context.Context) error {
 	if s == nil {
-		return errdefs.NewNilCall()
+		return errdefs.NilCall()
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	if err := xray.StopXray(); err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 	return nil
 }
 
 func (s *XRayService) Status(ctx context.Context) (models.ServiceStatus, error) {
 	if s == nil {
-		return models.ServiceStatusStopped, errdefs.NewNilCall()
+		return models.ServiceStatusStopped, errdefs.NilCall()
 	}
 	s.mu.RLock()
 	defer s.mu.RUnlock()

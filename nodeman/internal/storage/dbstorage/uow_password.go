@@ -3,7 +3,7 @@ package dbstorage
 import (
 	"context"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
@@ -29,7 +29,7 @@ func (uow *uowctx) GetAuth(ctx context.Context) (*models.Auth, error) {
 		&auth.PasswordHash,
 	)
 	if err != nil {
-		return nil, errdefs.WrapWithStack(err)
+		return nil, xerr.WrapWithStack(err)
 	}
 
 	return &auth, nil
@@ -51,7 +51,7 @@ func (uow *uowctx) SetAuth(ctx context.Context, a models.Auth) error {
 
 	_, err := uow.tx.ExecContext(ctx, query, adminID, a.PasswordHash)
 	if err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 
 	return nil

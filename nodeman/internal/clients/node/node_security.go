@@ -5,8 +5,8 @@ import (
 	"time"
 
 	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	jwtools "github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/http/jwt"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
@@ -22,7 +22,7 @@ func (s *NodeSecurity) BearerAuth(ctx context.Context,
 	token, err := jwtools.GenerateToken(s.secret[:], s.issuer,
 		jwtools.WithTTL(s.expiration))
 	if err != nil {
-		return api.BearerAuth{}, errdefs.WrapWithStack(err)
+		return api.BearerAuth{}, xerr.WrapWithStack(err)
 	}
 
 	return api.BearerAuth{

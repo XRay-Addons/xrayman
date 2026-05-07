@@ -43,7 +43,7 @@ const (
 
 func New(syncer PoolSyncer, options ...Option) (*SyncMan, error) {
 	if syncer == nil {
-		return nil, errdefs.NewNilArg("syncer")
+		return nil, errdefs.NilArg("syncer")
 	}
 	// init default options
 	m := &SyncMan{
@@ -61,7 +61,7 @@ func New(syncer PoolSyncer, options ...Option) (*SyncMan, error) {
 
 func (m *SyncMan) Run() error {
 	if m == nil {
-		return errdefs.NewNilCall()
+		return errdefs.NilCall()
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())

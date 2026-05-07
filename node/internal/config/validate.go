@@ -5,12 +5,13 @@ import (
 	"os"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/common/xerr"
 )
 
 func Validate(c Config) error {
 	if _, err := net.ResolveTCPAddr("tcp", c.Endpoint); err != nil {
-		return errdefs.Wrap(err, errdefs.WithStack(),
-			errdefs.Withf("invalid endpoint %s", c.Endpoint))
+		return xerr.Wrap(err, xerr.WithStack(),
+			xerr.Withf("invalid endpoint %s", c.Endpoint))
 	}
 	if err := checkDir(c.XRayData()); err != nil {
 		return err
@@ -28,10 +29,10 @@ func Validate(c Config) error {
 func checkFile(path string) error {
 	info, err := os.Stat(path)
 	if err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 	if !info.Mode().IsRegular() {
-		return errdefs.New("file is not regular", errdefs.WithFile(path))
+		return xerr.New("file is not regular", errdefs.WithFile(path))
 	}
 	return nil
 }
@@ -39,10 +40,10 @@ func checkFile(path string) error {
 func checkDir(path string) error {
 	info, err := os.Stat(path)
 	if err != nil {
-		return errdefs.WrapWithStack(err)
+		return xerr.WrapWithStack(err)
 	}
 	if !info.Mode().IsDir() {
-		return errdefs.New("file is not dir", errdefs.WithFile(path))
+		return xerr.New("file is not dir", errdefs.WithFile(path))
 	}
 	return nil
 }

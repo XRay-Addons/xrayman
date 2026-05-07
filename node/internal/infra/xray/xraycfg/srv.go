@@ -3,6 +3,7 @@ package xraycfg
 import (
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/node/internal/infra/cfgread"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/common/xerr"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 )
 
@@ -20,12 +21,12 @@ func NewServerCfg(path string) (*ServerCfg, error) {
 
 	inbounds := parseSrvInbounds(srvCfg)
 	if len(inbounds) == 0 {
-		return nil, errdefs.New("no supported inbounds in server cfg")
+		return nil, xerr.New("no supported inbounds in server cfg")
 	}
 
 	apiURL := parseSrvApiURL(srvCfg)
 	if apiURL == "" {
-		return nil, errdefs.New("no api url in server cfg")
+		return nil, xerr.New("no api url in server cfg")
 	}
 
 	return &ServerCfg{
@@ -51,7 +52,7 @@ func (cfg *ServerCfg) GetApiURL() string {
 
 func (cfg *ServerCfg) GetUsersCfg(users []models.User) (string, error) {
 	if cfg == nil {
-		return "", errdefs.NewNilCall()
+		return "", errdefs.NilCall()
 	}
 
 	usersCfg, err := addSrvUsers(cfg.srvCfg, cfg.inbounds, users)
