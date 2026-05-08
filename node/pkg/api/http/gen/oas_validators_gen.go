@@ -67,6 +67,8 @@ func (s *EditUsersRequest) Validate() error {
 
 func (s ServiceStatus) Validate() error {
 	switch s {
+	case "unknown":
+		return nil
 	case "stopped":
 		return nil
 	case "running":

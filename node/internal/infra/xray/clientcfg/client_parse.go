@@ -1,4 +1,4 @@
-package xraycfg
+package clientcfg
 
 import (
 	"errors"

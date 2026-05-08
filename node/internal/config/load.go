@@ -23,18 +23,19 @@ func LoadConfig() (*Config, error) {
 }
 
 func defaultConfig() *Config {
-	defaultDir := defaultXRayManDir()
+	defaultDir := defaultXRayDir()
 	return &Config{
 		Endpoint:      "localhost:8080",
-		XRayDir:       defaultDir,
+		XRayDataDir:   path.Join(defaultDir, "data"),
+		XRayConfigDir: path.Join(defaultDir, "config"),
 		PersistentDir: path.Join(defaultDir, "persistent"),
 	}
 }
 
-func defaultXRayManDir() string {
+func defaultXRayDir() string {
 	switch runtime.GOOS {
 	case "darwin", "linux":
-		return "/usr/local/bin/xrayman"
+		return "~/.local/share/xrayman/node"
 	default:
 		return ""
 	}
@@ -46,9 +47,16 @@ func readCLIParams(c *Config) error {
 	fs.StringVar(&c.Endpoint, "a", c.Endpoint,
 		"server endpoint tcp address, like :8080, 127.0.0.1:80, localhost:22")
 
-	fs.StringVar(&c.XRayDir, "x", c.XRayDir,
-		`xray binaries dir. must contains
-xray`)
+	fs.StringVar(&c.XRayDataDir, "d", c.XRayDataDir,
+		`xray data dir, should contains geoip, geodat if routing uses it`)
+
+	fs.StringVar(&c.XRayConfigDir, "c", c.XRayConfigDir,
+		`xray configs dir, must contains xray_server.json and xray_client.json.
+xray_server.json should be valid xray server config,
+xray_clinet.json should be user config template,
+supported template params:
+  - {{ .VlessEmail }}
+  - {{ .VlessUUID }}`)
 
 	fs.StringVar(&c.PersistentDir, "p", c.PersistentDir,
 		`persistent config dir. persistent objects

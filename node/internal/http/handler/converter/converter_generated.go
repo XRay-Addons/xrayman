@@ -4,6 +4,7 @@
 package converter
 
 import (
+	"fmt"
 	models "github.com/XRay-Addons/xrayman/node/internal/models"
 	gen "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
 	jx "github.com/go-faster/jx"
@@ -51,6 +52,29 @@ func ConvertStartResult(source *models.StartResult) *gen.StartResponse {
 		pApiStartResponse = &apiStartResponse
 	}
 	return pApiStartResponse
+}
+func ConvertStatus(source models.ServiceStatus) gen.ServiceStatus {
+	var apiServiceStatus gen.ServiceStatus
+	switch source {
+	case models.ServiceStatusRunning:
+		apiServiceStatus = gen.ServiceStatusRunning
+	case models.ServiceStatusStopped:
+		apiServiceStatus = gen.ServiceStatusStopped
+	case models.ServiceStatusUnknown:
+		apiServiceStatus = gen.ServiceStatusUnknown
+	default:
+		panic(fmt.Sprintf("unexpected enum element: %v", source))
+	}
+	return apiServiceStatus
+}
+func ConvertStatusResult(source *models.StatusResult) *gen.StatusResponse {
+	var pApiStatusResponse *gen.StatusResponse
+	if source != nil {
+		var apiStatusResponse gen.StatusResponse
+		apiStatusResponse.ServiceStatus = ConvertStatus((*source).ServiceStatus)
+		pApiStatusResponse = &apiStatusResponse
+	}
+	return pApiStatusResponse
 }
 func apiUserToModelsUser(source gen.User) models.User {
 	var modelsUser models.User

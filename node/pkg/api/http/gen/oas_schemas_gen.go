@@ -227,6 +227,7 @@ func (o OptNilString) Or(d string) string {
 type ServiceStatus string
 
 const (
+	ServiceStatusUnknown ServiceStatus = "unknown"
 	ServiceStatusStopped ServiceStatus = "stopped"
 	ServiceStatusRunning ServiceStatus = "running"
 )
@@ -234,6 +235,7 @@ const (
 // AllValues returns all ServiceStatus values.
 func (ServiceStatus) AllValues() []ServiceStatus {
 	return []ServiceStatus{
+		ServiceStatusUnknown,
 		ServiceStatusStopped,
 		ServiceStatusRunning,
 	}
@@ -242,6 +244,8 @@ func (ServiceStatus) AllValues() []ServiceStatus {
 // MarshalText implements encoding.TextMarshaler.
 func (s ServiceStatus) MarshalText() ([]byte, error) {
 	switch s {
+	case ServiceStatusUnknown:
+		return []byte(s), nil
 	case ServiceStatusStopped:
 		return []byte(s), nil
 	case ServiceStatusRunning:
@@ -254,6 +258,9 @@ func (s ServiceStatus) MarshalText() ([]byte, error) {
 // UnmarshalText implements encoding.TextUnmarshaler.
 func (s *ServiceStatus) UnmarshalText(data []byte) error {
 	switch ServiceStatus(data) {
+	case ServiceStatusUnknown:
+		*s = ServiceStatusUnknown
+		return nil
 	case ServiceStatusStopped:
 		*s = ServiceStatusStopped
 		return nil

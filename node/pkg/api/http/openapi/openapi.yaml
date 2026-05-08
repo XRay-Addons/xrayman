@@ -15,40 +15,40 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StartRequest'
+              $ref: "#/components/schemas/StartRequest"
       responses:
-        '200':
+        "200":
           description: Successful start
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StartResponse'
-        'default':
+                $ref: "#/components/schemas/StartResponse"
+        "default":
           description: General Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /stop:
     post:
-      summary: Stop node 
+      summary: Stop node
       operationId: Stop
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: Successful start
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EmptyResponse'
-        'default':
+                $ref: "#/components/schemas/EmptyResponse"
+        "default":
           description: General Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /status:
     get:
@@ -57,18 +57,18 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: Successful response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StatusResponse'
-        'default':
+                $ref: "#/components/schemas/StatusResponse"
+        "default":
           description: General Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /users/edit:
     post:
@@ -81,21 +81,21 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EditUsersRequest'
+              $ref: "#/components/schemas/EditUsersRequest"
 
       responses:
-        '200':
+        "200":
           description: Successful response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EmptyResponse'
-        'default':
+                $ref: "#/components/schemas/EmptyResponse"
+        "default":
           description: General Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
 components:
   schemas:
@@ -110,7 +110,7 @@ components:
         - vlessUUID
       properties:
         ID:
-          $ref: '#/components/schemas/UserID'
+          $ref: "#/components/schemas/UserID"
         name:
           type: string
         vlessUUID:
@@ -129,7 +129,7 @@ components:
         template:
           type: array
           items:
-            $ref: '#/components/schemas/ClientConfigTemplateItem'
+            $ref: "#/components/schemas/ClientConfigTemplateItem"
 
         vlessEmailField:
           type: string
@@ -139,10 +139,7 @@ components:
     ServiceStatus:
       type: string
       description: Status of the service
-      enum: [
-        "stopped",
-        "running"
-      ]
+      enum: ["unknown", "stopped", "running"]
 
     StartRequest:
       type: object
@@ -152,7 +149,7 @@ components:
         users:
           type: array
           items:
-            $ref: '#/components/schemas/User'
+            $ref: "#/components/schemas/User"
 
     StartResponse:
       type: object
@@ -160,7 +157,7 @@ components:
         - clientConfigTemplate
       properties:
         clientConfigTemplate:
-          $ref: '#/components/schemas/ClientConfigTemplate'
+          $ref: "#/components/schemas/ClientConfigTemplate"
 
     StatusResponse:
       type: object
@@ -168,7 +165,7 @@ components:
         - serviceStatus
       properties:
         serviceStatus:
-          $ref: '#/components/schemas/ServiceStatus'
+          $ref: "#/components/schemas/ServiceStatus"
 
     EditUsersRequest:
       type: object
@@ -179,18 +176,18 @@ components:
         add:
           type: array
           items:
-            $ref: '#/components/schemas/User'
+            $ref: "#/components/schemas/User"
         remove:
           type: array
           items:
-            $ref: '#/components/schemas/User'
+            $ref: "#/components/schemas/User"
 
     EmptyResponse:
       type: object
       description: Empty response body
       properties: {}
       additionalProperties: false
-      
+
     Error:
       type: object
       required:

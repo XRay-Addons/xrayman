@@ -1,8 +1,6 @@
 package converter
 
 import (
-	"fmt"
-
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
 )
@@ -10,6 +8,7 @@ import (
 // goverter:converter
 // goverter:output:format function
 // goverter:output:file ./converter_generated.go
+// goverter:enum:unknown @panic
 //
 //go:generate goverter gen .
 type Converter interface {
@@ -17,19 +16,5 @@ type Converter interface {
 	ConvertStartResult(source *models.StartResult) *api.StartResponse
 	ConvertEditUsersRequest(source *api.EditUsersRequest) *models.EditUsersParams
 	ConvertStatusResult(source *models.StatusResult) *api.StatusResponse
-}
-
-// TODO: fix generator
-// gonverter can't generate it :((
-func ConvertStatusResult(source *models.StatusResult) *api.StatusResponse {
-	var response api.StatusResponse
-	switch source.ServiceStatus {
-	case models.ServiceStatusRunning:
-		response.ServiceStatus = api.ServiceStatusRunning
-	case models.ServiceStatusStopped:
-		response.ServiceStatus = api.ServiceStatusStopped
-	default:
-		panic(fmt.Sprintf("unexpected enum element: %v", source))
-	}
-	return &response
+	ConvertStatus(source models.ServiceStatus) api.ServiceStatus
 }

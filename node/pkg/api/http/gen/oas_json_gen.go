@@ -551,6 +551,8 @@ func (s *ServiceStatus) Decode(d *jx.Decoder) error {
 	}
 	// Try to use constant string.
 	switch ServiceStatus(v) {
+	case ServiceStatusUnknown:
+		*s = ServiceStatusUnknown
 	case ServiceStatusStopped:
 		*s = ServiceStatusStopped
 	case ServiceStatusRunning:

@@ -100,7 +100,7 @@ func TestHandler(t *testing.T) {
 			mockService := mocks.NewMockService(ctrl)
 			tt.mockSetup(mockService)
 
-			h, err := New(mockService, log)
+			h, err := New(mockService, WithLogger(log))
 			require.NoError(t, err)
 
 			srv, err := api.NewServer(h, &testSecurity{})

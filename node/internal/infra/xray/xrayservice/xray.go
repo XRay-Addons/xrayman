@@ -88,3 +88,5 @@ func (s *XRayService) Status(ctx context.Context) (models.ServiceStatus, error) 
 		return models.ServiceStatusStopped, nil
 	}
 }
+
+// TODO: TestConfig for bootstrap
