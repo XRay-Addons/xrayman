@@ -38,7 +38,8 @@ func New(dataDir string, opts ...option) (*XRayService, error) {
 	}
 
 	return &XRayService{
-		log: o.log,
+		datadir: dataDir,
+		log:     o.log,
 	}, nil
 }
 
@@ -71,7 +72,8 @@ func (s *XRayService) Start(ctx context.Context, config string) error {
 	// start new instance
 	err := xray.RunXrayFromJSON(s.datadir, "", config)
 	if err != nil {
-		return err
+		return xerr.Wrap(err, xerr.WithStack(),
+			xerr.Withf("datadir: %s", s.datadir))
 	}
 
 	return nil
