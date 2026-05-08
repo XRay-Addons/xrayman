@@ -1,20 +1,16 @@
 {
   "name": "frontend",
   "private": true,
+  "packageManager": "pnpm@10.33.2",
   "workspaces": [
-    "admpage",
-    "userpage",
-    "shared"
+    "pages/*"
   ],
   "scripts": {
     "gen:admin": "pnpm -F admpage run api:generate",
     "gen:user": "pnpm -F userpage run api:generate",
-    "gen": "pnpm run gen:admin && pnpm run gen:user",
-    "build:admin": "pnpm -F admpage build",
-    "build:user": "pnpm -F userpage build",
+    "gen": "pnpm -r run api:generate",
+    "build:admin": "pnpm -F admpage run build",
+    "build:user": "pnpm -F userpage run build",
     "build": "pnpm run build:user && pnpm run build:admin"
-  },
-  "dependencies": {
-    "pnpm": "^10.33.2"
   }
 }

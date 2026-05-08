@@ -1,52 +1,39 @@
+SHELL := /bin/bash
+
 BIN_DIR := $(CURDIR)/bin
-INSTALL_PREFIX := /usr/local/bin/xrayman
+NPM_ROOT := $(CURDIR)/nodeman/web
 
-NODEMAN_WEB_SRC := $(CURDIR)/nodeman/web
-NODE_SRC := $(CURDIR)/node/cmd
-NODEMAN_SRC := $(CURDIR)/nodeman/cmd
+USERPAGE_WEB_SRC := $(CURDIR)/nodeman/web/pages/userpage
+ADMPAGE_WEB_SRC := $(CURDIR)/nodeman/web/pages/admpage
 
-NODEMAN_WEB_DIST := $(NODEMAN_SRC)/../internal/http/spa/dist
-NODE_BIN := $(BIN_DIR)/node
-NODEMAN_BIN := $(BIN_DIR)/nodeman
+USERPAGE_WEB_DST := $(CURDIR)/nodeman/internal/pages/userpage
+ADMPAGE_WEB_DST := $(CURDIR)/nodeman/internal/pages/admpage
 
-.PHONY: all build install clean
 
-all: build
+.PHONY: npm-install
+npm-install:
+	@echo "Installing pnpm dependencies..."
+	cd $(NPM_ROOT) && pnpm install
 
-build: $(NODE_BIN) $(NODEMAN_BIN)
 
-nodeman-frontend:
-	cd $(NODEMAN_WEB_SRC) && \
-	NODEMAN_WEB_DIST=$(NODEMAN_WEB_DIST) npm install && \
-	NODEMAN_WEB_DIST=$(NODEMAN_WEB_DIST) npm run build
+.PHONY: userpage
+userpage:
+	@echo "Building userpage..."
+	cd $(NPM_ROOT) && pnpm run build:user
+	rm -rf $(USERPAGE_WEB_DST)
+	mkdir -p $(USERPAGE_WEB_DST)
+	cp -r $(USERPAGE_WEB_SRC)/dist/* $(USERPAGE_WEB_DST)/
 
-$(NODE_BIN):
-	@echo "Building node..."
-	mkdir -p $(BIN_DIR)
-	go build -o $(NODE_BIN) $(NODE_SRC)
-	@echo "Node built."
 
-$(NODEMAN_BIN): nodeman-frontend
-	@echo "Building nodeman..."
-	mkdir -p $(BIN_DIR)
-	go build -o $(NODEMAN_BIN) $(NODEMAN_SRC)
-	@echo "Nodeman built."
+.PHONY: admpage
+admpage:
+	@echo "Building admpage..."
+	cd $(NPM_ROOT) && pnpm run build:admin
+	rm -rf $(ADMPAGE_WEB_DST)
+	mkdir -p $(ADMPAGE_WEB_DST)
+	cp -r $(ADMPAGE_WEB_SRC)/dist/* $(ADMPAGE_WEB_DST)/
 
-install: build
-	@echo "Creating install dir: $(INSTALL_PREFIX)"
-	mkdir -p $(INSTALL_PREFIX)
 
-	@echo "Installing node → $(INSTALL_PREFIX)/"
-	install -m 0755 $(NODE_BIN) $(INSTALL_PREFIX)/
-
-	@echo "Installing nodeman → $(INSTALL_PREFIX)/"
-	install -m 0755 $(NODEMAN_BIN) $(INSTALL_PREFIX)/
-
-	@echo "Installed to $(INSTALL_PREFIX)"
-
-clean:
-	@echo "Cleaning up build files..."
-	rm -rf $(BIN_DIR)
-	rm -rf $(NODEMAN_WEB_DIST)
-
-	@echo "Build files cleaned."
+.PHONY: build
+build: npm-install userpage admpage
+	@echo "Frontend build done."
