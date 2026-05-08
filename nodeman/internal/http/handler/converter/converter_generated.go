@@ -4,6 +4,7 @@
 package converter
 
 import (
+	"fmt"
 	models "github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	gen "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
 	jx "github.com/go-faster/jx"
@@ -134,6 +135,20 @@ func ConvertNewUserRequest(source *gen.NewUserRequest) (*models.NewUserParams, e
 		pModelsNewUserParams = &modelsNewUserParams
 	}
 	return pModelsNewUserParams, nil
+}
+func ConvertNodeStatusResult(source models.NodeStatus) gen.NodeStatus {
+	var apiNodeStatus gen.NodeStatus
+	switch source {
+	case models.NodeStatusRunning:
+		apiNodeStatus = gen.NodeStatusRunning
+	case models.NodeStatusStopped:
+		apiNodeStatus = gen.NodeStatusStopped
+	case models.NodeStatusUnknown:
+		apiNodeStatus = gen.NodeStatusUnknown
+	default:
+		panic(fmt.Sprintf("unexpected enum element: %v", source))
+	}
+	return apiNodeStatus
 }
 func ConvertProfile(source models.UserProfile) gen.UserProfile {
 	var apiUserProfile gen.UserProfile

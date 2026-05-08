@@ -14,10 +14,10 @@ import (
 // goverter:output:file ./converter_generated.go
 // goverter:extend ConvertExpireTime
 // goverter:extend ConvertNodeID RConvertNodeID
-// goverter:extend ConvertNodeStatusResult
 // goverter:extend ConvertAccessKey RConvertAccessKey
 // goverter:extend ConvertUserID RConvertUserID
 // goverter:extend ConvertUserStatusResult
+// goverter:enum:unknown @panic
 //
 //go:generate goverter gen .
 type Converter interface {
@@ -55,6 +55,8 @@ type Converter interface {
 
 	// goverter:map . SubscriptionPath | GetUserSubscription
 	ConvertProfile(r models.UserProfile) api.UserProfile
+
+	ConvertNodeStatusResult(source models.NodeStatus) api.NodeStatus
 }
 
 func ConvertExpireTime(i time.Duration) int {
@@ -81,7 +83,7 @@ func RConvertAccessKey(key models.AccessKey) string {
 	return key.String()
 }
 
-func ConvertNodeStatusResult(source models.NodeStatus) api.NodeStatus {
+/*func ConvertNodeStatusResult(source models.NodeStatus) api.NodeStatus {
 	var response api.NodeStatus
 	switch source {
 	case models.NodeStatusStopped:
@@ -94,7 +96,7 @@ func ConvertNodeStatusResult(source models.NodeStatus) api.NodeStatus {
 		panic(fmt.Sprintf("unexpected enum element: %v", source))
 	}
 	return response
-}
+}*/
 
 func ConvertUserID(i models.UserID) api.UserID {
 	return api.UserID(i)
@@ -122,11 +124,3 @@ func ConvertUserStatusResult(source models.UserStatus) api.UserStatus {
 func GetUserSubscription(source models.UserProfile) string {
 	return source.SubscriptionURL()
 }
-
-/*func ConvertClientConfig(source models.Subscription) (api.Subscription, error) {
-	var s api.Subscription
-	if err := json.Unmarshal([]byte(source), &s); err != nil {
-		return nil, xerr.WrapWithStack(err)
-	}
-	return s, nil
-}*/
