@@ -12,18 +12,33 @@ import (
 )
 
 type XRayService struct {
-	log *zap.Logger
-	mu  sync.RWMutex
+	datadir string
+	log     *zap.Logger
+	mu      sync.RWMutex
 }
 
-// TODO: WithLogger
-func New(log *zap.Logger) (*XRayService, error) {
-	if log == nil {
-		return nil, errdefs.NilCall()
+func WithLogger(logger *zap.Logger) option {
+	return func(o *options) {
+		o.log = logger
+	}
+}
+
+type option func(o *options)
+
+type options struct {
+	log *zap.Logger
+}
+
+func New(dataDir string, opts ...option) (*XRayService, error) {
+	o := &options{
+		log: zap.NewNop(),
+	}
+	for _, opt := range opts {
+		opt(o)
 	}
 
 	return &XRayService{
-		log: log,
+		log: o.log,
 	}, nil
 }
 
@@ -54,7 +69,7 @@ func (s *XRayService) Start(ctx context.Context, config string) error {
 	}
 
 	// start new instance
-	err := xray.RunXrayFromJSON("", "", config)
+	err := xray.RunXrayFromJSON(s.datadir, "", config)
 	if err != nil {
 		return err
 	}
@@ -88,5 +103,3 @@ func (s *XRayService) Status(ctx context.Context) (models.ServiceStatus, error) 
 		return models.ServiceStatusStopped, nil
 	}
 }
-
-// TODO: TestConfig for bootstrap

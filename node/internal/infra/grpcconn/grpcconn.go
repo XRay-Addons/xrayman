@@ -29,58 +29,23 @@ func New(target string, log *zap.Logger) (*GRPCConn, error) {
 		return nil, errdefs.NilArg("log")
 	}
 
+	conn, err := grpc.NewClient(target,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		return nil, xerr.WrapWithStack(err)
+	}
+
 	return &GRPCConn{
 		target: target,
+		conn:   conn,
 		log:    log,
 	}, nil
 }
 
-func (c *GRPCConn) Connect(ctx context.Context) error {
+func (c *GRPCConn) Close(ctx context.Context) error {
 	if c == nil {
-		return errdefs.NilCall()
-	}
-
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if c.conn != nil {
 		return nil
-	}
-
-	conn, err := grpc.NewClient(c.target,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	)
-	if err != nil {
-		return xerr.WrapWithStack(err)
-	}
-
-	// start connecting
-	state := conn.GetState()
-	if state == connectivity.Idle {
-		conn.Connect()
-	}
-
-	// wait till connected or cancelled
-	for {
-		if state == connectivity.Ready {
-			c.log.Info("grpc connected")
-			c.conn = conn
-			return nil
-		}
-		c.log.Warn("grpc connecting", zap.String("state", state.String()))
-		if !conn.WaitForStateChange(ctx, state) {
-			if closeErr := conn.Close(); closeErr != nil {
-				c.log.Warn("grcp connection close", zap.Error(closeErr))
-			}
-			return xerr.WrapWithStack(ctx.Err())
-		}
-		state = conn.GetState()
-	}
-}
-
-func (c *GRPCConn) Disconnect(ctx context.Context) error {
-	if c == nil {
-		return errdefs.NilCall()
 	}
 
 	c.mu.Lock()
@@ -101,13 +66,6 @@ func (c *GRPCConn) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (c *GRPCConn) Close(ctx context.Context) error {
-	if c == nil {
-		return nil
-	}
-	return c.Disconnect(ctx)
-}
-
 func (c *GRPCConn) Invoke(
 	ctx context.Context,
 	method string,
@@ -116,7 +74,8 @@ func (c *GRPCConn) Invoke(
 	opts ...grpc.CallOption,
 ) error {
 	if c == nil || c.conn == nil {
-		return errdefs.NilCall()
+		e := errdefs.NilCall()
+		return e
 	}
 
 	c.mu.RLock()

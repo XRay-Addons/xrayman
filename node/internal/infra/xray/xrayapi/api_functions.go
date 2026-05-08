@@ -55,7 +55,9 @@ func ping(
 ) error {
 	_, err := ssClient.GetSysStats(ctx, &statsService.SysStatsRequest{})
 	if err != nil {
-		return xerr.WrapWithStack(err)
+		return err
+		// TODO dont' wrap stack twice
+		// return xerr.WrapWithStack(err)
 	}
 
 	return nil

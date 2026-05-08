@@ -1,4 +1,4 @@
-package xraycfg
+package servercfg
 
 import (
 	"os"
@@ -77,7 +77,7 @@ func TestServiceCfg(t *testing.T) {
 	err := os.WriteFile(filePath, []byte(testServerCfg), 0o600)
 	require.NoError(t, err)
 
-	serviceCfg, err := NewServerCfg(filePath)
+	serviceCfg, err := New(filePath)
 	require.NoError(t, err)
 
 	apiURL := serviceCfg.GetApiURL()

@@ -3,6 +3,7 @@ package xrayapi
 import (
 	"context"
 	"sync"
+	"time"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
@@ -21,7 +22,8 @@ type XRayApi struct {
 	hsClient handlerService.HandlerServiceClient
 	ssClient statsService.StatsServiceClient
 
-	mu sync.Mutex
+	mu      sync.Mutex
+	timeout time.Duration
 }
 
 func WithLogger(logger *zap.Logger) option {
@@ -33,15 +35,25 @@ func WithLogger(logger *zap.Logger) option {
 	}
 }
 
+func WithTimeout(t time.Duration) option {
+	return func(o *options) {
+		o.timeout = t
+	}
+}
+
 type option func(o *options)
 
 type options struct {
-	log *zap.Logger
+	log     *zap.Logger
+	timeout time.Duration
 }
+
+const defaultTimeout = 5 * time.Second
 
 func New(apiURL string, inbounds []models.Inbound, opts ...option) (*XRayApi, error) {
 	o := &options{
-		log: zap.NewNop(),
+		log:     zap.NewNop(),
+		timeout: defaultTimeout,
 	}
 	for _, opt := range opts {
 		opt(o)
@@ -60,6 +72,7 @@ func New(apiURL string, inbounds []models.Inbound, opts ...option) (*XRayApi, er
 		apiConn:  apiConn,
 		hsClient: hsClient,
 		ssClient: ssClient,
+		timeout:  o.timeout,
 	}, nil
 }
 
@@ -78,39 +91,14 @@ func (api *XRayApi) Close(ctx context.Context) error {
 	api.hsClient = nil
 	api.ssClient = nil
 
+	ctx, cancel := context.WithTimeout(ctx, api.timeout)
+	defer cancel()
+
 	if err := api.apiConn.Close(ctx); err != nil {
 		return xerr.WrapWithStack(err)
 	}
 	api.apiConn = nil
 
-	return nil
-}
-
-func (api *XRayApi) Connect(ctx context.Context) error {
-	if api == nil {
-		return errdefs.NilCall()
-	}
-
-	api.mu.Lock()
-	defer api.mu.Unlock()
-
-	if err := api.apiConn.Connect(ctx); err != nil {
-		return xerr.WrapWithStack(err)
-	}
-	return nil
-}
-
-func (api *XRayApi) Disconnect(ctx context.Context) error {
-	if api == nil {
-		return errdefs.NilCall()
-	}
-
-	api.mu.Lock()
-	defer api.mu.Unlock()
-
-	if err := api.apiConn.Disconnect(ctx); err != nil {
-		return xerr.WrapWithStack(err)
-	}
 	return nil
 }
 
@@ -149,6 +137,9 @@ func (api *XRayApi) EditUsers(
 		}
 	}
 
+	ctx, cancel := context.WithTimeout(ctx, api.timeout)
+	defer cancel()
+
 	if err := editUsersTx.Run(ctx); err != nil {
 		return err
 	}
@@ -175,6 +166,9 @@ func (api *XRayApi) Ping(ctx context.Context) error {
 
 	api.mu.Lock()
 	defer api.mu.Unlock()
+
+	ctx, cancel := context.WithTimeout(ctx, api.timeout)
+	defer cancel()
 
 	return ping(ctx, api.ssClient)
 }

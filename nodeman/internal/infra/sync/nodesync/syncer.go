@@ -2,8 +2,8 @@ package nodesync
 
 import (
 	"context"
-	"errors"
 
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
@@ -56,7 +56,7 @@ func (s *syncer) SyncNodeState(ctx context.Context) (err error) {
 	// target status is stopped ignored (but node may work)
 	switch {
 	case err != nil && prev != models.NodeStatusUnknown:
-		err = errors.Join(err, s.markAsUnavailable(ctx))
+		err = xerr.Join(err, s.markAsUnavailable(ctx))
 	case target == models.NodeStatusRunning && curr == models.NodeStatusStopped:
 		err = s.startNode(ctx)
 	case target == models.NodeStatusStopped && curr == models.NodeStatusRunning:

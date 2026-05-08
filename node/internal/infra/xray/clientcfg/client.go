@@ -10,11 +10,11 @@ import (
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 )
 
-type ClientConfig struct {
+type Config struct {
 	cfg models.ClientConfigTemplate
 }
 
-func NewClientConfig(path string) (cfg *ClientConfig, err error) {
+func New(path string) (cfg *Config, err error) {
 	defer func() {
 		if err != nil {
 			err = errdefs.WrapWithFile(err, path)
@@ -54,10 +54,10 @@ func NewClientConfig(path string) (cfg *ClientConfig, err error) {
 		VlessUUIDField:  vlessUUIdField,
 	}
 
-	return &ClientConfig{cfg: clientCfg}, nil
+	return &Config{cfg: clientCfg}, nil
 }
 
-func (cfg *ClientConfig) GetTemplate() (*models.ClientConfigTemplate, error) {
+func (cfg *Config) GetTemplate() (*models.ClientConfigTemplate, error) {
 	if cfg == nil {
 		return nil, errdefs.NilCall()
 	}

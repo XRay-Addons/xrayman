@@ -8,6 +8,7 @@ import (
 	appcore "github.com/XRay-Addons/xrayman/common/app"
 	"github.com/XRay-Addons/xrayman/common/http/router"
 	"github.com/XRay-Addons/xrayman/common/http/server"
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	client "github.com/XRay-Addons/xrayman/nodeman/internal/clients/node"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/config"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
@@ -47,7 +48,7 @@ func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 
 	defer func() {
 		if err != nil {
-			err = errors.Join(err, app.core.Close())
+			err = xerr.Join(err, app.core.Close())
 		}
 	}()
 

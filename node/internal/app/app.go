@@ -3,12 +3,12 @@ package app
 import (
 	"context"
 	"crypto/tls"
-	"errors"
 	"net/http"
 
 	appcore "github.com/XRay-Addons/xrayman/common/app"
 	"github.com/XRay-Addons/xrayman/common/http/router"
 	"github.com/XRay-Addons/xrayman/common/http/server"
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/node/internal/config"
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/node/internal/http/api"
@@ -17,8 +17,9 @@ import (
 	"github.com/XRay-Addons/xrayman/node/internal/infra/auth/jwt"
 	"github.com/XRay-Addons/xrayman/node/internal/infra/secrets"
 	"github.com/XRay-Addons/xrayman/node/internal/infra/tlscfg"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/xray/clientcfg"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/xray/servercfg"
 	"github.com/XRay-Addons/xrayman/node/internal/infra/xray/xrayapi"
-	"github.com/XRay-Addons/xrayman/node/internal/infra/xray/xraycfg"
 	"github.com/XRay-Addons/xrayman/node/internal/infra/xray/xrayservice"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 	"github.com/XRay-Addons/xrayman/node/internal/service"
@@ -40,7 +41,7 @@ func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 
 	defer func() {
 		if err != nil {
-			err = errors.Join(err, app.core.Close())
+			err = xerr.Join(err, app.core.Close())
 		}
 	}()
 
@@ -57,7 +58,8 @@ func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 		configs.accessKey.String()))
 
 	// xray service
-	xrayService, err := xrayservice.New(log)
+	xrayService, err := xrayservice.New(cfg.XRayDataDir,
+		xrayservice.WithLogger(log))
 	if err != nil {
 		return
 	}
@@ -66,8 +68,8 @@ func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 	})
 
 	// xray api
-	xrayAPI, err := xrayapi.New(configs.srvCfg.GetApiURL(),
-		configs.srvCfg.GetInbounds(), xrayapi.WithLogger(log))
+	xrayAPI, err := xrayapi.New(configs.serverCfg.GetApiURL(),
+		configs.serverCfg.GetInbounds(), xrayapi.WithLogger(log))
 	if err != nil {
 		return
 	}
@@ -76,7 +78,7 @@ func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 	})
 
 	// service
-	s, err := service.New(configs.srvCfg, configs.clientCfg,
+	s, err := service.New(configs.serverCfg, configs.clientCfg,
 		xrayService, xrayAPI)
 	if err != nil {
 		return
@@ -93,6 +95,29 @@ func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 	if err != nil {
 		return
 	}
+
+	///////////////////////////////////////////////////////////////////////////
+	// bootstrap - check xray config ok
+	app.core.AddBootstrap("xray check", func(ctx context.Context) (err error) {
+		log.Info("bootstrap...")
+		// start service
+		if _, err = s.Start(ctx, models.StartParams{}); err != nil {
+			return
+		}
+		defer func() {
+			_, closeErr := s.Stop(ctx, models.StopParams{})
+			err = xerr.Join(err, closeErr)
+		}()
+
+		// ping xray
+		if err = xrayAPI.Ping(ctx); err != nil {
+			return err
+		}
+		log.Info("service ping ok!")
+		return nil
+	}, func(error) bool {
+		return false
+	})
 
 	///////////////////////////////////////////////////////////////////////////
 	// run app components
@@ -112,8 +137,8 @@ func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 
 type configs struct {
 	accessKey models.AccessKey
-	srvCfg    *xraycfg.ServerCfg
-	clientCfg *xraycfg.ClientConfig
+	serverCfg *servercfg.Config
+	clientCfg *clientcfg.Config
 	tlsCfg    *tls.Config
 }
 
@@ -130,13 +155,13 @@ func (a *App) initConfigs(
 	cfgs.accessKey = secrets.AccessKey
 
 	// server config
-	cfgs.srvCfg, err = xraycfg.NewServerCfg(cfg.XRayServer())
+	cfgs.serverCfg, err = servercfg.New(cfg.XRayServer())
 	if err != nil {
 		return
 	}
 
 	// client config
-	cfgs.clientCfg, err = xraycfg.NewClientConfig(cfg.XRayClient())
+	cfgs.clientCfg, err = clientcfg.New(cfg.XRayClient())
 	if err != nil {
 		return
 	}
@@ -183,7 +208,7 @@ func (a *App) initHandler(s *service.Service,
 	authJWT *jwt.JWT, log *zap.Logger,
 ) (h http.Handler, err error) {
 	// requests handler
-	reqH, err := handler.New(s, log)
+	reqH, err := handler.New(s, handler.WithLogger(log))
 	if err != nil {
 		return
 	}

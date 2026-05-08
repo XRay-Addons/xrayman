@@ -2,8 +2,8 @@ package nodes
 
 import (
 	"context"
-	"errors"
 
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
@@ -162,5 +162,5 @@ func (s *Service) syncAllNodes(ctx context.Context) error {
 		}
 		errs = append(errs, syncRes.Err)
 	}
-	return errors.Join(errs...)
+	return xerr.Join(errs...)
 }

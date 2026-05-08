@@ -2,8 +2,9 @@ package tx
 
 import (
 	"context"
-	"errors"
 	"time"
+
+	"github.com/XRay-Addons/xrayman/common/xerr"
 )
 
 type Tx struct {
@@ -49,8 +50,8 @@ func (tx *Tx) Run(ctx context.Context) error {
 
 	rbErrs := tx.rollback(rbCtx, committed)
 	if len(rbErrs) > 0 {
-		rbCombined := errors.Join(rbErrs...)
-		err = errors.Join(err, rbCombined)
+		rbCombined := xerr.Join(rbErrs...)
+		err = xerr.Join(err, rbCombined)
 	}
 
 	return err

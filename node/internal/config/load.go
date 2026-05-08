@@ -56,7 +56,8 @@ xray_server.json should be valid xray server config,
 xray_clinet.json should be user config template,
 supported template params:
   - {{ .VlessEmail }}
-  - {{ .VlessUUID }}`)
+  - {{ .VlessUUID }}
+`)
 
 	fs.StringVar(&c.PersistentDir, "p", c.PersistentDir,
 		`persistent config dir. persistent objects

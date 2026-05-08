@@ -128,7 +128,7 @@ func TestValidClientConfig(t *testing.T) {
 	err = os.WriteFile(filePath, []byte(testValidClientConfig), 0o600)
 	require.NoError(t, err)
 
-	cfg, err := NewClientConfig(filePath)
+	cfg, err := New(filePath)
 	require.NoError(t, err)
 	require.Equal(t, testVlessEmailField, cfg.cfg.VlessEmailField)
 	require.Equal(t, testVlessUUIDField, cfg.cfg.VlessUUIDField)
@@ -150,6 +150,6 @@ func TestInvalidClientConfig(t *testing.T) {
 	err = os.WriteFile(filePath, []byte(testInvalidClientConfig), 0o600)
 	require.NoError(t, err)
 
-	_, err = NewClientConfig(filePath)
+	_, err = New(filePath)
 	require.Error(t, err)
 }

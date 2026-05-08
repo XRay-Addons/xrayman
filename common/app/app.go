@@ -2,13 +2,13 @@ package app
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/oklog/run"
 	"github.com/sethvargo/go-retry"
 	"go.uber.org/zap"
@@ -99,7 +99,7 @@ func (a *App) Close() error {
 		return nil
 	}
 
-	return errors.Join(closeErrs...)
+	return xerr.Join(closeErrs...)
 }
 
 func (a *App) AddBootstrap(name string,
@@ -199,5 +199,5 @@ func (a *App) Run() (err error) {
 
 	// join all errors
 	allErrors := append(runErrs, closeErrs...)
-	return errors.Join(allErrors...)
+	return xerr.Join(allErrors...)
 }

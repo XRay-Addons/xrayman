@@ -1,4 +1,4 @@
-package xraycfg
+package servercfg
 
 import (
 	"github.com/XRay-Addons/xrayman/node/internal/models"

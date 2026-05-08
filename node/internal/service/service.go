@@ -58,10 +58,6 @@ func (s *Service) Start(ctx context.Context,
 	if err = s.xrayService.Start(ctx, cfg); err != nil {
 		return nil, err
 	}
-	// connect to server api
-	if err = s.xrayAPI.Connect(ctx); err != nil {
-		return nil, err
-	}
 	// get server properties
 	clientCfg, err := s.clientCfg.GetTemplate()
 	if err != nil {
@@ -78,10 +74,6 @@ func (s *Service) Stop(ctx context.Context,
 ) (*models.StopResult, error) {
 	if s == nil {
 		return nil, errdefs.NilCall()
-	}
-	// disconnect from server api
-	if err := s.xrayAPI.Disconnect(ctx); err != nil {
-		return nil, err
 	}
 	// stop server
 	if err := s.xrayService.Stop(ctx); err != nil {

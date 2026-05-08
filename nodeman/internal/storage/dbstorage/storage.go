@@ -3,7 +3,6 @@ package dbstorage
 import (
 	"context"
 	"database/sql"
-	"errors"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
@@ -161,7 +160,7 @@ func (s *Storage) doTx(ctx context.Context, fn func(uowctx *uowctx) error) (err 
 	defer func() {
 		if err != nil {
 			if rbErr := tx.Rollback(); rbErr != nil {
-				err = errors.Join(err, xerr.WrapWithStack(rbErr))
+				err = xerr.Join(err, xerr.WrapWithStack(rbErr))
 			}
 			return
 		}
