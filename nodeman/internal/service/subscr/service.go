@@ -3,9 +3,9 @@ package subscr
 import (
 	"context"
 
+	"github.com/XRay-Addons/xrayman/common/jsonval"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/jxext"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/template"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	"github.com/go-faster/jx"
@@ -126,7 +126,7 @@ func (s *Service) makeNodeClientConfigs(user models.User,
 			return nil, err
 		}
 		nodeConfig := jx.Raw(tmpl)
-		if err = jxext.Validate(nodeConfig); err != nil {
+		if err = jsonval.ValidateJsonData(nodeConfig); err != nil {
 			return nil, err
 		}
 		nodeConfigs = append(nodeConfigs, nodeConfig)
