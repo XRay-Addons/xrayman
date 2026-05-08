@@ -1,0 +1,4 @@
+mock_auth_service.go
+mock_nodes_service.go
+mock_subscr_service.go
+mock_users_service.go
