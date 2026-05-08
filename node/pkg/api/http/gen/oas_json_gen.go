@@ -154,11 +154,9 @@ func (s *ClientConfigTemplate) UnmarshalJSON(data []byte) error {
 
 // Encode encodes ClientConfigTemplateItem as json.
 func (s ClientConfigTemplateItem) Encode(e *jx.Encoder) {
-	unwrapped := jx.Raw(s)
+	unwrapped := string(s)
 
-	if len(unwrapped) != 0 {
-		e.Raw(unwrapped)
-	}
+	e.Str(unwrapped)
 }
 
 // Decode decodes ClientConfigTemplateItem from json.
@@ -166,10 +164,10 @@ func (s *ClientConfigTemplateItem) Decode(d *jx.Decoder) error {
 	if s == nil {
 		return errors.New("invalid: unable to decode ClientConfigTemplateItem to nil")
 	}
-	var unwrapped jx.Raw
+	var unwrapped string
 	if err := func() error {
-		v, err := d.RawAppend(nil)
-		unwrapped = jx.Raw(v)
+		v, err := d.Str()
+		unwrapped = string(v)
 		if err != nil {
 			return err
 		}

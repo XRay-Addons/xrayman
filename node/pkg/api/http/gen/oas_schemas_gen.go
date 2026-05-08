@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/go-faster/errors"
-	"github.com/go-faster/jx"
 )
 
 func (s *ErrorStatusCode) Error() string {
@@ -75,7 +74,7 @@ func (s *ClientConfigTemplate) SetVlessUUIDField(val string) {
 	s.VlessUUIDField = val
 }
 
-type ClientConfigTemplateItem jx.Raw
+type ClientConfigTemplateItem string
 
 // Ref: #/components/schemas/EditUsersRequest
 type EditUsersRequest struct {

@@ -7,7 +7,6 @@ import (
 	"fmt"
 	models "github.com/XRay-Addons/xrayman/node/internal/models"
 	gen "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
-	jx "github.com/go-faster/jx"
 )
 
 func ConvertEditUsersRequest(source *gen.EditUsersRequest) *models.EditUsersParams {
@@ -83,22 +82,12 @@ func apiUserToModelsUser(source gen.User) models.User {
 	modelsUser.VlessUUID = source.VlessUUID
 	return modelsUser
 }
-func jxRawToApiClientConfigTemplateItem(source jx.Raw) gen.ClientConfigTemplateItem {
-	var apiClientConfigTemplateItem gen.ClientConfigTemplateItem
-	if source != nil {
-		apiClientConfigTemplateItem = make(gen.ClientConfigTemplateItem, len(source))
-		for i := 0; i < len(source); i++ {
-			apiClientConfigTemplateItem[i] = source[i]
-		}
-	}
-	return apiClientConfigTemplateItem
-}
 func modelsClientConfigTemplateToApiClientConfigTemplate(source models.ClientConfigTemplate) gen.ClientConfigTemplate {
 	var apiClientConfigTemplate gen.ClientConfigTemplate
 	if source.Template != nil {
 		apiClientConfigTemplate.Template = make([]gen.ClientConfigTemplateItem, len(source.Template))
 		for i := 0; i < len(source.Template); i++ {
-			apiClientConfigTemplate.Template[i] = jxRawToApiClientConfigTemplateItem(source.Template[i])
+			apiClientConfigTemplate.Template[i] = gen.ClientConfigTemplateItem(source.Template[i])
 		}
 	}
 	apiClientConfigTemplate.VlessEmailField = source.VlessEmailField

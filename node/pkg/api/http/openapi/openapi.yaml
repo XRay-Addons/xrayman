@@ -117,6 +117,7 @@ components:
           type: string
 
     ClientConfigTemplateItem:
+      type: string
       description: "client config json template"
 
     ClientConfigTemplate:
