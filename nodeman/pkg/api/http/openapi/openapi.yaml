@@ -402,6 +402,7 @@ components:
       enum: [unknown, stopped, running]
 
     ClientConfigTemplateItem:
+      type: string
       description: "client config json template"
 
     ClientConfigTemplate:

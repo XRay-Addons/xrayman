@@ -6,15 +6,14 @@ package converter
 import (
 	gen "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
 	models "github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	jx "github.com/go-faster/jx"
 )
 
 func ConvertClientConfig(source gen.ClientConfigTemplate) models.ClientConfigTemplate {
 	var modelsClientConfigTemplate models.ClientConfigTemplate
 	if source.Template != nil {
-		modelsClientConfigTemplate.Template = make([]jx.Raw, len(source.Template))
+		modelsClientConfigTemplate.Template = make([]string, len(source.Template))
 		for i := 0; i < len(source.Template); i++ {
-			modelsClientConfigTemplate.Template[i] = apiClientConfigTemplateItemToJxRaw(source.Template[i])
+			modelsClientConfigTemplate.Template[i] = string(source.Template[i])
 		}
 	}
 	modelsClientConfigTemplate.VlessEmailField = source.VlessEmailField
@@ -36,16 +35,6 @@ func ConvertUsersUpdate(source models.NodeUsersUpdate) gen.EditUsersRequest {
 	apiEditUsersRequest.Add = ConvertUsers(source.Add)
 	apiEditUsersRequest.Remove = ConvertUsers(source.Remove)
 	return apiEditUsersRequest
-}
-func apiClientConfigTemplateItemToJxRaw(source gen.ClientConfigTemplateItem) jx.Raw {
-	var jxRaw jx.Raw
-	if source != nil {
-		jxRaw = make(jx.Raw, len(source))
-		for i := 0; i < len(source); i++ {
-			jxRaw[i] = source[i]
-		}
-	}
-	return jxRaw
 }
 func modelsUserProfileToApiUser(source models.UserProfile) gen.User {
 	var apiUser gen.User
