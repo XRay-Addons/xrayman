@@ -642,6 +642,7 @@ components:
       properties: {}
 
     ClientConfigItem:
+      type: string
       description: "subscription json object"
 
     UserSubResponse:
