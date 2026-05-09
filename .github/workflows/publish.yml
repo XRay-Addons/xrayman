@@ -2,9 +2,8 @@ name: Publish XRayMan
 
 on:
   push:
-    branches: [main] # Срабатывает при пуше в основную ветку
-  pull_request:
-    branches: [main]
+    tags:
+      - "v*"
 
 jobs:
   build:
@@ -17,7 +16,7 @@ jobs:
           submodules: recursive
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: "1.26.2"
           cache-dependency-path: |
@@ -44,10 +43,19 @@ jobs:
 
       - name: Build Project
         run: make build
+        env:
+          GOOS: linux
+          GOARCH: amd64
+          CGO_ENABLED: 0
 
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v5
+      - name: Archive build folder
+        run: zip -r xrayman-${{ github.ref_name }}.zip build/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: xrayman-dist
-          path: build/
-          retention-days: 7
+          files: xrayman-${{ github.ref_name }}.zip
+          name: Release ${{ github.ref_name }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

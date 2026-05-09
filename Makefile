@@ -89,13 +89,17 @@ GEOSITE_URL := https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/re
 NODE_BIN := $(BACKEND_DST)/xray-node
 NODEMAN_BIN := $(BACKEND_DST)/xray-nodeman
 
+GOOS ?= $(shell go env GOOS)
+GOARCH ?= $(shell go env GOARCH)
+CGO_ENABLED ?= 0
+
 $(NODE_BIN): gen_backend
 	@echo "Building xray-node..."
-	cd $(BACKEND_ROOT)/node && $(GO) build -o $@ ./cmd/main.go
+	cd $(BACKEND_ROOT)/node && CGO_ENABLED=$(CGO_ENABLED) GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO) build -o $@ ./cmd/main.go
 
 $(NODEMAN_BIN): gen_backend embed_frontend
 	@echo "Building xray-nodeman..."
-	cd $(BACKEND_ROOT)/nodeman && $(GO) build -o $@ ./cmd/main.go
+	cd $(BACKEND_ROOT)/nodeman && CGO_ENABLED=$(CGO_ENABLED) GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO) build -o $@ ./cmd/main.go
 
 GEOIP_DAT := $(BACKEND_DST)/geoip.dat
 GEOSITE_DAT := $(BACKEND_DST)/geosite.dat
