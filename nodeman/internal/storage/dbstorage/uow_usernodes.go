@@ -134,6 +134,7 @@ func (uow *uowctx) GetUserNodes(ctx context.Context, id models.UserID) ([]models
 		WHERE s.{user_id} = $1
 		  AND s.{user_current_status} = {user_status_enabled}
 		  AND n.{node_target_status} = {node_status_running}
+		  AND n.{node_current_status} = {node_status_running}
 		  AND n.{deleted_at} IS NULL
 	`)
 
