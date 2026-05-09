@@ -21,7 +21,7 @@ import OpenAppCard from "./OpenAppCard.astro";
 
     connectedCallback() {
       stateSignal.subscribe((state) => {
-        this.hidden = false; //!(state.status === State.LoggedIn);
+        this.hidden = !(state.status === State.LoggedIn);
       });
     }
 
