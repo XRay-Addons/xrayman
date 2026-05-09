@@ -23,6 +23,8 @@
     "axios": "^1.14.0",
     "bootstrap": "^5.3.8",
     "cssnano": "^7.1.4",
+    "gifler": "^0.1.0",
+    "gifuct-js": "^2.1.2",
     "nanostores": "^1.2.0",
     "notyf": "^3.10.0",
     "openapi-fetch": "^0.17.0",

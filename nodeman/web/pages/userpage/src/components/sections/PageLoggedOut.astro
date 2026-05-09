@@ -17,7 +17,7 @@ import ChooseNameCard from "./ChooseNameCard.astro";
 
     connectedCallback() {
       this.unsub = stateSignal.subscribe((state) => {
-        this.hidden = !(state.status === State.LoggedOut);
+        this.hidden = false; //!(state.status === State.LoggedOut);
       });
     }
 
