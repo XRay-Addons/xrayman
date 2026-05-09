@@ -4,7 +4,7 @@ import PageCenter from "@xrayman/shared/astro/primitives/PageCenter.astro";
 import PageLoggedOut from "./PageLoggedOut.astro";
 import PageServerError from "./PageServerError.astro";
 import UserController from "./UserController.astro";
-import CoverImage from "@xrayman/shared/astro/primitives/CoverImage.astro";
+import MovingBackground from "./MovingBackground.astro";
 ---
 
 <script>
@@ -14,10 +14,10 @@ import CoverImage from "@xrayman/shared/astro/primitives/CoverImage.astro";
 
 <UserController />
 
-<CoverImage src="/error.gif">
+<MovingBackground src="/error.gif">
   <PageCenter class="col-12 col-md-6 col-lg-4">
     <PageLoggedOut />
     <PageLoggedIn />
     <PageServerError />
   </PageCenter>
-</CoverImage>
+</MovingBackground>
