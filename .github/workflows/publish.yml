@@ -4,7 +4,7 @@ on:
   push:
     tags:
       - "v*"
-  pull_request:
+  пpull_request:
     branches:
       - main
 
@@ -52,9 +52,11 @@ jobs:
           CGO_ENABLED: 0
 
       - name: Archive build folder
+        if: startsWith(github.ref, 'refs/tags/')
         run: zip -r xrayman-${{ github.ref_name }}.zip build/
 
       - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           files: xrayman-${{ github.ref_name }}.zip
