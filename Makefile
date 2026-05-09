@@ -51,6 +51,19 @@ clean_frontend:
 # Backend
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+GO_TOOLS := \
+	github.com/ogen-go/ogen/cmd/ogen@latest \
+	github.com/jmattheis/goverter/cmd/goverter@latest \
+	go.uber.org/mock/mockgen@latest \
+
+.PHONY: tools
+tools:
+	@echo "Installing Go tools..."
+	@for tool in $(GO_TOOLS); do \
+		echo "-> $$tool"; \
+		go install $$tool; \
+	done
+
 .PHONY: all_backend clean_backend gen_backend embed_frontend build_backend
 
 all_backend: build_backend
