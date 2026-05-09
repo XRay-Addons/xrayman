@@ -1,4 +1,4 @@
 packages:
-  - "pages/admpage"
-  - "pages/userpage"
-  - "pages/shared"
+  - "admpage"
+  - "userpage"
+  - "shared"
