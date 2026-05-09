@@ -29,7 +29,9 @@ const { class: _bc, style: _bs, "data-part": _dpButton, ...safeButtonProps } = b
       readonly: "true",
       ...inputProps,
     }}
-    button-props={buttonProps}
+    button-props={{
+      ...buttonProps,
+    }}
     data-part="input-group"
     {...rest}
   />
@@ -55,11 +57,22 @@ const { class: _bc, style: _bs, "data-part": _dpButton, ...safeButtonProps } = b
 
     connectedCallback() {
       this.inputGroupEl = this.pt<InputGroupElement>("input-group");
+      const copyBtnEl = this.inputGroupEl.getButton();
+      const originalContent = copyBtnEl.innerHTML;
+
       this.inputGroupEl.onClick(async (val: string) => {
         try {
+          this.inputGroupEl.style.pointerEvents = "none";
+
           await navigator.clipboard.writeText(val);
+          copyBtnEl.innerHTML = "✓";
+          setTimeout(() => {
+            copyBtnEl.innerHTML = originalContent;
+          }, 2000);
         } catch (err) {
           console.error("Clipboard error", err);
+        } finally {
+          this.inputGroupEl.style.pointerEvents = "auto";
         }
       });
     }

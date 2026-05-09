@@ -70,6 +70,7 @@ const { class: _bc, style: _bs, "data-part": _dpButton, ...safeButtonProps } = b
 
   class InputGroup extends PartedElement implements InputGroupElement {
     private inputEl!: HTMLInputElement;
+    private btnEl!: HTMLButtonElement;
     private onClickFn?: OnClickFn;
 
     setValue(val: string) {
@@ -84,6 +85,14 @@ const { class: _bc, style: _bs, "data-part": _dpButton, ...safeButtonProps } = b
       this.onClickFn = fn;
     }
 
+    getButton(): HTMLButtonElement {
+      return this.btnEl;
+    }
+
+    getInput(): HTMLInputElement {
+      return this.inputEl;
+    }
+
     connectedCallback() {
       this.inputEl = this.pt<HTMLInputElement>("input");
       this.inputEl.addEventListener("keydown", async (e: KeyboardEvent) => {
@@ -93,8 +102,8 @@ const { class: _bc, style: _bs, "data-part": _dpButton, ...safeButtonProps } = b
         }
       });
 
-      const btnEl = this.pt<HTMLButtonElement>("button");
-      btnEl.addEventListener("click", async (e: Event) => {
+      this.btnEl = this.pt<HTMLButtonElement>("button");
+      this.btnEl.addEventListener("click", async (e: Event) => {
         e.preventDefault();
         await this.onClickFn?.(this.inputEl.value);
       });
