@@ -1,57 +1,57 @@
-name: Publish nodeman API client
+name: Publish XRayMan
 
 on:
   push:
-    tags:
-      - 'v*.*.*'   # workflow on pushing tags like v1.2.3
+    branches: [main] # Срабатывает при пуше в основную ветку
+  pull_request:
+    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: Build npm & publish
-
-    permissions:
-      contents: read
-      packages: write
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.2"
+          cache-dependency-path: |
+            backend/node/go.sum
+            backend/nodeman/go.sum
+
+      - name: Install Go Tools
+        run: |
+          # Устанавливаем инструменты, нужные для make gen_backend
+          go install ://github.com
+          go install ://github.com
+          go install go.uber.org/mock/mockgen@latest
+          # ВАЖНО: прокидываем путь к бинарникам в PATH этого процесса
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.2
+
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          registry-url: 'https://npm.pkg.github.com/'
+          node-version: 24.3.0
+          cache: "pnpm"
+          cache-dependency-path: frontend/pnpm-lock.yaml
 
-      - name: Authenticate to GitHub Packages
-        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.STPKPAT }}" > ~/.npmrc
+      - name: Install Dependencies
+        run: make deps
 
-      - name: Use tag as version
-        run: |
-          cd nodeman/api-client
-          VERSION=${GITHUB_REF#refs/tags/v}
-          echo "Setting package version to $VERSION"
-          npm version $VERSION --no-git-tag-version
+      - name: Build Project
+        run: make build
 
-      - name: Install dependencies
-        run: |
-          cd nodeman/api-client
-          npm install
-
-      - name: Generate API client
-        run: |
-          cd nodeman/api-client
-          npm run generate
-
-      - name: Build package
-        run: |
-          cd nodeman/api-client
-          npm run build
-
-      - name: Publish to GitHub Packages
-        run: |
-          cd nodeman/api-client
-          npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: xrayman-dist
+          path: build/
+          retention-days: 7
