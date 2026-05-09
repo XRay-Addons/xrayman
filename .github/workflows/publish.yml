@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -24,20 +24,17 @@ jobs:
 
       - name: Install Go Tools
         run: |
-          # Устанавливаем инструменты, нужные для make gen_backend
-          go install ://github.com
-          go install ://github.com
-          go install go.uber.org/mock/mockgen@latest
-          # ВАЖНО: прокидываем путь к бинарникам в PATH этого процесса
+          # install go tools via make, add to path
+          make tools
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v5
         with:
           version: 10.33.2
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 24.3.0
           cache: "pnpm"
@@ -50,7 +47,7 @@ jobs:
         run: make build
 
       - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: xrayman-dist
           path: build/
