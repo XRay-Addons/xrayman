@@ -12,5 +12,8 @@
     "build:admin": "pnpm -F admpage run build",
     "build:user": "pnpm -F userpage run build",
     "build": "pnpm run build:user && pnpm run build:admin"
+  },
+  "devDependencies": {
+    "sass-embedded": "^1.99.0"
   }
 }

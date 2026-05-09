@@ -1,94 +1,71 @@
-SHELL := /bin/bash
-
-BIN_DIR := $(CURDIR)/bin
-NPM_ROOT := $(CURDIR)/nodeman/web
-
-USERPAGE_WEB_SRC := $(CURDIR)/nodeman/web/pages/userpage
-ADMPAGE_WEB_SRC := $(CURDIR)/nodeman/web/pages/admpage
-
-USERPAGE_WEB_DST := $(CURDIR)/nodeman/internal/pages/userpage
-ADMPAGE_WEB_DST := $(CURDIR)/nodeman/internal/pages/admpage
-
-NODE_SRC := $(CURDIR)/node
-NODE_DST := $(BIN_DIR)/node
-
-NODEMAN_SRC := $(CURDIR)/nodeman
-NODEMAN_DST := $(BIN_DIR)/nodeman
+ROOT := $(CURDIR)
+DST := $(ROOT)/build
 
 
-# =========================
-# FRONTEND
-# =========================
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Build frontend # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-.PHONY: npm-install
-npm-install:
-	@echo "Installing pnpm dependencies..."
-	cd $(NPM_ROOT) && pnpm install
+PNPM := pnpm
 
+FRONTEND_ROOT := $(ROOT)/frontend
+FRONTEND_DST := $(DST)/frontend
 
-.PHONY: userpage
-userpage:
-	@echo "Building userpage..."
-	cd $(NPM_ROOT) && pnpm run build:user
-	rm -rf $(USERPAGE_WEB_DST)
-	mkdir -p $(USERPAGE_WEB_DST)
-	cp -r $(USERPAGE_WEB_SRC)/dist/* $(USERPAGE_WEB_DST)/
+.PHONY: all_f clean_f gen_f build_f
 
+all_f: build_f
 
-.PHONY: admpage
-admpage:
-	@echo "Building admpage..."
-	cd $(NPM_ROOT) && pnpm run build:admin
-	rm -rf $(ADMPAGE_WEB_DST)
-	mkdir -p $(ADMPAGE_WEB_DST)
-	cp -r $(ADMPAGE_WEB_SRC)/dist/* $(ADMPAGE_WEB_DST)/
+gen_f: 
+	@echo "Generating frontend..."
+	cd $(FRONTEND_ROOT) && $(PNPM) run gen
+	cd $(ROOT)
 
+build_f: gen_f
+	@echo "Building frontend apps..."
+	mkdir -p $(FRONTEND_DST)
+	cd $(FRONTEND_ROOT) && $(PNPM) run build
+	cp -r $(FRONTEND_ROOT)/admpage/dist $(FRONTEND_DST)/admpage
+	cp -r $(FRONTEND_ROOT)/userpage/dist $(FRONTEND_DST)/userpage
+	cd $(ROOT)
 
-# =========================
-# BACKEND (ADDED)
-# =========================
+clean_f:
+	rm -rf $(FRONTEND_DST)
+	rm -rf $(FRONTEND_ROOT)/admpage/dist
+	rm -rf $(FRONTEND_ROOT)/userpage/dist
 
-GO_TOOLS := \
-	github.com/ogen-go/ogen/cmd/ogen@latest \
-	github.com/jmattheis/goverter/cmd/goverter@latest \
-	go.uber.org/mock/mockgen@latest \
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Build  backend # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-.PHONY: tools
-tools:
-	@echo "Installing Go tools..."
-	@for tool in $(GO_TOOLS); do \
-		echo "-> $$tool"; \
-		go install $$tool; \
-	done
+GO := go
 
-.PHONY: node_generate
-node_generate: tools
-	@echo "Running go generate..."
-	go generate ./node/...
+BACKEND_ROOT := $(ROOT)/backend
+BACKEND_DST := $(DST)/backend
 
-.PHONY: nodeman_generate
-nodeman_generate: tools
-	@echo "Running go generate..."
-	go generate ./nodeman/...
+.PHONY: all_b clean_b gen_b embed_frontend_b build_b
 
-.PHONY: node
-node: node_generate
-	@echo "Building node..."
-	mkdir -p $(BIN_DIR)
-	go build -o $(NODE_DST) $(NODE_SRC)/cmd
+all_b: build_b
 
+gen_b: 
+	@echo "Generating Backend..."
+	cd $(BACKEND_ROOT)/node && go generate ./...
+	cd $(BACKEND_ROOT)/nodeman && go generate ./...
+	cd $(ROOT)
 
-.PHONY: nodeman
-nodeman: node nodeman_generate
-	@echo "Building nodeman..."
-	mkdir -p $(BIN_DIR)
-	go build -o $(NODEMAN_DST) $(NODEMAN_SRC)/cmd
+embed_frontend_b: build_f
+	@echo "Embedding Frontend into Backend..."
+	mkdir -p $(BACKEND_ROOT)/nodeman/internal/pages
+	cp -r $(FRONTEND_DST)/admpage $(BACKEND_ROOT)/nodeman/internal/pages/admpage
+	cp -r $(FRONTEND_DST)/userpage $(BACKEND_ROOT)/nodeman/internal/pages/userpage
 
+build_b: gen_b embed_frontend_b
+	@echo "Building Backend..."
+	mkdir -p $(BACKEND_DST)
+	cd $(BACKEND_ROOT) && $(GO) build -o $(BACKEND_DST)/node ./node/cmd/main.go
+	cd $(BACKEND_ROOT) && $(GO) build -o $(BACKEND_DST)/nodeman ./nodeman/cmd/main.go
+	cd $(ROOT)
 
-# =========================
-# FULL BUILD
-# =========================
-
-.PHONY: build
-build: npm-install userpage admpage node_generate nodeman_generate node nodeman
-	@echo "Full build done (frontend + backend)."
+clean_b:
+	rm -rf $(BACKEND_ROOT)/nodeman/internal/pages/admpage
+	rm -rf $(BACKEND_ROOT)/nodeman/internal/pages/userpage
+	rm -rf $(BACKEND_DST)
