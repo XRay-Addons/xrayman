@@ -123,7 +123,7 @@ type Option func(*routerOptions)
 
 // Golang myass
 func chiMountHandler(r chi.Router, prefix string, handler http.Handler) {
-	if _, ok := handler.(*chi.Mux); ok {
+	if _, ok := handler.(*chi.Mux); ok || prefix == "/" {
 		r.Mount(prefix, handler)
 		return
 	}
