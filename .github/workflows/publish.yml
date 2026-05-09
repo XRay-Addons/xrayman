@@ -40,9 +40,6 @@ jobs:
           cache: "pnpm"
           cache-dependency-path: frontend/pnpm-lock.yaml
 
-      - name: Install Dependencies
-        run: make deps
-
       - name: Build Project
         run: make build
 
