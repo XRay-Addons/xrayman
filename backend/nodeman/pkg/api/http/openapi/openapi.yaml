@@ -407,8 +407,7 @@ components:
       enum: [unknown, stopped, running]
 
     ClientConfigTemplateItem:
-      type: string
-      description: "client config json template"
+      description: "client config json template, no type for raw json"
 
     ClientConfigTemplate:
       type: object
@@ -655,8 +654,7 @@ components:
       properties: {}
 
     ClientConfigItem:
-      type: string
-      description: "subscription json object"
+      description: "subscription json object, no type for raw json"
 
     UserSubResponse:
       type: array

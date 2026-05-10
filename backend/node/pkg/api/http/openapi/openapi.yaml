@@ -117,8 +117,7 @@ components:
           type: string
 
     ClientConfigTemplateItem:
-      type: string
-      description: "client config json template"
+      description: "client config json template, no type for raw json"
 
     ClientConfigTemplate:
       type: object

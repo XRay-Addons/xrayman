@@ -2,6 +2,8 @@ package models
 
 import (
 	"strconv"
+
+	"github.com/go-faster/jx"
 )
 
 type NodeStatus int
@@ -12,7 +14,7 @@ const (
 	NodeStatusRunning
 )
 
-type ClientConfigTemplateItem = string
+type ClientConfigTemplateItem = jx.Raw
 
 type ClientConfigTemplate struct {
 	Template        []ClientConfigTemplateItem

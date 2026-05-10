@@ -118,7 +118,7 @@ func (s *Service) makeNodeClientConfigs(user models.User,
 ) ([]models.ClientConfigItem, error) {
 	nodeConfigs := make([]models.ClientConfigItem, 0, len(cfgTemplate.Template))
 	for _, item := range cfgTemplate.Template {
-		tmpl, err := template.RenderTemplate(item, map[string]string{
+		tmpl, err := template.RenderTemplate(item.String(), map[string]string{
 			cfgTemplate.VlessEmailField: user.Profile.VlessEmail(),
 			cfgTemplate.VlessUUIDField:  user.Profile.VlessUUID,
 		})
@@ -129,7 +129,7 @@ func (s *Service) makeNodeClientConfigs(user models.User,
 		if err = jsonval.ValidateJsonData(nodeConfig); err != nil {
 			return nil, err
 		}
-		nodeConfigs = append(nodeConfigs, nodeConfig.String())
+		nodeConfigs = append(nodeConfigs, nodeConfig)
 	}
 	return nodeConfigs, nil
 }
