@@ -95,16 +95,24 @@ func (h *Handler) EditUsers(ctx context.Context, req *api.EditUsersRequest) erro
 }
 
 func (h *Handler) NewError(ctx context.Context, err error) *api.ErrorStatusCode {
-	// if err = error + status, return status, log error,
-	// elsewise analyze errors and map to status codes
-	if e, s := httperr.ExtractStatus[api.ErrorStatusCode](err); s != nil {
-		h.logError(ctx, e)
-		return s
+	// if err = pure status, return status, log error
+	var pureStatus api.ErrorStatusCode
+	if errors.Is(err, &pureStatus) {
+		h.logError(ctx, err)
+		return &pureStatus
 	}
-	// this is our error, translate it to status
-	s := h.translateError(err)
+
+	// if err = error + status, return status, log error,
+	nestedErr, nestedStatus := httperr.ExtractStatus[api.ErrorStatusCode](err)
+	if nestedStatus != nil {
+		h.logError(ctx, nestedErr)
+		return nestedStatus
+	}
+
+	// translate error to status
+	translatedStatus := h.translateError(err)
 	h.logError(ctx, err)
-	return s
+	return translatedStatus
 }
 
 func (h *Handler) translateError(err error) *api.ErrorStatusCode {
