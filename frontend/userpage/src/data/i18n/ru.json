@@ -10,6 +10,7 @@
 
   "userurl.info": "Сохраните адрес этого сайта — здесь всегда будет инструкция по подключению.",
   "userurl.btntext": "Copy",
+  "userurl.donotshare.info": "ОСТОРОЖНО: Не делитесь ни с кем этой ссылкой. Если хотите отправить страницу друзьям - нажмите кнопку внизу&nbsp;страницы&nbsp;↓↓↓",
 
   "installapp.info": "Установите приложение <strong>Happ</strong> и вернитесь на эту страницу",
 
@@ -21,6 +22,9 @@
   "button.install.appstore.ru": "AppStore-RU",
   "button.install.appstore.global": "AppStore",
   "button.install.win": "Download .exe",
+
+  "share.button": "Отправить друзьям",
+  "share.button.sharedtext": "Только посмотри, какой VPN!",
 
   "servererror.main": "Ошибка сервера, зайдите позже",
 
