@@ -293,7 +293,8 @@ paths:
           required: true
           description: User name
           schema:
-            type: string
+            $ref: "#/components/schemas/UserName"
+
       responses:
         "200":
           description: User properties
@@ -397,6 +398,10 @@ components:
     NodeID:
       type: integer
 
+    Endpoint:
+      type: string
+      maxLength: 256
+
     NodeStatus:
       type: string
       enum: [unknown, stopped, running]
@@ -425,7 +430,7 @@ components:
       type: object
       properties:
         Endpoint:
-          type: string
+          $ref: "#/components/schemas/Endpoint"
         AccessKey:
           type: string
       required:
@@ -464,7 +469,7 @@ components:
       type: object
       properties:
         Endpoint:
-          type: string
+          $ref: "#/components/schemas/Endpoint"
         AccessKey:
           type: string
           minLength: 88
@@ -535,6 +540,14 @@ components:
     UserID:
       type: integer
 
+    UserName:
+      type: string
+      maxLength: 256
+
+    DisplayName:
+      type: string
+      maxLength: 128
+
     UserStatus:
       type: string
       enum: [unknown, enabled, disabled]
@@ -545,9 +558,9 @@ components:
         ID:
           $ref: "#/components/schemas/UserID"
         Name:
-          type: string
+          $ref: "#/components/schemas/UserName"
         DisplayName:
-          type: string
+          $ref: "#/components/schemas/DisplayName"
         VlessUUID:
           type: string
         SubscriptionPath:
@@ -574,7 +587,7 @@ components:
       type: object
       properties:
         DisplayName:
-          type: string
+          $ref: "#/components/schemas/DisplayName"
       required:
         - DisplayName
 
@@ -587,7 +600,7 @@ components:
         ID:
           $ref: "#/components/schemas/UserID"
         Name:
-          type: string
+          $ref: "#/components/schemas/UserName"
       required:
         - ID
         - Name
