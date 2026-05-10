@@ -1,0 +1,19 @@
+{
+  "name": "frontend",
+  "private": true,
+  "packageManager": "pnpm@10.33.2",
+  "workspaces": [
+    "pages/*"
+  ],
+  "scripts": {
+    "gen:admin": "pnpm -F admpage run api:generate",
+    "gen:user": "pnpm -F userpage run api:generate",
+    "gen": "pnpm -r run api:generate",
+    "build:admin": "pnpm -F admpage run build",
+    "build:user": "pnpm -F userpage run build",
+    "build": "pnpm run build:user && pnpm run build:admin"
+  },
+  "devDependencies": {
+    "sass-embedded": "^1.99.0"
+  }
+}

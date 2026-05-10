@@ -1,0 +1,15 @@
+.v-center {
+  display: flex;
+  align-items: center;
+}
+
+.h-center {
+  display: flex;
+  justify-content: center;
+}
+
+.hv-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

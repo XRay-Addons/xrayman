@@ -1,0 +1,41 @@
+/*
+   CSS to hack ant styles for tables in expanded row content
+   which is unable to change via ConfigProvider, like 
+   disabling border or hide body 
+*/
+
+/* path from ant-table root element to <table> item */
+@mixin ant-table-item($scope, $item) {
+  :deep(
+    #{$scope}
+      > .ant-spin-nested-loading
+      > .ant-spin-container
+      > .ant-table
+      > .ant-table-container
+      > .ant-table-content
+      > table
+      > #{$item}
+  ) {
+    @content;
+  }
+}
+
+/* hide body for key cell, it contains only headers */
+@include ant-table-item(".table-ext-key-cell", "tbody") {
+  display: none;
+}
+
+/* unbound and unbold key-cell */
+@include ant-table-item(".table-ext-key-cell", "thead > tr > th") {
+  border-bottom: none;
+}
+
+/* remove padding inside key and value cells, align content to the top */
+@include ant-table-item(
+  ".table-ext-expand-table",
+  ".ant-table-tbody > .ant-table-row > .ant-table-cell"
+) {
+  vertical-align: top;
+  padding-left: 0px;
+  padding-right: 0px;
+}

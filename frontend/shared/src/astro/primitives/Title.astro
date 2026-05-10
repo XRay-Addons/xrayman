@@ -1,0 +1,21 @@
+---
+import Surface from "./Surface.astro";
+
+interface Props {
+  class?: string;
+  "content-class"?: string;
+}
+
+const { class: extraClass = "", "content-class": contentClass = "" } = Astro.props;
+---
+
+<div class="row g-0 justify-content-center">
+  <Surface
+    class={extraClass}
+    content-class=`text-center text text-lg crt flicker p-2 noselect ${contentClass}`
+    depth="var(--title-depth)"
+    color="var(--title-color)"
+  >
+    <slot />
+  </Surface>
+</div>

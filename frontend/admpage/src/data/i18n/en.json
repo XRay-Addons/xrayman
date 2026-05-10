@@ -1,0 +1,76 @@
+{
+  "title": {
+    "main": "Ottepell-Adm",
+    "main-page": "Smotri, Tablichki!"
+  },
+
+  "cards": {
+    "users": {
+      "title": "Polzovateli"
+    },
+    "nodes": {
+      "title": "Nodes"
+    }
+  },
+
+  "table": {
+    "users": {
+      "status": {
+        "enabled": "Enabled",
+        "disabled": "Disabled"
+      },
+      "actions": {
+        "enable": "Enable",
+        "disable": "Disable",
+        "delete": {
+          "button": "Delete",
+          "confirm": {
+            "header": "Delete user?",
+            "body": "Are you sure?",
+            "ok": "Da",
+            "cancel": "Net"
+          }
+        }
+      },
+      "columns": {
+        "id": "ID",
+        "display-name": "Display Name",
+        "target-status": "Target Status",
+        "name": "Name",
+        "vless-uuid": "VLESS UUID",
+        "subscription": "Subscription",
+        "actions": "Actions"
+      }
+    },
+
+    "nodes": {
+      "status": {
+        "running": "Running",
+        "stopped": "Stopped",
+        "unknown": "Unknown"
+      },
+      "actions": {
+        "start": "Start",
+        "stop": "Stop",
+        "delete": {
+          "button": "Delete",
+          "confirm": {
+            "header": "Delete node?",
+            "body": "Are you sure?",
+            "ok": "Da",
+            "cancel": "Net"
+          }
+        }
+      },
+      "columns": {
+        "id": "ID",
+        "endpoint": "Endpoint",
+        "current-status": "Current Status",
+        "target-status": "Target Status",
+        "access-key": "Access Key",
+        "client-config": "Client Config",
+        "actions": "Actions"
+      }
+    }
+  }
+}

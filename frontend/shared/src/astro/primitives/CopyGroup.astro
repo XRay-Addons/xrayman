@@ -1,0 +1,84 @@
+---
+import InputGroup from "./InputGroup.astro";
+
+type HTMLProps = Record<string, unknown>;
+
+interface Props {
+  "input-props"?: HTMLProps;
+  "button-props"?: HTMLProps;
+  "data-part"?: string;
+
+  [key: string]: unknown; // WTF ts can't guess types
+}
+
+const {
+  "input-props": inputProps = {},
+  "button-props": buttonProps = {},
+  "data-part": dataPart = "",
+  ...rest
+} = Astro.props;
+
+const { class: _ic, style: _is, "data-part": _dpInput, ...safeInputProps } = inputProps;
+
+const { class: _bc, style: _bs, "data-part": _dpButton, ...safeButtonProps } = buttonProps;
+---
+
+<copy-group data-part={dataPart}>
+  <InputGroup
+    input-props={{
+      readonly: "true",
+      ...inputProps,
+    }}
+    button-props={{
+      ...buttonProps,
+    }}
+    data-part="input-group"
+    {...rest}
+  />
+</copy-group>
+
+<style lang="css">
+  copy-group {
+    display: contents;
+  }
+</style>
+
+<script>
+  import { type CopyGroupElement } from "../types/CopyGroup";
+  import type { InputGroupElement } from "../types/InputGroup";
+  import { PartedElement } from "../../runtime/dom/parted-element";
+
+  class CopyGroup extends PartedElement implements CopyGroupElement {
+    private inputGroupEl!: InputGroupElement;
+
+    setValue(val: string) {
+      this.inputGroupEl.setValue(val);
+    }
+
+    connectedCallback() {
+      this.inputGroupEl = this.pt<InputGroupElement>("input-group");
+      const copyBtnEl = this.inputGroupEl.getButton();
+      const originalContent = copyBtnEl.innerHTML;
+
+      this.inputGroupEl.onClick(async (val: string) => {
+        try {
+          this.inputGroupEl.style.pointerEvents = "none";
+
+          await navigator.clipboard.writeText(val);
+          copyBtnEl.innerHTML = "✓";
+          setTimeout(() => {
+            copyBtnEl.innerHTML = originalContent;
+          }, 2000);
+        } catch (err) {
+          console.error("Clipboard error", err);
+        } finally {
+          this.inputGroupEl.style.pointerEvents = "auto";
+        }
+      });
+    }
+
+    disconnectedCallback() {}
+  }
+
+  customElements.define("copy-group", CopyGroup);
+</script>

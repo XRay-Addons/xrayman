@@ -1,0 +1,9 @@
+{
+  "include": ["src"],
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"],
+      "@xrayman/shared/*": ["../shared/src/*"]
+    }
+  }
+}

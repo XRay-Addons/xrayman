@@ -1,0 +1,45 @@
+---
+interface Props {
+  src: string;
+  class?: string;
+}
+
+const { src, class: extraClass = "", ...rest } = Astro.props;
+---
+
+<lazy-img>
+  <img class={extraClass} data-part="image" data-src={src} {...rest} />
+</lazy-img>
+
+<style>
+  lazy-img {
+    display: contents;
+  }
+</style>
+
+<script>
+  import { PartedElement } from "../../runtime/dom/parted-element";
+
+  class LazyImg extends PartedElement {
+    obs?: IntersectionObserver;
+
+    connectedCallback() {
+      const imageEl = this.pt<HTMLImageElement>("image");
+      this.obs = new IntersectionObserver(([entry], obs) => {
+        if (entry.isIntersecting) {
+          imageEl.src = imageEl.dataset.src!;
+          obs.disconnect();
+        }
+      });
+
+      this.obs.observe(imageEl);
+    }
+
+    disconnectedCallback() {
+      this.obs?.disconnect();
+      this.obs = undefined;
+    }
+  }
+
+  customElements.define("lazy-img", LazyImg);
+</script>

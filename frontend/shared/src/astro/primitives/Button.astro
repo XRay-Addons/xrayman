@@ -1,0 +1,16 @@
+---
+import Surface from "./Surface.astro";
+
+interface Props {
+  class?: string;
+  styles?: string;
+}
+
+const { class: extraClass, styles: __, ...rest } = Astro.props;
+---
+
+<Surface depth="var(--button-depth)" color="var(--button-color)" class={extraClass} dynamic>
+  <button class="ui-reset-button noselect w-100 h-100 text text-md crt p-2" {...rest}>
+    <slot />
+  </button>
+</Surface>

@@ -1,0 +1,69 @@
+---
+import Card from "@xrayman/shared/astro/primitives/Card.astro";
+import Info from "@xrayman/shared/astro/primitives/Info.astro";
+import Button from "@xrayman/shared/astro/primitives/Button.astro";
+import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
+---
+
+<open-app-card>
+  <Card class="mb-2">
+    <Info>
+      <strong>3.</strong>
+      <span data-i18n="runapp.info"></span>
+    </Info>
+
+    <div class="row g-0 justify-content-center">
+      <Button data-part="run-app-btn" class="col-6 col-lg-4">
+        <I18NText data-i18n="runapp.button" />
+      </Button>
+    </div>
+
+    <Info>
+      <strong>PS.</strong>
+      <span data-i18n="runapp.ps"></span>
+    </Info>
+  </Card>
+</open-app-card>
+
+<script>
+  import { MakeFullUrl } from "@xrayman/shared/runtime/paths/paths";
+  import { config } from "@/config/config";
+  import { stateSignal } from "@/state/signals";
+  import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
+  import { State } from "@/state/state";
+
+  class OpenAppCard extends PartedElement {
+    private unsub?: () => void;
+    private openHappFn?: () => void;
+
+    makeHappSubLink(subscriptionURL: string) {
+      return `${config.HAPP_INTENT}${subscriptionURL}`;
+    }
+
+    connectedCallback() {
+      const btnEl = this.pt<HTMLButtonElement>("run-app-btn");
+
+      this.unsub = stateSignal.subscribe((state) => {
+        if (state.status !== State.LoggedIn) {
+          this.openHappFn = () => {};
+          return;
+        }
+        const subscriptionURL = MakeFullUrl(config.ApiPrefix, state.data.Profile.SubscriptionPath);
+        const happSubLink = this.makeHappSubLink(subscriptionURL);
+        this.openHappFn = () => {
+          window.open(happSubLink, "_blank", "noopener");
+        };
+      });
+
+      btnEl.addEventListener("click", () => {
+        this.openHappFn?.();
+      });
+    }
+
+    disconnectedCallback() {
+      this.unsub?.();
+    }
+  }
+
+  customElements.define("open-app-card", OpenAppCard);
+</script>

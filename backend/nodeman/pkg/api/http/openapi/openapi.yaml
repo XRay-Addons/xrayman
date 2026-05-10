@@ -1,0 +1,680 @@
+openapi: 3.0.3
+info:
+  title: Node Management API
+  version: 1.0.0
+
+paths:
+  /auth:
+    post:
+      summary: Authenticate and return JWT
+      operationId: Auth
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthRequest"
+      responses:
+        "200":
+          description: Successfully authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "default":
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      tags:
+        - admpage
+
+  /nodes/new:
+    post:
+      summary: Create a new node
+      operationId: NewNode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewNodeRequest"
+      responses:
+        "200":
+          description: Created node
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewNodeResponse"
+        "default":
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      tags:
+        - admpage
+      security:
+        - BearerAuth: []
+
+  /nodes/start:
+    post:
+      summary: Start a node
+      operationId: StartNode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StartNodeRequest"
+      responses:
+        "200":
+          description: Start result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StartNodeResponse"
+        "default":
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      tags:
+        - admpage
+      security:
+        - BearerAuth: []
+
+  /nodes/stop:
+    post:
+      summary: Stop a node
+      operationId: StopNode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StopNodeRequest"
+      responses:
+        "200":
+          description: Stop result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StopNodeResponse"
+        "default":
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      tags:
+        - admpage
+      security:
+        - BearerAuth: []
+
+  /nodes/delete:
+    post:
+      summary: Delete a node
+      operationId: DeleteNode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteNodeRequest"
+      responses:
+        "200":
+          description: Delete result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteNodeResponse"
+        "default":
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      tags:
+        - admpage
+      security:
+        - BearerAuth: []
+
+  /nodes:
+    get:
+      summary: List all nodes
+      operationId: ListNodes
+      parameters: []
+      responses:
+        "200":
+          description: List of nodes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListNodeResponse"
+        "default":
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      tags:
+        - admpage
+      security:
+        - BearerAuth: []
+
+  /user/new:
+    post:
+      summary: Create a new user
+      operationId: NewUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewUserRequest"
+      responses:
+        "200":
+          description: Created user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewUserResponse"
+        "default":
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      tags:
+        - userpage
+        - admpage
+
+  /user/enable:
+    post:
+      summary: Enable a user on all nodes
+      operationId: EnableUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EnableUserRequest"
+      responses:
+        "200":
+          description: User enabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnableUserResponse"
+        "default":
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      tags:
+        - admpage
+      security:
+        - BearerAuth: []
+
+  /user/disable:
+    post:
+      summary: Disable a user from all nodes
+      operationId: DisableUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DisableUserRequest"
+      responses:
+        "200":
+          description: User disabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DisableUserResponse"
+        "default":
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      tags:
+        - admpage
+      security:
+        - BearerAuth: []
+
+  /user/delete:
+    post:
+      summary: Delete a user from all nodes
+      operationId: DeleteUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteUserRequest"
+      responses:
+        "200":
+          description: User deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteUserResponse"
+        "default":
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      tags:
+        - admpage
+      security:
+        - BearerAuth: []
+
+  /user/{ID}-{Name}:
+    get:
+      summary: Get user properties
+      operationId: GetUser
+      parameters:
+        - name: ID
+          in: path
+          required: true
+          description: User ID
+          schema:
+            $ref: "#/components/schemas/UserID"
+        - name: Name
+          in: path
+          required: true
+          description: User name
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User properties
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetUserResponse"
+        "default":
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      tags:
+        - userpage
+
+  /users:
+    get:
+      summary: List all users
+      operationId: ListUsers
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListUsersResponse"
+        "default":
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      tags:
+        - admpage
+      security:
+        - BearerAuth: []
+
+  /sub/{ID}-{Name}:
+    get:
+      summary: Get subscription by user
+      operationId: UserSub
+      parameters:
+        - name: ID
+          in: path
+          required: true
+          description: User ID
+          schema:
+            $ref: "#/components/schemas/UserID"
+        - name: Name
+          in: path
+          required: true
+          description: User name
+          schema:
+            type: string
+      responses:
+        "200":
+          $ref: "#/components/responses/UserSubResponse"
+        "default":
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    AuthRequest:
+      type: object
+      required:
+        - password
+      properties:
+        password:
+          type: string
+          format: password
+          description: password
+
+    AuthResponse:
+      type: object
+      required:
+        - access_token
+        - token_type
+        - expires_in
+      properties:
+        access_token:
+          type: string
+          description: JWT access token
+        token_type:
+          type: string
+          example: Bearer
+        expires_in:
+          type: integer
+          description: Token lifetime in seconds
+
+    NodeID:
+      type: integer
+
+    NodeStatus:
+      type: string
+      enum: [unknown, stopped, running]
+
+    ClientConfigTemplateItem:
+      type: string
+      description: "client config json template"
+
+    ClientConfigTemplate:
+      type: object
+      required:
+        - template
+        - vlessEmailField
+        - vlessUUIDField
+      properties:
+        template:
+          type: array
+          items:
+            $ref: "#/components/schemas/ClientConfigTemplateItem"
+        vlessEmailField:
+          type: string
+        vlessUUIDField:
+          type: string
+
+    NodeConnectionInfo:
+      type: object
+      properties:
+        Endpoint:
+          type: string
+        AccessKey:
+          type: string
+      required:
+        - Endpoint
+        - AccessKey
+
+    NodeConfig:
+      type: object
+      properties:
+        ClientConfigTemplate:
+          $ref: "#/components/schemas/ClientConfigTemplate"
+        ConnectionInfo:
+          $ref: "#/components/schemas/NodeConnectionInfo"
+      required:
+        - ClientConfigTemplate
+        - ConnectionInfo
+
+    Node:
+      type: object
+      properties:
+        ID:
+          $ref: "#/components/schemas/NodeID"
+        Config:
+          $ref: "#/components/schemas/NodeConfig"
+        CurrentStatus:
+          $ref: "#/components/schemas/NodeStatus"
+        TargetStatus:
+          $ref: "#/components/schemas/NodeStatus"
+      required:
+        - ID
+        - Config
+        - CurrentStatus
+        - TargetStatus
+
+    NewNodeRequest:
+      type: object
+      properties:
+        Endpoint:
+          type: string
+        AccessKey:
+          type: string
+          minLength: 88
+          maxLength: 88
+          description: Base64-encoded 32-byte access secret + 32-byte cert hash
+      required:
+        - Endpoint
+        - AccessKey
+
+    NewNodeResponse:
+      type: object
+      properties:
+        Node:
+          $ref: "#/components/schemas/Node"
+      required:
+        - Node
+
+    StartNodeRequest:
+      type: object
+      properties:
+        ID:
+          $ref: "#/components/schemas/NodeID"
+      required:
+        - ID
+
+    StartNodeResponse:
+      type: object
+      properties: {}
+
+    StopNodeRequest:
+      type: object
+      properties:
+        ID:
+          $ref: "#/components/schemas/NodeID"
+      required:
+        - ID
+
+    StopNodeResponse:
+      type: object
+      properties: {}
+
+    ListNodeRequest:
+      type: object
+      properties: {}
+
+    ListNodeResponse:
+      type: object
+      properties:
+        Nodes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Node"
+      required:
+        - Nodes
+
+    DeleteNodeRequest:
+      type: object
+      properties:
+        ID:
+          $ref: "#/components/schemas/NodeID"
+      required:
+        - ID
+
+    DeleteNodeResponse:
+      type: object
+      properties: {}
+
+    UserID:
+      type: integer
+
+    UserStatus:
+      type: string
+      enum: [unknown, enabled, disabled]
+
+    UserProfile:
+      type: object
+      properties:
+        ID:
+          $ref: "#/components/schemas/UserID"
+        Name:
+          type: string
+        DisplayName:
+          type: string
+        VlessUUID:
+          type: string
+        SubscriptionPath:
+          type: string
+      required:
+        - ID
+        - Name
+        - DisplayName
+        - VlessUUID
+        - SubscriptionPath
+
+    User:
+      type: object
+      properties:
+        Profile:
+          $ref: "#/components/schemas/UserProfile"
+        TargetStatus:
+          $ref: "#/components/schemas/UserStatus"
+      required:
+        - Profile
+        - TargetStatus
+
+    NewUserRequest:
+      type: object
+      properties:
+        DisplayName:
+          type: string
+      required:
+        - DisplayName
+
+    NewUserResponse:
+      $ref: "#/components/schemas/User"
+
+    GetUserRequest:
+      type: object
+      properties:
+        ID:
+          $ref: "#/components/schemas/UserID"
+        Name:
+          type: string
+      required:
+        - ID
+        - Name
+
+    GetUserResponse:
+      $ref: "#/components/schemas/User"
+
+    ListUsersResponse:
+      type: object
+      properties:
+        Users:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+      required:
+        - Users
+
+    EnableUserRequest:
+      type: object
+      properties:
+        ID:
+          $ref: "#/components/schemas/UserID"
+      required:
+        - ID
+
+    EnableUserResponse:
+      type: object
+      properties: {}
+
+    DisableUserRequest:
+      type: object
+      properties:
+        ID:
+          $ref: "#/components/schemas/UserID"
+      required:
+        - ID
+
+    DisableUserResponse:
+      type: object
+      properties: {}
+
+    DeleteUserRequest:
+      type: object
+      properties:
+        ID:
+          $ref: "#/components/schemas/UserID"
+      required:
+        - ID
+
+    DeleteUserResponse:
+      type: object
+      properties: {}
+
+    ClientConfigItem:
+      type: string
+      description: "subscription json object"
+
+    UserSubResponse:
+      type: array
+      items:
+        $ref: "#/components/schemas/ClientConfigItem"
+
+    Error:
+      type: object
+      properties:
+        Message:
+          type: string
+        Details:
+          type: string
+          nullable: true
+      required:
+        - Message
+
+  headers:
+    Expiration:
+      description: "Subscription lifetime, hours"
+      schema:
+        type: integer
+      required: true
+
+  responses:
+    UserSubResponse:
+      description: List of subscription
+      headers:
+        Expiration:
+          $ref: "#/components/headers/Expiration"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UserSubResponse"

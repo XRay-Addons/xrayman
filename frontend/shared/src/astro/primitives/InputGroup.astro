@@ -1,0 +1,116 @@
+---
+import Surface from "./Surface.astro";
+
+type HTMLProps = Record<string, unknown>;
+
+interface Props {
+  "input-props"?: HTMLProps;
+  "button-props"?: HTMLProps;
+  [key: string]: unknown; // WTF ts can't guess types
+}
+
+const { "input-props": inputProps = {}, "button-props": buttonProps = {}, ...rest } = Astro.props;
+
+const { class: _ic, style: _is, "data-part": _dpInput, ...safeInputProps } = inputProps;
+
+const { class: _bc, style: _bs, "data-part": _dpButton, ...safeButtonProps } = buttonProps;
+---
+
+<input-group {...rest}>
+  <div class="row g-0">
+    <div class="group-input-wrap">
+      <Surface depth="var(--input-depth)" color="var(--input-color)" class="h-100">
+        <input
+          data-part="input"
+          type="text"
+          class="ui-reset-input group-input text text-md crt p-2 h-100 w-100"
+          {...safeInputProps}
+        />
+      </Surface>
+    </div>
+
+    <div class="group-btn-wrap">
+      <Surface
+        depth="var(--input-depth)"
+        color="var(--input-color)"
+        dynamic
+        class="group-btn-wrap h-100"
+      >
+        <button
+          data-part="button"
+          class="ui-reset-button noselect group-btn text text-md crt p-2 h-100 w-100"
+          {...safeButtonProps}></button>
+      </Surface>
+    </div>
+  </div>
+</input-group>
+
+<style>
+  .group-input-wrap {
+    width: 75%;
+  }
+  .group-btn-wrap {
+    width: calc(25% + var(--input-depth));
+    margin-left: calc(-1 * var(--input-depth));
+  }
+
+  .group-input {
+  }
+
+  .group-btn {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+</style>
+
+<script>
+  import { type InputGroupElement, type OnClickFn } from "../types/InputGroup";
+  import { PartedElement } from "../../runtime/dom/parted-element";
+
+  class InputGroup extends PartedElement implements InputGroupElement {
+    private inputEl!: HTMLInputElement;
+    private btnEl!: HTMLButtonElement;
+    private onClickFn?: OnClickFn;
+
+    setValue(val: string) {
+      this.inputEl.value = val;
+    }
+
+    getValue(): string {
+      return this.inputEl.value;
+    }
+
+    onClick(fn: OnClickFn): void {
+      this.onClickFn = fn;
+    }
+
+    getButton(): HTMLButtonElement {
+      return this.btnEl;
+    }
+
+    getInput(): HTMLInputElement {
+      return this.inputEl;
+    }
+
+    connectedCallback() {
+      this.inputEl = this.pt<HTMLInputElement>("input");
+      this.inputEl.addEventListener("keydown", async (e: KeyboardEvent) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          await this.onClickFn?.(this.inputEl.value);
+        }
+      });
+
+      this.btnEl = this.pt<HTMLButtonElement>("button");
+      this.btnEl.addEventListener("click", async (e: Event) => {
+        e.preventDefault();
+        await this.onClickFn?.(this.inputEl.value);
+      });
+    }
+
+    disconnectedCallback() {}
+  }
+
+  customElements.define("input-group", InputGroup);
+</script>

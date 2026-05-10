@@ -1,0 +1,45 @@
+{
+  "name": "userpage",
+  "private": true,
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "api:generate": "openapi-ts",
+    "predev": "pnpm run api:generate",
+    "dev": "astro dev",
+    "prebuild": "pnpm run api:generate",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@hey-api/client-fetch": "^0.13.1",
+    "@xrayman/shared": "workspace:*",
+    "@zokki/astro-purgecss": "^1.0.4",
+    "astro": "^5.17.1",
+    "astro-compress": "^2.4.0",
+    "astro-purgecss": "^6.0.1",
+    "astro-relative-links": "^0.4.2",
+    "autoprefixer": "^10.4.27",
+    "axios": "^1.14.0",
+    "bootstrap": "^5.3.8",
+    "cssnano": "^7.1.4",
+    "gifler": "^0.1.0",
+    "gifuct-js": "^2.1.2",
+    "nanostores": "^1.2.0",
+    "notyf": "^3.10.0",
+    "openapi-fetch": "^0.17.0",
+    "postcss-import": "^16.1.1",
+    "postcss-url": "^8.0.0",
+    "purgecss": "^8.0.0"
+  },
+  "devDependencies": {
+    "@fullhuman/postcss-purgecss": "^8.0.0",
+    "@hey-api/openapi-ts": "0.95.0",
+    "openapi-typescript": "^7.13.0",
+    "postcss-html": "^1.8.1",
+    "stylelint": "^16.26.1",
+    "stylelint-config-standard": "^36.0.1",
+    "stylelint-selector-bem-pattern": "^4.0.1",
+    "typescript": "^5.9.3"
+  }
+}

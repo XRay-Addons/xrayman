@@ -1,0 +1,49 @@
+---
+const { ...rest } = Astro.props;
+---
+
+<eq-height {...rest}>
+  <slot />
+</eq-height>
+
+<script>
+  class EqHeight extends HTMLElement {
+    mo?: MutationObserver;
+    ro?: ResizeObserver;
+
+    connectedCallback() {
+      const equalize = () => {
+        requestAnimationFrame(() => {
+          const children = Array.from(this.children) as HTMLElement[];
+          if (children.length < 2) return;
+
+          let max = 0;
+
+          children.forEach((el) => (el.style.height = "auto"));
+          children.forEach((el) => (max = Math.max(max, el.offsetHeight)));
+          children.forEach((el) => (el.style.height = `${max}px`));
+        });
+      };
+      equalize();
+
+      this.ro = new ResizeObserver(equalize);
+      this.mo = new MutationObserver(equalize);
+
+      this.ro.observe(this);
+      this.mo.observe(this, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+      });
+    }
+
+    disconnectedCallback() {
+      this.ro?.disconnect();
+      this.mo?.disconnect();
+      this.ro = undefined;
+      this.mo = undefined;
+    }
+  }
+
+  customElements.define("eq-height", EqHeight);
+</script>

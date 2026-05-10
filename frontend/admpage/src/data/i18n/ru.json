@@ -1,0 +1,153 @@
+{
+  "title": {
+    "main": "Оттепелль-Адм",
+    "main-page": "Смотри, Таблички!"
+  },
+
+  "cards": {
+    "users": {
+      "title": "Пользователи"
+    },
+    "nodes": {
+      "title": "Ноды"
+    }
+  },
+
+  "add-user": {
+    "title": "Add new user",
+    "request": {
+      "name": {
+        "info": "User displayname",
+        "button": "Add!",
+        "placeholder": "Например, Никита"
+      }
+    },
+    "response": {
+      "info": "User added successfully!",
+      "userpage": {
+        "info": "User page URL",
+        "copy-button": "Copy!"
+      }
+    },
+    "button": {
+      "text": "+"
+    }
+  },
+
+  "add-node": {
+    "title": "Add new node",
+    "request": {
+      "endpoint": {
+        "info": "Node endpoint",
+        "placeholder": "https://node.com:80"
+      },
+      "accesskey": {
+        "info": "Node access key",
+        "placeholder": "HexAccessKey..."
+      }
+    },
+    "submit-btn": {
+      "info": "Add!"
+    },
+    "response": {
+      "info": "Node added successfully!",
+      "endpoint": "Node endpoint:"
+    },
+    "button": {
+      "text": "+"
+    }
+  },
+
+  "errors": {
+    "server": {
+      "get_users": "Получить пользователей ошибка",
+      "get_nodes": "Получить ноды ошибка",
+      "new_user": "Добавить юзер",
+      "start_node": "Старт ноды",
+      "stop_node": "Стоп ноды",
+      "new_node": "Добавить ноду",
+      "enable_user": "Разрешить пользователя",
+      "disable_user": "Запретить пользователя",
+
+      "reason": {
+        "bad_request": "Плохо запросилось",
+        "not_found": "Не нашлось",
+        "unauthorized": "Не авторизовалось",
+        "forbidden": "З А П Р Е Щ Е Н О!!!11",
+        "network": "Интернет не работает",
+        "unknown": "Ммм, непонятно"
+      }
+    }
+  },
+
+  "table": {
+    "users": {
+      "status": {
+        "enabled": "Энейблед",
+        "disabled": "Дизейблед"
+      },
+      "actions": {
+        "enable": "Enable",
+        "disable": "Disable",
+        "delete": {
+          "button": "Delete",
+          "confirm": {
+            "header": "Delete user?",
+            "body": "Are you wure?",
+            "ok": "Da",
+            "cancel": "Net"
+          }
+        }
+      },
+      "columns": {
+        "id": "IDD",
+        "display-name": "Display Name",
+        "target-status": "Target Status",
+        "name": "ИМЯ",
+        "vless-uuid": "VLESS UUID",
+        "subscription": "Subscription",
+        "actions": "Actions"
+      }
+    },
+
+    "nodes": {
+      "status": {
+        "running": "Running",
+        "stopped": "Stopped",
+        "unknown": "Unknown"
+      },
+      "actions": {
+        "start": "Start",
+        "stop": "Stop",
+        "delete": {
+          "button": "Delete",
+          "confirm": {
+            "header": "Delete node?",
+            "body": "Are you sure?",
+            "ok": "Da",
+            "cancel": "Net"
+          }
+        }
+      },
+      "columns": {
+        "id": "ID",
+        "endpoint": "Endpoint",
+        "current-status": "Current Status",
+        "target-status": "Target Status",
+        "access-key": "Access Key",
+        "client-config": "Client Config",
+        "actions": "Actions"
+      }
+    }
+  },
+
+  "login": {
+    "title": {
+      "authorize": "Энтер Пассворд"
+    },
+    "password": {
+      "placeholder": "11111!1",
+      "button": "Аутх!"
+    }
+  }
+}

@@ -1,0 +1,93 @@
+/* =========================================================
+   CONSOLE / GAME UI TEXT SYSTEM
+   Sizes + Glow + Aura + CRT feel
+   ========================================================= */
+
+/* ---------- BASE ---------- */
+.text {
+  line-height: 1.25;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+
+  text-shadow:
+    0 0 0.5px currentColor,
+    0 0 1px currentColor;
+}
+
+/* ---------- SIZES ---------- */
+.text-sm {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.text-md {
+  font-size: 1.2rem;
+  font-weight: 850;
+}
+
+.text-lg {
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: 0.6px;
+}
+/* ---------- GLOW (NEON) ---------- */
+.glow {
+  text-shadow:
+    0 0 2px rgba(120, 200, 255, 0.9),
+    0 0 6px rgba(80, 170, 255, 0.7),
+    0 0 12px rgba(40, 130, 255, 0.45);
+}
+
+/* ---------- SOFT AURA ---------- */
+.aura {
+  text-shadow:
+    0 0 6px rgba(140, 210, 255, 0.35),
+    0 0 14px rgba(90, 170, 255, 0.25),
+    0 0 28px rgba(60, 130, 255, 0.2);
+}
+
+/* ---------- STRONG GLOW (DIALOG / ALERT) ---------- */
+.glow-strong {
+  text-shadow:
+    0 0 2px rgba(180, 230, 255, 1),
+    0 0 8px rgba(120, 200, 255, 0.9),
+    0 0 16px rgba(60, 150, 255, 0.7),
+    0 0 32px rgba(30, 100, 255, 0.5);
+}
+
+/* ---------- CRT / CONSOLE FEEL ---------- */
+.crt {
+  -webkit-font-smoothing: none;
+  text-rendering: optimizeSpeed;
+  font-family: "Press Start 2P", monospace;
+  filter: contrast(1.05) saturate(1.1);
+}
+
+/* ---------- SUBTLE FLICKER ---------- */
+@keyframes typeGlow {
+  0% {
+    opacity: 0;
+    text-shadow: none;
+  }
+  100% {
+    opacity: 1;
+    text-shadow:
+      0 0 2px rgba(255, 220, 120, 0.9),
+      0 0 10px rgba(255, 200, 80, 0.6);
+  }
+}
+
+.flicker {
+  animation: typeGlow 0.2s ease-out;
+}
+
+/* ---------- OPTIONAL: DIALOG BOX PRESET ---------- */
+.dialog-text {
+  padding: 0.6em 0.9em;
+  background: rgba(10, 25, 40, 0.6);
+  border: 2px solid rgba(120, 200, 255, 0.4);
+  border-radius: 6px;
+  box-shadow:
+    0 0 12px rgba(80, 170, 255, 0.25),
+    inset 0 0 6px rgba(120, 200, 255, 0.2);
+}

@@ -1,0 +1,10 @@
+---
+import AddUserPage from "./AddUserPage.astro";
+import ButtonDialog from "@xrayman/shared/astro/primitives/ButtonDialog.astro";
+import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
+---
+
+<ButtonDialog class="row w-100 g-0 justify-content-end" content-class="col-4 col-md-2">
+  <I18NText slot="button" data-i18n="add-user.button.text" />
+  <AddUserPage slot="page" />
+</ButtonDialog>

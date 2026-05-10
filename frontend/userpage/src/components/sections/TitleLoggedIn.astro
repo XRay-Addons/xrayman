@@ -1,0 +1,43 @@
+---
+import Title from "@xrayman/shared/astro/primitives/Title.astro";
+---
+
+<title-logged-in>
+  <Title class="col-10 col-md-8 col-lg-6 mb-2">
+    <span data-i18n="title.hello"></span>
+    <span data-part="username"></span>
+  </Title>
+</title-logged-in>
+
+<style>
+  title-logged-in {
+    display: contents;
+  }
+</style>
+
+<script>
+  import { stateSignal } from "@/state/signals";
+  import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
+  import { State } from "@/state/state";
+
+  class TitleLoggedIn extends PartedElement {
+    private unsub?: () => void;
+
+    connectedCallback() {
+      const usernameEl = this.pt<HTMLSpanElement>("username");
+      this.unsub = stateSignal.subscribe((state) => {
+        if (state.status === State.LoggedIn) {
+          usernameEl.textContent = state.data.Profile.DisplayName;
+        } else {
+          usernameEl.textContent = "";
+        }
+      });
+    }
+
+    disconnectedCallback() {
+      this.unsub?.();
+    }
+  }
+
+  customElements.define("title-logged-in", TitleLoggedIn);
+</script>

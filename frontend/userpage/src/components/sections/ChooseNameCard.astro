@@ -1,0 +1,60 @@
+---
+import Card from "@xrayman/shared/astro/primitives/Card.astro";
+import Info from "@xrayman/shared/astro/primitives/Info.astro";
+import InputGroup from "@xrayman/shared/astro/primitives/InputGroup.astro";
+import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
+---
+
+<choose-name-card class="h-center">
+  <Card class="col-12 mb-2">
+    <Info>
+      <I18NText data-i18n="choosename.info" />
+    </Info>
+
+    <div class="h-center g-0 w-100">
+      <InputGroup
+        input-props={{
+          "data-i18n-placeholder": "choosename.placeholder",
+        }}
+        button-props={{
+          "data-i18n": "choosename.btntext",
+        }}
+        data-part="name-input"
+        class="col-12 col-md-8"
+      />
+    </div>
+  </Card>
+</choose-name-card>
+
+<script>
+  import { type InputGroupElement } from "@xrayman/shared/astro/types/InputGroup";
+  import { newUser } from "@/services/api/client";
+  import { stateSignal } from "@/state/signals";
+  import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
+  import { State } from "@/state/state";
+  import { notifyApiError } from "@/runtime/notifications/use-notifications";
+
+  class ChooseNameCard extends PartedElement {
+    connectedCallback() {
+      const nameInputEl = this.pt<InputGroupElement>("name-input");
+
+      nameInputEl.onClick(async (displayName: string) => {
+        if (displayName.length == 0) {
+          return;
+        }
+
+        const response = await newUser(displayName);
+        if (response.ok) {
+          stateSignal.set({ status: State.LoggedIn, data: response.data });
+        } else if (response.ok == false) {
+          // WTF typescript conditions
+          notifyApiError("new_user", response.reason);
+        }
+      });
+    }
+
+    disconnectedCallback() {}
+  }
+
+  customElements.define("choose-name-card", ChooseNameCard);
+</script>

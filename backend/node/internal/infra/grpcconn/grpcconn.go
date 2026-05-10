@@ -1,0 +1,108 @@
+package grpcconn
+
+import (
+	"context"
+	"sync"
+
+	"github.com/XRay-Addons/xrayman/common/xerr"
+	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/connectivity"
+	"google.golang.org/grpc/credentials/insecure"
+)
+
+// grpc connection with retry
+type GRPCConn struct {
+	target string
+
+	conn *grpc.ClientConn
+	mu   sync.RWMutex
+
+	log *zap.Logger
+}
+
+var _ grpc.ClientConnInterface = (*GRPCConn)(nil)
+
+func New(target string, log *zap.Logger) (*GRPCConn, error) {
+	if log == nil {
+		return nil, errdefs.NilArg("log")
+	}
+
+	conn, err := grpc.NewClient(target,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		return nil, xerr.WrapWithStack(err)
+	}
+
+	return &GRPCConn{
+		target: target,
+		conn:   conn,
+		log:    log,
+	}, nil
+}
+
+func (c *GRPCConn) Close(ctx context.Context) error {
+	if c == nil {
+		return nil
+	}
+
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if c.conn == nil {
+		return nil
+	}
+	defer func() { c.conn = nil }()
+
+	state := c.conn.GetState()
+	if state == connectivity.Shutdown {
+		return nil
+	}
+	if err := c.conn.Close(); err != nil {
+		return xerr.WrapWithStack(err)
+	}
+	return nil
+}
+
+func (c *GRPCConn) Invoke(
+	ctx context.Context,
+	method string,
+	args any,
+	reply any,
+	opts ...grpc.CallOption,
+) error {
+	if c == nil || c.conn == nil {
+		e := errdefs.NilCall()
+		return e
+	}
+
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	if err := c.conn.Invoke(ctx, method, args, reply, opts...); err != nil {
+		return xerr.WrapWithStack(err)
+	}
+	return nil
+}
+
+func (c *GRPCConn) NewStream(
+	ctx context.Context,
+	desc *grpc.StreamDesc,
+	method string,
+	opts ...grpc.CallOption,
+) (grpc.ClientStream, error) {
+	if c == nil || c.conn == nil {
+		return nil, errdefs.NilCall()
+	}
+
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	stream, err := c.conn.NewStream(ctx, desc, method, opts...)
+	if err != nil {
+		return nil, xerr.WrapWithStack(err)
+	}
+	return stream, nil
+}

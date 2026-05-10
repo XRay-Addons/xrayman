@@ -1,0 +1,28 @@
+---
+import ServerError from "./ServerError.astro";
+---
+
+<page-server-error hidden>
+  <ServerError />
+</page-server-error>
+
+<script>
+  import { stateSignal } from "@/state/signals";
+  import { State } from "@/state/state";
+
+  class PageServerError extends HTMLElement {
+    private unsub?: () => void;
+
+    connectedCallback() {
+      this.unsub = stateSignal.subscribe((state) => {
+        this.hidden = !(state.status === State.ServerError);
+      });
+    }
+
+    disconnectedCallback() {
+      this.unsub?.();
+    }
+  }
+
+  customElements.define("page-server-error", PageServerError);
+</script>

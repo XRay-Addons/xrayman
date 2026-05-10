@@ -1,0 +1,54 @@
+---
+import Card from "@xrayman/shared/astro/primitives/Card.astro";
+import Info from "@xrayman/shared/astro/primitives/Info.astro";
+import CopyGroup from "@xrayman/shared/astro/primitives/CopyGroup.astro";
+---
+
+<user-page-card>
+  <Card class="mb-2">
+    <Info>
+      <strong>1.</strong>
+      <span data-i18n="userurl.info"></span>
+    </Info>
+
+    <div class="h-center g-0 w-100">
+      <CopyGroup
+        button-props={{
+          "data-i18n": "userurl.btntext",
+        }}
+        data-part="result-userpage"
+        class="col-12 col-md-10 col-lg-8"
+      />
+    </div>
+  </Card>
+</user-page-card>
+
+<script>
+  import { ProfileURL } from "@/runtime/user/user-utils";
+  import { stateSignal } from "@/state/signals";
+  import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
+  import { type CopyGroupElement } from "@xrayman/shared/astro/types/CopyGroup";
+  import { State } from "@/state/state";
+
+  class UserPageCard extends PartedElement {
+    private unsub?: () => void;
+
+    connectedCallback() {
+      const userpageOutputEl = this.pt<CopyGroupElement>("result-userpage")!;
+
+      this.unsub = stateSignal.subscribe((state) => {
+        if (state.status === State.LoggedIn) {
+          userpageOutputEl.setValue(ProfileURL.make(state.data));
+        } else {
+          userpageOutputEl.setValue("");
+        }
+      });
+    }
+
+    disconnectedCallback() {
+      this.unsub?.();
+    }
+  }
+
+  customElements.define("user-page-card", UserPageCard);
+</script>
