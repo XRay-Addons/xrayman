@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/http/httperr"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/httperrdefs"
 	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
 )
 
@@ -28,7 +28,7 @@ func (h *Handler) HandleBearerAuth(ctx context.Context,
 		return ctx, errdefs.NilCall()
 	}
 	if err := h.jwt.ValidateToken(t.GetToken()); err != nil {
-		return ctx, httperr.ErrAuthToken
+		return ctx, httperrdefs.ErrAuthToken
 	}
 	return ctx, nil
 }

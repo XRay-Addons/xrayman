@@ -19,7 +19,8 @@ type NodeSecurity struct {
 func (s *NodeSecurity) BearerAuth(ctx context.Context,
 	op api.OperationName,
 ) (api.BearerAuth, error) {
-	token, err := jwtools.GenerateToken(s.secret[:], s.issuer,
+	token, err := jwtools.GenerateToken(s.secret[:],
+		jwtools.WithIssuer(s.issuer),
 		jwtools.WithTTL(s.expiration))
 	if err != nil {
 		return api.BearerAuth{}, xerr.WrapWithStack(err)

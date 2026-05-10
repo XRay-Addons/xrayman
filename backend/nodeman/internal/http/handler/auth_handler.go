@@ -2,11 +2,10 @@ package handler
 
 import (
 	"context"
-	"errors"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/converter"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/http/httperr"
 	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
 )
 
@@ -18,15 +17,11 @@ func (h *Handler) Auth(ctx context.Context, req *api.AuthRequest) (
 	}
 	p, err := converter.ConvertAuthRequest(req)
 	if err != nil {
-		return nil, httperr.ErrInvaildPayload
+		return nil, err
 	}
 	res, err := h.as.Auth(ctx, *p)
-	if errors.Is(err, errdefs.ErrAccessDenied) {
-		return nil, httperr.ErrAuthToken
-	}
 	if err != nil {
-		h.logError(ctx, err)
-		return nil, httperr.ErrUnknown
+		return nil, err
 	}
 	return converter.ConvertAuthResult(res), nil
 }

@@ -61,7 +61,8 @@ func New(secret string, opts ...option) (*JWT, error) {
 }
 
 func (j *JWT) GenerateToken(subject string) (*models.AuthResult, error) {
-	token, err := jwtools.GenerateToken(j.secret, j.config.issuer,
+	token, err := jwtools.GenerateToken(j.secret,
+		jwtools.WithIssuer(j.config.issuer),
 		jwtools.WithSubject(subject))
 	if err != nil {
 		return nil, err
@@ -74,5 +75,6 @@ func (j *JWT) GenerateToken(subject string) (*models.AuthResult, error) {
 }
 
 func (j *JWT) ValidateToken(tokenString string) error {
-	return jwtools.ValidateToken(tokenString, j.secret, j.config.issuer)
+	return jwtools.ValidateToken(tokenString, j.secret,
+		jwtools.WithIssuerCheck(&j.config.issuer))
 }

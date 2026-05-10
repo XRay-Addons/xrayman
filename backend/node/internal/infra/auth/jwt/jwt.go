@@ -17,34 +17,23 @@ type JWT struct {
 var _ (security.JWT) = (*JWT)(nil)
 
 const defaultTTL = 72 * time.Hour
-const defaultIssuer = "issuer"
 
 const bearerTokenType = "Bearer"
 
 type config struct {
-	ttl    time.Duration
-	issuer string
+	issuer *string
 }
 
 type option = func(o *config)
 
-func WithTTL(ttl time.Duration) option {
-	return func(o *config) {
-		o.ttl = ttl
-	}
-}
-
-func WithIssuer(issuer string) option {
-	return func(o *config) {
-		o.issuer = issuer
+func WithIssuerCheck(issuer string) option {
+	return func(c *config) {
+		c.issuer = &issuer
 	}
 }
 
 func New(secret models.AccessSecret, opts ...option) (*JWT, error) {
-	cfg := config{
-		ttl:    defaultTTL,
-		issuer: defaultIssuer,
-	}
+	cfg := config{}
 	for _, o := range opts {
 		o(&cfg)
 	}
@@ -56,5 +45,6 @@ func New(secret models.AccessSecret, opts ...option) (*JWT, error) {
 }
 
 func (j *JWT) ValidateToken(tokenString string) error {
-	return jwtools.ValidateToken(tokenString, j.secret, j.config.issuer)
+	return jwtools.ValidateToken(tokenString, j.secret,
+		jwtools.WithIssuerCheck(j.config.issuer))
 }

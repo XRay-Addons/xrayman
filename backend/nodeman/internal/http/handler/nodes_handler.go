@@ -5,7 +5,6 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/converter"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/http/httperr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
 )
@@ -18,12 +17,11 @@ func (h *Handler) NewNode(ctx context.Context, req *api.NewNodeRequest) (
 	}
 	p, err := converter.ConvertNewNodeRequest(req)
 	if err != nil {
-		return nil, httperr.ErrInvaildPayload
+		return nil, err
 	}
 	res, err := h.ns.NewNode(ctx, *p)
 	if err != nil {
-		h.logError(ctx, err)
-		return nil, httperr.ErrInternalServerError
+		return nil, err
 	}
 	return converter.ConvertNewNodeResult(res), nil
 }
@@ -34,12 +32,11 @@ func (h *Handler) StartNode(ctx context.Context, req *api.StartNodeRequest) erro
 	}
 	p, err := converter.ConvertStartNodeRequest(req)
 	if err != nil {
-		return httperr.ErrInvaildPayload
+		return err
 	}
 	_, err = h.ns.StartNode(ctx, *p)
 	if err != nil {
-		h.logError(ctx, err)
-		return httperr.ErrInternalServerError
+		return err
 	}
 	return nil
 }
@@ -50,12 +47,11 @@ func (h *Handler) StopNode(ctx context.Context, req *api.StopNodeRequest) error 
 	}
 	p, err := converter.ConvertStopNodeRequest(req)
 	if err != nil {
-		return httperr.ErrInvaildPayload
+		return err
 	}
 	_, err = h.ns.StopNode(ctx, *p)
 	if err != nil {
-		h.logError(ctx, err)
-		return httperr.ErrInternalServerError
+		return err
 	}
 	return nil
 }
@@ -66,8 +62,7 @@ func (h *Handler) ListNodes(ctx context.Context) (*api.ListNodeResponse, error) 
 	}
 	res, err := h.ns.ListNodes(ctx, models.ListNodeParams{})
 	if err != nil {
-		h.logError(ctx, err)
-		return nil, httperr.ErrInternalServerError
+		return nil, err
 	}
 	return converter.ConvertListNodesResult(res), nil
 }
@@ -78,12 +73,11 @@ func (h *Handler) DeleteNode(ctx context.Context, req *api.DeleteNodeRequest) er
 	}
 	p, err := converter.ConvertDeleteNodeRequest(req)
 	if err != nil {
-		return httperr.ErrInvaildPayload
+		return err
 	}
 	_, err = h.ns.DeleteNode(ctx, *p)
 	if err != nil {
-		h.logError(ctx, err)
-		return httperr.ErrInternalServerError
+		return err
 	}
 	return nil
 }

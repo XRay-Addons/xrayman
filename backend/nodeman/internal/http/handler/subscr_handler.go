@@ -5,7 +5,6 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/converter"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/http/httperr"
 	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
 )
 
@@ -17,16 +16,14 @@ func (h *Handler) UserSub(ctx context.Context, req api.UserSubParams) (
 	}
 	p, err := converter.ConvertUserSubRequest(&req)
 	if err != nil {
-		return nil, httperr.ErrInvaildPayload
+		return nil, err
 	}
 	sub, exists, err := h.ss.GetUserSub(ctx, *p)
 	if err != nil {
-		h.logError(ctx, err)
 		return nil, err
 	}
-
 	if !exists {
-		return nil, httperr.ErrUserNotFound
+		return nil, errdefs.NotFound("user")
 	}
 	subResponse, err := converter.ConvertUserSubResult(sub)
 	if err != nil {

@@ -12,9 +12,9 @@ import (
 //
 //go:generate goverter gen .
 type Converter interface {
-	ConvertStartRequest(source *api.StartRequest) *models.StartParams
+	ConvertStartRequest(source *api.StartRequest) (*models.StartParams, error)
 	ConvertStartResult(source *models.StartResult) *api.StartResponse
-	ConvertEditUsersRequest(source *api.EditUsersRequest) *models.EditUsersParams
+	ConvertEditUsersRequest(source *api.EditUsersRequest) (*models.EditUsersParams, error)
 	ConvertStatusResult(source *models.StatusResult) *api.StatusResponse
 	ConvertStatus(source models.ServiceStatus) api.ServiceStatus
 }

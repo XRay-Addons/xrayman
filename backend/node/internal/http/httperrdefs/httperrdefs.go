@@ -1,7 +1,6 @@
-package httperr
+package httperrdefs
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -13,29 +12,25 @@ var (
 		"Internal server error")
 	ErrAuthToken = new(http.StatusUnauthorized,
 		"Invalid auth token", "try another one")
+	ErrAccessDenied = new(http.StatusForbidden,
+		"Access denied", "denied deined")
+	ErrTemporaryUnavailable = new(http.StatusServiceUnavailable,
+		"Temporary unavailable", "please try later")
+	ErrConnection = new(http.StatusExpectationFailed,
+		"Connection issues", "try better connection")
 	ErrUnknown = new(http.StatusInternalServerError,
 		"unknown error", "we really don't know")
 )
 
-// error impl containing api.ErrorStatusCode
-// to return it as error from middleware or handlers
-// and later process in handler.NewError
-type HttpErr api.ErrorStatusCode
-
-func new(statusCode int, message string, details ...string) *HttpErr {
+func new(statusCode int, message string, details ...string) *api.ErrorStatusCode {
 	he := api.Error{Message: message}
 
 	if d := strings.Join(details, ""); len(d) > 0 {
 		he.Details.SetTo(d)
 	}
 
-	return &HttpErr{
+	return &api.ErrorStatusCode{
 		StatusCode: statusCode,
 		Response:   he,
 	}
-}
-
-func (e HttpErr) Error() string {
-	return fmt.Sprintf("http error: %s: %s",
-		http.StatusText(e.StatusCode), e.Response.Message)
 }

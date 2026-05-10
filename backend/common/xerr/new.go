@@ -23,7 +23,7 @@ func New(text string, opts ...Option) error {
 func Newf(format string, a ...any) error {
 	const wrappingTraceDepth = 2
 	err := &baseError{
-		err:   errors.New(fmt.Sprintf(format, a)),
+		err:   errors.New(fmt.Sprintf(format, a...)),
 		stack: getTrace(wrappingTraceDepth),
 	}
 

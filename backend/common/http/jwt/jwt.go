@@ -8,46 +8,55 @@ import (
 )
 
 const defaultTTL = 72 * time.Hour
-const defaultSubject = "xrayman subject"
+const defaultSubject = ""
+const defaultIssuer = ""
 
 const bearerTokenType = "Bearer"
 
-type genOpts struct {
+type options struct {
 	ttl     time.Duration
 	subject string
+	issuer  string
 }
 
-type genOpt = func(o *genOpts)
+type option = func(o *options)
 
-func WithTTL(ttl time.Duration) genOpt {
-	return func(o *genOpts) {
+func WithTTL(ttl time.Duration) option {
+	return func(o *options) {
 		o.ttl = ttl
 	}
 }
 
-func WithSubject(subject string) genOpt {
-	return func(o *genOpts) {
+func WithSubject(subject string) option {
+	return func(o *options) {
 		o.subject = subject
 	}
 }
 
-func GenerateToken(sec []byte, iss string, options ...genOpt) (string, error) {
-	cfg := genOpts{
+func WithIssuer(issuer string) option {
+	return func(o *options) {
+		o.issuer = issuer
+	}
+}
+
+func GenerateToken(sec []byte, opts ...option) (string, error) {
+	o := options{
 		ttl:     defaultTTL,
 		subject: defaultSubject,
+		issuer:  defaultIssuer,
 	}
-	for _, o := range options {
-		o(&cfg)
+	for _, opt := range opts {
+		opt(&o)
 	}
 
 	now := time.Now()
-	exp := now.Add(cfg.ttl)
+	exp := now.Add(o.ttl)
 
 	claims := jwt.RegisteredClaims{
-		Issuer:    iss,
 		IssuedAt:  jwt.NewNumericDate(now),
 		ExpiresAt: jwt.NewNumericDate(exp),
-		Subject:   cfg.subject,
+		Issuer:    o.issuer,
+		Subject:   o.subject,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -60,7 +69,30 @@ func GenerateToken(sec []byte, iss string, options ...genOpt) (string, error) {
 	return signed, nil
 }
 
-func ValidateToken(tok string, sec []byte, iss string) error {
+type checks struct {
+	subject *string
+	issuer  *string
+}
+
+type check = func(c *checks)
+
+func WithSubjectCheck(subject *string) check {
+	return func(c *checks) {
+		c.subject = subject
+	}
+}
+
+func WithIssuerCheck(issuer *string) check {
+	return func(c *checks) {
+		c.issuer = issuer
+	}
+}
+func ValidateToken(tok string, sec []byte, chks ...check) error {
+	c := checks{}
+	for _, chk := range chks {
+		chk(&c)
+	}
+
 	secret := []byte(sec)
 	// Parse the token
 	token, err := jwt.Parse(tok, func(token *jwt.Token) (interface{}, error) {
@@ -74,12 +106,22 @@ func ValidateToken(tok string, sec []byte, iss string) error {
 	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 		return xerr.New("invalid singing method")
 	}
-	// check claims
-	if claimIss, err := token.Claims.GetIssuer(); err != nil || claimIss != iss {
-		return xerr.Newf("invalid issuer: %s", claimIss)
-	}
+	// check expiration time
 	if exp, err := token.Claims.GetExpirationTime(); err != nil || exp.Before(time.Now()) {
 		return xerr.Newf("invalid exp time: %v", exp.Time)
+	}
+	// check claims
+	if c.issuer != nil {
+		if claimIss, err := token.Claims.GetIssuer(); err != nil || claimIss != *c.issuer {
+			err := xerr.Newf("invalid issuer: %s, required issuer: %s", claimIss, *c.issuer)
+			return err
+		}
+	}
+	if c.subject != nil {
+		if claimSubj, err := token.Claims.GetSubject(); err != nil || claimSubj != *c.subject {
+			err := xerr.Newf("invalid subject: %s, required subject: %s", claimSubj, *c.subject)
+			return err
+		}
 	}
 
 	return nil

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/XRay-Addons/xrayman/common/xerr"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
 )
@@ -74,7 +74,7 @@ func RConvertNodeID(i api.NodeID) models.NodeID {
 func ConvertAccessKey(s string) (models.AccessKey, error) {
 	var accessKey models.AccessKey
 	if err := accessKey.UnmarshalText([]byte(s)); err != nil {
-		return accessKey, xerr.WrapWithStack(err)
+		return accessKey, errdefs.InvalidPayload(err.Error())
 	}
 	return accessKey, nil
 }
@@ -82,21 +82,6 @@ func ConvertAccessKey(s string) (models.AccessKey, error) {
 func RConvertAccessKey(key models.AccessKey) string {
 	return key.String()
 }
-
-/*func ConvertNodeStatusResult(source models.NodeStatus) api.NodeStatus {
-	var response api.NodeStatus
-	switch source {
-	case models.NodeStatusStopped:
-		response = api.NodeStatusStopped
-	case models.NodeStatusRunning:
-		response = api.NodeStatusRunning
-	case models.NodeStatusUnknown:
-		response = api.NodeStatusUnknown
-	default:
-		panic(fmt.Sprintf("unexpected enum element: %v", source))
-	}
-	return response
-}*/
 
 func ConvertUserID(i models.UserID) api.UserID {
 	return api.UserID(i)

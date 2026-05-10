@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 
+	"github.com/XRay-Addons/xrayman/common/http/httperr"
 	"github.com/XRay-Addons/xrayman/common/http/middleware"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/http/httperr"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/httperrdefs"
 	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
 	chimw "github.com/go-chi/chi/v5/middleware"
 	"github.com/ogen-go/ogen/ogenerrors"
@@ -63,28 +64,75 @@ func New(
 	return handler, nil
 }
 
-func (h *Handler) NewError(ctx context.Context, err error) *api.ErrorStatusCode {
-	// use passed HttpErr or default unknown
-	httpErr := httperr.ErrUnknown
-	if errors.As(err, &httpErr) {
-		// all errors pass to this handler, many of them are consequences
-		// of errors processed and logged before, others come here
-		h.logError(ctx, err)
+/*func (h *Handler) NewError(ctx context.Context, err error) *api.ErrorStatusCode {
+	// if err = error + status (this is our error), return status, log error,
+	// elsewise log err and return unknonw
+	if e, s := httperr.ExtractStatus[api.ErrorStatusCode](err); s != nil {
+		h.logError(ctx, e)
+		return s
 	}
+	// ogen security errors
 	if errors.Is(err, ogenerrors.ErrSecurityRequirementIsNotSatisfied) {
-		// non-httperr ogen errors
-		httpErr = httperr.ErrAuthToken
+		h.logError(ctx, err)
+		return httperrdefs.ErrAuthToken
 	}
-
-	statusCodeErr := api.ErrorStatusCode(*httpErr)
-	return &statusCodeErr
+	h.logError(ctx, err)
+	return httperrdefs.ErrUnknown
 }
 
 func (h *Handler) logError(ctx context.Context, err error) {
 	if err == nil {
 		return
 	}
-	h.log.Error("handler request",
+	h.log.Error("handle request",
+		zap.String(middleware.RequestIDLogTag, chimw.GetReqID(ctx)),
+		zap.Error(err),
+	)
+}*/
+
+func (h *Handler) NewError(ctx context.Context, err error) *api.ErrorStatusCode {
+	// if err = error + status, return status, log error,
+	// elsewise analyze errors and map to status codes
+	if e, s := httperr.ExtractStatus[api.ErrorStatusCode](err); s != nil {
+		h.logError(ctx, e)
+		return s
+	}
+	// this is our error, translate it to status
+	s := h.translateError(err)
+	h.logError(ctx, err)
+	return s
+}
+
+func (h *Handler) translateError(err error) *api.ErrorStatusCode {
+	if err == nil {
+		return nil
+	}
+	if errors.Is(err, ogenerrors.ErrSecurityRequirementIsNotSatisfied) {
+		return httperrdefs.ErrAuthToken
+	}
+	if errors.Is(err, errdefs.ErrAccessDenied) {
+		return httperrdefs.ErrAccessDenied
+	}
+	if errors.Is(err, errdefs.ErrTemporaryUnavailable) {
+		return httperrdefs.ErrTemporaryUnavailable
+	}
+	if errors.Is(err, errdefs.ErrConnection) {
+		return httperrdefs.ErrConnection
+	}
+	if errors.Is(err, errdefs.ErrInvaildPayload) {
+		return httperrdefs.ErrInvaildPayload
+	}
+	if errors.Is(err, errdefs.ErrNotFound) {
+		return httperrdefs.ErrNotFound
+	}
+	return httperrdefs.ErrUnknown
+}
+
+func (h *Handler) logError(ctx context.Context, err error) {
+	if err == nil {
+		return
+	}
+	h.log.Error("handle request",
 		zap.String(middleware.RequestIDLogTag, chimw.GetReqID(ctx)),
 		zap.Error(err),
 	)

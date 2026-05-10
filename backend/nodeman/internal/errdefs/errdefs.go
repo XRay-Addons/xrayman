@@ -10,6 +10,8 @@ var (
 	ErrConnection           = xerr.New("connection")
 	ErrTemporaryUnavailable = xerr.New("temporary unavailable")
 	ErrAccessDenied         = xerr.New("access denied")
+	ErrInvaildPayload       = xerr.New("invalid payload")
+	ErrNotFound             = xerr.New("not found")
 )
 
 func NilCall() error {
@@ -22,4 +24,12 @@ func NilArg(name string) error {
 
 func AccessDenied() error {
 	return xerr.WrapWithStack(ErrAccessDenied)
+}
+
+func InvalidPayload(details string) error {
+	return xerr.WrapWith(ErrInvaildPayload, details)
+}
+
+func NotFound(details string) error {
+	return xerr.WrapWith(ErrNotFound, details)
 }
