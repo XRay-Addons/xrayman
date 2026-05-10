@@ -655,8 +655,7 @@ components:
       properties: {}
 
     ClientConfigItem:
-      type: string
-      description: "subscription json object"
+      description: "subscription json object, no type for raw json"
 
     UserSubResponse:
       type: array

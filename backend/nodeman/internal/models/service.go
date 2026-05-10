@@ -1,5 +1,7 @@
 package models
 
+import "github.com/go-faster/jx"
+
 type NewNodeParams struct {
 	Endpoint  string
 	AccessKey AccessKey
@@ -79,7 +81,7 @@ type UserSubParams struct {
 	Name string
 }
 
-type ClientConfigItem = string
+type ClientConfigItem = jx.Raw
 
 type UserSubResult struct {
 	Expiration    int

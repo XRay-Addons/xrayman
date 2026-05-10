@@ -129,7 +129,7 @@ func (s *Service) makeNodeClientConfigs(user models.User,
 		if err = jsonval.ValidateJsonData(nodeConfig); err != nil {
 			return nil, err
 		}
-		nodeConfigs = append(nodeConfigs, nodeConfig.String())
+		nodeConfigs = append(nodeConfigs, nodeConfig)
 	}
 	return nodeConfigs, nil
 }

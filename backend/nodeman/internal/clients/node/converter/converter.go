@@ -20,6 +20,8 @@ type Converter interface {
 
 func ConvertNodeStatus(s api.ServiceStatus) models.NodeStatus {
 	switch s {
+	case api.ServiceStatusUnknown:
+		return models.NodeStatusUnknown
 	case api.ServiceStatusRunning:
 		return models.NodeStatusRunning
 	case api.ServiceStatusStopped:

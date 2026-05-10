@@ -1,6 +1,8 @@
 package models
 
-type ClientConfigTemplateItem = string
+import "github.com/go-faster/jx"
+
+type ClientConfigTemplateItem = jx.Raw
 
 type ClientConfigTemplate struct {
 	Template        []ClientConfigTemplateItem

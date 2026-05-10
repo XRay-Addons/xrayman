@@ -5,19 +5,22 @@ import (
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
+	"github.com/go-faster/jx"
 	"github.com/tidwall/gjson"
 )
 
 func parseClientConfig(in string) ([]models.ClientConfigTemplateItem, error) {
-	arr := gjson.Parse(in)
-	if !arr.IsArray() {
-		return nil, xerr.New("client config must be an array")
+	var out []models.ClientConfigTemplateItem
+	if err := jx.DecodeStr(in).Arr(func(d *jx.Decoder) error {
+		cfgItem, err := d.Raw()
+		if err != nil {
+			return xerr.WrapWithStack(err)
+		}
+		out = append(out, cfgItem)
+		return nil
+	}); err != nil {
+		return nil, err
 	}
-	out := make([]models.ClientConfigTemplateItem, 0, len(arr.Array()))
-	for _, item := range arr.Array() {
-		out = append(out, item.Raw)
-	}
-
 	return out, nil
 }
 
