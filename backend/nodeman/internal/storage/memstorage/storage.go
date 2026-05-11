@@ -19,6 +19,7 @@ type Storage struct {
 	nodes      []models.Node
 	users      []models.User
 	syncStatus [][]models.UserStatus
+	headers    []models.Header
 
 	adminID   int
 	adminPass []byte
