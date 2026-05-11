@@ -352,13 +352,92 @@ paths:
             type: string
       responses:
         "200":
-          $ref: "#/components/responses/UserSubResponse"
+          $ref: "#/components/schemas/UserSubResponse"
         "default":
           description: General Error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+
+  /sub/headers/list:
+    get:
+      summary: Get stored subscription headers
+      operationId: ListSubHeaders
+      responses:
+        "200":
+          description: Stored headers as list of key-value pairs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListSubHeadersResponse"
+        "default":
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      tags:
+        - admpage
+      security:
+        - BearerAuth: []
+
+  /sub/headers/new:
+    post:
+      summary: Create a new subscription header
+      operationId: NewSubHeader
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewSubHeaderRequest"
+      responses:
+        "200":
+          description: Created subscription header
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewSubHeaderResponse"
+        "default":
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      tags:
+        - admpage
+      security:
+        - BearerAuth: []
+
+  /sub/headers/delete:
+    post:
+      summary: Delete subscription header
+      operationId: DeleteSubHeader
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteSubHeaderRequest"
+
+      responses:
+        "200":
+          description: Delete result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteSubHeaderResponse"
+        "default":
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      tags:
+        - admpage
+      security:
+        - BearerAuth: []
 
 components:
   securitySchemes:
@@ -661,6 +740,59 @@ components:
       items:
         $ref: "#/components/schemas/ClientConfigItem"
 
+    HeaderID:
+      type: integer
+
+    Header:
+      type: object
+      properties:
+        ID:
+          $ref: "#/components/schemas/HeaderID"
+        Key:
+          type: string
+        Value:
+          type: string
+      required:
+        - ID
+        - Key
+        - Value
+
+    DeleteSubHeaderRequest:
+      type: object
+      properties:
+        ID:
+          $ref: "#/components/schemas/HeaderID"
+      required:
+        - ID
+
+    DeleteSubHeaderResponse:
+      type: object
+      properties: {}
+
+    NewSubHeaderRequest:
+      type: object
+      properties:
+        Key:
+          type: string
+        Value:
+          type: string
+      required:
+        - Key
+        - Value
+
+    NewSubHeaderResponse:
+      $ref: "#/components/schemas/Header"
+
+    ListSubHeadersResponse:
+      type: object
+      properties:
+        Headers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Header"
+      required:
+        - Headers
+
     Error:
       type: object
       properties:
@@ -672,21 +804,8 @@ components:
       required:
         - Message
 
-  responses:
     UserSubResponse:
-      description: List of subscription. Headers are happ-specific
-      headers:
-        Routing:
-          description: "routing preset"
-          schema:
-            type: string
-          required: false
-        ProfileTitle:
-          description: "profile title"
-          schema:
-            type: string
-          required: false
-
+      description: List of subscription (may include arbitrary headers)
       content:
         application/json:
           schema:

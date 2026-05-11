@@ -17,6 +17,7 @@ import (
 // goverter:extend ConvertAccessKey RConvertAccessKey
 // goverter:extend ConvertUserID RConvertUserID
 // goverter:extend ConvertUserStatusResult
+// goverter:extend ConvertHeaderID RConvertHeaderID
 // goverter:enum:unknown @panic
 //
 //go:generate goverter gen .
@@ -50,12 +51,16 @@ type Converter interface {
 	ConvertDeleteUserRequest(r *api.DeleteUserRequest) (*models.DeleteUserParams, error)
 
 	ConvertUserSubRequest(r *api.UserSubParams) (*models.UserSubParams, error)
-	// goverter:map ClientConfigs Response
-	// goverter:map . Routing | GetSubscriptionRouting
-	// goverter:map . ProfileTitle | GetSubscriptionProfileTitle
-	ConvertUserSubResult(r *models.UserSubResult) (*api.UserSubResponseHeaders, error)
 
-	//ConvertUserSubResultBody(r []models.ClientConfigItem) (api.UserSubContent, error)
+	ConvertUserSubResultBody(r []models.ClientConfigItem) (api.UserSubContent, error)
+
+	ConvertListSubHeadersResult(r *models.ListSubHeadersResult) *api.ListSubHeadersResponse
+
+	ConvertNewSubHeaderRequest(r *api.NewSubHeaderRequest) (*models.NewSubHeaderParams, error)
+
+	ConvertDeleteSubHeaderRequest(r *api.DeleteSubHeaderRequest) (*models.DeleteSubHeaderParams, error)
+
+	ConvertHeader(r *models.Header) *api.Header
 
 	// goverter:map . SubscriptionPath | GetUserSubscription
 	ConvertProfile(r models.UserProfile) api.UserProfile
@@ -114,15 +119,10 @@ func GetUserSubscription(source models.UserProfile) string {
 	return source.SubscriptionURL()
 }
 
-func GetSubscriptionRouting(source *models.UserSubResult) api.OptString {
-	if source.Headers.Routing != nil {
-		return api.NewOptString(*source.Headers.Routing)
-	}
-	return api.OptString{}
+func ConvertHeaderID(i models.HeaderID) api.HeaderID {
+	return api.HeaderID(i)
 }
-func GetSubscriptionProfileTitle(source *models.UserSubResult) api.OptString {
-	if source.Headers.ProfileTitle != nil {
-		return api.NewOptString(*source.Headers.ProfileTitle)
-	}
-	return api.OptString{}
+
+func RConvertHeaderID(i api.HeaderID) models.HeaderID {
+	return models.HeaderID(i)
 }

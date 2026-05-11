@@ -34,6 +34,11 @@ var (
 		"{admin_id}", AdminIdCol,
 		"{password_hash}", PasswordHashCol,
 
+		"{sub_headers}", SubHeadersTable,
+		"{header_id}", HeaderIDCol,
+		"{header_key}", HeaderKeyCol,
+		"{header_val}", HeaderValueCol,
+
 		"{created_at}", CreatedAtCol,
 		"{updated_at}", UpdatedAtCol,
 		"{deleted_at}", DeletedAtCol,

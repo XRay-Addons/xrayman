@@ -11,8 +11,9 @@ type UoWContext interface {
 	GetUserNodes(ctx context.Context, id models.UserID) ([]models.Node, error)
 	GetUser(ctx context.Context, id models.UserID) (*models.User, bool, error)
 
-	GetGlobalHeaders(ctx context.Context) ([]models.Header, error)
-	SetGlobalHeaders(ctx context.Context, h []models.Header) error
+	NewSubHeader(ctx context.Context, header *models.Header) error
+	DeleteSubHeader(ctx context.Context, id models.HeaderID) error
+	ListSubHeaders(ctx context.Context) ([]models.Header, error)
 }
 
 type UoWFn = uow.Fn[UoWContext]

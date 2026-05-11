@@ -90,5 +90,21 @@ type UserSubResult struct {
 	ClientConfigs []ClientConfigItem
 }
 
-type SetGlobalHeadersResult struct {
+type NewSubHeaderParams struct {
+	Key   string
+	Value string
+}
+
+type ListSubHeadersParams struct {
+}
+
+type ListSubHeadersResult struct {
+	Headers []Header
+}
+
+type DeleteSubHeaderParams struct {
+	ID HeaderID
+}
+
+type DeleteSubHeaderResult struct {
 }
