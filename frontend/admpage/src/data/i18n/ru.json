@@ -10,6 +10,9 @@
     },
     "nodes": {
       "title": "Ноды"
+    },
+    "sub-headers": {
+      "title": "Subscription Headers"
     }
   },
 
@@ -52,6 +55,29 @@
     "response": {
       "info": "Node added successfully!",
       "endpoint": "Node endpoint:"
+    },
+    "button": {
+      "text": "+"
+    }
+  },
+
+  "add-sub-header": {
+    "title": "Add new subsription header",
+    "request": {
+      "key": {
+        "info": "Header name",
+        "placeholder": "Header"
+      },
+      "value": {
+        "info": "Header value",
+        "placeholder": "value"
+      }
+    },
+    "submit-btn": {
+      "info": "Add!"
+    },
+    "response": {
+      "info": "Subscription Header added successfully!"
     },
     "button": {
       "text": "+"
@@ -136,6 +162,15 @@
         "target-status": "Target Status",
         "access-key": "Access Key",
         "client-config": "Client Config",
+        "actions": "Actions"
+      }
+    },
+
+    "sub-headers": {
+      "columns": {
+        "id": "ID",
+        "key": "Key",
+        "value": "Value",
         "actions": "Actions"
       }
     }

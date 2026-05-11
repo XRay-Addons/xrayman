@@ -2,18 +2,18 @@
 import Title from "@xrayman/shared/astro/primitives/Title.astro";
 import Card from "@xrayman/shared/astro/primitives/Card.astro";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
-import NodesTable from "@/vue/components/islands/nodes-table/NodesTable.vue";
-import AddNodeDialog from "./AddNodeDialog.astro";
+import SubHeadersTable from "@/vue/components/islands/subheaders-table/SubHeadersTable.vue";
+import AddSubHeaderDialog from "./AddSubHeaderDialog.astro";
 ---
 
 <div class="col-12 col-md-6 col-lg-5 col-xl-4 mb-2">
   <Card class="w-100">
     <Title class="col-6 mb-2">
-      <I18NText data-i18n="cards.nodes.title" />
+      <I18NText data-i18n="cards.sub-headers.title" />
     </Title>
 
-    <NodesTable client:only="vue" />
+    <SubHeadersTable client:only="vue" />
 
-    <AddNodeDialog />
+    <AddSubHeaderDialog />
   </Card>
 </div>

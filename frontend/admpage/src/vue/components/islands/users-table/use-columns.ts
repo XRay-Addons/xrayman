@@ -14,7 +14,7 @@ export function useUsersTableColumns(i18nPrefix: string) {
       {
         key: "id",
         dataIndex: ["Profile", "ID"],
-        width: "4ch",
+        width: "8ch",
       },
       {
         key: "display-name",
