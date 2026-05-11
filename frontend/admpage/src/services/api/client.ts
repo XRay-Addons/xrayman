@@ -13,8 +13,11 @@ import {
   stopNode as _stopNode,
   newNode as _newNode,
   deleteNode as _deleteNode,
+  listSubHeaders as _listSubHeaders,
+  deleteSubHeader as _deleteSubHeader,
+  newSubHeader as _newSubHeader,
 } from "./generated/sdk.gen";
-import type { User, Node, AuthResponse } from "./generated/types.gen";
+import type { User, Node, Header, AuthResponse } from "./generated/types.gen";
 
 setupClient();
 
@@ -91,6 +94,27 @@ export async function newNode(endpoint: string, accessKey: string): Promise<ApiR
 export async function deleteNode(id: number): Promise<ApiResult<void>> {
   return handleAPI(
     () => _deleteNode({ body: { ID: id } }),
+    (data) => {},
+  );
+}
+
+export async function listSubHeaders(): Promise<ApiResult<Array<Header>>> {
+  return handleAPI(
+    () => _listSubHeaders(),
+    (data) => data.Headers,
+  );
+}
+
+export async function newSubHeader(key: string, value: string): Promise<ApiResult<Header>> {
+  return handleAPI(
+    () => _newSubHeader({ body: { Key: key, Value: value } }),
+    (data) => data,
+  );
+}
+
+export async function deleteSubHeader(id: number): Promise<ApiResult<void>> {
+  return handleAPI(
+    () => _deleteSubHeader({ body: { ID: id } }),
     (data) => {},
   );
 }

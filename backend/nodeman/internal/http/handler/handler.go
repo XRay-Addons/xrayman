@@ -6,8 +6,11 @@ import (
 
 	"github.com/XRay-Addons/xrayman/common/http/httperr"
 	"github.com/XRay-Addons/xrayman/common/http/middleware"
+	mw "github.com/XRay-Addons/xrayman/common/http/middleware"
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/httperrdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
 	chimw "github.com/go-chi/chi/v5/middleware"
 	"github.com/ogen-go/ogen/ogenerrors"
@@ -118,4 +121,15 @@ func (h *Handler) logError(ctx context.Context, err error) {
 		zap.String(middleware.RequestIDLogTag, chimw.GetReqID(ctx)),
 		zap.Error(err),
 	)
+}
+
+func (h *Handler) writeHeaders(ctx context.Context, headers models.Headers) error {
+	headersResp := mw.GetHeaders(ctx)
+	if headersResp == nil {
+		return xerr.New("request context doesn't support headers")
+	}
+	for _, h := range headers {
+		headersResp.Set(h.Key, h.Value)
+	}
+	return nil
 }

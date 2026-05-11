@@ -8,93 +8,90 @@ import SuccessMsg from "@xrayman/shared/astro/primitives/SuccessMsg.astro";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 ---
 
-<add-node-page class="row w-100 g-0 justify-content-center">
+<add-sub-header-page class="row w-100 g-0 justify-content-center">
   <Card class="col-6">
     <Title class="col-8">
-      <I18NText data-i18n="add-node.title" />
+      <I18NText data-i18n="add-sub-header.title" />
     </Title>
 
     <Info>
-      <I18NText data-i18n="add-node.request.endpoint.info" />
+      <I18NText data-i18n="add-sub-header.request.key.info" />
     </Info>
 
-    <Input
-      data-part="endpoint-input"
-      data-i18n-placeholder="add-node.request.endpoint.placeholder"
-    />
+    <Input data-part="key-input" data-i18n-placeholder="add-sub-header.request.key.placeholder" />
 
     <Info>
-      <I18NText data-i18n="add-node.request.accesskey.info" />
+      <I18NText data-i18n="add-sub-header.request.value.info" />
     </Info>
 
     <Input
-      data-part="accesskey-input"
-      data-i18n-placeholder="add-node.request.accesskey.placeholder"
+      data-part="value-input"
+      data-i18n-placeholder="add-sub-header.request.value.placeholder"
       class="mb-2"
     />
     <div class="row g-0 justify-content-center">
       <Button data-part="submit-input" class="col-8">
-        <I18NText data-i18n="add-node.submit-btn.info" />
+        <I18NText data-i18n="add-sub-header.submit-btn.info" />
       </Button>
     </div>
 
     <div data-part="success-result" hidden>
       <SuccessMsg class="col-8">
-        <I18NText data-i18n="add-node.response.info" />
+        <I18NText data-i18n="add-sub-header.response.info" />
       </SuccessMsg>
     </div>
   </Card>
 
   <script>
-    import { newNode } from "@/services/api/client";
+    import { newSubHeader } from "@/services/api/client";
     import { notifyApiError } from "@/runtime/notifications/use-notifications";
-    import { reloadNodes } from "@/actions/nodes";
     import type { ResettableElement } from "@xrayman/shared/astro/types/Resettable";
     import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
+    import { reloadSubHeaders } from "@/actions/sub-headers";
 
-    class AddNodePage extends PartedElement implements ResettableElement {
-      private endpointInputEl!: HTMLInputElement;
-      private accesskeyInputEl!: HTMLInputElement;
+    class AddSubHeaderPage extends PartedElement implements ResettableElement {
+      private keyInputEl!: HTMLInputElement;
+      private valueInputEl!: HTMLInputElement;
       private inputSubmitEl!: HTMLButtonElement;
       private successResultEl!: HTMLElement;
 
       connectedCallback() {
-        this.endpointInputEl = this.pt<HTMLInputElement>("endpoint-input");
-        this.accesskeyInputEl = this.pt<HTMLInputElement>("accesskey-input");
+        this.keyInputEl = this.pt<HTMLInputElement>("key-input");
+        this.valueInputEl = this.pt<HTMLInputElement>("value-input");
         this.inputSubmitEl = this.pt<HTMLButtonElement>("submit-input");
         this.successResultEl = this.pt<HTMLElement>("success-result");
 
         this.inputSubmitEl.onclick = async () => {
-          const endpoint = this.endpointInputEl.value;
-          const accesskey = this.accesskeyInputEl.value;
-          if (endpoint.length == 0 || accesskey.length == 0) {
+          const key = this.keyInputEl.value;
+          const value = this.valueInputEl.value;
+          if (key.length == 0 || value.length == 0) {
             return;
           }
 
           // reset and hide
-          this.successResultEl.setAttribute("hidden", "true");
+          this.successResultEl?.setAttribute("hidden", "true");
 
-          const response = await newNode(endpoint, accesskey);
+          const response = await newSubHeader(key, value);
           if (!response.ok) {
-            notifyApiError("new_node", response.reason);
+            notifyApiError("new_sub_header", response.reason);
             return;
           }
-          reloadNodes({ quiet: true });
+          reloadSubHeaders({ quiet: true });
 
           // show back
-          this.successResultEl?.removeAttribute("hidden");
+          this.successResultEl.removeAttribute("hidden");
         };
       }
 
       disconnectedCallback() {}
 
       reset() {
-        this.endpointInputEl.value = "";
-        this.accesskeyInputEl.value = "";
+        this.keyInputEl.value = "";
+        this.valueInputEl.value = "";
         this.successResultEl.hidden = true;
       }
     }
 
-    customElements.define("add-node-page", AddNodePage);
+    customElements.define("add-sub-header-page", AddSubHeaderPage);
   </script>
-</add-node-page>
+</add-sub-header-page>

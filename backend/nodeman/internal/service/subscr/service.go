@@ -71,9 +71,77 @@ func (s *Service) GetUserSub(ctx context.Context,
 		return nil, false, err
 	}
 
+	// get subscription headers
+	var headers models.Headers
+	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
+		headers, err = uowctx.ListSubHeaders(ctx)
+		return
+	}); err != nil {
+		return nil, false, err
+	}
+
 	return &models.UserSubResult{
+		Headers:       headers,
 		ClientConfigs: clientCfgs,
 	}, true, nil
+}
+
+// NewHeader implements handler.SubscrService.
+func (s *Service) NewHeader(ctx context.Context,
+	p models.NewSubHeaderParams,
+) (*models.Header, error) {
+	if s == nil || s.storage == nil {
+		return nil, errdefs.NilCall()
+	}
+
+	var header models.Header
+	header.Key = p.Key
+	header.Value = p.Value
+	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
+		err = uowctx.NewSubHeader(ctx, &header)
+		return
+	}); err != nil {
+		return nil, err
+	}
+
+	return &header, nil
+}
+
+func (s *Service) ListHeaders(ctx context.Context,
+	p models.ListSubHeadersParams,
+) (*models.ListSubHeadersResult, error) {
+	if s == nil || s.storage == nil {
+		return nil, errdefs.NilCall()
+	}
+
+	var headers []models.Header
+	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
+		headers, err = uowctx.ListSubHeaders(ctx)
+		return
+	}); err != nil {
+		return nil, err
+	}
+
+	return &models.ListSubHeadersResult{
+		Headers: headers,
+	}, nil
+}
+
+func (s *Service) DeleteHeader(ctx context.Context,
+	p models.DeleteSubHeaderParams,
+) (*models.DeleteSubHeaderResult, error) {
+	if s == nil || s.storage == nil {
+		return nil, errdefs.NilCall()
+	}
+
+	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
+		err = uowctx.DeleteSubHeader(ctx, p.ID)
+		return
+	}); err != nil {
+		return nil, err
+	}
+
+	return &models.DeleteSubHeaderResult{}, nil
 }
 
 func (s *Service) findUser(ctx context.Context, p models.UserSubParams) (*models.User, bool, error) {

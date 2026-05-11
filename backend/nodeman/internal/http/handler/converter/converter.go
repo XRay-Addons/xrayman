@@ -17,6 +17,7 @@ import (
 // goverter:extend ConvertAccessKey RConvertAccessKey
 // goverter:extend ConvertUserID RConvertUserID
 // goverter:extend ConvertUserStatusResult
+// goverter:extend ConvertHeaderID RConvertHeaderID
 // goverter:enum:unknown @panic
 //
 //go:generate goverter gen .
@@ -50,8 +51,16 @@ type Converter interface {
 	ConvertDeleteUserRequest(r *api.DeleteUserRequest) (*models.DeleteUserParams, error)
 
 	ConvertUserSubRequest(r *api.UserSubParams) (*models.UserSubParams, error)
-	// goverter:map ClientConfigs Response
-	ConvertUserSubResult(r *models.UserSubResult) (*api.UserSubResponseHeaders, error)
+
+	ConvertUserSubResultBody(r []models.ClientConfigItem) (api.UserSubContent, error)
+
+	ConvertListSubHeadersResult(r *models.ListSubHeadersResult) *api.ListSubHeadersResponse
+
+	ConvertNewSubHeaderRequest(r *api.NewSubHeaderRequest) (*models.NewSubHeaderParams, error)
+
+	ConvertDeleteSubHeaderRequest(r *api.DeleteSubHeaderRequest) (*models.DeleteSubHeaderParams, error)
+
+	ConvertHeader(r *models.Header) *api.Header
 
 	// goverter:map . SubscriptionPath | GetUserSubscription
 	ConvertProfile(r models.UserProfile) api.UserProfile
@@ -108,4 +117,12 @@ func ConvertUserStatusResult(source models.UserStatus) api.UserStatus {
 
 func GetUserSubscription(source models.UserProfile) string {
 	return source.SubscriptionURL()
+}
+
+func ConvertHeaderID(i models.HeaderID) api.HeaderID {
+	return api.HeaderID(i)
+}
+
+func RConvertHeaderID(i api.HeaderID) models.HeaderID {
+	return models.HeaderID(i)
 }

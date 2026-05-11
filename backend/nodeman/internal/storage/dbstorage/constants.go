@@ -37,3 +37,11 @@ const (
 	UpdatedAtCol = "updated_at"
 	DeletedAtCol = "deleted_at"
 )
+
+const (
+	SubHeadersTable = "sub_headers"
+
+	HeaderIDCol    = "header_id"
+	HeaderKeyCol   = "header_key"
+	HeaderValueCol = "header_value"
+)
