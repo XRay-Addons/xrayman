@@ -13,3 +13,11 @@ func (s *Storage) GetGlobalHeaders(ctx context.Context) ([]models.Header, error)
 	}
 	return headers, nil
 }
+
+func (s *Storage) SetGlobalHeaders(ctx context.Context, headers []models.Header) error {
+	/*headers := []models.Header{
+		models.Header{Key: "key1", Value: "value1"},
+		models.Header{Key: "key2", Value: "value2"},
+	}*/
+	return nil
+}

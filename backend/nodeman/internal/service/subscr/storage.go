@@ -12,6 +12,7 @@ type UoWContext interface {
 	GetUser(ctx context.Context, id models.UserID) (*models.User, bool, error)
 
 	GetGlobalHeaders(ctx context.Context) ([]models.Header, error)
+	SetGlobalHeaders(ctx context.Context, h []models.Header) error
 }
 
 type UoWFn = uow.Fn[UoWContext]

@@ -89,3 +89,6 @@ type UserSubResult struct {
 	Headers       Headers
 	ClientConfigs []ClientConfigItem
 }
+
+type SetGlobalHeadersResult struct {
+}

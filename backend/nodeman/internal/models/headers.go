@@ -6,5 +6,6 @@ type Header struct {
 }
 
 type Headers struct {
-	Routing *string
+	Routing      *string
+	ProfileTitle *string
 }

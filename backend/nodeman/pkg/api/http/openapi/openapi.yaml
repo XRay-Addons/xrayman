@@ -674,10 +674,15 @@ components:
 
   responses:
     UserSubResponse:
-      description: List of subscription
+      description: List of subscription. Headers are happ-specific
       headers:
         Routing:
-          description: "routing preset for HAPP"
+          description: "routing preset"
+          schema:
+            type: string
+          required: false
+        ProfileTitle:
+          description: "profile title"
           schema:
             type: string
           required: false
