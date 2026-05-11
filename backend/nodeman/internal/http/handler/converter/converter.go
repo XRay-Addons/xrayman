@@ -51,7 +51,10 @@ type Converter interface {
 
 	ConvertUserSubRequest(r *api.UserSubParams) (*models.UserSubParams, error)
 	// goverter:map ClientConfigs Response
+	// goverter:map . Routing | GetSubscriptionRouting
 	ConvertUserSubResult(r *models.UserSubResult) (*api.UserSubResponseHeaders, error)
+
+	//ConvertUserSubResultBody(r []models.ClientConfigItem) (api.UserSubContent, error)
 
 	// goverter:map . SubscriptionPath | GetUserSubscription
 	ConvertProfile(r models.UserProfile) api.UserProfile
@@ -108,4 +111,11 @@ func ConvertUserStatusResult(source models.UserStatus) api.UserStatus {
 
 func GetUserSubscription(source models.UserProfile) string {
 	return source.SubscriptionURL()
+}
+
+func GetSubscriptionRouting(source *models.UserSubResult) api.OptString {
+	if source.Headers.Routing != nil {
+		return api.NewOptString(*source.Headers.Routing)
+	}
+	return api.OptString{}
 }

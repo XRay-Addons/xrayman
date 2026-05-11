@@ -656,7 +656,7 @@ components:
     ClientConfigItem:
       description: "subscription json object, no type for raw json"
 
-    UserSubResponse:
+    UserSubContent:
       type: array
       items:
         $ref: "#/components/schemas/ClientConfigItem"
@@ -672,20 +672,17 @@ components:
       required:
         - Message
 
-  headers:
-    Expiration:
-      description: "Subscription lifetime, hours"
-      schema:
-        type: integer
-      required: true
-
   responses:
     UserSubResponse:
       description: List of subscription
       headers:
-        Expiration:
-          $ref: "#/components/headers/Expiration"
+        Routing:
+          description: "routing preset for HAPP"
+          schema:
+            type: string
+          required: false
+
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/UserSubResponse"
+            $ref: "#/components/schemas/UserSubContent"
