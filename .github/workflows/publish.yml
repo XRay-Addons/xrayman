@@ -46,6 +46,9 @@ jobs:
           cache: "pnpm"
           cache-dependency-path: frontend/pnpm-lock.yaml
 
+      - name: Clean build artifacts
+        run: make clean
+
       - name: Build Project
         run: make build
         env:
