@@ -66,13 +66,13 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 
         this.inputSubmitEl.onclick = async () => {
           const endpoint = this.endpointInputEl.value;
-          const accesskey = this.accesskeyInputEl?.value;
+          const accesskey = this.accesskeyInputEl.value;
           if (endpoint.length == 0 || accesskey.length == 0) {
             return;
           }
 
           // reset and hide
-          this.successResultEl?.setAttribute("hidden", "true");
+          this.successResultEl.setAttribute("hidden", "true");
 
           const response = await newNode(endpoint, accesskey);
           if (!response.ok) {

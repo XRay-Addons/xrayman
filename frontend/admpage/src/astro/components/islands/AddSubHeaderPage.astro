@@ -18,17 +18,14 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
       <I18NText data-i18n="add-sub-header.request.key.info" />
     </Info>
 
-    <Input
-      data-part="endpoint-input"
-      data-i18n-placeholder="add-sub-header.request.key.placeholder"
-    />
+    <Input data-part="key-input" data-i18n-placeholder="add-sub-header.request.key.placeholder" />
 
     <Info>
       <I18NText data-i18n="add-sub-header.request.value.info" />
     </Info>
 
     <Input
-      data-part="accesskey-input"
+      data-part="value-input"
       data-i18n-placeholder="add-sub-header.request.value.placeholder"
       class="mb-2"
     />
@@ -48,9 +45,9 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
   <script>
     import { newSubHeader } from "@/services/api/client";
     import { notifyApiError } from "@/runtime/notifications/use-notifications";
-    import { reloadNodes } from "@/actions/nodes";
     import type { ResettableElement } from "@xrayman/shared/astro/types/Resettable";
     import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
+    import { reloadSubHeaders } from "@/actions/sub-headers";
 
     class AddSubHeaderPage extends PartedElement implements ResettableElement {
       private keyInputEl!: HTMLInputElement;
@@ -66,7 +63,7 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 
         this.inputSubmitEl.onclick = async () => {
           const key = this.keyInputEl.value;
-          const value = this.valueInputEl?.value;
+          const value = this.valueInputEl.value;
           if (key.length == 0 || value.length == 0) {
             return;
           }
@@ -79,10 +76,10 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
             notifyApiError("new_sub_header", response.reason);
             return;
           }
-          reloadNodes({ quiet: true });
+          reloadSubHeaders({ quiet: true });
 
           // show back
-          this.successResultEl?.removeAttribute("hidden");
+          this.successResultEl.removeAttribute("hidden");
         };
       }
 

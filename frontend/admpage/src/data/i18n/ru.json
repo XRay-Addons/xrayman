@@ -172,6 +172,11 @@
         "key": "Key",
         "value": "Value",
         "actions": "Actions"
+      },
+      "actions": {
+        "delete": {
+          "button": "Delete"
+        }
       }
     }
   },

@@ -22,7 +22,7 @@ import { type VNode } from "vue";
 export function renderActions(header: Header) {
   const actions: VNode[] = [];
 
-  actions.push(ensureDeleteBtn("table.headers.actions", deleteHeaderAction(header)));
+  actions.push(ensureDeleteBtn("table.sub-headers.actions", deleteHeaderAction(header)));
 
   return mergeActionBtns(actions);
 }

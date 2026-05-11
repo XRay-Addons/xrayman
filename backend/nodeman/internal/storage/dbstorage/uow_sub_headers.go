@@ -11,7 +11,7 @@ func (uow *uowctx) NewSubHeader(ctx context.Context, header *models.Header) erro
 	query := queryReplacer.Replace(`
 		INSERT INTO {sub_headers} (
 			{header_key},
-			{header_val},
+			{header_val}
 		) VALUES ($1, $2)
 		RETURNING {header_id}
 	`)
@@ -49,7 +49,7 @@ func (uow *uowctx) ListSubHeaders(ctx context.Context) ([]models.Header, error) 
 		SELECT
 			{header_id},
 			{header_key},
-			{header_val},
+			{header_val}
 		FROM {sub_headers}
 		WHERE {deleted_at} IS NULL
 		ORDER BY {header_id} ASC
