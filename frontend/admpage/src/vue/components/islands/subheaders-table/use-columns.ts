@@ -11,11 +11,6 @@ export function useSubHeadersTableColumns(i18nPrefix: string) {
   return computed(() => {
     const columns: ExtendedColumn<Header>[] = [
       {
-        key: "id",
-        dataIndex: ["ID"],
-        fixed: "left",
-      },
-      {
         key: "key",
         dataIndex: ["Key"],
         fixed: "left",

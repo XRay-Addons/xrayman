@@ -1,5 +1,5 @@
 import { type Header } from "@/services/api/generated";
-import { MakeApiUrl } from "@/runtime/utils/paths";
+import { MakeApiUrl, MakeUserpageURL } from "@/runtime/utils/paths";
 
 import {
   enabledTag,

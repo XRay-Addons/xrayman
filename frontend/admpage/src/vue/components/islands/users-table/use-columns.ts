@@ -5,7 +5,8 @@ import {
   makeConfigLine,
   i18nateColumns,
 } from "@/vue/components/primitives/table-ext/render-primitives";
-import { renderTag, renderActions, renderApiUrl } from "./rendering";
+import { renderTag, renderActions, renderUserPageURL, renderApiUrl } from "./rendering";
+import { MakeUserpageURL } from "@/runtime/utils/paths";
 
 export function useUsersTableColumns(i18nPrefix: string) {
   return computed(() => {
@@ -29,20 +30,23 @@ export function useUsersTableColumns(i18nPrefix: string) {
       {
         key: "id",
         dataIndex: ["Profile", "ID"],
-        width: "8ch",
         extended: true,
       },
       {
         key: "vless-uuid",
         dataIndex: ["Profile", "VlessUUID"],
-        width: "8ch",
         customRender: ({ text }) => makeConfigLine(text),
+        extended: true,
+      },
+      {
+        key: "userpage",
+        dataIndex: ["Profile"],
+        customRender: ({ text }) => renderUserPageURL(text),
         extended: true,
       },
       {
         key: "subscription",
         dataIndex: ["Profile", "SubscriptionPath"],
-        width: "16ch",
         customRender: ({ text }) => renderApiUrl(text),
         extended: true,
       },

@@ -4,7 +4,7 @@
     :loading="nodesLoading"
     :columns="nodesColumns"
     :row-key="rowKey"
-    :pagination="false"
+    :pagination="{ hideOnSinglePage: true }"
     v-bind="$attrs"
   />
 </template>

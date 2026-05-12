@@ -132,6 +132,7 @@
         "name": "ИМЯ",
         "vless-uuid": "VLESS UUID",
         "subscription": "Subscription",
+        "userpage": "User Page",
         "actions": "Actions"
       }
     },

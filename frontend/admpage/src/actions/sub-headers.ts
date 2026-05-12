@@ -21,7 +21,7 @@ export async function reloadSubHeaders({
     if (result.ok) {
       subHeaders.value = result.data;
     } else {
-      notifyApiError("get_users", result.reason);
+      notifyApiError("get_sub_headers", result.reason);
     }
   } finally {
     subHeadersLoading.value = false;

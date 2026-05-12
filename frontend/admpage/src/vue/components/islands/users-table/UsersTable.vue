@@ -4,6 +4,7 @@
     :loading="usersLoading"
     :columns="usersColumns"
     :row-key="rowKey"
+    :pagination="{ hideOnSinglePage: true }"
     v-bind="$attrs"
   />
 </template>
