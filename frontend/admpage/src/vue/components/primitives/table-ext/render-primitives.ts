@@ -61,7 +61,18 @@ export function unknownTag(i18n: string): VNode {
 }
 
 function makeTag(color: string, i18n: string, icon: any): VNode {
-  return h(Tag, { color }, () => t(i18n));
+  return h(
+    Tag,
+    {
+      color,
+      style: {
+        width: "100%",
+        display: "block",
+        textAlign: "center",
+      },
+    },
+    () => t(i18n),
+  );
 }
 export type BtnAction = () => void | Promise<void>;
 
