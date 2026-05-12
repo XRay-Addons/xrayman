@@ -10,7 +10,6 @@ import (
 	mw "github.com/XRay-Addons/xrayman/common/http/middleware"
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/cors"
 	"go.uber.org/zap"
 )
 
@@ -81,15 +80,6 @@ func New(options ...Option) (http.Handler, error) {
 	r.Use(chimw.Timeout(ro.requestTimeout))
 	r.Use(chimw.Recoverer)
 	r.Use(chimw.NewCompressor(ro.compressionLvl).Handler)
-
-	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"*"}, // или конкретные домены
-		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-		ExposedHeaders:   []string{"Link"},
-		AllowCredentials: true,
-		MaxAge:           300, // кэш preflight (в секундах)
-	}))
 
 	// add handler after middlewares
 	for _, h := range ro.handlers {
