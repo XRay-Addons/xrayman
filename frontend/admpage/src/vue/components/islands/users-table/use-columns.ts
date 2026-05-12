@@ -12,21 +12,15 @@ export function useUsersTableColumns(i18nPrefix: string) {
   return computed(() => {
     const columns: ExtendedColumn<User>[] = [
       {
-        key: "id",
-        dataIndex: ["Profile", "ID"],
-        width: "8ch",
-      },
-      {
         key: "display-name",
         dataIndex: ["Profile", "DisplayName"],
-        ellipsis: true,
-        width: "16ch",
+        width: "75%",
       },
       {
         key: "target-status",
         dataIndex: ["TargetStatus"],
         customRender: ({ value }) => renderTag(value),
-        width: "8ch",
+        width: "25%",
       },
       {
         key: "name",
@@ -34,9 +28,14 @@ export function useUsersTableColumns(i18nPrefix: string) {
         extended: true,
       },
       {
+        key: "id",
+        dataIndex: ["Profile", "ID"],
+        width: "8ch",
+        extended: true,
+      },
+      {
         key: "vless-uuid",
         dataIndex: ["Profile", "VlessUUID"],
-        ellipsis: true,
         width: "8ch",
         customRender: ({ text }) => makeCopyable(makeMonospace(text), text),
         extended: true,
@@ -44,7 +43,6 @@ export function useUsersTableColumns(i18nPrefix: string) {
       {
         key: "subscription",
         dataIndex: ["Profile", "SubscriptionPath"],
-        ellipsis: true,
         width: "16ch",
         customRender: ({ text }) => renderApiUrl(text),
         extended: true,

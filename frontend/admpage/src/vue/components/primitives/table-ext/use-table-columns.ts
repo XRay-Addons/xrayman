@@ -1,5 +1,5 @@
 import { computed } from "vue";
-import { type ExtendedColumn, type Props } from "./table-types.ts";
+import { type ExtendedColumn, type Props } from "./table-types";
 
 export function useTableColumns<T>(columns: ExtendedColumn<T>[]) {
   const mainCols = computed(() => columns.filter((c) => !c.extended));
