@@ -19,7 +19,7 @@ func parseClientConfig(in string) ([]models.ClientConfigTemplateItem, error) {
 		out = append(out, cfgItem)
 		return nil
 	}); err != nil {
-		return nil, err
+		return nil, xerr.WrapWithStack(err)
 	}
 	return out, nil
 }

@@ -66,10 +66,7 @@ func (s *Service) GetUserSub(ctx context.Context,
 	}
 
 	// get subscription content
-	clientCfgs, err := s.makeClientConfigs(*user, userNodes)
-	if err != nil {
-		return nil, false, err
-	}
+	clientCfgs := s.makeClientConfigs(*user, userNodes)
 
 	// get subscription headers
 	var headers models.Headers
@@ -165,7 +162,7 @@ func (s *Service) findUser(ctx context.Context, p models.UserSubParams) (*models
 
 func (s *Service) makeClientConfigs(user models.User,
 	userNodes []models.Node,
-) ([]models.ClientConfigItem, error) {
+) []models.ClientConfigItem {
 	var clientCfgs []models.ClientConfigItem
 	for _, node := range userNodes {
 		nodeClientConfigs, err := s.makeNodeClientConfigs(
@@ -178,7 +175,7 @@ func (s *Service) makeClientConfigs(user models.User,
 		clientCfgs = append(clientCfgs, nodeClientConfigs...)
 	}
 
-	return clientCfgs, nil
+	return clientCfgs
 }
 
 func (s *Service) makeNodeClientConfigs(user models.User,

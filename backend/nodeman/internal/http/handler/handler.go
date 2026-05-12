@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/XRay-Addons/xrayman/common/http/httperr"
-	"github.com/XRay-Addons/xrayman/common/http/middleware"
 	mw "github.com/XRay-Addons/xrayman/common/http/middleware"
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
@@ -118,7 +117,7 @@ func (h *Handler) logError(ctx context.Context, err error) {
 		return
 	}
 	h.log.Error("handle request",
-		zap.String(middleware.RequestIDLogTag, chimw.GetReqID(ctx)),
+		zap.String(mw.RequestIDLogTag, chimw.GetReqID(ctx)),
 		zap.Error(err),
 	)
 }

@@ -76,7 +76,7 @@ func (uow *uowctx) GetNode(ctx context.Context, id models.NodeID) (*models.Node,
 	return &n, true, nil
 }
 
-func (uow *uowctx) ListNodes(ctx context.Context) ([]models.Node, error) {
+func (uow *uowctx) ListNodes(ctx context.Context) (nodes []models.Node, err error) {
 	query := queryReplacer.Replace(`
 		SELECT
 			{node_id},
@@ -94,9 +94,10 @@ func (uow *uowctx) ListNodes(ctx context.Context) ([]models.Node, error) {
 	if err != nil {
 		return nil, xerr.WrapWithStack(err)
 	}
-	defer rows.Close()
+	defer func() {
+		err = xerr.Join(err, xerr.WrapWithStack(rows.Close()))
+	}()
 
-	var nodes []models.Node
 	for rows.Next() {
 		var n models.Node
 		var clientConfigTemplate ClientConfigTemplate

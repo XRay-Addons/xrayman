@@ -4,6 +4,8 @@
     :loading="subHeadersLoading"
     :columns="subHeadersColumns"
     :row-key="rowKey"
+    :scroll="{ x: 'max-content' }"
+    :pagination="{ hideOnSinglePage: true }"
     v-bind="$attrs"
   />
 </template>

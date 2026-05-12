@@ -7,6 +7,7 @@ import (
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/spa"
 	"github.com/go-chi/chi/v5"
+	"go.uber.org/zap"
 )
 
 type Page struct {
@@ -24,6 +25,6 @@ func new(contentFS fs.FS, contentDir string, config any) (*Page, error) {
 	return &Page{content: content, config: config}, nil
 }
 
-func (p *Page) Mount(r chi.Router, prefix string) error {
-	return spa.Mount(r, prefix, p.content, p.config)
+func (p *Page) Mount(r chi.Router, prefix string, log *zap.Logger) error {
+	return spa.Mount(r, prefix, p.content, p.config, log)
 }

@@ -20,7 +20,6 @@ var _ handler.UsersService = (*Service)(nil)
 func New(poolSyncer poolsync.Syncer,
 	storage Storage,
 ) (*Service, error) {
-
 	if poolSyncer == nil {
 		return nil, errdefs.NilArg("poolSyncer")
 	}

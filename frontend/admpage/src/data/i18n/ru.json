@@ -132,6 +132,7 @@
         "name": "ИМЯ",
         "vless-uuid": "VLESS UUID",
         "subscription": "Subscription",
+        "userpage": "User Page",
         "actions": "Actions"
       }
     },
@@ -175,7 +176,13 @@
       },
       "actions": {
         "delete": {
-          "button": "Delete"
+          "button": "Delete",
+          "confirm": {
+            "header": "Delete subscription header?",
+            "body": "Are you wure?",
+            "ok": "Da",
+            "cancel": "Net"
+          }
         }
       }
     }

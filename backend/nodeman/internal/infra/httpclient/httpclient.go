@@ -97,9 +97,16 @@ func (cf *ClientFactory) GetNodeClient(certHash CertHash) (*http.Client, error) 
 }
 
 func (cf *ClientFactory) newHttpClient(certHash CertHash) *http.Client {
+	verifyFn := verifyPeerFn(certHash)
 	tlsConfig := &tls.Config{
-		InsecureSkipVerify:    true, // #nosec custom verification userd
-		VerifyPeerCertificate: verifyPeerFn(certHash),
+		InsecureSkipVerify: true, // #nosec custom verification used
+		VerifyConnection: func(cs tls.ConnectionState) error {
+			rawCerts := make([][]byte, len(cs.PeerCertificates))
+			for i, cert := range cs.PeerCertificates {
+				rawCerts[i] = cert.Raw
+			}
+			return verifyFn(rawCerts)
+		},
 	}
 
 	transport := &http.Transport{
@@ -117,8 +124,8 @@ func (cf *ClientFactory) newHttpClient(certHash CertHash) *http.Client {
 	}
 }
 
-func verifyPeerFn(certHash CertHash) func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
-	return func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
+func verifyPeerFn(certHash CertHash) func(rawCerts [][]byte) error {
+	return func(rawCerts [][]byte) error {
 		if len(rawCerts) == 0 {
 			return xerr.New("no certificate provided")
 		}

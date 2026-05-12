@@ -32,23 +32,23 @@ import (
 // NilCall for nil object call
 // NilArg(name string) for nil arg passed
 
-type baseError struct {
+type xerror struct {
 	err   error
 	with  []string
 	stack []string
 }
 
-var _ error = (*baseError)(nil)
-var _ errors.Wrapper = (*baseError)(nil)
+var _ error = (*xerror)(nil)
+var _ errors.Wrapper = (*xerror)(nil)
 
-func (b *baseError) Error() string {
+func (b *xerror) Error() string {
 	if b == nil || b.err == nil {
 		return ""
 	}
 	return b.err.Error()
 }
 
-func (b *baseError) Format(f fmt.State, verb rune) {
+func (b *xerror) Format(f fmt.State, verb rune) {
 	if b == nil || b.err == nil {
 		return
 	}
@@ -60,7 +60,7 @@ func (b *baseError) Format(f fmt.State, verb rune) {
 	}
 }
 
-func (b *baseError) details() string {
+func (b *xerror) details() string {
 	text := ""
 	if len(b.stack) > 0 {
 		text = fmt.Sprintf("-> %s:\n\t%s", strings.Join(b.stack, "\n-> "), text)
@@ -71,7 +71,7 @@ func (b *baseError) details() string {
 	return text
 }
 
-func (b *baseError) Unwrap() error {
+func (b *xerror) Unwrap() error {
 	if b == nil {
 		return nil
 	}

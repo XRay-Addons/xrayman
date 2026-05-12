@@ -21,7 +21,6 @@ type Storage struct {
 	syncStatus [][]models.UserStatus
 	headers    []models.Header
 
-	adminID   int
 	adminPass []byte
 }
 

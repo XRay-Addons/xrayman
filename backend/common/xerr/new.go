@@ -6,11 +6,11 @@ import (
 	"github.com/go-faster/errors"
 )
 
-type Option = func(e *baseError)
+type Option = func(e *xerror)
 
 func New(text string, opts ...Option) error {
 	const wrappingTraceDepth = 2
-	err := &baseError{
+	err := &xerror{
 		err:   errors.New(text),
 		stack: getTrace(wrappingTraceDepth),
 	}
@@ -22,7 +22,7 @@ func New(text string, opts ...Option) error {
 
 func Newf(format string, a ...any) error {
 	const wrappingTraceDepth = 2
-	err := &baseError{
+	err := &xerror{
 		err:   errors.New(fmt.Sprintf(format, a...)),
 		stack: getTrace(wrappingTraceDepth),
 	}

@@ -25,29 +25,32 @@ export function i18nateColumns<T>(
   });
 }
 
-export function makeMonospace(text: string): VNode {
-  return h(
-    TypographyText,
-    {
-      style: { fontFamily: "monospace" },
-    },
-    () => text,
-  );
+export function makeConfigLine(text: string, copyable: boolean = false): VNode {
+  const textItem = h(TypographyText, { style: { fontFamily: "monospace" } }, () => text);
+  if (!copyable) {
+    return textItem;
+  }
+
+  const copyItem = h(TypographyText, {
+    copyable: { text, tooltip: false },
+  });
+  return h(Space, { size: "small" }, () => [copyItem, textItem]);
 }
 
-export function makeCopyable(node: VNode, textToCopy: string): VNode {
+export function makeConfigText(text: string): VNode {
   return h(
-    TypographyText,
+    "pre",
     {
-      copyable: {
-        text: textToCopy,
-        tooltip: false,
+      style: {
+        maxHeight: "40ch",
+        overflowY: "auto",
+        fontFamily: "monospace",
+        margin: 0,
       },
     },
-    () => node,
+    text,
   );
 }
-
 export function enabledTag(i18n: string): VNode {
   return makeTag("success", i18n, CheckCircleOutlined);
 }
@@ -61,7 +64,18 @@ export function unknownTag(i18n: string): VNode {
 }
 
 function makeTag(color: string, i18n: string, icon: any): VNode {
-  return h(Tag, { color }, () => t(i18n));
+  return h(
+    Tag,
+    {
+      color,
+      style: {
+        width: "100%",
+        display: "block",
+        textAlign: "center",
+      },
+    },
+    () => t(i18n),
+  );
 }
 export type BtnAction = () => void | Promise<void>;
 

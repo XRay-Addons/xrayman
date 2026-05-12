@@ -18,10 +18,5 @@ func NewHandler(h genapi.Handler, s genapi.SecurityHandler) (http.Handler, error
 		return nil, xerr.WrapWithStack(err)
 	}
 
-	// ??? WTF TODO
-	// logged := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	//	apiHandler.ServeHTTP(w, r)
-	//})
-
 	return apiHandler, nil
 }

@@ -105,8 +105,6 @@ func (s *Service) EditUsers(ctx context.Context,
 	for _, u := range params.Add {
 		fmt.Println("vless uuid: ", u.VlessUUID)
 	}
-	// don't check status, xrayService.Status is too slow on osx
-	// TODO: add linux support, use it, check status before grpc api call
 	if err := s.xrayAPI.EditUsers(ctx, params.Add, params.Remove); err != nil {
 		return nil, err
 	}

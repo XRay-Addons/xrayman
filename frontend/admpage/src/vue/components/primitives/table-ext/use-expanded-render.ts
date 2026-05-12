@@ -13,6 +13,10 @@ export function useExpandedRowRender<T>(
   extendedColumns: ExtendedColumn<T>[],
   keyColumnWidth: string,
 ) {
+  if (extendedColumns.length == 0) {
+    return null;
+  }
+
   function extendedDataSource(record: T): ExtendedRow<T>[] {
     const r = extendedColumns.map((_, index) => ({
       originalRecord: record,
@@ -21,17 +25,20 @@ export function useExpandedRowRender<T>(
     return r;
   }
 
+  // ellipsis required to make cells scrollable (wtf framework)
   const extendedTableColumns = [
     {
       // show only header and hide the body
       key: "key",
       width: keyColumnWidth,
       customRender: keyCellRender(extendedColumns),
+      ellipsis: true,
     },
     {
       // show only cell and hide the header
       key: "value",
       customRender: valCellRender(extendedColumns),
+      ellipsis: true,
     },
   ];
 
@@ -46,8 +53,8 @@ export function useExpandedRowRender<T>(
         h(Table, {
           dataSource: extendedDataSource(ctx.record),
           columns: extendedTableColumns,
-
           class: "table-ext-expand-table",
+          scroll: { x: "100%" },
           showHeader: false,
           bordered: false,
           pagination: false,
@@ -83,7 +90,7 @@ function keyCellRender<T>(columns: ExtendedColumn<T>[]) {
       columns: [keyHeader],
       dataSource: [],
 
-      class: "table-ext-key-cell no-body-table",
+      class: "table-ext-key-cell",
       style: { "margin-inline": "0" },
       size: "small",
       showHeader: true,
@@ -103,6 +110,7 @@ function valCellRender<T>(columns: ExtendedColumn<T>[]) {
 
       class: "table-ext-value-cell",
       style: { "margin-inline": "0" },
+      scroll: { x: "max-content" },
       size: "small",
       pagination: false,
       showHeader: false,
@@ -112,3 +120,16 @@ function valCellRender<T>(columns: ExtendedColumn<T>[]) {
     });
   };
 }
+
+/*
+          dataSource: extendedDataSource(ctx.record),
+          columns: extendedTableColumns,
+
+          class: "table-ext-expand-table",
+          showHeader: false,
+          bordered: false,
+          pagination: false,
+          showExpandColumn: false,
+          indentSize: 0,
+        }),
+*/

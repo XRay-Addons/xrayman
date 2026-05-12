@@ -1,25 +1,50 @@
 package xerr
 
 import (
-	"errors"
 	"fmt"
+	"strings"
 )
 
+type multierr interface {
+	Error() string
+	Unwrap() []error
+}
+
 type joined struct {
-	err error
+	errs []error
 }
 
 var _ error = (*joined)(nil)
 
-func (j *joined) Error() string {
-	return j.err.Error()
+func Join(errs ...error) error {
+	j := joined{
+		errs: make([]error, 0, len(errs)),
+	}
+	for _, e := range errs {
+		if e != nil {
+			j.errs = append(j.errs, e)
+		}
+	}
+	if len(j.errs) == 0 {
+		return nil
+	}
+
+	return &j
 }
 
-func Join(errs ...error) error {
-	if je := errors.Join(errs...); je != nil {
-		return &joined{err: je}
+func (j *joined) Error() string {
+	var b strings.Builder
+	for i, e := range j.errs {
+		if i > 0 {
+			b.WriteString("; ")
+		}
+		b.WriteString(e.Error())
 	}
-	return nil
+	return b.String()
+}
+
+func (j *joined) Unwrap() []error {
+	return j.errs
 }
 
 func (j *joined) Format(f fmt.State, verb rune) {
@@ -28,15 +53,7 @@ func (j *joined) Format(f fmt.State, verb rune) {
 	}
 
 	ffallback := "%" + string(verb)
-
-	u, ok := j.err.(interface{ Unwrap() []error })
-	if !ok {
-		// nested error is not unwrappable, so ok
-		formatErrQuant(j.err, f, verb, ffallback)
-		return
-	}
-
-	for _, e := range u.Unwrap() {
+	for _, e := range j.errs {
 		// format nested components
 		formatErrQuant(e, f, verb, ffallback)
 	}

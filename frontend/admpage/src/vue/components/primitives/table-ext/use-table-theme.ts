@@ -4,7 +4,6 @@ import Color from "colorjs.io";
 
 export function useTableTheme(paletteRef: ShallowRef<Palette>) {
   return computed(() => {
-    console.log(paletteRef.value);
     const mainColor = new Color(paletteRef.value[PaletteItem.Table]);
     const textColor = contrastedColor(mainColor);
 

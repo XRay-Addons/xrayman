@@ -1,5 +1,5 @@
-import { type UserStatus, type User } from "@/services/api/generated";
-import { MakeApiUrl } from "@/runtime/utils/paths";
+import { type UserStatus, type User, UserProfile } from "@/services/api/generated";
+import { MakeApiUrl, MakeUserpageURL } from "@/runtime/utils/paths";
 
 import {
   enabledTag,
@@ -12,12 +12,13 @@ import {
 } from "@/vue/components/primitives/table-ext/render-primitives";
 import { enableUserAction, disableUserAction, deleteUserAction } from "./btn-actions";
 
-import {
-  makeCopyable,
-  makeMonospace,
-} from "@/vue/components/primitives/table-ext/render-primitives";
+import { makeConfigLine } from "@/vue/components/primitives/table-ext/render-primitives";
 
 import { type VNode } from "vue";
+
+export function renderUserPageURL(u: UserProfile) {
+  return makeConfigLine(MakeUserpageURL(u.ID, u.Name), true);
+}
 
 export function renderTag(status: UserStatus) {
   if (status === "enabled") {
@@ -45,5 +46,5 @@ export function renderActions(status: UserStatus, user: User) {
 
 export function renderApiUrl(text: string) {
   text = MakeApiUrl(text);
-  return makeCopyable(makeMonospace(text), text);
+  return makeConfigLine(text, true);
 }

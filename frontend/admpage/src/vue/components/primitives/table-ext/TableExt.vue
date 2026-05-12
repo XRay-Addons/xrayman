@@ -5,9 +5,9 @@
       :data-source="dataSource"
       :columns="mainCols"
       :row-key="rowKey"
-      :scroll="{ x: 'max-width' }"
       :expanded-row-render="expandedRowRender"
       size="medium"
+      :scroll="{ x: 'max-width' }"
       v-bind="$attrs"
     >
     </a-table>

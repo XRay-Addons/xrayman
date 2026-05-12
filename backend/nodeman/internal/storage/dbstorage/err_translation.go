@@ -16,6 +16,11 @@ func translatePgErr(err error) error {
 		return nil
 	}
 
+	// if it is not our xerr (wrapped with stack previously)
+	// wrap it with stack now
+	// xerr.xerr - struct, error impl
+	err = xerr.WrapWithStack(err)
+
 	if errors.Is(err, context.DeadlineExceeded) {
 		return err
 	}
@@ -30,6 +35,7 @@ func translatePgErr(err error) error {
 	}
 
 	var pgErr *pgconn.PgError
+	var pgErrCode string
 	if errors.As(err, &pgErr) {
 		// whitelist of unretryable pg errors
 		// for incorrect requests
@@ -42,8 +48,17 @@ func translatePgErr(err error) error {
 				return err
 			}
 		}
+		pgErrCode = pgErr.Code
 	}
 
-	return xerr.Wrap(errdefs.ErrTemporaryUnavailable,
-		xerr.WithStack(), xerr.With(err.Error()))
+	// this is temporary sql error, we decided.
+	// save as much details as possible by
+	// extraction via %+v
+	err = xerr.WrapWithf(errdefs.ErrTemporaryUnavailable, "%+v", err)
+	// add pg error code if extracted
+	if pgErrCode != "" {
+		err = xerr.WrapWithf(err, "pg error code: %s", pgErrCode)
+	}
+
+	return err
 }
