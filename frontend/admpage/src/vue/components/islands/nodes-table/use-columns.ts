@@ -2,8 +2,7 @@ import { computed } from "vue";
 import { type ExtendedColumn } from "@/vue/components/primitives/table-ext/table-types";
 import { type Node } from "@/services/api/generated/types.gen";
 import {
-  makeCopyable,
-  makeMonospace,
+  makeConfigLine,
   i18nateColumns,
 } from "@/vue/components/primitives/table-ext/render-primitives";
 import { renderTag, renderActions } from "./rendering";
@@ -37,7 +36,7 @@ export function useNodesTableColumns(i18nPrefix: string) {
       {
         key: "access-key",
         dataIndex: ["Config", "ConnectionInfo", "AccessKey"],
-        customRender: ({ text }) => makeCopyable(makeMonospace(text), text),
+        customRender: ({ text }) => makeConfigLine(text),
         width: "8ch",
         extended: true,
       },
@@ -45,7 +44,7 @@ export function useNodesTableColumns(i18nPrefix: string) {
         key: "client-config",
         dataIndex: ["Config", "ClientConfigTemplate"],
         customRender: ({ text }) => {
-          return makeMonospace(JSON.stringify(text));
+          return makeConfigLine(JSON.stringify(text));
         },
         extended: true,
       },

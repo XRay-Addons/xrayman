@@ -15,6 +15,7 @@ import { enableUserAction, disableUserAction, deleteUserAction } from "./btn-act
 import {
   makeCopyable,
   makeMonospace,
+  makeConfigLine,
 } from "@/vue/components/primitives/table-ext/render-primitives";
 
 import { type VNode } from "vue";
@@ -45,5 +46,5 @@ export function renderActions(status: UserStatus, user: User) {
 
 export function renderApiUrl(text: string) {
   text = MakeApiUrl(text);
-  return makeCopyable(makeMonospace(text), text);
+  return makeConfigLine(text, true);
 }

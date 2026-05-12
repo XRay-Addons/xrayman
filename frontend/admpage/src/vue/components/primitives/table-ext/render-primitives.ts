@@ -48,6 +48,18 @@ export function makeCopyable(node: VNode, textToCopy: string): VNode {
   );
 }
 
+export function makeConfigLine(text: string, copyable: boolean = false): VNode {
+  const textItem = h(TypographyText, { style: { fontFamily: "monospace" } }, () => text);
+  if (!copyable) {
+    return textItem;
+  }
+
+  const copyItem = h(TypographyText, {
+    copyable: { text, tooltip: false },
+  });
+  return h(Space, { size: "small" }, () => [copyItem, textItem]);
+}
+
 export function enabledTag(i18n: string): VNode {
   return makeTag("success", i18n, CheckCircleOutlined);
 }

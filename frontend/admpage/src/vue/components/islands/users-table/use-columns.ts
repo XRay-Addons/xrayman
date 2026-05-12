@@ -2,8 +2,7 @@ import { computed } from "vue";
 import { type ExtendedColumn } from "@/vue/components/primitives/table-ext/table-types";
 import { type User } from "@/services/api/generated/types.gen";
 import {
-  makeCopyable,
-  makeMonospace,
+  makeConfigLine,
   i18nateColumns,
 } from "@/vue/components/primitives/table-ext/render-primitives";
 import { renderTag, renderActions, renderApiUrl } from "./rendering";
@@ -37,7 +36,7 @@ export function useUsersTableColumns(i18nPrefix: string) {
         key: "vless-uuid",
         dataIndex: ["Profile", "VlessUUID"],
         width: "8ch",
-        customRender: ({ text }) => makeCopyable(makeMonospace(text), text),
+        customRender: ({ text }) => makeConfigLine(text),
         extended: true,
       },
       {

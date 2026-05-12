@@ -175,7 +175,13 @@
       },
       "actions": {
         "delete": {
-          "button": "Delete"
+          "button": "Delete",
+          "confirm": {
+            "header": "Delete subscription header?",
+            "body": "Are you wure?",
+            "ok": "Da",
+            "cancel": "Net"
+          }
         }
       }
     }

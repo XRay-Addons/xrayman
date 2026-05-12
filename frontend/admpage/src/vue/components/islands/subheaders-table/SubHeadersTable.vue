@@ -4,6 +4,7 @@
     :loading="subHeadersLoading"
     :columns="subHeadersColumns"
     :row-key="rowKey"
+    :scroll="{ x: 'max-content' }"
     v-bind="$attrs"
   />
 </template>
