@@ -1,62 +1,83 @@
+# -----------------------------
+# Warning: 100% AI-generated
+# -----------------------------
+
 ROOT := $(CURDIR)
 DST := $(ROOT)/build
 
-# Утилиты
 PNPM := pnpm
 GO := go
 
-# Пути
 FRONTEND_ROOT := $(ROOT)/frontend
-FRONTEND_DST := $(DST)/frontend
 BACKEND_ROOT := $(ROOT)/backend
-BACKEND_DST := $(DST)/backend
 
-.PHONY: all build clean install
+# -----------------------------
+# ALL FILES (recursive tracking)
+# -----------------------------
+
+FRONTEND_FILES := $(shell find $(FRONTEND_ROOT) -type f)
+BACKEND_NODE_FILES := $(shell find $(BACKEND_ROOT)/node -type f)
+BACKEND_NODMAN_FILES := $(shell find $(BACKEND_ROOT)/nodeman -type f)
+
+.PHONY: all build clean
 
 all: build
 
 build: build_backend
 
-clean: clean_frontend clean_backend
+# -----------------------------
+# CLEAN
+# -----------------------------
+
+clean:
 	rm -rf $(DST)
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Frontend
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+clean_frontend:
+	rm -rf $(FRONTEND_ROOT)/admpage/dist
+	rm -rf $(FRONTEND_ROOT)/userpage/dist
 
-.PHONY: all_frontend clean_frontend gen_frontend build_frontend
+clean_backend:
+	rm -rf $(DST)
 
-all_frontend: build_frontend
+# -----------------------------
+# FRONTEND
+# -----------------------------
+
+.PHONY: build_frontend gen_frontend deps_frontend embed_frontend
 
 deps_frontend:
 	cd $(FRONTEND_ROOT) && $(PNPM) install
 
 gen_frontend: deps_frontend
-	@echo "Generating frontend..."
 	cd $(FRONTEND_ROOT) && $(PNPM) run gen
 
-build_frontend: gen_frontend
-	@echo "Building frontend apps..."
-	mkdir -p $(FRONTEND_DST)
+# rebuild only if ANY frontend file changed (recursive)
+build_frontend: $(FRONTEND_FILES)
+	@echo "Building frontend..."
 	cd $(FRONTEND_ROOT) && $(PNPM) run build
-	cp -rp $(FRONTEND_ROOT)/admpage/dist $(FRONTEND_DST)/admpage
-	cp -rp $(FRONTEND_ROOT)/userpage/dist $(FRONTEND_DST)/userpage
 
-clean_frontend:
-	rm -rf $(FRONTEND_DST)
-	rm -rf $(FRONTEND_ROOT)/admpage/dist
-	rm -rf $(FRONTEND_ROOT)/userpage/dist
+# embed depends on real frontend build
+embed_frontend: build_frontend
+	@echo "Embedding frontend into backend..."
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Backend
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+	rm -rf $(BACKEND_ROOT)/nodeman/internal/pages/admpage
+	rm -rf $(BACKEND_ROOT)/nodeman/internal/pages/userpage
+
+	cp -rp $(FRONTEND_ROOT)/admpage/dist \
+		$(BACKEND_ROOT)/nodeman/internal/pages/admpage
+
+	cp -rp $(FRONTEND_ROOT)/userpage/dist \
+		$(BACKEND_ROOT)/nodeman/internal/pages/userpage
+
+# -----------------------------
+# BACKEND
+# -----------------------------
 
 GO_TOOLS := \
 	github.com/ogen-go/ogen/cmd/ogen@latest \
 	github.com/jmattheis/goverter/cmd/goverter@latest \
-	go.uber.org/mock/mockgen@latest \
+	go.uber.org/mock/mockgen@latest
 
-.PHONY: tools
 tools:
 	@echo "Installing Go tools..."
 	@for tool in $(GO_TOOLS); do \
@@ -64,85 +85,90 @@ tools:
 		go install $$tool; \
 	done
 
-.PHONY: all_backend clean_backend gen_backend embed_frontend build_backend
-
-all_backend: build_backend
-
 deps_backend:
 	cd $(BACKEND_ROOT)/node && $(GO) mod download
 	cd $(BACKEND_ROOT)/nodeman && $(GO) mod download
 
 gen_backend: deps_backend
-	@echo "Generating Backend..."
 	cd $(BACKEND_ROOT)/node && $(GO) generate ./...
 	cd $(BACKEND_ROOT)/nodeman && $(GO) generate ./...
 
-embed_frontend: build_frontend
-	@echo "Embedding Frontend into Backend..."
-	mkdir -p $(BACKEND_ROOT)/nodeman/internal/pages
-	cp -rp $(FRONTEND_DST)/admpage $(BACKEND_ROOT)/nodeman/internal/pages/
-	cp -rp $(FRONTEND_DST)/userpage $(BACKEND_ROOT)/nodeman/internal/pages/
+# -----------------------------
+# BUILD BACKEND
+# -----------------------------
 
-GEOIP_URL := https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/geoip.dat
-GEOSITE_URL := https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/geosite.dat
+build_backend: gen_backend embed_frontend
+	@echo "Building backend..."
 
-NODE_BIN := $(BACKEND_DST)/xray-node
-NODEMAN_BIN := $(BACKEND_DST)/xray-nodeman
+	mkdir -p $(DST)/xray-node
+	mkdir -p $(DST)/xray-nodeman
 
-GOOS ?= $(shell go env GOOS)
-GOARCH ?= $(shell go env GOARCH)
-CGO_ENABLED ?= 0
+	cd $(BACKEND_ROOT)/node && \
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=$(GOOS) GOARCH=$(GOARCH) \
+	$(GO) build -o $(DST)/xray-node/xray-node ./cmd/main.go
 
-$(NODE_BIN): gen_backend
-	@echo "Building xray-node..."
-	cd $(BACKEND_ROOT)/node && CGO_ENABLED=$(CGO_ENABLED) GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO) build -o $@ ./cmd/main.go
+	cd $(BACKEND_ROOT)/nodeman && \
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=$(GOOS) GOARCH=$(GOARCH) \
+	$(GO) build -o $(DST)/xray-nodeman/xray-nodeman ./cmd/main.go
 
-$(NODEMAN_BIN): gen_backend embed_frontend
-	@echo "Building xray-nodeman..."
-	cd $(BACKEND_ROOT)/nodeman && CGO_ENABLED=$(CGO_ENABLED) GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO) build -o $@ ./cmd/main.go
 
-GEOIP_DAT := $(BACKEND_DST)/geoip.dat
-GEOSITE_DAT := $(BACKEND_DST)/geosite.dat
+# -----------------------------
+#  DOWNLOAD XRAY TOOLS
+# -----------------------------
 
-$(GEOIP_DAT):
-	@echo "Downloading geoip.dat..."
-	@mkdir -p $(BACKEND_DST)
-	curl -L -o $@ $(GEOIP_URL)
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# XRAY DOWNLOAD
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-$(GEOSITE_DAT):
-	@echo "Downloading geosite.dat..."
-	@mkdir -p $(BACKEND_DST)
-	curl -L -o $@ $(GEOSITE_URL)
+XRAY_VERSION ?= v26.5.9
+XRAY_DST := $(DST)/xray
 
-.PHONY: build_backend
-build_backend: $(NODE_BIN) $(NODEMAN_BIN) $(GEOIP_DAT) $(GEOSITE_DAT)
+GOOS := $(shell go env GOOS)
+GOARCH := $(shell go env GOARCH)
 
-clean_backend:
-	rm -rf $(BACKEND_ROOT)/nodeman/internal/pages/admpage
-	rm -rf $(BACKEND_ROOT)/nodeman/internal/pages/userpage
-	rm -rf $(BACKEND_DST)
+XRAY_ASSET :=
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Install
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# detect version
+ifeq ($(GOOS),darwin)
+	ifeq ($(GOARCH),arm64)
+		XRAY_ASSET := Xray-macos-arm64-v8a.zip
+	endif
 
-INSTALL_PREFIX ?= /usr/local/bin
-INSTALL_DATA_DIR ?= /usr/local/share/xray
+	ifeq ($(GOARCH),amd64)
+		XRAY_ASSET := Xray-macos-64.zip
+	endif
+endif
+ifeq ($(GOOS),linux)
+	ifeq ($(GOARCH),amd64)
+		XRAY_ASSET := Xray-linux-64.zip
+	endif
 
-.PHONY: install
-install:
-	@echo "Installing binaries to $(INSTALL_PREFIX)..."
-	install -m 755 $(BACKEND_DST)/xray-node $(INSTALL_PREFIX)/xray-node
-	install -m 755 $(BACKEND_DST)/xray-nodeman $(INSTALL_PREFIX)/xray-nodeman
-	@echo "Installing xray data to $(INSTALL_DATA_DIR)..."
-	mkdir -p $(INSTALL_DATA_DIR)
-	install -m 644 $(GEOIP_DAT) $(INSTALL_DATA_DIR)/geoip.dat
-	install -m 644 $(GEOSITE_DAT) $(INSTALL_DATA_DIR)/geosite.dat
+	ifeq ($(GOARCH),arm64)
+		XRAY_ASSET := Xray-linux-arm64-v8a.zip
+	endif
+endif
+ifeq ($(XRAY_ASSET),)
+$(error Unsupported platform: $(GOOS)/$(GOARCH))
+endif
 
-.PHONY: uninstall
-uninstall:
-	@echo "Removing binaries from $(PREFIX)..."
-	rm -f $(INSTALL_PREFIX)/xray-node
-	rm -f $(INSTALL_PREFIX)/xray-nodeman
-	rm -f $(INSTALL_DATA_DIR)/geoip.dat
-	rm -f $(INSTALL_DATA_DIR)/geosite.dat
+XRAY_URL := https://github.com/XTLS/Xray-core/releases/download/$(XRAY_VERSION)/$(XRAY_ASSET)
+
+.PHONY: xray clean_xray
+
+xray:
+	@echo "==> Downloading Xray: $(XRAY_ASSET)"
+	rm -rf $(XRAY_DST)
+	mkdir -p $(XRAY_DST)
+	curl -L -o $(DST)/xray.zip $(XRAY_URL)
+	
+	@echo "unzip Xray: $(XRAY_DST)"
+	unzip -o $(DST)/xray.zip -d $(XRAY_DST)
+	rm -f $(DST)/xray.zip
+	@echo "copy xray geodata to $(DST)/xray-node/xray-node/data/"
+	mkdir -p $(DST)/xray-node/data/
+	mv -r $(XRAY_DST)/geoip.dat $(DST)/xray-node/data/
+	mv -r $(XRAY_DST)/geosite.dat $(DST)/xray-node/data/
+	@echo "==> Xray ready at $(XRAY_DST)"
+
+clean_xray:
+	rm -rf $(XRAY_DST)
