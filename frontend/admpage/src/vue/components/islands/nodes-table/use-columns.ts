@@ -3,6 +3,7 @@ import { type ExtendedColumn } from "@/vue/components/primitives/table-ext/table
 import { type Node } from "@/services/api/generated/types.gen";
 import {
   makeConfigLine,
+  makeConfigText,
   i18nateColumns,
 } from "@/vue/components/primitives/table-ext/render-primitives";
 import { renderTag, renderActions } from "./rendering";
@@ -44,7 +45,7 @@ export function useNodesTableColumns(i18nPrefix: string) {
         key: "client-config",
         dataIndex: ["Config", "ClientConfigTemplate"],
         customRender: ({ text }) => {
-          return makeConfigLine(JSON.stringify(text));
+          return makeConfigText(JSON.stringify(text, null, 2));
         },
         extended: true,
       },

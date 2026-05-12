@@ -25,29 +25,6 @@ export function i18nateColumns<T>(
   });
 }
 
-export function makeMonospace(text: string): VNode {
-  return h(
-    TypographyText,
-    {
-      style: { fontFamily: "monospace" },
-    },
-    () => text,
-  );
-}
-
-export function makeCopyable(node: VNode, textToCopy: string): VNode {
-  return h(
-    TypographyText,
-    {
-      copyable: {
-        text: textToCopy,
-        tooltip: false,
-      },
-    },
-    () => node,
-  );
-}
-
 export function makeConfigLine(text: string, copyable: boolean = false): VNode {
   const textItem = h(TypographyText, { style: { fontFamily: "monospace" } }, () => text);
   if (!copyable) {
@@ -60,6 +37,20 @@ export function makeConfigLine(text: string, copyable: boolean = false): VNode {
   return h(Space, { size: "small" }, () => [copyItem, textItem]);
 }
 
+export function makeConfigText(text: string): VNode {
+  return h(
+    "pre",
+    {
+      style: {
+        maxHeight: "40ch",
+        overflowY: "auto",
+        fontFamily: "monospace",
+        margin: 0,
+      },
+    },
+    text,
+  );
+}
 export function enabledTag(i18n: string): VNode {
   return makeTag("success", i18n, CheckCircleOutlined);
 }

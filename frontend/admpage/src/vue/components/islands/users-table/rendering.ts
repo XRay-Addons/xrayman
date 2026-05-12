@@ -12,11 +12,7 @@ import {
 } from "@/vue/components/primitives/table-ext/render-primitives";
 import { enableUserAction, disableUserAction, deleteUserAction } from "./btn-actions";
 
-import {
-  makeCopyable,
-  makeMonospace,
-  makeConfigLine,
-} from "@/vue/components/primitives/table-ext/render-primitives";
+import { makeConfigLine } from "@/vue/components/primitives/table-ext/render-primitives";
 
 import { type VNode } from "vue";
 

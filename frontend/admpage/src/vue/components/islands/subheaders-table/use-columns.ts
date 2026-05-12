@@ -2,8 +2,6 @@ import { computed } from "vue";
 import { type ExtendedColumn } from "@/vue/components/primitives/table-ext/table-types";
 import { type Header } from "@/services/api/generated/types.gen";
 import {
-  makeCopyable,
-  makeMonospace,
   makeConfigLine,
   i18nateColumns,
 } from "@/vue/components/primitives/table-ext/render-primitives";
