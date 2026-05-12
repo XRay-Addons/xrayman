@@ -6,7 +6,7 @@ import { config } from "@/config/config";
 export function setupClient() {
   client.setConfig({
     auth: getToken,
-    baseUrl: "http://localhost:1001/api", //config.ApiPrefix,
+    baseUrl: config.ApiPrefix,
     fetch: authFetch,
   });
 }
