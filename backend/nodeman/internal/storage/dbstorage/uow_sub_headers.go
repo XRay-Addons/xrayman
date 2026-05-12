@@ -44,7 +44,7 @@ func (uow *uowctx) DeleteSubHeader(ctx context.Context, id models.HeaderID) erro
 	return nil
 }
 
-func (uow *uowctx) ListSubHeaders(ctx context.Context) ([]models.Header, error) {
+func (uow *uowctx) ListSubHeaders(ctx context.Context) (headers []models.Header, err error) {
 	query := queryReplacer.Replace(`
 		SELECT
 			{header_id},
@@ -59,9 +59,10 @@ func (uow *uowctx) ListSubHeaders(ctx context.Context) ([]models.Header, error) 
 	if err != nil {
 		return nil, xerr.WrapWithStack(err)
 	}
-	defer rows.Close()
+	defer func() {
+		err = xerr.Join(err, xerr.WrapWithStack(rows.Close()))
+	}()
 
-	var headers []models.Header
 	for rows.Next() {
 		var header models.Header
 		err := rows.Scan(

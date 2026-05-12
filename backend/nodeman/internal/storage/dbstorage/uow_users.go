@@ -67,7 +67,7 @@ func (uow *uowctx) GetUser(ctx context.Context, id models.UserID) (*models.User,
 	return &user, true, nil
 }
 
-func (uow *uowctx) ListUsers(ctx context.Context) ([]models.User, error) {
+func (uow *uowctx) ListUsers(ctx context.Context) (users []models.User, err error) {
 	query := queryReplacer.Replace(`
 		SELECT
 			{user_id},
@@ -84,9 +84,10 @@ func (uow *uowctx) ListUsers(ctx context.Context) ([]models.User, error) {
 	if err != nil {
 		return nil, xerr.WrapWithStack(err)
 	}
-	defer rows.Close()
+	defer func() {
+		err = xerr.Join(err, xerr.WrapWithStack(rows.Close()))
+	}()
 
-	var users []models.User
 	for rows.Next() {
 		var user models.User
 		err := rows.Scan(

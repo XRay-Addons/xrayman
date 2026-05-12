@@ -60,7 +60,7 @@ func (k *AccessKey) Scan(src any) error {
 	if !ok {
 		return xerr.New("invalid type for AccessKey")
 	}
-	if len(b) != 64 {
+	if len(b) != len(CertHash{})+len(AccessSecret{}) {
 		return xerr.New("invalid length for AccessKey")
 	}
 	copy(k.CertHash[:], b[:len(k.CertHash)])

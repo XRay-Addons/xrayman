@@ -13,6 +13,9 @@
 
 version: "2"
 
+run:
+  tests: false
+
 linters:
   default: none
   # This list of linters is not a recommendation (same thing for all this configuration file).
@@ -57,11 +60,17 @@ linters:
       # See https://github.com/tomarrell/wrapcheck#configuration for more information.
       # Default: [".Errorf(", "errors.New(", "errors.Unwrap(", "errors.Join(", ".Wrap(", ".Wrapf(", ".WithMessage(", ".WithMessagef(", ".WithStack("]
       ignore-sigs:
-        - xerr.New ## New, NewNilArg, NewNilCall...
+        - xerr.New ## New, Newf, NewNilArg, NewNilCall...
+        - xerr.NilArg(
+        - xerr.NilCall(
+        - xerr.Wrap ## Wrap, Wrapf, WrapWihStack...
+        - xerr.Join(
+        - httperr.With(
         - errdefs.Wrap ## Wrap, WrapWithStack, WrapWith,...
         - errors.Join(
 
       ignore-package-globs:
+        - github.com/XRay-Addons/xrayman/*
         - github.com/XRay-Addons/xrayman/nodeman/*
         - github.com/oklog/*
 

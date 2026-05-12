@@ -11,21 +11,25 @@ import (
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/go-chi/chi/v5"
+	"go.uber.org/zap"
 )
 
-func Mount(r chi.Router, prefix string, content fs.FS, config any) error {
+func Mount(r chi.Router, prefix string, content fs.FS, config any, log *zap.Logger) error {
 	if r == nil {
 		return errdefs.NilArg("r")
+	}
+	if log == nil {
+		return errdefs.NilArg("log")
 	}
 
 	// prefix normalisation prefix -> prefix/
 	if !strings.HasSuffix(prefix, "/") {
-		mountPrefixNormalizer(r, prefix, content)
+		mountPrefixNormalizer(r, prefix)
 		prefix += "/"
 	}
 
 	// host config on /config.js
-	if err := mountConfig(r, prefix, config); err != nil {
+	if err := mountConfig(r, prefix, config, log); err != nil {
 		return err
 	}
 
@@ -37,14 +41,14 @@ func Mount(r chi.Router, prefix string, content fs.FS, config any) error {
 	return nil
 }
 
-func mountPrefixNormalizer(r chi.Router, prefix string, content fs.FS) {
+func mountPrefixNormalizer(r chi.Router, prefix string) {
 	r.Get(prefix, http.RedirectHandler(prefix+"/",
 		http.StatusPermanentRedirect).ServeHTTP)
 }
 
 const configPath = "config.js"
 
-func mountConfig(r chi.Router, prefix string, cfg any) error {
+func mountConfig(r chi.Router, prefix string, cfg any, log *zap.Logger) error {
 	// make config js
 	cfgData, err := json.Marshal(cfg)
 	if err != nil {
@@ -56,7 +60,10 @@ func mountConfig(r chi.Router, prefix string, cfg any) error {
 
 	r.Get(prefix+configPath, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		w.Write(cfgJs)
+		_, err := w.Write(cfgJs) // we have nothing to do with this error
+		if err != nil {
+			log.Warn("response writing", zap.String("path", prefix+configPath), zap.Error(err))
+		}
 	})
 
 	return nil
@@ -105,7 +112,7 @@ func listContent(content fs.FS) (map[string]struct{}, error) {
 		items[p] = struct{}{}
 		return nil
 	}); err != nil {
-		return nil, err
+		return nil, xerr.WrapWithStack(err)
 	}
 
 	return items, nil

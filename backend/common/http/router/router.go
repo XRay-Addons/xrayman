@@ -29,7 +29,7 @@ func WithHandler(path string, h http.Handler) Option {
 }
 
 type SPA interface {
-	Mount(r chi.Router, prefix string) error
+	Mount(r chi.Router, prefix string, log *zap.Logger) error
 }
 
 func WithSPA(path string, spa SPA) Option {
@@ -104,7 +104,7 @@ func New(options ...Option) (http.Handler, error) {
 		if spa.page == nil {
 			return nil, xerr.NilArg(fmt.Sprintf("%s spa", spa.path))
 		}
-		if err := spa.page.Mount(r, spa.path); err != nil {
+		if err := spa.page.Mount(r, spa.path, ro.log); err != nil {
 			return nil, err
 		}
 	}

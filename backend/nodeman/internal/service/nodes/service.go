@@ -3,7 +3,6 @@ package nodes
 import (
 	"context"
 
-	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
@@ -144,23 +143,4 @@ func (s *Service) syncNode(ctx context.Context, id models.NodeID) error {
 		return err
 	}
 	return nil
-}
-
-// sync all nodes, return nil if at least one node synced ok
-func (s *Service) syncAllNodes(ctx context.Context) error {
-	syncResults, err := s.poolSyncer.SyncPoolState(ctx)
-	if err != nil {
-		return err
-	}
-	if len(syncResults.Nodes) == 0 {
-		return nil
-	}
-	var errs []error
-	for _, syncRes := range syncResults.Nodes {
-		if syncRes.Err == nil {
-			return nil
-		}
-		errs = append(errs, syncRes.Err)
-	}
-	return xerr.Join(errs...)
 }

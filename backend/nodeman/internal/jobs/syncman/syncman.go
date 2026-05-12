@@ -72,7 +72,7 @@ func (m *SyncMan) Run() error {
 	defer m.wg.Done()
 	m.syncLoop(ctx)
 
-	return ctx.Err()
+	return ctx.Err() //nolint:wrapcheck
 }
 
 func (m *SyncMan) Stop() error {

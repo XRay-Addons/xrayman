@@ -1,8 +1,6 @@
 package jwt
 
 import (
-	"time"
-
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 
 	jwtools "github.com/XRay-Addons/xrayman/common/http/jwt"
@@ -15,10 +13,6 @@ type JWT struct {
 }
 
 var _ (security.JWT) = (*JWT)(nil)
-
-const defaultTTL = 72 * time.Hour
-
-const bearerTokenType = "Bearer"
 
 type config struct {
 	issuer *string

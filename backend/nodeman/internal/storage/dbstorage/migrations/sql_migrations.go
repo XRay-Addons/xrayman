@@ -15,16 +15,12 @@ import (
 //go:embed migrations/*.sql
 var embedMigrations embed.FS
 
-type option func(options *options)
-
-type options struct {
-	retry bool
-	log   *zap.Logger
-}
-
 func ApplyMigrations(ctx context.Context, db *sql.DB, log *zap.Logger) error {
 	if db == nil {
 		return errdefs.NilArg("db")
+	}
+	if log == nil {
+		return errdefs.NilArg("log")
 	}
 
 	goose.SetBaseFS(embedMigrations)

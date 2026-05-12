@@ -152,9 +152,9 @@ func (a *App) initInfra(cfg config.Config) (infra *infrasturcture, err error) {
 	if err != nil {
 		return
 	}
-	a.core.AddCloser(func(context.Context) error {
-		db.Close()
-		return nil
+	a.core.AddCloser(func(context.Context) (err error) {
+		err = db.Close()
+		return
 	})
 
 	// storage

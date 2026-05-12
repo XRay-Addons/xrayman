@@ -30,9 +30,8 @@ func New(client Client, storage Storage) (Syncer, error) {
 		storage: storage,
 		client:  client,
 	}
-	syncFn := func(ctx context.Context) (*models.PoolSyncResult, error) {
-		return unsafeSyncer.SyncPoolState(ctx)
-	}
+	syncFn := unsafeSyncer.SyncPoolState
+
 	return &safeSyncer{
 		exec: waveexec.New(syncFn),
 	}, nil

@@ -9,7 +9,7 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
-func (uow *uowctx) FindPendingSyncs(ctx context.Context, id models.NodeID) ([]models.UserSyncStatus, error) {
+func (uow *uowctx) FindPendingSyncs(ctx context.Context, id models.NodeID) (result []models.UserSyncStatus, err error) {
 	query := queryReplacer.Replace(`
 		SELECT
 			u.{user_id},
@@ -28,9 +28,10 @@ func (uow *uowctx) FindPendingSyncs(ctx context.Context, id models.NodeID) ([]mo
 	if err != nil {
 		return nil, xerr.WrapWithStack(err)
 	}
-	defer rows.Close()
+	defer func() {
+		err = xerr.Join(err, xerr.WrapWithStack(rows.Close()))
+	}()
 
-	var result []models.UserSyncStatus
 	for rows.Next() {
 		var us models.UserSyncStatus
 		err := rows.Scan(
@@ -119,7 +120,7 @@ func (uow *uowctx) UpdateNodeUsers(ctx context.Context, id models.NodeID, patch 
 	return nil
 }
 
-func (uow *uowctx) GetUserNodes(ctx context.Context, id models.UserID) ([]models.Node, error) {
+func (uow *uowctx) GetUserNodes(ctx context.Context, id models.UserID) (nodes []models.Node, err error) {
 	query := queryReplacer.Replace(`
 		SELECT
 			n.{node_id},
@@ -142,9 +143,10 @@ func (uow *uowctx) GetUserNodes(ctx context.Context, id models.UserID) ([]models
 	if err != nil {
 		return nil, xerr.WrapWithStack(err)
 	}
-	defer rows.Close()
+	defer func() {
+		err = xerr.Join(err, xerr.WrapWithStack(rows.Close()))
+	}()
 
-	var nodes []models.Node
 	for rows.Next() {
 		var n models.Node
 		var clientConfigTemplate ClientConfigTemplate
