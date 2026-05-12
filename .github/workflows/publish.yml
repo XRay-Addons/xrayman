@@ -58,7 +58,9 @@ jobs:
 
       - name: Archive build folder
         if: startsWith(github.ref, 'refs/tags/')
-        run: zip -r xrayman.zip build/
+        run: |
+          cd build
+          zip -r ../xrayman.zip .
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
