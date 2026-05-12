@@ -105,3 +105,13 @@ func TestErrorIs(t *testing.T) {
 	}()
 	require.True(t, errors.Is(f, ErrTestFileAccess))
 }
+
+func TestErrorJoin(t *testing.T) {
+	f1 := WrapWith(ErrTestFileAccess, "with A")
+	f2 := WrapWith(ErrTestConfig, "with B")
+	fJoined := Join(f1, f2)
+	fJoined = WrapWith(fJoined, "with Joined")
+
+	require.True(t, errors.Is(fJoined, ErrTestFileAccess))
+	require.True(t, errors.Is(fJoined, ErrTestFileAccess))
+}

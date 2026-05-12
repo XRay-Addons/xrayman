@@ -49,7 +49,7 @@ func (p *Password) Update(ctx context.Context, password string) error {
 	}
 
 	if err := p.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		uowctx.SetAuth(ctx, models.Auth{PasswordHash: pwdHash})
+		err = uowctx.SetAuth(ctx, models.Auth{PasswordHash: pwdHash})
 		return
 	}); err != nil {
 		return err

@@ -108,7 +108,7 @@ func TestApp_BootstrapFail(t *testing.T) {
 	}
 
 	app.AddBootstrap("bs1", bootstrapFn, nil)
-	err := app.Run()
+	err := app.Bootstrap()
 	require.ErrorIs(t, err, bootstrapErr)
 }
 
