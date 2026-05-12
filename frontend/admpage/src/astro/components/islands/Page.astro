@@ -19,9 +19,16 @@ import SubHeadersTableCard from "./SubHeadersTableCard.astro";
     <I18NText data-i18n="title.main" />
   </Title>
 
-  <div class="row gx-2 justify-content-center">
+  <div class="page-columns">
     <UsersTableCard />
     <NodesTableCard />
     <SubHeadersTableCard />
   </div>
 </PageCenter>
+
+<style>
+  .page-columns {
+    column-width: 50ch;
+    gap: 0.5rem;
+  }
+</style>

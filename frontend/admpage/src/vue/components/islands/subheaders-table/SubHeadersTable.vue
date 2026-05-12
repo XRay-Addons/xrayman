@@ -5,6 +5,7 @@
     :columns="subHeadersColumns"
     :row-key="rowKey"
     :scroll="{ x: 'max-content' }"
+    :pagination="false"
     v-bind="$attrs"
   />
 </template>

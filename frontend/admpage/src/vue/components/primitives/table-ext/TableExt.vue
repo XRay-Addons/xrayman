@@ -7,6 +7,7 @@
       :row-key="rowKey"
       :expanded-row-render="expandedRowRender"
       size="medium"
+      :scroll="{ x: 'max-width' }"
       v-bind="$attrs"
     >
     </a-table>
