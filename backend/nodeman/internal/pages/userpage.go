@@ -10,10 +10,10 @@ type UserPageCfg struct {
 	UserPrefix string `json:"user_prefix"`
 }
 
-func NewUserPage(apiPrefix, userPrefix string) (*Page, error) {
+func NewUserPage(apiServiceUrl, userSpaUrl string) (*Page, error) {
 	cfg := UserPageCfg{
-		ApiPrefix:  apiPrefix,
-		UserPrefix: userPrefix,
+		ApiPrefix:  apiServiceUrl,
+		UserPrefix: userSpaUrl,
 	}
 	return new(userpageFS, "userpage", cfg)
 }

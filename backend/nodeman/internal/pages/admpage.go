@@ -11,11 +11,11 @@ type AdmPageCfg struct {
 	UserPrefix  string `json:"user_prefix"`
 }
 
-func NewAdmPage(apiPrefix, adminPrefix, userPrefix string) (*Page, error) {
+func NewAdmPage(apiServiceUrl, adminSpaUrl, userSpaUrl string) (*Page, error) {
 	cfg := AdmPageCfg{
-		ApiPrefix:   apiPrefix,
-		AdminPrefix: adminPrefix,
-		UserPrefix:  userPrefix,
+		ApiPrefix:   apiServiceUrl,
+		AdminPrefix: adminSpaUrl,
+		UserPrefix:  userSpaUrl,
 	}
 	return new(admpageFS, "admpage", cfg)
 }
