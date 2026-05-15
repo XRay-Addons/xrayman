@@ -17,10 +17,6 @@
     {
       "text": "button.install.appstore.global",
       "url": "https://apps.apple.com/us/app/happ-proxy-utility/id6504287215"
-    },
-    {
-      "text": "button.install.others",
-      "url": "https://www.happ.su/main"
     }
   ],
   "macos": [
@@ -31,27 +27,15 @@
     {
       "text": "button.install.appstore.global",
       "url": "https://apps.apple.com/us/app/happ-proxy-utility/id6504287215"
-    },
-    {
-      "text": "button.install.others",
-      "url": "https://www.happ.su/main"
     }
   ],
   "windows": [
     {
       "text": "button.install.win",
       "url": "https://github.com/Happ-proxy/happ-desktop/releases/latest/download/setup-Happ.x86.exe"
-    },
-    {
-      "text": "button.install.others",
-      "url": "https://www.happ.su/main"
     }
   ],
   "unknown": [
-    {
-      "text": "button.install.unknown",
-      "url": "https://github.com/Happ-proxy/happ-desktop/releases/latest/download/setup-Happ.x86.exe"
-    },
     {
       "text": "button.install.others",
       "url": "https://www.happ.su/main"
