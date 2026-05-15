@@ -1,0 +1,38 @@
+@mixin fluid-segment($from, $to, $min, $max) {
+  width: calc(#{$from}vw + (#{$to}vw - #{$from}vw) * (100% - #{$min}) / (#{$max} - #{$min}));
+}
+
+$bp-sm: 576px;
+$bp-md: 768px;
+$bp-lg: 992px;
+$bp-xl: 1200px;
+
+@mixin fluid($sm, $md, $lg, $xl) {
+  width: $sm * 1%;
+
+  @media (min-width: $bp-sm) {
+    @include fluid-segment($sm, $md, $bp-sm, $bp-md);
+  }
+
+  @media (min-width: $bp-md) {
+    @include fluid-segment($md, $lg, $bp-md, $bp-lg);
+  }
+
+  @media (min-width: $bp-lg) {
+    @include fluid-segment($lg, $xl, $bp-lg, $bp-xl);
+  }
+
+  @media (min-width: $bp-xl) {
+    width: $xl * 1%;
+  }
+}
+
+// continious version of col-12 col-md-8 col-lg-6 col-xl-4
+.fluid-md {
+  @include fluid(100, 66.7, 50, 33.3);
+}
+
+// continious version of col-12 col-md-10 col-lg-8 col-xl-8
+.fluid-lg {
+  @include fluid(100, 83.3, 66.7, 66.7);
+}

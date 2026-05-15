@@ -21,7 +21,8 @@
   "button.install.gplay": "Google Play",
   "button.install.appstore.ru": "AppStore-RU",
   "button.install.appstore.global": "AppStore",
-  "button.install.win": "Download .exe",
+  "button.install.win": "Скачать .exe",
+  "button.install.others": "Другие...",
 
   "share.button": "Отправить друзьям",
   "share.button.sharedtext": "Только посмотри, какой VPN!",
