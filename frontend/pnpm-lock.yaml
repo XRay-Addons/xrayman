@@ -7,10 +7,6 @@ settings:
 importers:
 
   .:
-    dependencies:
-      lean-qr:
-        specifier: ^2.7.1
-        version: 2.7.1
     devDependencies:
       sass-embedded:
         specifier: ^1.99.0
