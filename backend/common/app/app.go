@@ -139,9 +139,9 @@ func (a *App) Bootstrap() (err error) {
 				a.log.Warn(fmt.Sprintf("bootstrap %s: retry", bs.name), zap.Error(err))
 				return retry.RetryableError(err)
 			}
-			a.log.Warn(fmt.Sprintf("bootstrap %s: unretriable error", bs.name), zap.Error(err))
 			return err
 		}); err != nil {
+			a.log.Warn(fmt.Sprintf("bootstrap %s: unretriable error", bs.name), zap.Error(err))
 			return err
 		}
 	}

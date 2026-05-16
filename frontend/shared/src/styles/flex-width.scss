@@ -1,5 +1,5 @@
 @mixin fluid-segment($from, $to, $min, $max) {
-  width: calc(#{$from}vw + (#{$to}vw - #{$from}vw) * (100% - #{$min}) / (#{$max} - #{$min}));
+  width: calc(1% * (#{$from} + (#{$to} - #{$from}) * (100vw - #{$min}) / (#{$max} - #{$min})));
 }
 
 $bp-sm: 576px;
@@ -25,6 +25,11 @@ $bp-xl: 1200px;
   @media (min-width: $bp-xl) {
     width: $xl * 1%;
   }
+}
+
+// continious version of col-10 col-md-6 col-lg-4 col-xl-2
+.fluid-sm {
+  @include fluid(86.7, 50, 33.3, 16.7);
 }
 
 // continious version of col-12 col-md-8 col-lg-6 col-xl-4

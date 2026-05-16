@@ -24,8 +24,8 @@
   "button.install.win": "Скачать .exe",
   "button.install.others": "Другие...",
 
-  "share.button": "Отправить друзьям",
-  "share.button.sharedtext": "Только посмотри, какой VPN!",
+  "share.button.text": "Отправить друзьям",
+  "share.button.tg-sharedtext": "Только посмотри, какой VPN!",
 
   "servererror.main": "Ошибка сервера, зайдите позже",
 

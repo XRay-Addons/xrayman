@@ -67,12 +67,18 @@ const { class: extraClass = "", "content-class": contentClass = "" } = Astro.pro
 </script>
 
 <style>
+  btn-dialog {
+    display: contents;
+  }
+
   .app-dialog {
     background: transparent;
     border: none;
     width: 100%;
+    max-width: 100%;
     padding: 0;
   }
+
   .app-dialog::backdrop {
     background: transparent;
   }
