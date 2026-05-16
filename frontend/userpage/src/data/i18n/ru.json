@@ -25,7 +25,9 @@
   "button.install.others": "Другие...",
 
   "share.button.text": "Отправить друзьям",
-  "share.button.tg-sharedtext": "Только посмотри, какой VPN!",
+  "share.page.title": "Отправить друзьям...",
+  "share.page.tg-button": "в тг",
+  "share.page.tg-sharedtext": "Только посмотри, какой VPN!",
 
   "servererror.main": "Ошибка сервера, зайдите позже",
 
