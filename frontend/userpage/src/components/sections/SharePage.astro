@@ -38,7 +38,7 @@ import Barcode from "@xrayman/shared/astro/primitives/Barcode.astro";
 
       const btnEl = this.pt<HTMLButtonElement>("share-tg-btn");
       btnEl.onclick = () => {
-        const text = t("share.button.tg-sharedtext");
+        const text = t("share.page.tg-sharedtext");
         ShareViaTG(sharingUrl, text);
       };
 
