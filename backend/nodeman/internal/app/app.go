@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 
 	appcore "github.com/XRay-Addons/xrayman/common/app"
@@ -37,7 +38,7 @@ type App struct {
 
 const JWTIssuer = "nodeman"
 
-func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
+func New(rawCfg config.RawConfig, log *zap.Logger) (app *App, err error) {
 	if log == nil {
 		return nil, errdefs.NilArg("log")
 	}
@@ -55,8 +56,14 @@ func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 	///////////////////////////////////////////////////////////////////////////
 	// create app components - chaotic good init order
 
+	// runtime config
+	cfg, err := config.Init(rawCfg)
+	if err != nil {
+		return
+	}
+
 	// infrasturcture
-	infra, err := app.initInfra(cfg)
+	infra, err := app.initInfra(*cfg)
 	if err != nil {
 		return
 	}
@@ -80,7 +87,7 @@ func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 	}
 
 	// http server
-	httpServer, err := app.initHttpServer(cfg, *services, infra.authJWT, log)
+	httpServer, err := app.initHttpServer(*cfg, *services, infra.authJWT, log)
 	if err != nil {
 		return
 	}
@@ -95,7 +102,7 @@ func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 	// bootstrap app components
 
 	// migrate db
-	app.core.AddBootstrap("migrated db", func(ctx context.Context) error {
+	app.core.AddBootstrap("migrate db", func(ctx context.Context) error {
 		return infra.storage.Migrage(ctx, dbstorage.WithLogger(log))
 	}, func(err error) bool {
 		return errors.Is(err, errdefs.ErrTemporaryUnavailable)
@@ -163,7 +170,7 @@ func (a *App) initInfra(cfg config.Config) (infra *infrasturcture, err error) {
 	}
 
 	// JWT
-	if infra.authJWT, err = jwt.New(cfg.JWTSecret, jwt.WithIssuer(JWTIssuer)); err != nil {
+	if infra.authJWT, err = jwt.New(cfg.JwtSecret, jwt.WithIssuer(JWTIssuer)); err != nil {
 		return
 	}
 	return infra, nil
@@ -245,23 +252,24 @@ func (a *App) initHttpServer(
 
 	// userpage spa
 	userpageSpa, err := pages.NewUserPage(
-		cfg.APIPrefix, cfg.UserSpaPrefix)
+		cfg.ApiServiceUrl, cfg.UserSpaUrl)
 	if err != nil {
 		return
 	}
 
 	// admpage spa
 	admpageSpa, err := pages.NewAdmPage(
-		cfg.APIPrefix, cfg.AdminSpaPrefix, cfg.UserSpaPrefix)
+		cfg.ApiServiceUrl, cfg.AdminSpaUrl, cfg.UserSpaUrl)
 	if err != nil {
 		return
 	}
 
 	// router
 	r, err := router.New(
-		router.WithHandler(cfg.APIPrefix, apiHandler),
-		router.WithSPA(cfg.UserSpaPrefix, userpageSpa),
-		router.WithSPA(cfg.AdminSpaPrefix, admpageSpa),
+		router.WithHandler(cfg.ApiServicePath, apiHandler),
+		router.WithSPA(cfg.UserSpaPath, userpageSpa),
+		router.WithSPA(cfg.AdminSpaPath, admpageSpa),
+		router.WithCrossOrigin(cfg.AllowedOrigins),
 		router.WithLogger(log))
 	if err != nil {
 		return
@@ -271,6 +279,14 @@ func (a *App) initHttpServer(
 	if h, err = server.New(cfg.Endpoint, r); err != nil {
 		return
 	}
+
+	// log info
+	log.Warn(fmt.Sprintf("api available on %s via %s",
+		cfg.ApiServicePath, cfg.ApiServiceUrl))
+	log.Warn(fmt.Sprintf("user page available on %s via %s",
+		cfg.UserSpaPath, cfg.UserSpaUrl))
+	log.Warn(fmt.Sprintf("admin page available on %s via %s",
+		cfg.AdminSpaPath, cfg.AdminSpaUrl))
 
 	return
 }

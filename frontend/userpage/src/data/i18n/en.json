@@ -21,6 +21,7 @@
   "button.install.appstore.ru": "AppStore-RU",
   "button.install.appstore.global": "AppStore",
   "button.install.win": "Download .exe",
+  "button.install.others": "Others...",
 
   "servererror.main": "Server Error, Zajdite Pozze",
 

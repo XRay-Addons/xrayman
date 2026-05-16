@@ -141,6 +141,7 @@ func (a *App) Bootstrap() (err error) {
 			}
 			return err
 		}); err != nil {
+			a.log.Warn(fmt.Sprintf("bootstrap %s: unretriable error", bs.name), zap.Error(err))
 			return err
 		}
 	}

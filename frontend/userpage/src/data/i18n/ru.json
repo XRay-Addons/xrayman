@@ -1,5 +1,5 @@
 {
-  "title.main": "Оттепелль",
+  "title.main": "(ノಠ益ಠ)ノ彡...ццц",
 
   "title.hello": "Привет",
   "title.name.placeholder": "『Неизвестное Имя』",
@@ -21,10 +21,13 @@
   "button.install.gplay": "Google Play",
   "button.install.appstore.ru": "AppStore-RU",
   "button.install.appstore.global": "AppStore",
-  "button.install.win": "Download .exe",
+  "button.install.win": "Скачать .exe",
+  "button.install.others": "Другие...",
 
-  "share.button": "Отправить друзьям",
-  "share.button.sharedtext": "Только посмотри, какой VPN!",
+  "share.button.text": "Отправить друзьям",
+  "share.page.title": "Отправить друзьям...",
+  "share.page.tg-button": "в тг",
+  "share.page.tg-sharedtext": "Только посмотри, какой VPN!",
 
   "servererror.main": "Ошибка сервера, зайдите позже",
 

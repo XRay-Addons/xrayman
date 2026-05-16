@@ -10,6 +10,7 @@ import (
 	mw "github.com/XRay-Addons/xrayman/common/http/middleware"
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"go.uber.org/zap"
 )
 
@@ -39,6 +40,12 @@ func WithSPA(path string, spa SPA) Option {
 				page: spa,
 			},
 		)
+	}
+}
+
+func WithCrossOrigin(origins []string) Option {
+	return func(r *routerOptions) {
+		r.origins = append(r.origins, origins...)
 	}
 }
 
@@ -81,6 +88,18 @@ func New(options ...Option) (http.Handler, error) {
 	r.Use(chimw.Recoverer)
 	r.Use(chimw.NewCompressor(ro.compressionLvl).Handler)
 
+	// allow cross-origin
+	if len(ro.origins) != 0 {
+		r.Use(cors.Handler(cors.Options{
+			AllowedOrigins:   ro.origins,
+			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+			ExposedHeaders:   []string{"*"},
+			AllowCredentials: true,
+			MaxAge:           300,
+		}))
+	}
+
 	// add handler after middlewares
 	for _, h := range ro.handlers {
 		if h.handler == nil {
@@ -115,6 +134,7 @@ type spaItem struct {
 type routerOptions struct {
 	handlers       []handler
 	spas           []spaItem
+	origins        []string
 	requestTimeout time.Duration
 	compressionLvl int
 	log            *zap.Logger

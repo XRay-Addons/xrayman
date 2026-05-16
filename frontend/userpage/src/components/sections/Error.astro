@@ -14,10 +14,10 @@ const styleVars = {
 };
 ---
 
-<div class="error-page" {...rest} style={styleVars}>
+<div class="error" {...rest} style={styleVars}>
   <LazyImg class="w-100 d-block" src={src} />
 
-  <div class="error-page-text">
+  <div class="error-text">
     <div class="p-2 w-100 text text-md crt text-align-left">
       <slot />
     </div>
@@ -25,11 +25,11 @@ const styleVars = {
 </div>
 
 <style>
-  .error-page {
+  .error {
     position: relative;
   }
 
-  .error-page-text {
+  .error-text {
     position: absolute;
     inset: 0;
 

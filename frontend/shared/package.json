@@ -9,6 +9,10 @@
     "./services/*": "./src/services/*"
   },
   "dependencies": {
+    "lean-qr": "^2.7.1",
     "notyf": "^3.10.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
   }
 }

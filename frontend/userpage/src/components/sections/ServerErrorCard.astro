@@ -1,16 +1,16 @@
 ---
-import ErrorPage from "./ErrorPage.astro";
+import Error from "./Error.astro";
 
 const errorImg = "./error.gif";
 const errorColor = "white";
 ---
 
-<server-error>
-  <ErrorPage src={errorImg} color={errorColor}>
+<server-error-card>
+  <Error src={errorImg} color={errorColor}>
     <div data-i18n="servererror.main"></div>
     <div data-part="servererror.reason"></div>
-  </ErrorPage>
-</server-error>
+  </Error>
+</server-error-card>
 
 <style>
   server-error {
@@ -23,7 +23,7 @@ const errorColor = "white";
   import { State } from "@/state/state";
   import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
 
-  class ServerError extends PartedElement {
+  class ServerErrorCard extends PartedElement {
     private unsub?: () => void;
 
     connectedCallback() {
@@ -43,5 +43,5 @@ const errorColor = "white";
     }
   }
 
-  customElements.define("server-error", ServerError);
+  customElements.define("server-error-card", ServerErrorCard);
 </script>

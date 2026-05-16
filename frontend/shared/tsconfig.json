@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "module": "ESNext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "Bundler",
     "strict": true
   },
-  "include": ["src", "../admpage/src/services/api/handle-api.ts"]
+  "include": ["src"]
 }

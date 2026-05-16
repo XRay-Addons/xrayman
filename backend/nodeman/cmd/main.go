@@ -42,7 +42,7 @@ func main() {
 	}
 }
 
-func loadConfig() (*config.Config, error) {
+func loadConfig() (*config.RawConfig, error) {
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		return nil, err
