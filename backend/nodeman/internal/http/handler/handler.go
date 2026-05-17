@@ -10,7 +10,7 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/httperrdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
+	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/openapi-gen"
 	chimw "github.com/go-chi/chi/v5/middleware"
 	"github.com/ogen-go/ogen/ogenerrors"
 	"go.uber.org/zap"
@@ -20,6 +20,7 @@ type Handler struct {
 	us  UsersService
 	ns  NodesService
 	ss  SubscrService
+	shs SubHeadersService
 	as  AuthService
 	log *zap.Logger
 }
@@ -41,6 +42,7 @@ func New(
 	us UsersService,
 	ns NodesService,
 	ss SubscrService,
+	shs SubHeadersService,
 	as AuthService,
 	opts ...option,
 ) (*Handler, error) {
@@ -53,10 +55,17 @@ func New(
 	if ss == nil {
 		return nil, errdefs.NilArg("ss")
 	}
+	if shs == nil {
+		return nil, errdefs.NilArg("shs")
+	}
+	if as == nil {
+		return nil, errdefs.NilArg("as")
+	}
 	handler := &Handler{
 		us:  us,
 		ns:  ns,
 		ss:  ss,
+		shs: shs,
 		as:  as,
 		log: zap.NewNop(),
 	}

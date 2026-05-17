@@ -8,6 +8,7 @@ export enum PaletteItem {
   Input = "Input",
   Table = "Table",
   Success = "Success",
+  Tag = "Tag",
 }
 
 export type Palette = Record<PaletteItem, string>;
@@ -52,6 +53,7 @@ function getRandomPalette(palettes: string[][]): Palette | null {
     [PaletteItem.Input]: p[4 % n],
     [PaletteItem.Table]: p[1 % n], // table color = card color
     [PaletteItem.Success]: p[0 % n], // success color = card color
+    [PaletteItem.Tag]: p[0 % n], // tag color = card color
   };
 }
 
@@ -65,6 +67,7 @@ function getDOMPalette(): Palette {
     [PaletteItem.Input]: getComputedStyle(root).getPropertyValue("--input-color"),
     [PaletteItem.Table]: getComputedStyle(root).getPropertyValue("--table-color"),
     [PaletteItem.Success]: getComputedStyle(root).getPropertyValue("--success-color"),
+    [PaletteItem.Tag]: getComputedStyle(root).getPropertyValue("--tag-color"),
   };
 }
 
@@ -77,4 +80,5 @@ export function setDOMPalette(p: Palette) {
   root.style.setProperty("--input-color", p[PaletteItem.Input]);
   root.style.setProperty("--table-color", p[PaletteItem.Table]);
   root.style.setProperty("--success-color", p[PaletteItem.Success]);
+  root.style.setProperty("--tag-color", p[PaletteItem.Tag]);
 }

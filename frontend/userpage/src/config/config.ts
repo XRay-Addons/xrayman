@@ -1,5 +1,10 @@
-export const config = {
-  ApiPrefix: (window as any).__CONFIG__?.api_prefix ?? "http://localhost:1001/api",
-  UserPagePrefix: (window as any).__CONFIG__?.user_prefix ?? "/",
-  HAPP_INTENT: "happ://add/",
-};
+import type { UserPageConfig } from "./config.d";
+import { notifyError } from "@/runtime/notifications/use-notifications";
+
+export const config: UserPageConfig = await fetch("./config.json").then(async (r) => {
+  if (!r.ok) {
+    notifyError("errors.server.config-json");
+    throw new Error("config load failed");
+  }
+  return (await r.json()) as UserPageConfig;
+});

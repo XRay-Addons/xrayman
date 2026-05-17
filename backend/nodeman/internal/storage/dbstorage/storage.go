@@ -9,6 +9,7 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/auth/password"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subheaders"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/users"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/storage/dbstorage/migrations"
@@ -104,6 +105,23 @@ type subscrStorage struct {
 var _ subscr.Storage = (*subscrStorage)(nil)
 
 func (s *subscrStorage) DoUoW(ctx context.Context, fn subscr.UoWFn) error {
+	return s.storage.doTx(ctx, func(uowctx *uowctx) error {
+		return fn(uowctx)
+	})
+}
+
+// subscr headers storage proxy
+func (s *Storage) SubHeadersStorage() subheaders.Storage {
+	return &subHeadersStorage{storage: s}
+}
+
+type subHeadersStorage struct {
+	storage *Storage
+}
+
+var _ subheaders.Storage = (*subHeadersStorage)(nil)
+
+func (s *subHeadersStorage) DoUoW(ctx context.Context, fn subheaders.UoWFn) error {
 	return s.storage.doTx(ctx, func(uowctx *uowctx) error {
 		return fn(uowctx)
 	})

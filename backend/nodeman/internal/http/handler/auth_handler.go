@@ -6,7 +6,7 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/converter"
-	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
+	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/openapi-gen"
 )
 
 func (h *Handler) Auth(ctx context.Context, req *api.AuthRequest) (

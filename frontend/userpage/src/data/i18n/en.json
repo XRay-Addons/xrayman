@@ -25,5 +25,7 @@
 
   "servererror.main": "Server Error, Zajdite Pozze",
 
-  "servererror.reason.not_found": "Stranica ne naidena"
+  "servererror.reason.not_found": "Stranica ne naidena",
+
+  "errors.server.config-json": "config.json loading error"
 }

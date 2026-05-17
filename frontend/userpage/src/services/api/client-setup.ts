@@ -3,6 +3,6 @@ import { config } from "@/config/config";
 
 export function setupClient() {
   client.setConfig({
-    baseUrl: config.ApiPrefix,
+    baseUrl: config.routes.api_prefix,
   });
 }

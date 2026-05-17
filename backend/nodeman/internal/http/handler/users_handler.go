@@ -6,7 +6,7 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/converter"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
+	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/openapi-gen"
 )
 
 func (h *Handler) NewUser(ctx context.Context, req *api.NewUserRequest) (*api.User, error) {
@@ -21,7 +21,7 @@ func (h *Handler) NewUser(ctx context.Context, req *api.NewUserRequest) (*api.Us
 	if err != nil {
 		return nil, err
 	}
-	return converter.ConvertUser(res), nil
+	return converter.ConvertUserResult(res), nil
 }
 
 func (h *Handler) GetUser(ctx context.Context, req api.GetUserParams) (*api.User, error) {
@@ -39,7 +39,7 @@ func (h *Handler) GetUser(ctx context.Context, req api.GetUserParams) (*api.User
 	if !exists {
 		return nil, errdefs.NotFound("user")
 	}
-	userResponse := converter.ConvertUser(user)
+	userResponse := converter.ConvertUserResult(user)
 	return userResponse, nil
 }
 

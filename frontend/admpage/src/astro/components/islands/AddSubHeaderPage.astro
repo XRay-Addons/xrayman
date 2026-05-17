@@ -4,6 +4,8 @@ import Input from "@xrayman/shared/astro/primitives/Input.astro";
 import Card from "@xrayman/shared/astro/primitives/Card.astro";
 import Title from "@xrayman/shared/astro/primitives/Title.astro";
 import Button from "@xrayman/shared/astro/primitives/Button.astro";
+import Tag from "@xrayman/shared/astro/primitives/Tag.astro";
+
 import SuccessMsg from "@xrayman/shared/astro/primitives/SuccessMsg.astro";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 ---
@@ -21,7 +23,9 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
     <Input data-part="key-input" data-i18n-placeholder="add-sub-header.request.key.placeholder" />
 
     <Info>
-      <I18NText data-i18n="add-sub-header.request.value.info" />
+      <div class="d-inline-flex">
+        <I18NText data-i18n="add-sub-header.request.value.info" />
+      </div>
     </Info>
 
     <Input
@@ -29,6 +33,16 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
       data-i18n-placeholder="add-sub-header.request.value.placeholder"
       class="mb-2"
     />
+    <div data-part="placeholder-tags" class="d-flex flex-wrap gap-2 mb-2 h-center">
+      <template data-part="placeholder-tag-tmpl">
+        <div class="d-inline-flex">
+          <Tag data-part="placeholder-tag">
+            <span data-part="placeholder-tag-text"></span>
+          </Tag>
+        </div>
+      </template>
+    </div>
+
     <div class="row g-0 justify-content-center">
       <Button data-part="submit-input" class="col-8">
         <I18NText data-i18n="add-sub-header.submit-btn.info" />
@@ -46,8 +60,9 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
     import { newSubHeader } from "@/services/api/client";
     import { notifyApiError } from "@/runtime/notifications/use-notifications";
     import type { ResettableElement } from "@xrayman/shared/astro/types/Resettable";
-    import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
+    import { pt, PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
     import { reloadSubHeaders } from "@/actions/sub-headers";
+    import { config } from "@/config/config";
 
     class AddSubHeaderPage extends PartedElement implements ResettableElement {
       private keyInputEl!: HTMLInputElement;
@@ -60,6 +75,7 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
         this.valueInputEl = this.pt<HTMLInputElement>("value-input");
         this.inputSubmitEl = this.pt<HTMLButtonElement>("submit-input");
         this.successResultEl = this.pt<HTMLElement>("success-result");
+        this.setPlaceholderTags();
 
         this.inputSubmitEl.onclick = async () => {
           const key = this.keyInputEl.value;
@@ -84,6 +100,26 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
       }
 
       disconnectedCallback() {}
+
+      setPlaceholderTags() {
+        const tagTemplate = this.pt<HTMLTemplateElement>("placeholder-tag-tmpl");
+        const tagsSection = this.pt<HTMLElement>("placeholder-tags");
+
+        const frag = document.createDocumentFragment();
+        const tags = config.sub_headers_placeholders;
+
+        tags.forEach((tag) => {
+          const fragment = tagTemplate.content.cloneNode(true) as HTMLElement;
+          const btn = pt<HTMLButtonElement>(fragment, "placeholder-tag");
+          const text = pt<HTMLSpanElement>(fragment, "placeholder-tag-text");
+          text.innerHTML = tag;
+
+          btn.addEventListener("click", () => (this.valueInputEl.value += tag));
+          frag.appendChild(fragment);
+        });
+
+        tagsSection.replaceChildren(frag);
+      }
 
       reset() {
         this.keyInputEl.value = "";

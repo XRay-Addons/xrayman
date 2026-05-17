@@ -69,76 +69,15 @@ func (s *Service) GetUserSub(ctx context.Context,
 	clientCfgs := s.makeClientConfigs(*user, userNodes)
 
 	// get subscription headers
-	var headers models.Headers
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		headers, err = uowctx.ListSubHeaders(ctx)
-		return
-	}); err != nil {
+	clientHeaders, err := s.makeClientHeaders(ctx, *user)
+	if err != nil {
 		return nil, false, err
 	}
 
 	return &models.UserSubResult{
-		Headers:       headers,
+		Headers:       clientHeaders,
 		ClientConfigs: clientCfgs,
 	}, true, nil
-}
-
-// NewHeader implements handler.SubscrService.
-func (s *Service) NewHeader(ctx context.Context,
-	p models.NewSubHeaderParams,
-) (*models.Header, error) {
-	if s == nil || s.storage == nil {
-		return nil, errdefs.NilCall()
-	}
-
-	var header models.Header
-	header.Key = p.Key
-	header.Value = p.Value
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		err = uowctx.NewSubHeader(ctx, &header)
-		return
-	}); err != nil {
-		return nil, err
-	}
-
-	return &header, nil
-}
-
-func (s *Service) ListHeaders(ctx context.Context,
-	p models.ListSubHeadersParams,
-) (*models.ListSubHeadersResult, error) {
-	if s == nil || s.storage == nil {
-		return nil, errdefs.NilCall()
-	}
-
-	var headers []models.Header
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		headers, err = uowctx.ListSubHeaders(ctx)
-		return
-	}); err != nil {
-		return nil, err
-	}
-
-	return &models.ListSubHeadersResult{
-		Headers: headers,
-	}, nil
-}
-
-func (s *Service) DeleteHeader(ctx context.Context,
-	p models.DeleteSubHeaderParams,
-) (*models.DeleteSubHeaderResult, error) {
-	if s == nil || s.storage == nil {
-		return nil, errdefs.NilCall()
-	}
-
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		err = uowctx.DeleteSubHeader(ctx, p.ID)
-		return
-	}); err != nil {
-		return nil, err
-	}
-
-	return &models.DeleteSubHeaderResult{}, nil
 }
 
 func (s *Service) findUser(ctx context.Context, p models.UserSubParams) (*models.User, bool, error) {
@@ -197,4 +136,20 @@ func (s *Service) makeNodeClientConfigs(user models.User,
 		nodeConfigs = append(nodeConfigs, nodeConfig)
 	}
 	return nodeConfigs, nil
+}
+
+func (s *Service) makeClientHeaders(ctx context.Context, u models.User) (models.Headers, error) {
+	var headers models.Headers
+	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
+		headers, err = uowctx.ListSubHeaders(ctx)
+		return
+	}); err != nil {
+		return nil, err
+	}
+	headers = replacePlaceholders(headers, u)
+	return headers, nil
+}
+
+func (s Service) SubHeadersPlaceholders() []string {
+	return listPlaceholders()
 }

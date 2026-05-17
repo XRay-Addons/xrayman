@@ -2,9 +2,9 @@ import { MakeFullUrl } from "@xrayman/shared/runtime/paths/paths";
 import { config } from "@/config/config";
 
 export function MakeApiUrl(path: string): string {
-  return MakeFullUrl(config.ApiPrefix, path);
+  return MakeFullUrl(config.routes.api_prefix, path);
 }
 
 export function MakePageUrl(path: string): string {
-  return MakeFullUrl(config.UserPagePrefix, path);
+  return MakeFullUrl(config.routes.user_prefix, path);
 }

@@ -31,5 +31,7 @@
 
   "servererror.main": "Ошибка сервера, зайдите позже",
 
-  "servererror.reason.not_found": "Страница не найдена"
+  "servererror.reason.not_found": "Страница не найдена",
+
+  "errors.server.config.json": "config.json ошибка ошибки"
 }

@@ -1,19 +1,16 @@
 package pages
 
-import "embed"
+import (
+	"embed"
+
+	"github.com/XRay-Addons/xrayman/nodeman/internal/pages/converter"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/pages/pagecfg"
+)
 
 //go:embed userpage/**
 var userpageFS embed.FS
 
-type UserPageCfg struct {
-	ApiPrefix  string `json:"api_prefix"`
-	UserPrefix string `json:"user_prefix"`
-}
-
-func NewUserPage(apiServiceUrl, userSpaUrl string) (*Page, error) {
-	cfg := UserPageCfg{
-		ApiPrefix:  apiServiceUrl,
-		UserPrefix: userSpaUrl,
-	}
-	return new(userpageFS, "userpage", cfg)
+func NewUserPage(cfg pagecfg.UserPageCfg) (*Page, error) {
+	userPageCfg := converter.ConvertUserPageCfg(&cfg)
+	return new(userpageFS, "userpage", userPageCfg)
 }

@@ -1,6 +1,6 @@
 package models
 
-type HeaderID int
+type HeaderID = int
 
 type Header struct {
 	ID    HeaderID

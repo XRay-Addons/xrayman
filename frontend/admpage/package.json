@@ -5,9 +5,10 @@
   "version": "0.0.1",
   "scripts": {
     "api:generate": "openapi-ts",
-    "predev": "pnpm run api:generate",
+    "schema:generate": "json2ts ../../backend/nodeman/pkg/api/http/schemas/adminpagecfg.json ./src/config/config.d.ts",
+    "predev": "pnpm run api:generate && pnpm run schema:generate",
     "dev": "astro dev",
-    "prebuild": "pnpm run api:generate",
+    "prebuild": "pnpm run api:generate && pnpm run schema:generate",
     "build": "astro build",
     "preview": "astro preview"
   },
