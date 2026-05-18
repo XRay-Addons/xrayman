@@ -94,6 +94,7 @@
       "new_node": "Добавить ноду",
       "enable_user": "Разрешить пользователя",
       "disable_user": "Запретить пользователя",
+      "config_json": "config.json ошибка ошибки",
 
       "reason": {
         "bad_request": "Плохо запросилось",

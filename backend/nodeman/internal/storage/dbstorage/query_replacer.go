@@ -37,7 +37,7 @@ var (
 		"{sub_headers}", SubHeadersTable,
 		"{header_id}", HeaderIDCol,
 		"{header_key}", HeaderKeyCol,
-		"{header_val}", HeaderValueCol,
+		"{header_value}", HeaderValueCol,
 
 		"{created_at}", CreatedAtCol,
 		"{updated_at}", UpdatedAtCol,

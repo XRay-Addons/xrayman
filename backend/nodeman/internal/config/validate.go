@@ -44,7 +44,7 @@ func checkBaseUrls(c RawConfig) error {
 	return nil
 }
 
-// check if u = scheme://host/path or /path or empty
+// check if u = schema://host/path or /path or empty
 func checkBaseUrl(u string) bool {
 	parsed, err := url.Parse(u)
 	if err != nil {

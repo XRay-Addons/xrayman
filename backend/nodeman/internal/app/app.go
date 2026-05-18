@@ -22,8 +22,10 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/jobs/syncman"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/pages"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/pages/pagecfg"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/auth"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subheaders"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/users"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/storage/dbstorage"
@@ -200,10 +202,11 @@ func (a *App) initPoolSyncer(infra infrasturcture) (ps poolsync.Syncer, err erro
 }
 
 type services struct {
-	nodes  *nodes.Service
-	users  *users.Service
-	subscr *subscr.Service
-	auth   *auth.Service
+	nodes      *nodes.Service
+	users      *users.Service
+	subscr     *subscr.Service
+	subHeaders *subheaders.Service
+	auth       *auth.Service
 }
 
 func (a *App) initServices(
@@ -229,6 +232,10 @@ func (a *App) initServices(
 	if ss.subscr, err = subscr.New(s.SubscrStorage(), subscr.WithLogger(log)); err != nil {
 		return
 	}
+	// subscr headers service
+	if ss.subHeaders, err = subheaders.New(s.SubHeadersStorage()); err != nil {
+		return
+	}
 
 	// auth service
 	if ss.auth, err = auth.New(pwd, authJWT); err != nil {
@@ -251,15 +258,28 @@ func (a *App) initHttpServer(
 	}
 
 	// userpage spa
-	userpageSpa, err := pages.NewUserPage(
-		cfg.ApiServiceUrl, cfg.UserSpaUrl)
+	userpageCfg := pagecfg.UserPageCfg{
+		Routes: pagecfg.UserRoutes{
+			ApiPrefix:  cfg.ApiServiceUrl,
+			UserPrefix: cfg.UserSpaUrl,
+		},
+	}
+	userpageSpa, err := pages.NewUserPage(userpageCfg)
 	if err != nil {
 		return
 	}
 
 	// admpage spa
-	admpageSpa, err := pages.NewAdmPage(
-		cfg.ApiServiceUrl, cfg.AdminSpaUrl, cfg.UserSpaUrl)
+	adminpageCfg := pagecfg.AdminPageCfg{
+		Routes: pagecfg.AdminRoutes{
+			ApiPrefix:   cfg.ApiServiceUrl,
+			AdminPrefix: cfg.AdminSpaUrl,
+			UserPrefix:  cfg.UserSpaUrl,
+		},
+		SubHeadersPlaceholders: s.subscr.SubHeadersPlaceholders(),
+	}
+
+	admpageSpa, err := pages.NewAdmPage(adminpageCfg)
 	if err != nil {
 		return
 	}
@@ -297,6 +317,7 @@ func (a *App) initHandler(s services, authJWT *jwt.JWT, log *zap.Logger) (h http
 		s.users,
 		s.nodes,
 		s.subscr,
+		s.subHeaders,
 		s.auth,
 		handler.WithLogger(log))
 	if err != nil {

@@ -1,5 +1,4 @@
 import { handleAPI, type ApiResult } from "./handle-api";
-import { setupClient } from "./client-setup";
 
 import {
   auth as _auth,
@@ -18,8 +17,6 @@ import {
   newSubHeader as _newSubHeader,
 } from "./generated/sdk.gen";
 import type { User, Node, Header, AuthResponse } from "./generated/types.gen";
-
-setupClient();
 
 export async function auth(pwd: string): Promise<ApiResult<AuthResponse>> {
   return handleAPI(

@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-type UserID int
+type UserID = int
 
 type UserProfile struct {
 	ID          UserID

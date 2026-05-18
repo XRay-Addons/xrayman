@@ -1,10 +1,10 @@
 import { MakeFullUrl } from "@xrayman/shared/runtime/paths/paths";
 import { config } from "@/config/config";
 
-export function MakeApiUrl(path: string): string {
-  return MakeFullUrl(config.ApiPrefix, path);
+export async function MakeApiUrl(path: string): Promise<string> {
+  return MakeFullUrl((await config.get()).routes.api_prefix, path);
 }
 
-export function MakePageUrl(path: string): string {
-  return MakeFullUrl(config.UserPagePrefix, path);
+export async function MakePageUrl(path: string): Promise<string> {
+  return MakeFullUrl((await config.get()).routes.user_prefix, path);
 }

@@ -18,7 +18,7 @@ export function useSubHeadersTableColumns(i18nPrefix: string) {
       {
         key: "value",
         dataIndex: ["Value"],
-        customRender: ({ text }) => makeConfigLine(text),
+        customRender: ({ text }) => makeConfigLine(text, true),
       },
       {
         key: "actions",

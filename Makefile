@@ -82,8 +82,9 @@ embed_frontend: build_frontend
 GO_TOOLS := \
 	github.com/ogen-go/ogen/cmd/ogen@latest \
 	github.com/jmattheis/goverter/cmd/goverter@latest \
-	go.uber.org/mock/mockgen@latest
-
+	go.uber.org/mock/mockgen@latest \
+	github.com/atombender/go-jsonschema@latest
+	
 tools:
 	@echo "==> Installing Go tools"
 	@for tool in $(GO_TOOLS); do \

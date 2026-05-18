@@ -14,21 +14,33 @@ import SubHeadersTableCard from "./SubHeadersTableCard.astro";
 </script>
 
 <AuthDialog />
-<PageCenter class="col-12 col-xl-10">
-  <Title class="col-6 mb-2">
+
+<PageCenter class="fluid-lg">
+  <Title class="mb-2">
     <I18NText data-i18n="title.main" />
   </Title>
 
   <div class="page-columns">
-    <UsersTableCard />
-    <NodesTableCard />
-    <SubHeadersTableCard />
+    <div class="page-column">
+      <UsersTableCard />
+    </div>
+    <div class="page-column">
+      <NodesTableCard />
+      <SubHeadersTableCard />
+    </div>
   </div>
 </PageCenter>
 
 <style>
   .page-columns {
-    column-width: 50ch;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(50ch, 1fr));
+    gap: 0.5rem;
+    align-items: start;
+  }
+  .page-column {
+    display: flex;
+    flex-direction: column;
     gap: 0.5rem;
   }
 </style>

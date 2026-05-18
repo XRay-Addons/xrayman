@@ -3,18 +3,18 @@ import { type User } from "@/services/api/generated/types.gen";
 import { MakePageUrl } from "@/runtime/utils/paths";
 
 export const ProfileURL = {
-  make(user: User): string {
+  async make(user: User): Promise<string> {
     return MakePageUrl(`${user.Profile.ID}-${user.Profile.Name}`);
   },
-  set(user: User): void {
-    history.pushState(null, "", this.make(user));
+  async set(user: User) {
+    history.pushState(null, "", await this.make(user));
   },
-  reset() {
-    const absPath = MakePageUrl(`./`);
+  async reset() {
+    const absPath = await MakePageUrl(`./`);
     history.pushState(null, "", absPath);
   },
-  parse(): UserID | null {
-    const prefix = MakePageUrl(`./`);
+  async parse(): Promise<UserID | null> {
+    const prefix = await MakePageUrl(`./`);
     const path = window.location.href;
     const match = path.match(new RegExp(`${prefix}(\\d+)-(.+)$`));
     if (!match) return null;

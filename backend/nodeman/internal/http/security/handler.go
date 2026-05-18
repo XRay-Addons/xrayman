@@ -6,7 +6,7 @@ import (
 	"github.com/XRay-Addons/xrayman/common/http/httperr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/httperrdefs"
-	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/gen"
+	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/openapi-gen"
 )
 
 type Handler struct {

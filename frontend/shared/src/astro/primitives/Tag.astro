@@ -1,0 +1,50 @@
+---
+import Surface from "./Surface.astro";
+
+interface Props {
+  class?: string;
+  styles?: string;
+}
+
+const { class: extraClass, styles: __, ...rest } = Astro.props;
+---
+
+<div class:list={["tag", extraClass]}>
+  <button class="ui-reset-button noselect w-100 h-100 text text-sm crt p-1" {...rest}>
+    <slot />
+  </button>
+</div>
+
+<style lang="scss">
+  @use "../../styles/shades.scss" as *;
+
+  .tag {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    width: 100%;
+
+    border-width: 1px;
+    border-style: solid;
+    border-color: dddarker(var(--tag-color));
+    background-color: var(--tag-color);
+
+    color: contrasted(var(--tag-color));
+  }
+
+  @media (any-hover: hover) {
+    .tag:hover {
+      background-color: darker(var(--tag-color));
+    }
+  }
+
+  .tag:active {
+    background-color: ddarker(var(--tag-color));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tag {
+      transition: none;
+    }
+  }
+</style>

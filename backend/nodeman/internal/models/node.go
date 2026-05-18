@@ -27,7 +27,7 @@ type NodeConnectionInfo struct {
 	AccessKey AccessKey
 }
 
-type NodeID int
+type NodeID = int
 
 type NodeConfig struct {
 	ClientConfigTemplate ClientConfigTemplate

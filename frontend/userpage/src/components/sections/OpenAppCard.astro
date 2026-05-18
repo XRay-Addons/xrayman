@@ -28,8 +28,7 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 </open-app-card>
 
 <script>
-  import { MakeFullUrl } from "@xrayman/shared/runtime/paths/paths";
-  import { config } from "@/config/config";
+  import { MakeApiUrl } from "@/runtime/utils/paths";
   import { stateSignal } from "@/state/signals";
   import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
   import { State } from "@/state/state";
@@ -39,18 +38,19 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
     private openHappFn?: () => void;
 
     makeHappSubLink(subscriptionURL: string) {
-      return `${config.HAPP_INTENT}${subscriptionURL}`;
+      const happIntent = "happ://add/";
+      return `${happIntent}${subscriptionURL}`;
     }
 
     connectedCallback() {
       const btnEl = this.pt<HTMLButtonElement>("run-app-btn");
 
-      this.unsub = stateSignal.subscribe((state) => {
+      this.unsub = stateSignal.subscribe(async (state) => {
         if (state.status !== State.LoggedIn) {
           this.openHappFn = () => {};
           return;
         }
-        const subscriptionURL = MakeFullUrl(config.ApiPrefix, state.data.Profile.SubscriptionPath);
+        const subscriptionURL = await MakeApiUrl(state.data.Profile.SubscriptionPath);
         const happSubLink = this.makeHappSubLink(subscriptionURL);
         this.openHappFn = () => {
           window.open(happSubLink, "_blank", "noopener");
@@ -62,8 +62,8 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
       });
     }
 
-    disconnectedCallback() {
-      this.unsub?.();
+    async disconnectedCallback() {
+      await this.unsub?.();
     }
   }
 

@@ -1,6 +1,11 @@
 package pages
 
-import "embed"
+import (
+	"embed"
+
+	"github.com/XRay-Addons/xrayman/nodeman/internal/pages/converter"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/pages/pagecfg"
+)
 
 //go:embed admpage/**
 var admpageFS embed.FS
@@ -11,11 +16,7 @@ type AdmPageCfg struct {
 	UserPrefix  string `json:"user_prefix"`
 }
 
-func NewAdmPage(apiServiceUrl, adminSpaUrl, userSpaUrl string) (*Page, error) {
-	cfg := AdmPageCfg{
-		ApiPrefix:   apiServiceUrl,
-		AdminPrefix: adminSpaUrl,
-		UserPrefix:  userSpaUrl,
-	}
-	return new(admpageFS, "admpage", cfg)
+func NewAdmPage(cfg pagecfg.AdminPageCfg) (*Page, error) {
+	adminPageCfg := converter.ConvertAdminPageCfg(&cfg)
+	return new(admpageFS, "admpage", adminPageCfg)
 }

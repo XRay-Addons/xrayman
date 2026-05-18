@@ -6,14 +6,15 @@
     "pages/*"
   ],
   "scripts": {
-    "gen:admin": "pnpm -F admpage run api:generate",
-    "gen:user": "pnpm -F userpage run api:generate",
+    "gen:admin": "pnpm -F admpage run api:generate && pnpm -F admpage run schema:generate",
+    "gen:user": "pnpm -F userpage run api:generate && pnpm -F userpage run schema:generate",
     "gen": "pnpm -r run api:generate",
     "build:admin": "pnpm -F admpage run build",
     "build:user": "pnpm -F userpage run build",
     "build": "pnpm run build:user && pnpm run build:admin"
   },
   "devDependencies": {
+    "json-schema-to-typescript": "^15.0.4",
     "sass-embedded": "^1.99.0"
   }
 }

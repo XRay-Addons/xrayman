@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AdminPageConfig",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["routes", "sub_headers_placeholders"],
+
+  "properties": {
+    "routes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["api_prefix", "user_prefix", "admin_prefix"],
+
+      "properties": {
+        "api_prefix": {
+          "type": "string",
+          "description": "prefix for api requests"
+        },
+
+        "admin_prefix": {
+          "type": "string",
+          "description": "prefix for admin page spa"
+        },
+
+        "user_prefix": {
+          "type": "string",
+          "description": "prefix for user page spa"
+        }
+      }
+    },
+    "sub_headers_placeholders": {
+      "type": "array",
+      "description": "List of allowed subscription header placeholders",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    }
+  }
+}

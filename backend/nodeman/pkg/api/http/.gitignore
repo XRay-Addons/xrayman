@@ -1,1 +1,3 @@
 gen/
+openapi-gen/
+schemas-gen/

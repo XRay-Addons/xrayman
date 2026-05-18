@@ -2,6 +2,7 @@ package dbstorage
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
@@ -11,10 +12,17 @@ func (uow *uowctx) NewSubHeader(ctx context.Context, header *models.Header) erro
 	query := queryReplacer.Replace(`
 		INSERT INTO {sub_headers} (
 			{header_key},
-			{header_val}
-		) VALUES ($1, $2)
+			{header_value}
+		)
+		VALUES ($1, $2)
+		ON CONFLICT ({header_key})
+		DO UPDATE SET
+			{header_value} = EXCLUDED.{header_value},
+			{updated_at} = now(),
+			{deleted_at} = NULL
 		RETURNING {header_id}
 	`)
+	fmt.Println(query)
 
 	err := uow.tx.QueryRowContext(ctx, query,
 		header.Key,
@@ -49,7 +57,7 @@ func (uow *uowctx) ListSubHeaders(ctx context.Context) (headers []models.Header,
 		SELECT
 			{header_id},
 			{header_key},
-			{header_val}
+			{header_value}
 		FROM {sub_headers}
 		WHERE {deleted_at} IS NULL
 		ORDER BY {header_id} ASC

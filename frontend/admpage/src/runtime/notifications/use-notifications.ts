@@ -4,10 +4,13 @@ import { t } from "@/runtime/i18n";
 
 const ntf = new Notyfier();
 
-export function errorNotification(message: string, details?: string) {
-  ntf.errorNotification(message, details);
+export function notifyError(message: string, details?: string) {
+  ntf.errorNotification(t(message), details && t(details));
 }
 
 export function notifyApiError(errkey: string, reason?: ApiReason) {
-  errorNotification(t(`errors.server.${errkey}`), reason && t(`errors.server.reason.${reason}`));
+  ntf.errorNotification(
+    t(`errors.server.${errkey}`),
+    reason && t(`errors.server.reason.${reason}`),
+  );
 }
