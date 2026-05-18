@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
@@ -102,9 +101,6 @@ func (s *Service) EditUsers(ctx context.Context,
 		return nil, errdefs.NilCall()
 	}
 
-	for _, u := range params.Add {
-		fmt.Println("vless uuid: ", u.VlessUUID)
-	}
 	if err := s.xrayAPI.EditUsers(ctx, params.Add, params.Remove); err != nil {
 		return nil, err
 	}

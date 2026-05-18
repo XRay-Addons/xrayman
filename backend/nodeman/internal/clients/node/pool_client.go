@@ -1,7 +1,6 @@
 package nodesync
 
 import (
-	"context"
 	"net/http"
 	"time"
 
@@ -57,9 +56,7 @@ func NewPoolClient(opts ...Option) (*PoolClient, error) {
 	return pc, nil
 }
 
-func (c *PoolClient) GetNodeClient(ctx context.Context,
-	cfg models.NodeConnectionInfo,
-) (nodesync.Client, error) {
+func (c *PoolClient) GetNodeClient(cfg models.NodeConnectionInfo) (nodesync.Client, error) {
 	if c == nil {
 		return nil, errdefs.NilCall()
 	}

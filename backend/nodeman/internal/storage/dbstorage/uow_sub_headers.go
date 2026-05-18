@@ -2,7 +2,6 @@ package dbstorage
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
@@ -22,7 +21,6 @@ func (uow *uowctx) NewSubHeader(ctx context.Context, header *models.Header) erro
 			{deleted_at} = NULL
 		RETURNING {header_id}
 	`)
-	fmt.Println(query)
 
 	err := uow.tx.QueryRowContext(ctx, query,
 		header.Key,

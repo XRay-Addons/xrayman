@@ -3,6 +3,7 @@ package dbstorage
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
@@ -33,7 +34,8 @@ func New(ctx context.Context, db *sql.DB) (s *Storage, err error) {
 type option func(o *options)
 
 type options struct {
-	log *zap.Logger
+	log     *zap.Logger
+	timeout time.Duration
 }
 
 func WithLogger(l *zap.Logger) option {
@@ -44,14 +46,23 @@ func WithLogger(l *zap.Logger) option {
 	}
 }
 
+func WithTimeout(t time.Duration) option {
+	return func(o *options) {
+		o.timeout = t
+	}
+}
+
 func (s *Storage) Migrage(ctx context.Context, opts ...option) error {
 	cfg := options{
-		log: zap.NewNop(),
+		log:     zap.NewNop(),
+		timeout: 5 * time.Second,
 	}
 	for _, o := range opts {
 		o(&cfg)
 	}
 
+	ctx, cancel := context.WithTimeout(ctx, cfg.timeout)
+	defer cancel()
 	if err := migrations.ApplyMigrations(ctx, s.db, cfg.log); err != nil {
 		return translatePgErr(err)
 	}
