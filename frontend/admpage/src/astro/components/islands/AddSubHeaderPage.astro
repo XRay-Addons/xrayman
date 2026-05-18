@@ -114,11 +114,20 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
           const text = pt<HTMLSpanElement>(fragment, "placeholder-tag-text");
           text.innerHTML = tag;
 
-          btn.addEventListener("click", () => (this.valueInputEl.value += tag));
+          btn.addEventListener("click", () => this.addInputText(this.valueInputEl, tag));
           frag.appendChild(fragment);
         });
 
         tagsSection.replaceChildren(frag);
+      }
+
+      addInputText(input: HTMLInputElement, text: string) {
+        const start = input.selectionStart ?? 0;
+        const end = input.selectionEnd ?? 0;
+
+        input.value = input.value.slice(0, start) + text + input.value.slice(end);
+        const newPos = start + text.length;
+        input.setSelectionRange(newPos, newPos);
       }
 
       reset() {

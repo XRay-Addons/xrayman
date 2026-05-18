@@ -10,7 +10,7 @@ import (
 // goverter:output:file ./schemes_generated.go
 //
 //go:generate goverter gen .
-type AuthConverter interface {
+type PageCfgConverter interface {
 	ConvertUserPageCfg(r *cfgs.UserPageCfg) *schemas.UserpagecfgJson
 	ConvertAdminPageCfg(r *cfgs.AdminPageCfg) *schemas.AdminpagecfgJson
 }
