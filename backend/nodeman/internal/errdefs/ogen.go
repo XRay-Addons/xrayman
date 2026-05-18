@@ -9,6 +9,8 @@ import (
 )
 
 func OgenErr(err error) error {
+	err = xerr.WrapWithStack(err)
+
 	details := ""
 
 	var sc interface{ StatusCode() int }
@@ -22,6 +24,7 @@ func OgenErr(err error) error {
 	if errors.As(err, &ue) {
 		details += fmt.Sprintf("; URL: %s", ue.URL)
 	}
+	err = xerr.WrapWithf(ErrConnection, "%+v", err)
 
-	return xerr.WrapWith(ErrConnection, details)
+	return err
 }

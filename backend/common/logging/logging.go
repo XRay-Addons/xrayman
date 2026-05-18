@@ -1,59 +1,12 @@
 package logging
 
 import (
-	"fmt"
 	"os"
-	"strings"
+	"time"
 
 	"go.uber.org/zap"
-	"go.uber.org/zap/buffer"
 	"go.uber.org/zap/zapcore"
 )
-
-// pretty errors formatter
-type PrettyEncoder struct {
-	zapcore.Encoder
-}
-
-func (e *PrettyEncoder) Clone() zapcore.Encoder {
-	return &PrettyEncoder{
-		Encoder: e.Encoder.Clone(),
-	}
-}
-
-func (e *PrettyEncoder) EncodeEntry(
-	ent zapcore.Entry,
-	fields []zapcore.Field,
-) (*buffer.Buffer, error) {
-	var okFields, errFields []zapcore.Field
-	for _, f := range fields {
-		if (f.Type == zapcore.ErrorType) && (f.Interface.(error) != nil) {
-			errFields = append(errFields, f)
-		} else {
-			okFields = append(okFields, f)
-		}
-	}
-
-	// non-errors messages:
-	buf, err := e.Encoder.EncodeEntry(ent, okFields)
-
-	// add errors messages:
-	for _, f := range errFields {
-		buf.AppendString(e.formatError(f.Key, f.Interface.(error)))
-	}
-
-	return buf, err
-}
-
-func (e *PrettyEncoder) formatError(name string, err error) string {
-	errLines := strings.Split(fmt.Sprintf("%+v", err), "\n")
-	for i, line := range errLines {
-		if i > 0 {
-			errLines[i] = "\t\t" + line
-		}
-	}
-	return fmt.Sprintf("\t%s: %s\n", name, strings.Join(errLines, "\n"))
-}
 
 func New() (*zap.Logger, error) {
 	const human = true
@@ -68,19 +21,23 @@ func New() (*zap.Logger, error) {
 		encoder = zapcore.NewJSONEncoder(encCfg)
 	}
 
-	stdout := zapcore.AddSync(os.Stdout)
-	stderr := zapcore.AddSync(os.Stderr)
-
-	core := zapcore.NewCore(
+	// All -> stdout
+	stdoutCore := zapcore.NewCore(
 		encoder,
-		stdout,
-		zapcore.InfoLevel,
+		zapcore.AddSync(os.Stdout),
+		zapcore.DebugLevel,
 	)
 
-	logger := zap.New(
-		core,
-		zap.ErrorOutput(stderr),
+	// Warn, Err -> stderr
+	stderrCore := zapcore.NewCore(
+		encoder,
+		zapcore.AddSync(os.Stderr),
+		zapcore.WarnLevel,
 	)
+
+	core := zapcore.NewTee(stdoutCore, stderrCore)
+
+	logger := zap.New(core)
 
 	return logger, nil
 }
@@ -98,9 +55,11 @@ func machineReadableConfig() zapcore.EncoderConfig {
 		MessageKey:    "msg",
 		StacktraceKey: "stacktrace",
 		LineEnding:    zapcore.DefaultLineEnding,
-		EncodeTime:    zapcore.ISO8601TimeEncoder,
-		EncodeLevel:   zapcore.LowercaseLevelEncoder,
-		EncodeCaller:  zapcore.ShortCallerEncoder,
+		EncodeTime: func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
+			enc.AppendString(t.UTC().Format("2006-01-02 15:04:05 UTC"))
+		},
+		EncodeLevel:  zapcore.LowercaseLevelEncoder,
+		EncodeCaller: zapcore.ShortCallerEncoder,
 	}
 }
 
@@ -112,8 +71,10 @@ func humanReadableConfig() zapcore.EncoderConfig {
 		CallerKey:     "caller",
 		StacktraceKey: "stacktrace",
 		LineEnding:    "\n",
-		EncodeTime:    zapcore.TimeEncoderOfLayout("15:04:05"),
-		EncodeLevel:   zapcore.CapitalColorLevelEncoder,
-		EncodeCaller:  zapcore.ShortCallerEncoder,
+		EncodeTime: func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
+			enc.AppendString(t.UTC().Format("2006-01-02 15:04:05 UTC"))
+		},
+		EncodeLevel:  zapcore.CapitalColorLevelEncoder,
+		EncodeCaller: zapcore.ShortCallerEncoder,
 	}
 }

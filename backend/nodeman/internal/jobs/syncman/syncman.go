@@ -109,8 +109,7 @@ func (m *SyncMan) syncLoop(ctx context.Context) {
 
 func (m *SyncMan) logSyncResult(r *models.PoolSyncResult, err error) {
 	if err != nil {
-		m.log.Error("background node sync", zap.Error(err))
-		return
+		m.log.Error("background pool sync", zap.Error(err))
 	}
 	for _, n := range r.Nodes {
 		if n.Err == nil {
