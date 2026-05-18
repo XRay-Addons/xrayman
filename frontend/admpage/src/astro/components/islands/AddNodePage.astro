@@ -8,9 +8,9 @@ import SuccessMsg from "@xrayman/shared/astro/primitives/SuccessMsg.astro";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 ---
 
-<add-node-page class="row w-100 g-0 justify-content-center">
-  <Card class="col-6">
-    <Title class="col-8">
+<add-node-page class="fluid-md">
+  <Card>
+    <Title class="mb-2">
       <I18NText data-i18n="add-node.title" />
     </Title>
 
@@ -32,7 +32,7 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
       data-i18n-placeholder="add-node.request.accesskey.placeholder"
       class="mb-2"
     />
-    <div class="row g-0 justify-content-center">
+    <div class="d-flex justify-content-center">
       <Button data-part="submit-input" class="col-8">
         <I18NText data-i18n="add-node.submit-btn.info" />
       </Button>

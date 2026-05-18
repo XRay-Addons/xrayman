@@ -10,9 +10,9 @@ import SuccessMsg from "@xrayman/shared/astro/primitives/SuccessMsg.astro";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 ---
 
-<add-sub-header-page class="row w-100 g-0 justify-content-center">
-  <Card class="col-6">
-    <Title class="col-8">
+<add-sub-header-page class="fluid-md">
+  <Card>
+    <Title>
       <I18NText data-i18n="add-sub-header.title" />
     </Title>
 
@@ -43,7 +43,7 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
       </template>
     </div>
 
-    <div class="row g-0 justify-content-center">
+    <div class="d-flex justify-content-center">
       <Button data-part="submit-input" class="col-8">
         <I18NText data-i18n="add-sub-header.submit-btn.info" />
       </Button>
@@ -114,7 +114,7 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
           const text = pt<HTMLSpanElement>(fragment, "placeholder-tag-text");
           text.innerHTML = tag;
 
-          // prevent input focus loose
+          // prevent input focus lose
           btn.addEventListener("mousedown", (e) => {
             e.preventDefault();
           });

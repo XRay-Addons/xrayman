@@ -24,7 +24,13 @@ export class RandomTheme {
     const domPalette = getDOMPalette();
     callback(domPalette);
 
-    document.addEventListener("click", () => {
+    document.addEventListener("click", (e) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      if (target.closest("button, input, textarea, select, label")) {
+        return;
+      }
+
       const now = Date.now();
       if (now - lastTap < timeout) {
         const next = getRandomPalette(palettes);
