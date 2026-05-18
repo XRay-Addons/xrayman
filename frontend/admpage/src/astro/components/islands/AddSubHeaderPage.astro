@@ -114,7 +114,14 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
           const text = pt<HTMLSpanElement>(fragment, "placeholder-tag-text");
           text.innerHTML = tag;
 
-          btn.addEventListener("click", () => this.addInputText(this.valueInputEl, tag));
+          // prevent input focus loose
+          btn.addEventListener("mousedown", (e) => {
+            e.preventDefault();
+          });
+          btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            this.addInputText(this.valueInputEl, tag);
+          });
           frag.appendChild(fragment);
         });
 
@@ -122,12 +129,12 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
       }
 
       addInputText(input: HTMLInputElement, text: string) {
-        const start = input.selectionStart ?? 0;
-        const end = input.selectionEnd ?? 0;
+        const start = input.selectionStart ?? input.value.length;
+        const end = input.selectionEnd ?? input.value.length;
 
-        input.value = input.value.slice(0, start) + text + input.value.slice(end);
-        const newPos = start + text.length;
-        input.setSelectionRange(newPos, newPos);
+        input.blur();
+        input.setRangeText(text, start, end, "end");
+        input.focus();
       }
 
       reset() {
