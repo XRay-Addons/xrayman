@@ -40,9 +40,9 @@ import CopyGroup from "@xrayman/shared/astro/primitives/CopyGroup.astro";
     connectedCallback() {
       const userpageOutputEl = this.pt<CopyGroupElement>("result-userpage")!;
 
-      this.unsub = stateSignal.subscribe((state) => {
+      this.unsub = stateSignal.subscribe(async (state) => {
         if (state.status === State.LoggedIn) {
-          userpageOutputEl.setValue(ProfileURL.make(state.data));
+          userpageOutputEl.setValue(await ProfileURL.make(state.data));
         } else {
           userpageOutputEl.setValue("");
         }

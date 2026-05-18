@@ -101,12 +101,12 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 
       disconnectedCallback() {}
 
-      setPlaceholderTags() {
+      async setPlaceholderTags() {
         const tagTemplate = this.pt<HTMLTemplateElement>("placeholder-tag-tmpl");
         const tagsSection = this.pt<HTMLElement>("placeholder-tags");
 
         const frag = document.createDocumentFragment();
-        const tags = config.sub_headers_placeholders;
+        const tags = (await config.get()).sub_headers_placeholders;
 
         tags.forEach((tag) => {
           const fragment = tagTemplate.content.cloneNode(true) as HTMLElement;

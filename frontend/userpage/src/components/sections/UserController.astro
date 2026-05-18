@@ -17,7 +17,7 @@
 
     private async init() {
       // url user priority
-      const userID = ProfileURL.parse() || ProfileStorage.parse();
+      const userID = (await ProfileURL.parse()) || ProfileStorage.parse();
       if (!userID) {
         stateSignal.set({ status: State.LoggedOut });
         return;

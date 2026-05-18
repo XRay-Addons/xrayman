@@ -33,8 +33,8 @@ import Barcode from "@xrayman/shared/astro/primitives/Barcode.astro";
   class SharePage extends PartedElement {
     private unsub?: () => void;
 
-    connectedCallback() {
-      const sharingUrl = MakePageUrl("");
+    async connectedCallback() {
+      const sharingUrl = await MakePageUrl("");
 
       const btnEl = this.pt<HTMLButtonElement>("share-tg-btn");
       btnEl.onclick = () => {
