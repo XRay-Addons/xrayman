@@ -16,8 +16,8 @@ import { makeConfigLine } from "@/vue/components/primitives/table-ext/render-pri
 
 import { type VNode } from "vue";
 
-export function renderUserPageURL(u: UserProfile) {
-  return makeConfigLine(MakeUserpageURL(u.ID, u.Name), true);
+export async function renderUserPageURL(u: UserProfile) {
+  return makeConfigLine(await MakeUserpageURL(u.ID, u.Name), true);
 }
 
 export function renderTag(status: UserStatus) {
@@ -44,7 +44,7 @@ export function renderActions(status: UserStatus, user: User) {
   return mergeActionBtns(actions);
 }
 
-export function renderApiUrl(text: string) {
-  text = MakeApiUrl(text);
+export async function renderApiUrl(text: string) {
+  text = await MakeApiUrl(text);
   return makeConfigLine(text, true);
 }

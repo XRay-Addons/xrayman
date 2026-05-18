@@ -47,7 +47,7 @@ export function useUsersTableColumns(i18nPrefix: string) {
       {
         key: "subscription",
         dataIndex: ["Profile", "SubscriptionPath"],
-        customRender: ({ text }) => renderApiUrl(text),
+        customRender: async ({ text }) => renderApiUrl(text),
         extended: true,
       },
       {
