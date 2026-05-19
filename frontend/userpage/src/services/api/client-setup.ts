@@ -1,9 +1,14 @@
 import { client } from "./generated/client.gen";
 import { config } from "@/config/config";
-import { makeSingleton } from "@xrayman/shared/runtime/singletone/singletone";
 
-export const clientSetup = makeSingleton<void>(async () => {
+let initialized = false;
+
+export function ensureClient() {
+  if (initialized) return;
+
   client.setConfig({
-    baseUrl: (await config.get()).routes.api_prefix,
+    baseUrl: config.routes.api_prefix,
   });
-});
+
+  initialized = true;
+}

@@ -1,9 +1,7 @@
 import { setPalette } from "@/actions/palette";
 import palettes from "@/data/palettes/palettes.json";
-import { RandomTheme, type Palette } from "@xrayman/shared/features/random-theme";
-
-var randomTheme: RandomTheme;
+import { UseRandomTheme } from "@xrayman/shared/features/random-theme";
 
 export function useRandomTheme() {
-  randomTheme = new RandomTheme(palettes, setPalette);
+  UseRandomTheme(palettes, setPalette);
 }

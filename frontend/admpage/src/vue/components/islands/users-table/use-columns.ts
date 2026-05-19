@@ -6,7 +6,6 @@ import {
   i18nateColumns,
 } from "@/vue/components/primitives/table-ext/render-primitives";
 import { renderTag, renderActions, renderUserPageURL, renderApiUrl } from "./rendering";
-import { MakeUserpageURL } from "@/runtime/utils/paths";
 
 export function useUsersTableColumns(i18nPrefix: string) {
   return computed(() => {
@@ -47,7 +46,7 @@ export function useUsersTableColumns(i18nPrefix: string) {
       {
         key: "subscription",
         dataIndex: ["Profile", "SubscriptionPath"],
-        customRender: async ({ text }) => renderApiUrl(text),
+        customRender: ({ text }) => renderApiUrl(text),
         extended: true,
       },
       {

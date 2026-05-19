@@ -14,7 +14,7 @@ class AuthMan {
   private loginInProgress = false;
   private queue: Pending<any>[] = [];
 
-  async handle401<T>(retry: RetryFn<T>): Promise<T> {
+  handle401<T>(retry: RetryFn<T>): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       this.queue.push({ resolve, reject, retry });
 

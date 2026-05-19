@@ -35,14 +35,14 @@ export async function listUsers(): Promise<ApiResult<Array<User>>> {
 export async function enableUser(id: number): Promise<ApiResult<void>> {
   return handleAPI(
     () => _enableUser({ body: { ID: id } }),
-    (data) => {},
+    () => {},
   );
 }
 
 export async function disableUser(id: number): Promise<ApiResult<void>> {
   return handleAPI(
     () => _disableUser({ body: { ID: id } }),
-    (data) => {},
+    () => {},
   );
 }
 
@@ -56,7 +56,7 @@ export async function newUser(displayName: string): Promise<ApiResult<User>> {
 export async function deleteUser(id: number): Promise<ApiResult<void>> {
   return handleAPI(
     () => _deleteUser({ body: { ID: id } }),
-    (data) => {},
+    () => {},
   );
 }
 
@@ -70,14 +70,14 @@ export async function listNodes(): Promise<ApiResult<Array<Node>>> {
 export async function startNode(id: number): Promise<ApiResult<void>> {
   return handleAPI(
     () => _startNode({ body: { ID: id } }),
-    (data) => {},
+    () => {},
   );
 }
 
 export async function stopNode(id: number): Promise<ApiResult<void>> {
   return handleAPI(
     () => _stopNode({ body: { ID: id } }),
-    (data) => {},
+    () => {},
   );
 }
 
@@ -91,7 +91,7 @@ export async function newNode(endpoint: string, accessKey: string): Promise<ApiR
 export async function deleteNode(id: number): Promise<ApiResult<void>> {
   return handleAPI(
     () => _deleteNode({ body: { ID: id } }),
-    (data) => {},
+    () => {},
   );
 }
 
@@ -112,6 +112,6 @@ export async function newSubHeader(key: string, value: string): Promise<ApiResul
 export async function deleteSubHeader(id: number): Promise<ApiResult<void>> {
   return handleAPI(
     () => _deleteSubHeader({ body: { ID: id } }),
-    (data) => {},
+    () => {},
   );
 }

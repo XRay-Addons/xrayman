@@ -1,7 +1,7 @@
 import { shallowRef, type ShallowRef } from "vue";
 import { type Palette, PaletteItem } from "@xrayman/shared/features/random-theme";
 
-let paletteValue: Palette = {
+const paletteValue: Palette = {
   [PaletteItem.BG]: "transparent",
   [PaletteItem.Card]: "transparent",
   [PaletteItem.Title]: "transparent",
@@ -9,6 +9,7 @@ let paletteValue: Palette = {
   [PaletteItem.Input]: "transparent",
   [PaletteItem.Table]: "transparent",
   [PaletteItem.Success]: "transparent",
+  [PaletteItem.Tag]: "transparent",
 };
 
 const palette = shallowRef(paletteValue);

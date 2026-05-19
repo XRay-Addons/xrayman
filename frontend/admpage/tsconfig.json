@@ -4,6 +4,12 @@
     "paths": {
       "@/*": ["./src/*"],
       "@xrayman/shared/*": ["../shared/src/*"]
-    }
+    },
+    "moduleResolution": "bundler",
+
+    "strict": true,
+    "noUnusedLocals": true,
+    "noImplicitAny": true,
+    "exactOptionalPropertyTypes": true
   }
 }

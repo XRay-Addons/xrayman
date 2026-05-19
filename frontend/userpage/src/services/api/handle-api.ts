@@ -4,7 +4,7 @@ import {
   type ApiReason,
 } from "@xrayman/shared/services/api/api-reason";
 import type { Error } from "./generated/types.gen";
-import { clientSetup } from "./client-setup";
+import { ensureClient } from "./client-setup";
 
 export type ApiResult<T> = { ok: true; data: T } | { ok: false; reason: ApiReason };
 
@@ -18,7 +18,7 @@ export async function handleAPI<T, R>(
   transform: (data: T) => R,
 ): Promise<ApiResult<R>> {
   try {
-    await clientSetup.get();
+    ensureClient();
     let resp = await apiCall();
     if (!resp.error) {
       return { ok: true, data: transform(resp.data!) };

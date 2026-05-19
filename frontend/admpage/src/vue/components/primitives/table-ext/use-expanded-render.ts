@@ -1,6 +1,6 @@
 import type { ExtendedColumn, ExtendedRow } from "./table-types";
 import { ConfigProvider, Table } from "ant-design-vue";
-import { h, computed, type VNode } from "vue";
+import { h, type VNode } from "vue";
 
 type ExpandRenderCtx<T> = {
   record: T;
