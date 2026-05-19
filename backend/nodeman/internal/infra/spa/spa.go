@@ -46,7 +46,7 @@ func mountPrefixNormalizer(r chi.Router, prefix string) {
 		http.StatusPermanentRedirect).ServeHTTP)
 }
 
-const configPath = "config.json"
+const configPath = "config.js"
 
 func mountConfig(r chi.Router, prefix string, cfg any, log *zap.Logger) error {
 	// make config js
@@ -55,9 +55,16 @@ func mountConfig(r chi.Router, prefix string, cfg any, log *zap.Logger) error {
 		return xerr.WrapWithStack(err)
 	}
 
+	cfgScript := bytes.NewBuffer(nil)
+	cfgScript.WriteString("window.__CONFIG__ = ")
+	cfgScript.Write(cfgData)
+	cfgScript.WriteString(";\nObject.freeze(window.__CONFIG__);")
+
 	r.Get(prefix+configPath, func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		_, err := w.Write(cfgData) // we have nothing to do with this error
+		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
+		w.Header().Set("Cache-Control", "no-store")
+
+		_, err := w.Write(cfgScript.Bytes()) // we have nothing to do with this error
 		if err != nil {
 			log.Warn("response writing", zap.String("path", prefix+configPath), zap.Error(err))
 		}

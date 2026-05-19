@@ -15,33 +15,31 @@ export type Palette = Record<PaletteItem, string>;
 
 export type OnSetPalette = (p: Palette) => void;
 
-export class RandomTheme {
-  constructor(palettes: string[][], callback: OnSetPalette) {
-    let lastTap = 0;
-    const timeout = 300;
+export function UseRandomTheme(palettes: string[][], callback: OnSetPalette) {
+  let lastTap = 0;
+  const timeout = 300;
 
-    // init palette by CSS
-    const domPalette = getDOMPalette();
-    callback(domPalette);
+  // init palette by CSS
+  const domPalette = getDOMPalette();
+  callback(domPalette);
 
-    document.addEventListener("click", (e) => {
-      const target = e.target as HTMLElement | null;
-      if (!target) return;
-      if (target.closest("button, input, textarea, select, label")) {
-        return;
+  document.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement | null;
+    if (!target) return;
+    if (target.closest("button, input, textarea, select, label")) {
+      return;
+    }
+
+    const now = Date.now();
+    if (now - lastTap < timeout) {
+      const next = getRandomPalette(palettes);
+      if (next) {
+        callback(next);
       }
+    }
 
-      const now = Date.now();
-      if (now - lastTap < timeout) {
-        const next = getRandomPalette(palettes);
-        if (next) {
-          callback(next);
-        }
-      }
-
-      lastTap = now;
-    });
-  }
+    lastTap = now;
+  });
 }
 
 function getRandomPalette(palettes: string[][]): Palette | null {

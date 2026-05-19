@@ -1,12 +1,5 @@
 import { type Header } from "@/services/api/generated";
-import { MakeApiUrl, MakeUserpageURL } from "@/runtime/utils/paths";
-
 import {
-  enabledTag,
-  disabledTag,
-  unknownTag,
-  enableBtn,
-  disableBtn,
   ensureDeleteBtn,
   mergeActionBtns,
 } from "@/vue/components/primitives/table-ext/render-primitives";

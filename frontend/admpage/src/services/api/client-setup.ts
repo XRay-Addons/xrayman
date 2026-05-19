@@ -2,15 +2,20 @@ import { getAuthToken } from "@/state/token";
 import { client } from "./generated/client.gen";
 import { authMan } from "./auth-man";
 import { config } from "@/config/config";
-import { makeSingleton } from "@xrayman/shared/runtime/singletone/singletone";
 
-export const clientSetup = makeSingleton<void>(async () => {
+let initialized = false;
+
+export function ensureClient() {
+  if (initialized) return;
+
   client.setConfig({
     auth: getToken,
-    baseUrl: (await config.get()).routes.api_prefix,
+    baseUrl: config.routes.api_prefix,
     fetch: authFetch,
   });
-});
+
+  initialized = true;
+}
 
 function getToken(): string {
   return getAuthToken() ?? "[no token]";
