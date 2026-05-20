@@ -76,10 +76,8 @@ func getStats(
 	log *zap.Logger,
 ) error {
 	reset := true
-	ptn := "^user>>>.*"
 	resp, err := ssClient.QueryStats(context.Background(), &statsService.QueryStatsRequest{
-		Pattern: ptn,
-		Reset_:  reset,
+		Reset_: reset,
 	})
 	if err != nil {
 		return xerr.WrapWithStack(err)
