@@ -12,4 +12,5 @@ type Service interface {
 	Stop(ctx context.Context, params models.StopParams) (*models.StopResult, error)
 	Status(ctx context.Context, params models.StatusParams) (*models.StatusResult, error)
 	EditUsers(ctx context.Context, params models.EditUsersParams) (*models.EditUsersResult, error)
+	GetStats(ctx context.Context) (*models.StatsResult, error)
 }

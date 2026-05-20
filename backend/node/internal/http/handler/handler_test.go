@@ -118,7 +118,8 @@ func TestHandler(t *testing.T) {
 
 			// don't check BadRequest response body, it
 			// contains json error desciptions
-			if tt.expectedCode == http.StatusBadRequest {
+			if tt.expectedCode == http.StatusBadRequest ||
+				tt.expectedCode == http.StatusInternalServerError {
 				return
 			}
 

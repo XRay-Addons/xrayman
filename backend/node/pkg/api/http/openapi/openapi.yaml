@@ -97,6 +97,26 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /stats:
+    get:
+      summary: Statistic of server
+      operationId: GetStats
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Successful stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatsResponse"
+        "default":
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
 components:
   schemas:
     UserID:
@@ -141,6 +161,23 @@ components:
       description: Status of the service
       enum: ["unknown", "stopped", "running"]
 
+    UserStat:
+      type: object
+      description: User data usage statistics
+      required:
+        - ID
+        - Uplink
+        - Downlink
+      properties:
+        ID:
+          $ref: "#/components/schemas/UserID"
+        Uplink:
+          type: integer
+          format: int64
+        Downlink:
+          type: integer
+          format: int64
+
     StartRequest:
       type: object
       required:
@@ -181,6 +218,16 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/User"
+
+    StatsResponse:
+      type: object
+      required:
+        - users
+      properties:
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserStat"
 
     EmptyResponse:
       type: object

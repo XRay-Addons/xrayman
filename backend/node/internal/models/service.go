@@ -28,3 +28,7 @@ type EditUsersParams struct {
 
 type EditUsersResult struct {
 }
+
+type StatsResult struct {
+	Users []UserStats
+}

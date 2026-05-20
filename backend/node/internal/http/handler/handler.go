@@ -94,6 +94,17 @@ func (h *Handler) EditUsers(ctx context.Context, req *api.EditUsersRequest) erro
 	return nil
 }
 
+func (h *Handler) GetStats(ctx context.Context) (*api.StatsResponse, error) {
+	if h == nil || h.service == nil {
+		return nil, errdefs.NilCall()
+	}
+	stats, err := h.service.GetStats(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return converter.ConvertStatsResult(stats), nil
+}
+
 func (h *Handler) NewError(ctx context.Context, err error) *api.ErrorStatusCode {
 	// if err = pure status, return status, log error
 	var pureStatus api.ErrorStatusCode
