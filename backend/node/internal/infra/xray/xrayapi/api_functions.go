@@ -3,9 +3,11 @@ package xrayapi
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
+	"github.com/XRay-Addons/xrayman/node/internal/models"
 	handlerService "github.com/xtls/xray-core/app/proxyman/command"
 	statsService "github.com/xtls/xray-core/app/stats/command"
 	"github.com/xtls/xray-core/common/protocol"
@@ -62,23 +64,114 @@ func ping(
 	return nil
 }
 
+type UserStats struct {
+	ID       models.UserID
+	Uplink   int64
+	Downlink int64
+}
+
 func getStats(
 	ctx context.Context,
 	ssClient statsService.StatsServiceClient,
 	log *zap.Logger,
 ) error {
+	reset := true
+	ptn := "^user>>>.*"
 	resp, err := ssClient.QueryStats(context.Background(), &statsService.QueryStatsRequest{
-		// 这里是查询语句，例如 “user>>>love@xray.com>>>traffic>>>uplink” 表示查询用户 email 为 love@xray.com 在所有入站中的上行流量
-		// Pattern: ptn,
-		// 是否重置流量信息(true, false)，即完成查询后是否把流量统计归零
-		// Reset_: reset, // reset traffic data everytime
+		Pattern: ptn,
+		Reset_:  reset,
 	})
 	if err != nil {
-		return nil
+		return xerr.WrapWithStack(err)
 	}
+
 	// Get traffic data
 	stat := resp.GetStat()
-	log.Info("stats", zap.String("stats", fmt.Sprintf("%+v", stat)))
+	const splitTag = ">>>"
+	const userTag = "user"
+	const trafficTag = "traffic"
+
+	userStatsMap := make(map[int]UserStats)
+	for _, s := range stat {
+		parts := strings.Split(s.Name, splitTag)
+		if len(parts) != 4 || parts[0] != userTag || parts[2] != trafficTag {
+			continue
+		}
+		userID, _, err := extractUser(parts[1])
+		if err != nil {
+			continue
+		}
+		direction, err := extractDirection(parts[3])
+		if err != nil {
+			continue
+		}
+		userStat := userStatsMap[userID]
+		userStat.ID = models.UserID(userID)
+		switch direction {
+		case UplinkDirection:
+			userStat.Uplink += s.Value
+		case DownlinkDirection:
+			userStat.Downlink += s.Value
+		}
+		userStatsMap[userID] = userStat
+	}
+	usersStats := make([]UserStats, 0, len(userStatsMap))
+	for _, v := range userStatsMap {
+		usersStats = append(usersStats, v)
+	}
+	for _, v := range usersStats {
+		log.Info("stats", zap.Int("user", int(v.ID)),
+			zap.Int64("in", v.Downlink), zap.Int64("out", v.Uplink))
+	}
 
 	return nil
+}
+
+func extractUser(s string) (userID int, userName string, err error) {
+	defer func() {
+		if err != nil {
+			err = xerr.WrapWithf(err, "stats string: %s", s)
+		}
+	}()
+
+	s = strings.TrimSpace(s)
+
+	parts := strings.SplitN(s, "-", 2)
+	if len(parts) != 2 {
+		return 0, "", xerr.New("invalid user format, expected id-name")
+	}
+
+	id, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return 0, "", xerr.Wrap(err, xerr.WithStack())
+	}
+
+	name := strings.TrimSpace(parts[1])
+	if name == "" {
+		return 0, "", xerr.New("empty user name")
+	}
+
+	return id, name, nil
+}
+
+type Direction int
+
+const (
+	DirectionUnknown Direction = iota
+	UplinkDirection
+	DownlinkDirection
+)
+
+func extractDirection(s string) (Direction, error) {
+	const uplinkTag = "uplink"
+	const downlinkTag = "downlink"
+
+	switch strings.ToLower(strings.TrimSpace(s)) {
+	case uplinkTag:
+		return UplinkDirection, nil
+	case downlinkTag:
+		return DownlinkDirection, nil
+	default:
+		return 0, xerr.Newf("unknown direction: %s", s)
+	}
 }
