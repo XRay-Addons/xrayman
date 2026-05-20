@@ -96,6 +96,7 @@ func (s *XRayService) Status(ctx context.Context) (models.ServiceStatus, error) 
 	if s == nil {
 		return models.ServiceStatusStopped, errdefs.NilCall()
 	}
+
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 

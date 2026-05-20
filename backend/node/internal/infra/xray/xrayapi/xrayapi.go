@@ -24,6 +24,7 @@ type XRayApi struct {
 
 	mu      sync.Mutex
 	timeout time.Duration
+	log     *zap.Logger
 }
 
 func WithLogger(logger *zap.Logger) option {
@@ -73,6 +74,7 @@ func New(apiURL string, inbounds []models.Inbound, opts ...option) (*XRayApi, er
 		hsClient: hsClient,
 		ssClient: ssClient,
 		timeout:  o.timeout,
+		log:      o.log,
 	}, nil
 }
 
@@ -171,4 +173,19 @@ func (api *XRayApi) Ping(ctx context.Context) error {
 	defer cancel()
 
 	return ping(ctx, api.ssClient)
+}
+
+func (api *XRayApi) GetStats(ctx context.Context) error {
+	if api == nil || api.ssClient == nil {
+		return errdefs.NilCall()
+	}
+
+	api.mu.Lock()
+	defer api.mu.Unlock()
+
+	ctx, cancel := context.WithTimeout(ctx, api.timeout)
+	defer cancel()
+
+	return getStats(ctx, api.ssClient, api.log)
+
 }

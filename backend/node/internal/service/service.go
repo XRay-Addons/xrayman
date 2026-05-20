@@ -91,6 +91,8 @@ func (s *Service) Status(ctx context.Context,
 	if err != nil {
 		return nil, err
 	}
+	s.xrayAPI.GetStats(ctx)
+
 	return &models.StatusResult{ServiceStatus: status}, nil
 }
 
