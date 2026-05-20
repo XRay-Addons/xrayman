@@ -95,14 +95,17 @@ func getStats(
 	for _, s := range stat {
 		parts := strings.Split(s.Name, splitTag)
 		if len(parts) != 4 || parts[0] != userTag || parts[2] != trafficTag {
+			log.Warn("unparsed stat", zap.String("name", s.Name))
 			continue
 		}
 		userID, _, err := extractUser(parts[1])
 		if err != nil {
+			log.Warn("unparsed user", zap.String("name", s.Name))
 			continue
 		}
 		direction, err := extractDirection(parts[3])
 		if err != nil {
+			log.Warn("unparsed direction", zap.String("name", s.Name))
 			continue
 		}
 		userStat := userStatsMap[userID]
