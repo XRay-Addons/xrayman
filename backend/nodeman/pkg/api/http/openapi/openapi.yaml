@@ -684,7 +684,7 @@ components:
         - Name
 
     GetUserResponse:
-      $ref: "#/components/schemas/User"
+      $ref: "#/components/schemas/UserView"
 
     ListUsersResponse:
       type: object
@@ -692,9 +692,44 @@ components:
         Users:
           type: array
           items:
-            $ref: "#/components/schemas/User"
+            $ref: "#/components/schemas/UserView"
       required:
         - Users
+
+    UserView:
+      type: object
+      properties:
+        User:
+          $ref: "#/components/schemas/User"
+        Traffic:
+          $ref: "#/components/schemas/Traffic"
+      required:
+        - User
+        - Traffic
+
+    Traffic:
+      type: object
+      properties:
+        Total:
+          $ref: "#/components/schemas/TrafficStats"
+        LastMonth:
+          $ref: "#/components/schemas/TrafficStats"
+      required:
+        - Total
+        - LastMonth
+
+    TrafficStats:
+      type: object
+      properties:
+        Upload:
+          type: integer
+          format: int64
+        Download:
+          type: integer
+          format: int64
+      required:
+        - Upload
+        - Download
 
     EnableUserRequest:
       type: object

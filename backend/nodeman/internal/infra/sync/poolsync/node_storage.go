@@ -22,7 +22,7 @@ func (s *nodeStorage) DoUoW(ctx context.Context, fn node.UoWFn) error {
 			nodeID: s.nodeID,
 		}
 		if err := fn(nodeUoWCtx); err != nil {
-			return xerr.WrapWithf(err, "node: %v", s.nodeID)
+			return xerr.WrapWithInfof(err, "node: %v", s.nodeID)
 		}
 		return nil
 	})
@@ -38,12 +38,8 @@ var _ node.UoWContext = (*PoolNodeUoWContext)(nil)
 func (c *PoolNodeUoWContext) GetNodeStatus(ctx context.Context) (
 	target models.NodeStatus, current models.NodeStatus, err error,
 ) {
-	node, exists, err := c.base.GetNode(ctx, c.nodeID)
+	node, err := c.base.GetNode(ctx, c.nodeID)
 	if err != nil {
-		return
-	}
-	if !exists {
-		err = xerr.New("node not exists")
 		return
 	}
 	target = node.TargetStatus

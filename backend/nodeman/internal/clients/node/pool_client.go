@@ -1,4 +1,4 @@
-package nodesync
+package node
 
 import (
 	"net/http"
@@ -7,17 +7,19 @@ import (
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/stats/nodestats"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/stats/poolstats"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
-	pool "github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
+	"go.uber.org/zap"
 )
 
 type PoolClient struct {
 	sec        PoolSecurity
 	httpClient HTTPClientFactory
+	log        *zap.Logger
 }
-
-var _ pool.Client = (*PoolClient)(nil)
 
 type Option = func(pc *PoolClient)
 
@@ -39,6 +41,14 @@ func WithHTTPClient(h HTTPClientFactory) Option {
 	}
 }
 
+func WithLogger(l *zap.Logger) Option {
+	return func(s *PoolClient) {
+		if l != nil {
+			s.log = l
+		}
+	}
+}
+
 const (
 	defaultCertExpiration = 10 * time.Minute
 )
@@ -56,7 +66,7 @@ func NewPoolClient(opts ...Option) (*PoolClient, error) {
 	return pc, nil
 }
 
-func (c *PoolClient) GetNodeClient(cfg models.NodeConnectionInfo) (nodesync.Client, error) {
+func (c *PoolClient) GetNodeClient(cfg models.NodeConnectionInfo) (*NodeClient, error) {
 	if c == nil {
 		return nil, errdefs.NilCall()
 	}
@@ -74,12 +84,42 @@ func (c *PoolClient) GetNodeClient(cfg models.NodeConnectionInfo) (nodesync.Clie
 		return nil, err
 	}
 
-	client, err := api.NewClient(cfg.Endpoint,
-		nodeSec, api.WithClient(httpClient))
+	client, err := api.NewClient(cfg.Endpoint, nodeSec,
+		api.WithClient(httpClient))
 	if err != nil {
 		return nil, xerr.WrapWithStack(err)
 	}
 	return &NodeClient{
 		client: client,
 	}, nil
+}
+
+// poolsync client impl
+type poolsyncClient struct {
+	c *PoolClient
+}
+
+var _ poolsync.Client = (*poolsyncClient)(nil)
+
+func (p *poolsyncClient) GetNodeClient(conn models.NodeConnectionInfo) (nodesync.Client, error) {
+	return p.c.GetNodeClient(conn)
+}
+
+func (c *PoolClient) PoolSyncClient() poolsync.Client {
+	return &poolsyncClient{c: c}
+}
+
+// poolstats client impl
+type poolstatsClient struct {
+	c *PoolClient
+}
+
+var _ poolstats.Client = (*poolstatsClient)(nil)
+
+func (p *poolstatsClient) GetNodeClient(conn models.NodeConnectionInfo) (nodestats.Client, error) {
+	return p.c.GetNodeClient(conn)
+}
+
+func (c *PoolClient) PoolStatsClient() poolstats.Client {
+	return &poolstatsClient{c: c}
 }

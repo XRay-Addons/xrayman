@@ -6,18 +6,17 @@ import (
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
 type Service struct {
 	storage    Storage
-	poolSyncer poolsync.Syncer
+	poolSyncer Syncer
 }
 
 var _ handler.UsersService = (*Service)(nil)
 
-func New(poolSyncer poolsync.Syncer,
+func New(poolSyncer Syncer,
 	storage Storage,
 ) (*Service, error) {
 	if poolSyncer == nil {
@@ -63,29 +62,23 @@ func (s *Service) NewUser(ctx context.Context, p models.NewUserParams) (
 	return &user, nil
 }
 
-func (s *Service) GetUser(ctx context.Context, p models.GetUserParams) (
-	*models.User, bool, error,
+func (s *Service) GetUserView(ctx context.Context, p models.GetUserParams) (
+	*models.UserView, error,
 ) {
 	if s == nil {
-		return nil, false, errdefs.NilCall()
+		return nil, errdefs.NilCall()
 	}
 
 	// find user with given id
-	var user *models.User
-	var exists bool
+	var userView *models.UserView
 	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		user, exists, err = uowctx.GetUser(ctx, p.ID)
+		userView, err = uowctx.GetUserView(ctx, p.ID, p.Name)
 		return
 	}); err != nil {
-		return nil, false, err
+		return nil, err
 	}
 
-	// check user name
-	if !exists || user.Profile.Name != p.Name {
-		return nil, false, nil
-	}
-
-	return user, true, nil
+	return userView, nil
 }
 
 func (s *Service) ListUsers(ctx context.Context, p models.ListUserParams) (
@@ -94,9 +87,9 @@ func (s *Service) ListUsers(ctx context.Context, p models.ListUserParams) (
 	if s == nil {
 		return nil, errdefs.NilCall()
 	}
-	var users []models.User
+	var users []models.UserView
 	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		users, err = uowctx.ListUsers(ctx)
+		users, err = uowctx.ListUserViews(ctx)
 		return
 	}); err != nil {
 		return nil, err

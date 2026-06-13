@@ -10,10 +10,10 @@ import (
 type UoWContext interface {
 	// add new user to storage, assign UserID to user
 	NewUser(ctx context.Context, user *models.User) error
-	// get user by id, return (nil, false, nil) if not exists
-	GetUser(ctx context.Context, id models.UserID) (*models.User, bool, error)
+	// get user by id, return ErrNotFound if not exists
+	GetUserView(ctx context.Context, id models.UserID, name string) (*models.UserView, error)
 	// get all users
-	ListUsers(ctx context.Context) ([]models.User, error)
+	ListUserViews(ctx context.Context) ([]models.UserView, error)
 	// change user target status
 	SetTargetUserStatus(ctx context.Context, id models.UserID,
 		status models.UserStatus) error

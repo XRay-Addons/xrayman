@@ -5,18 +5,17 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
 type Service struct {
 	storage    Storage
-	poolSyncer poolsync.Syncer
+	poolSyncer Syncer
 }
 
 var _ handler.NodesService = (*Service)(nil)
 
-func New(poolSyncer poolsync.Syncer,
+func New(poolSyncer Syncer,
 	storage Storage,
 ) (*Service, error) {
 	if poolSyncer == nil {

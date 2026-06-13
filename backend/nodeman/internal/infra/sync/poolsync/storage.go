@@ -15,7 +15,7 @@ type StatesStorage interface {
 	ListNodes(ctx context.Context) (
 		[]models.Node, error)
 	GetNode(ctx context.Context, id models.NodeID) (
-		*models.Node, bool, error)
+		*models.Node, error)
 	SetClientConfig(ctx context.Context, id models.NodeID,
 		cfg models.ClientConfigTemplate) error
 	SetCurrentNodeStatus(ctx context.Context, id models.NodeID,

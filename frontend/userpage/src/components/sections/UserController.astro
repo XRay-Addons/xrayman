@@ -24,8 +24,8 @@
       }
       const userResponse = await getUser(userID.id, userID.name);
       if (userResponse.ok) {
-        if (userResponse.data.TargetStatus === "enabled") {
-          stateSignal.set({ status: State.LoggedIn, data: userResponse.data });
+        if (userResponse.data.User.TargetStatus === "enabled") {
+          stateSignal.set({ status: State.LoggedIn, data: userResponse.data.User });
         } else {
           notifyError("client.error.disabled");
           // user disabled or deleted or whateverelse

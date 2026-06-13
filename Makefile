@@ -83,7 +83,8 @@ GO_TOOLS := \
 	github.com/ogen-go/ogen/cmd/ogen@latest \
 	github.com/jmattheis/goverter/cmd/goverter@latest \
 	go.uber.org/mock/mockgen@latest \
-	github.com/atombender/go-jsonschema@latest
+	github.com/atombender/go-jsonschema@latest \
+	github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 	
 tools:
 	@echo "==> Installing Go tools"

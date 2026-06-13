@@ -12,6 +12,8 @@ import (
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	client "github.com/XRay-Addons/xrayman/nodeman/internal/clients/node"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/config"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/dbstorage"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/dbstorage/sqldb"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/api"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
@@ -19,6 +21,7 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/auth/jwt"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/auth/password"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/httpclient"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/stats/poolstats"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/jobs/syncman"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/pages"
@@ -28,8 +31,6 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subheaders"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/users"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/storage/dbstorage"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/storage/dbstorage/sqldb"
 
 	"go.uber.org/zap"
 )
@@ -69,9 +70,10 @@ func New(rawCfg config.RawConfig, log *zap.Logger) (app *App, err error) {
 	if err != nil {
 		return
 	}
+	infra.storage.ExplainLog = log
 
-	// pool sync
-	poolSyncer, err := app.initPoolSyncer(*infra)
+	// pool sync, pool stats
+	poolSyncer, _, err := app.initPoolOps(*infra, log)
 	if err != nil {
 		return
 	}
@@ -100,12 +102,18 @@ func New(rawCfg config.RawConfig, log *zap.Logger) (app *App, err error) {
 		return
 	}
 
+	// background stats job
+	/*statsJob, err := statsman.New(poolStats, statsman.WithLogger(log))
+	if err != nil {
+		return
+	}*/
+
 	///////////////////////////////////////////////////////////////////////////
 	// bootstrap app components
 
 	// migrate db
 	app.core.AddBootstrap("migrate db", func(ctx context.Context) error {
-		return infra.storage.Migrage(ctx, dbstorage.WithLogger(log))
+		return infra.storage.Migrate(ctx, dbstorage.WithLogger(log))
 	}, func(err error) bool {
 		return errors.Is(err, errdefs.ErrTemporaryUnavailable)
 	})
@@ -143,6 +151,16 @@ func New(rawCfg config.RawConfig, log *zap.Logger) (app *App, err error) {
 		},
 	)
 
+	// background stats
+	/*app.core.AddRunner("background stats",
+		func() (err error) {
+			return statsJob.Run()
+		},
+		func(context.Context) error {
+			return statsJob.Stop()
+		},
+	)*/
+
 	///////////////////////////////////////////////////////////////////////////
 
 	return
@@ -167,7 +185,7 @@ func (a *App) initInfra(cfg config.Config) (infra *infrasturcture, err error) {
 	})
 
 	// storage
-	if infra.storage, err = dbstorage.New(context.TODO(), db); err != nil {
+	if infra.storage, err = dbstorage.New(db); err != nil {
 		return
 	}
 
@@ -178,9 +196,11 @@ func (a *App) initInfra(cfg config.Config) (infra *infrasturcture, err error) {
 	return infra, nil
 }
 
-func (a *App) initPoolSyncer(infra infrasturcture) (ps poolsync.Syncer, err error) {
+func (a *App) initPoolOps(infra infrasturcture, log *zap.Logger) (
+	poolSyncer *poolsync.Syncer, poolStats *poolstats.Stats, err error,
+) {
 	// nodes http client
-	nc := httpclient.NewClientFactory()
+	nc := httpclient.NewClientFactory(httpclient.WithLogger(log))
 	a.core.AddCloser(func(context.Context) error {
 		nc.Close()
 		return nil
@@ -193,7 +213,13 @@ func (a *App) initPoolSyncer(infra infrasturcture) (ps poolsync.Syncer, err erro
 	}
 
 	// pool syncer
-	ps, err = poolsync.New(pc, infra.storage.PoolSyncStorage())
+	poolSyncer, err = poolsync.New(pc.PoolSyncClient(), infra.storage.PoolSyncStorage(), log)
+	if err != nil {
+		return
+	}
+
+	// pool stats
+	poolStats, err = poolstats.New(pc.PoolStatsClient(), infra.storage.StatsStorage(), log)
 	if err != nil {
 		return
 	}
@@ -210,7 +236,7 @@ type services struct {
 }
 
 func (a *App) initServices(
-	ps poolsync.Syncer,
+	ps *poolsync.Syncer,
 	pwd *password.Password,
 	authJWT *jwt.JWT,
 	s *dbstorage.Storage,

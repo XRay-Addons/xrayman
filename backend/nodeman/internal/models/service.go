@@ -68,7 +68,7 @@ type ListUserParams struct {
 }
 
 type ListUsersResult struct {
-	Users []User
+	Users []UserView
 }
 
 type DeleteUserParams struct {

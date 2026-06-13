@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/XRay-Addons/xrayman/common/http/httperr"
 	"github.com/XRay-Addons/xrayman/common/http/middleware"
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/node/internal/http/handler/converter"
@@ -106,24 +105,17 @@ func (h *Handler) GetStats(ctx context.Context) (*api.StatsResponse, error) {
 }
 
 func (h *Handler) NewError(ctx context.Context, err error) *api.ErrorStatusCode {
-	// if err = pure status, return status, log error
-	var pureStatus api.ErrorStatusCode
-	if errors.Is(err, &pureStatus) {
-		h.logError(ctx, err)
-		return &pureStatus
-	}
+	// log error
+	h.logError(ctx, err)
 
-	// if err = error + status, return status, log error,
-	nestedErr, nestedStatus := httperr.ExtractStatus[api.ErrorStatusCode](err)
-	if nestedStatus != nil {
-		h.logError(ctx, nestedErr)
-		return nestedStatus
+	// if error contains status, return it
+	var statusError *api.ErrorStatusCode
+	if errors.As(err, &statusError) {
+		return statusError
 	}
 
 	// translate error to status
-	translatedStatus := h.translateError(err)
-	h.logError(ctx, err)
-	return translatedStatus
+	return h.translateError(err)
 }
 
 func (h *Handler) translateError(err error) *api.ErrorStatusCode {

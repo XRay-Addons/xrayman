@@ -100,7 +100,7 @@ func ValidateToken(tok string, sec []byte, chks ...check) error {
 	})
 	// check parsing
 	if err != nil {
-		return err
+		return xerr.WrapWithStack(err)
 	}
 	// check method
 	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

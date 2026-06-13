@@ -2,92 +2,97 @@ package poolsync
 
 import (
 	"context"
-	"sync"
 
-	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/poolop"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/jobs/syncman"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service/users"
+	"go.uber.org/zap"
 )
 
-type syncer struct {
-	storage Storage
-	client  Client
+type Syncer struct {
+	op *poolop.PoolOp
 }
 
-func (s *syncer) SyncPoolState(ctx context.Context) (*models.PoolSyncResult, error) {
-	if s == nil {
-		return nil, errdefs.NilCall()
+var _ users.Syncer = (*Syncer)(nil)
+var _ nodes.Syncer = (*Syncer)(nil)
+var _ syncman.PoolSyncer = (*Syncer)(nil)
+
+func New(client Client, storage Storage, log *zap.Logger) (*Syncer, error) {
+	if client == nil {
+		return nil, errdefs.NilArg("client")
 	}
-	nodes, err := s.listSyncingNodes(ctx)
+	if storage == nil {
+		return nil, errdefs.NilArg("storage")
+	}
+	if log == nil {
+		return nil, errdefs.NilArg("log")
+	}
+
+	op, err := poolop.New(
+		&nodePool{storage: storage},
+		&nodeOp{storage: storage, client: client},
+		log,
+	)
 	if err != nil {
 		return nil, err
 	}
-	syncResult := s.syncNodes(ctx, nodes)
-	return &syncResult, nil
+	return &Syncer{
+		op: op,
+	}, nil
 }
 
-type syncingNode struct {
-	node    models.Node
-	storage nodesync.Storage
-	client  nodesync.Client
+func (s *Syncer) Close() {
+	if s == nil || s.op == nil {
+		return
+	}
+	s.op.Close()
 }
 
-func (s *syncer) listSyncingNodes(ctx context.Context) ([]syncingNode, error) {
+func (s *Syncer) SyncPoolState(ctx context.Context) (*models.PoolOpResult, error) {
+	return s.op.Exec(ctx)
+}
+
+// node pool impl
+type nodePool struct {
+	storage Storage
+}
+
+var _ poolop.NodePool = (*nodePool)(nil)
+
+func (p *nodePool) ListNodes(ctx context.Context) ([]models.Node, error) {
 	var nodes []models.Node
-	if err := s.storage.DoUoW(ctx, func(uow UoWContext) (err error) {
+	if err := p.storage.DoUoW(ctx, func(uow UoWContext) (err error) {
 		nodes, err = uow.ListNodes(ctx)
 		return
 	}); err != nil {
 		return nil, err
 	}
-
-	syncingNodes := make([]syncingNode, 0, len(nodes))
-	for _, node := range nodes {
-		nodeStorage := &nodeStorage{
-			base:   s.storage,
-			nodeID: node.ID,
-		}
-		nodeClient, err := s.client.GetNodeClient(node.Config.ConnectionInfo)
-		if err != nil {
-			return nil, err
-		}
-		syncingNodes = append(syncingNodes, syncingNode{
-			node:    node,
-			storage: nodeStorage,
-			client:  nodeClient,
-		})
-	}
-
-	return syncingNodes, nil
+	return nodes, nil
 }
 
-func (s *syncer) syncNodes(ctx context.Context, nodes []syncingNode) models.PoolSyncResult {
-	nodeSyncResults := make([]models.NodeSyncResult, len(nodes))
-	var wg sync.WaitGroup
-	for idx, node := range nodes {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			nodeSyncResults[idx] = syncNode(ctx, node)
-		}()
-	}
-	wg.Wait()
-
-	return models.PoolSyncResult{
-		Nodes: nodeSyncResults,
-	}
+// node op impl
+type nodeOp struct {
+	storage Storage
+	client  Client
 }
 
-func syncNode(ctx context.Context, node syncingNode) models.NodeSyncResult {
-	syncErr := nodesync.SyncState(ctx, node.client, node.storage)
-	if syncErr != nil {
-		syncErr = xerr.WrapWithf(syncErr, "nodeID: %v, endpoint %v",
-			node.node.ID, node.node.Config.ConnectionInfo.Endpoint)
+var _ poolop.NodeOp = (*nodeOp)(nil)
+
+func (op *nodeOp) Exec(ctx context.Context, node models.Node, log *zap.Logger) error {
+	nodeStorage := &nodeStorage{
+		base:   op.storage,
+		nodeID: node.ID,
 	}
-	return models.NodeSyncResult{
-		ID:       node.node.ID,
-		Endpoint: node.node.Config.ConnectionInfo.Endpoint,
-		Err:      syncErr,
+	nodeClient, err := op.client.GetNodeClient(node.Config.ConnectionInfo)
+	if err != nil {
+		return err
 	}
+	if err := nodesync.SyncState(ctx, nodeClient, nodeStorage); err != nil {
+		return err
+	}
+	return nil
 }

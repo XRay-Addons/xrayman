@@ -8,7 +8,7 @@ import (
 func ValidateJsonData(data []byte) error {
 	d := jx.DecodeBytes(data)
 	if err := d.Skip(); err != nil {
-		return xerr.WrapWithStack(err)
+		return xerr.Wrap(err, xerr.WithStack())
 	}
 
 	if d.Next() != jx.Invalid {

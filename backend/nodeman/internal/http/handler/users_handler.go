@@ -21,10 +21,10 @@ func (h *Handler) NewUser(ctx context.Context, req *api.NewUserRequest) (*api.Us
 	if err != nil {
 		return nil, err
 	}
-	return converter.ConvertUserResult(res), nil
+	return converter.ConvertNewUserResult(res), nil
 }
 
-func (h *Handler) GetUser(ctx context.Context, req api.GetUserParams) (*api.User, error) {
+func (h *Handler) GetUser(ctx context.Context, req api.GetUserParams) (*api.UserView, error) {
 	if h == nil || h.us == nil {
 		return nil, errdefs.NilCall()
 	}
@@ -32,14 +32,11 @@ func (h *Handler) GetUser(ctx context.Context, req api.GetUserParams) (*api.User
 	if err != nil {
 		return nil, err
 	}
-	user, exists, err := h.us.GetUser(ctx, *p)
+	user, err := h.us.GetUserView(ctx, *p)
 	if err != nil {
 		return nil, err
 	}
-	if !exists {
-		return nil, errdefs.NotFound("user")
-	}
-	userResponse := converter.ConvertUserResult(user)
+	userResponse := converter.ConvertGetUserResult(user)
 	return userResponse, nil
 }
 

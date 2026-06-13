@@ -1,31 +1,13 @@
 package xerr
 
-import (
-	"fmt"
+import "fmt"
 
-	"github.com/go-faster/errors"
-)
-
-type Option = func(e *xerror)
-
-func New(text string, opts ...Option) error {
-	const wrappingTraceDepth = 2
-	err := &xerror{
-		err:   errors.New(text),
-		stack: getTrace(wrappingTraceDepth),
-	}
-	for _, o := range opts {
-		o(err)
-	}
-	return err
+func New(text string) error {
+	var err error = &xerr{text: text}
+	return Wrap(err, withStack(1))
 }
 
-func Newf(format string, a ...any) error {
-	const wrappingTraceDepth = 2
-	err := &xerror{
-		err:   errors.New(fmt.Sprintf(format, a...)),
-		stack: getTrace(wrappingTraceDepth),
-	}
-
-	return err
+func Newf(text string, args ...any) error {
+	var err error = &xerr{text: fmt.Sprintf(text, args...)}
+	return Wrap(err, withStack(1))
 }

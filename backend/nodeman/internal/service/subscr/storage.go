@@ -9,7 +9,7 @@ import (
 
 type UoWContext interface {
 	GetUserNodes(ctx context.Context, id models.UserID) ([]models.Node, error)
-	GetUser(ctx context.Context, id models.UserID) (*models.User, bool, error)
+	GetUserView(ctx context.Context, id models.UserID, name string) (*models.UserView, error)
 
 	NewSubHeader(ctx context.Context, header *models.Header) error
 	DeleteSubHeader(ctx context.Context, id models.HeaderID) error

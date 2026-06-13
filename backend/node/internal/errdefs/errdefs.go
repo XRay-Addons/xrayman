@@ -1,17 +1,15 @@
 package errdefs
 
 import (
-	"fmt"
-
 	"github.com/XRay-Addons/xrayman/common/xerr"
 )
 
 var (
 	ErrNilCall              = xerr.ErrNilArg
 	ErrNilArg               = xerr.ErrNilArg
-	ErrConnection           = xerr.New("connection")
-	ErrTemporaryUnavailable = xerr.New("temporary unavailable")
-	ErrAccessDenied         = xerr.New("access denied")
+	ErrConnection           = xerr.Define("connection")
+	ErrTemporaryUnavailable = xerr.Define("temporary unavailable")
+	ErrAccessDenied         = xerr.Define("access denied")
 )
 
 func NilCall() error {
@@ -24,12 +22,4 @@ func NilArg(name string) error {
 
 func AccessDenied() error {
 	return xerr.WrapWithStack(ErrAccessDenied)
-}
-
-func WithFile(filename string) xerr.Option {
-	return xerr.With(fmt.Sprintf("file: %s", filename))
-}
-
-func WrapWithFile(err error, path string) error {
-	return xerr.Wrap(err, WithFile(path))
 }

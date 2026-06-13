@@ -2,6 +2,6 @@ package models
 
 type UserStats struct {
 	ID       UserID
-	Uplink   int64
-	Downlink int64
+	Upload   int64
+	Download int64
 }

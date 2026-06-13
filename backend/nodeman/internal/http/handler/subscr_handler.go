@@ -18,12 +18,9 @@ func (h *Handler) UserSub(ctx context.Context, req api.UserSubParams) (
 	if err != nil {
 		return nil, err
 	}
-	sub, exists, err := h.ss.GetUserSub(ctx, *p)
+	sub, err := h.ss.GetUserSub(ctx, *p)
 	if err != nil {
 		return nil, err
-	}
-	if !exists {
-		return nil, errdefs.NotFound("user")
 	}
 	subResponse, err := converter.ConvertUserSubResultBody(sub.ClientConfigs)
 	if err != nil {

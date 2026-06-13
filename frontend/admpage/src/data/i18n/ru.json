@@ -131,6 +131,8 @@
         "display-name": "Display Name",
         "target-status": "Target Status",
         "name": "ИМЯ",
+        "traffic-total": "Total",
+        "traffic-last-month": "Last Month",
         "vless-uuid": "VLESS UUID",
         "subscription": "Subscription",
         "userpage": "User Page",

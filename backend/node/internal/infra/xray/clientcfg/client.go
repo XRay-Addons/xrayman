@@ -17,7 +17,7 @@ type Config struct {
 func New(path string) (cfg *Config, err error) {
 	defer func() {
 		if err != nil {
-			err = errdefs.WrapWithFile(err, path)
+			err = xerr.WrapWithFile(err, path)
 		}
 	}()
 

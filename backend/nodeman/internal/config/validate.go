@@ -9,7 +9,7 @@ import (
 
 func Validate(c RawConfig) error {
 	if _, err := net.ResolveTCPAddr("tcp", c.Endpoint); err != nil {
-		return xerr.New("invalid endpoint", xerr.Withf("endpoint: %s", c.Endpoint))
+		return xerr.Newf("invalid endpoint: %s", c.Endpoint)
 	}
 	if err := checkDBConn(c); err != nil {
 		return err

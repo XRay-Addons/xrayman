@@ -45,24 +45,24 @@ func New(storage Storage, opts ...option) (*Service, error) {
 
 func (s *Service) GetUserSub(ctx context.Context,
 	p models.UserSubParams,
-) (*models.UserSubResult, bool, error) {
+) (*models.UserSubResult, error) {
 	if s == nil || s.storage == nil {
-		return nil, false, errdefs.NilCall()
+		return nil, errdefs.NilCall()
 	}
 
 	// find user
-	user, exists, err := s.findUser(ctx, p)
-	if err != nil || !exists {
-		return nil, exists, err
+	user, err := s.findUser(ctx, p)
+	if err != nil {
+		return nil, err
 	}
 
 	// get active nodes for user
 	var userNodes []models.Node
 	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		userNodes, err = uowctx.GetUserNodes(ctx, user.Profile.ID)
+		userNodes, err = uowctx.GetUserNodes(ctx, user.User.Profile.ID)
 		return
 	}); err != nil {
-		return nil, false, err
+		return nil, err
 	}
 
 	// get subscription content
@@ -71,41 +71,35 @@ func (s *Service) GetUserSub(ctx context.Context,
 	// get subscription headers
 	clientHeaders, err := s.makeClientHeaders(ctx, *user)
 	if err != nil {
-		return nil, false, err
+		return nil, err
 	}
 
 	return &models.UserSubResult{
 		Headers:       clientHeaders,
 		ClientConfigs: clientCfgs,
-	}, true, nil
+	}, nil
 }
 
-func (s *Service) findUser(ctx context.Context, p models.UserSubParams) (*models.User, bool, error) {
+func (s *Service) findUser(ctx context.Context, p models.UserSubParams) (*models.UserView, error) {
 	// find user with given id
-	var user *models.User
-	var exists bool
+	var user *models.UserView
 	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		user, exists, err = uowctx.GetUser(ctx, p.ID)
+		user, err = uowctx.GetUserView(ctx, p.ID, p.Name)
 		return
 	}); err != nil {
-		return nil, false, err
+		return nil, err
 	}
 
-	// check user name
-	if !exists || user.Profile.Name != p.Name {
-		return nil, false, nil
-	}
-
-	return user, true, nil
+	return user, nil
 }
 
-func (s *Service) makeClientConfigs(user models.User,
+func (s *Service) makeClientConfigs(user models.UserView,
 	userNodes []models.Node,
 ) []models.ClientConfigItem {
 	var clientCfgs []models.ClientConfigItem
 	for _, node := range userNodes {
 		nodeClientConfigs, err := s.makeNodeClientConfigs(
-			user, node.Config.ClientConfigTemplate)
+			user.User, node.Config.ClientConfigTemplate)
 		if err != nil {
 			// skip invalid node configs
 			s.log.Warn("node client config", zap.Error(err))
@@ -138,7 +132,9 @@ func (s *Service) makeNodeClientConfigs(user models.User,
 	return nodeConfigs, nil
 }
 
-func (s *Service) makeClientHeaders(ctx context.Context, u models.User) (models.Headers, error) {
+func (s *Service) makeClientHeaders(ctx context.Context,
+	u models.UserView,
+) (models.Headers, error) {
 	var headers models.Headers
 	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
 		headers, err = uowctx.ListSubHeaders(ctx)

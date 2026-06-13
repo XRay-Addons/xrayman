@@ -23,7 +23,7 @@ func (u User) VlessEmail() string {
 func ParseVlessEmail(email string) (id UserID, name string, err error) {
 	defer func() {
 		if err != nil {
-			err = xerr.WrapWithf(err, "email: %s", email)
+			err = xerr.WrapWithInfof(err, "email: %s", email)
 		}
 	}()
 
