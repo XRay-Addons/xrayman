@@ -10,6 +10,7 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/stats/poolstats"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service/dynconfig"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/users"
 	"github.com/stretchr/testify/require"
@@ -373,4 +374,47 @@ func TestStorage_Password(t *testing.T) {
 	})
 	require.NoError(t, err)
 	require.Equal(t, auth, *dbauth)
+}
+
+func TestStorage_DynConfig(t *testing.T) {
+	logger := zaptest.NewLogger(t)
+	ctx := context.Background()
+
+	s, _ := setupTestDB(t, logger)
+	logger.Info("new test db inited")
+
+	cfg := models.DynamicConfig{
+		UserPage:     "user page",
+		UsersMessage: "users message",
+		TgPage:       "tg page",
+	}
+	err := s.DynamicConfigStorage().DoUoW(ctx, func(uowctx dynconfig.UoWContext) error {
+		return uowctx.SetDynamicConfig(ctx, cfg)
+	})
+	require.NoError(t, err)
+
+	var readCfg *models.DynamicConfig
+	err = s.DynamicConfigStorage().DoUoW(ctx, func(uowctx dynconfig.UoWContext) error {
+		readCfg, err = uowctx.GetDynamicConfig(ctx)
+		return err
+	})
+	require.NoError(t, err)
+	require.Equal(t, cfg, *readCfg)
+
+	cfg2 := models.DynamicConfig{
+		UserPage:     "user page2",
+		UsersMessage: "users message2",
+		TgPage:       "tg page2",
+	}
+	err = s.DynamicConfigStorage().DoUoW(ctx, func(uowctx dynconfig.UoWContext) error {
+		return uowctx.EnsureDynamicConfig(ctx, cfg2)
+	})
+	require.NoError(t, err)
+
+	err = s.DynamicConfigStorage().DoUoW(ctx, func(uowctx dynconfig.UoWContext) error {
+		readCfg, err = uowctx.GetDynamicConfig(ctx)
+		return err
+	})
+	require.NoError(t, err)
+	require.Equal(t, cfg, *readCfg)
 }

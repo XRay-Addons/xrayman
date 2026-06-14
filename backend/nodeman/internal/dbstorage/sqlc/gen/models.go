@@ -6,6 +6,7 @@ package queries
 
 import (
 	"database/sql"
+	"encoding/json"
 	"time"
 )
 
@@ -29,6 +30,12 @@ type DailyUsersTraffic struct {
 	UserID   int64
 	Download int64
 	Upload   int64
+}
+
+type DynamicConfig struct {
+	ID        bool
+	Config    json.RawMessage
+	UpdatedAt time.Time
 }
 
 type Node struct {

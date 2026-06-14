@@ -12,6 +12,7 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/auth/password"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/stats/poolstats"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service/dynconfig"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subheaders"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
@@ -202,6 +203,23 @@ type poolstatsStorage struct {
 }
 
 func (s *poolstatsStorage) DoUoW(ctx context.Context, fn poolstats.UoWFn) error {
+	return s.storage.doTx(ctx, func(uowctx *uowctx) error {
+		return fn(uowctx)
+	})
+}
+
+// dynamic config storage
+func (s *Storage) DynamicConfigStorage() dynconfig.Storage {
+	return &dynconfigStorage{storage: s}
+}
+
+var _ dynconfig.Storage = (*dynconfigStorage)(nil)
+
+type dynconfigStorage struct {
+	storage *Storage
+}
+
+func (s *dynconfigStorage) DoUoW(ctx context.Context, fn dynconfig.UoWFn) error {
 	return s.storage.doTx(ctx, func(uowctx *uowctx) error {
 		return fn(uowctx)
 	})

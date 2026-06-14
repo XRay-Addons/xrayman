@@ -439,6 +439,57 @@ paths:
       security:
         - BearerAuth: []
 
+  /dynconfig/get:
+    get:
+      summary: Get nodeman dynamic config
+      operationId: GetDynamicConfig
+      responses:
+        "200":
+          description: Dynamic config
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetDynamicConfigResponse"
+        "default":
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      tags:
+        - admpage
+      security:
+        - BearerAuth: []
+
+  /dynconfig/set:
+    post:
+      summary: Set nodeman dynamic config
+      operationId: SetDynamicConfig
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetDynamicConfigRequest"
+
+      responses:
+        "200":
+          description: Dynamic config
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetDynamicConfigResponse"
+        "default":
+          description: General Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      tags:
+        - admpage
+      security:
+        - BearerAuth: []
+
 components:
   securitySchemes:
     BearerAuth:
@@ -845,3 +896,27 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/UserSubContent"
+
+    SetDynamicConfigRequest:
+      $ref: "#/components/schemas/DynamicConfig"
+
+    SetDynamicConfigResponse:
+      type: object
+      properties: {}
+
+    GetDynamicConfigResponse:
+      $ref: "#/components/schemas/DynamicConfig"
+
+    DynamicConfig:
+      type: object
+      properties:
+        UserPage:
+          type: string
+        UsersMessage:
+          type: string
+        TgPage:
+          type: string
+      required:
+        - UserPage
+        - UsersMessage
+        - TgPage

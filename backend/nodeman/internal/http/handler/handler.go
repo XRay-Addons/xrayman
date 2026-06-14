@@ -20,6 +20,7 @@ type Handler struct {
 	ns  NodesService
 	ss  SubscrService
 	shs SubHeadersService
+	dcs DynConfigService
 	as  AuthService
 	log *zap.Logger
 }
@@ -42,6 +43,7 @@ func New(
 	ns NodesService,
 	ss SubscrService,
 	shs SubHeadersService,
+	dcs DynConfigService,
 	as AuthService,
 	opts ...option,
 ) (*Handler, error) {
@@ -57,6 +59,9 @@ func New(
 	if shs == nil {
 		return nil, errdefs.NilArg("shs")
 	}
+	if dcs == nil {
+		return nil, errdefs.NilArg("dcs")
+	}
 	if as == nil {
 		return nil, errdefs.NilArg("as")
 	}
@@ -65,6 +70,7 @@ func New(
 		ns:  ns,
 		ss:  ss,
 		shs: shs,
+		dcs: dcs,
 		as:  as,
 		log: zap.NewNop(),
 	}

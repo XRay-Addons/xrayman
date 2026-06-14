@@ -27,6 +27,7 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/pages"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/pages/pagecfg"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/auth"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service/dynconfig"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subheaders"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
@@ -232,6 +233,7 @@ type services struct {
 	users      *users.Service
 	subscr     *subscr.Service
 	subHeaders *subheaders.Service
+	dynConfig  *dynconfig.Service
 	auth       *auth.Service
 }
 
@@ -258,8 +260,14 @@ func (a *App) initServices(
 	if ss.subscr, err = subscr.New(s.SubscrStorage(), subscr.WithLogger(log)); err != nil {
 		return
 	}
+
 	// subscr headers service
 	if ss.subHeaders, err = subheaders.New(s.SubHeadersStorage()); err != nil {
+		return
+	}
+
+	// dynamic config service
+	if ss.dynConfig, err = dynconfig.New(s.DynamicConfigStorage()); err != nil {
 		return
 	}
 
@@ -344,6 +352,7 @@ func (a *App) initHandler(s services, authJWT *jwt.JWT, log *zap.Logger) (h http
 		s.nodes,
 		s.subscr,
 		s.subHeaders,
+		s.dynConfig,
 		s.auth,
 		handler.WithLogger(log))
 	if err != nil {
