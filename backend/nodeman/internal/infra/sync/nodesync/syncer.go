@@ -2,6 +2,7 @@ package nodesync
 
 import (
 	"context"
+	"time"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
@@ -56,7 +57,12 @@ func (s *syncer) SyncNodeState(ctx context.Context) (err error) {
 	// target status is stopped ignored (but node may work)
 	switch {
 	case err != nil && prev != models.NodeStatusUnknown:
-		err = xerr.Join(err, s.markAsUnavailable(ctx))
+		// set additional time to this fallback (original ctx could be)
+		// already cancelled due to unavailable node
+		fallbackTO := time.Second
+		fallbackCtx, fallbackCancel := context.WithTimeout(context.Background(), fallbackTO)
+		defer func() { fallbackCancel() }()
+		err = xerr.Join(err, s.markAsUnavailable(fallbackCtx))
 	case target == models.NodeStatusRunning && curr == models.NodeStatusStopped:
 		err = s.startNode(ctx)
 	case target == models.NodeStatusStopped && curr == models.NodeStatusRunning:
