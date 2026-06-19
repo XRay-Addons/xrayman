@@ -18,11 +18,11 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/api"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/security"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/auth/jwt"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/auth/password"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/httpclient"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/jwt"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/stats/poolstats"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/jobs/statsman"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/jobs/syncman"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/pages"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/pages/pagecfg"
@@ -74,19 +74,13 @@ func New(rawCfg config.RawConfig, log *zap.Logger) (app *App, err error) {
 	infra.storage.ExplainLog = log
 
 	// pool sync, pool stats
-	poolSyncer, _, err := app.initPoolOps(*infra, log)
-	if err != nil {
-		return
-	}
-
-	// password
-	pwd, err := password.New(infra.storage.PasswordStorage())
+	poolSyncer, poolStats, err := app.initPoolOps(*infra, log)
 	if err != nil {
 		return
 	}
 
 	// services
-	services, err := app.initServices(poolSyncer, pwd, infra.authJWT, infra.storage, log)
+	services, err := app.initServices(poolSyncer, infra.authJWT, infra.storage, log)
 	if err != nil {
 		return
 	}
@@ -98,16 +92,16 @@ func New(rawCfg config.RawConfig, log *zap.Logger) (app *App, err error) {
 	}
 
 	// background sync job
-	syncJob, err := syncman.New(poolSyncer, syncman.WithLogger(log))
+	syncJob, err := syncman.New(poolSyncer, cfg.StateSyncInterval, syncman.WithLogger(log))
 	if err != nil {
 		return
 	}
 
 	// background stats job
-	/*statsJob, err := statsman.New(poolStats, statsman.WithLogger(log))
+	statsJob, err := statsman.New(poolStats, cfg.StateSyncInterval, statsman.WithLogger(log))
 	if err != nil {
 		return
-	}*/
+	}
 
 	///////////////////////////////////////////////////////////////////////////
 	// bootstrap app components
@@ -124,7 +118,14 @@ func New(rawCfg config.RawConfig, log *zap.Logger) (app *App, err error) {
 		if cfg.AdminPassword == "" {
 			return nil
 		}
-		return pwd.Update(ctx, cfg.AdminPassword)
+		return services.auth.Update(ctx, cfg.AdminPassword)
+	}, func(err error) bool {
+		return errors.Is(err, errdefs.ErrTemporaryUnavailable)
+	})
+
+	// set default dynamic config
+	app.core.AddBootstrap("ensure dynamic config", func(ctx context.Context) error {
+		return services.dynConfig.EnsureDefaultConfig(ctx)
 	}, func(err error) bool {
 		return errors.Is(err, errdefs.ErrTemporaryUnavailable)
 	})
@@ -153,14 +154,14 @@ func New(rawCfg config.RawConfig, log *zap.Logger) (app *App, err error) {
 	)
 
 	// background stats
-	/*app.core.AddRunner("background stats",
+	app.core.AddRunner("background stats",
 		func() (err error) {
 			return statsJob.Run()
 		},
 		func(context.Context) error {
 			return statsJob.Stop()
 		},
-	)*/
+	)
 
 	///////////////////////////////////////////////////////////////////////////
 
@@ -214,13 +215,13 @@ func (a *App) initPoolOps(infra infrasturcture, log *zap.Logger) (
 	}
 
 	// pool syncer
-	poolSyncer, err = poolsync.New(pc.PoolSyncClient(), infra.storage.PoolSyncStorage(), log)
+	poolSyncer, err = poolsync.New(pc.PoolSyncClient(), infra.storage, log)
 	if err != nil {
 		return
 	}
 
 	// pool stats
-	poolStats, err = poolstats.New(pc.PoolStatsClient(), infra.storage.StatsStorage(), log)
+	poolStats, err = poolstats.New(pc.PoolStatsClient(), infra.storage, log)
 	if err != nil {
 		return
 	}
@@ -239,7 +240,6 @@ type services struct {
 
 func (a *App) initServices(
 	ps *poolsync.Syncer,
-	pwd *password.Password,
 	authJWT *jwt.JWT,
 	s *dbstorage.Storage,
 	log *zap.Logger,
@@ -247,32 +247,32 @@ func (a *App) initServices(
 	ss = &services{}
 
 	// nodes service
-	if ss.nodes, err = nodes.New(ps, s.NodesStorage()); err != nil {
+	if ss.nodes, err = nodes.New(ps, s); err != nil {
 		return
 	}
 
 	// users service
-	if ss.users, err = users.New(ps, s.UsersStorage()); err != nil {
+	if ss.users, err = users.New(ps, s); err != nil {
 		return
 	}
 
 	// subscr service
-	if ss.subscr, err = subscr.New(s.SubscrStorage(), subscr.WithLogger(log)); err != nil {
+	if ss.subscr, err = subscr.New(s, subscr.WithLogger(log)); err != nil {
 		return
 	}
 
 	// subscr headers service
-	if ss.subHeaders, err = subheaders.New(s.SubHeadersStorage()); err != nil {
+	if ss.subHeaders, err = subheaders.New(s); err != nil {
 		return
 	}
 
 	// dynamic config service
-	if ss.dynConfig, err = dynconfig.New(s.DynamicConfigStorage()); err != nil {
+	if ss.dynConfig, err = dynconfig.New(s); err != nil {
 		return
 	}
 
 	// auth service
-	if ss.auth, err = auth.New(pwd, authJWT); err != nil {
+	if ss.auth, err = auth.New(s, authJWT); err != nil {
 		return
 	}
 

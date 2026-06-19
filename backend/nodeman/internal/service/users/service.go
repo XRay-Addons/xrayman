@@ -50,10 +50,7 @@ func (s *Service) NewUser(ctx context.Context, p models.NewUserParams) (
 	user.Profile.VlessUUID = vlessUUID
 	user.TargetStatus = models.UserStatusEnabled
 
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		err = uowctx.NewUser(ctx, &user)
-		return
-	}); err != nil {
+	if err := s.storage.NewUser(ctx, &user); err != nil {
 		return nil, err
 	}
 
@@ -70,11 +67,8 @@ func (s *Service) GetUserView(ctx context.Context, p models.GetUserParams) (
 	}
 
 	// find user with given id
-	var userView *models.UserView
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		userView, err = uowctx.GetUserView(ctx, p.ID, p.Name)
-		return
-	}); err != nil {
+	userView, err := s.storage.GetUserView(ctx, p.ID, p.Name)
+	if err != nil {
 		return nil, err
 	}
 
@@ -87,11 +81,8 @@ func (s *Service) ListUsers(ctx context.Context, p models.ListUserParams) (
 	if s == nil {
 		return nil, errdefs.NilCall()
 	}
-	var users []models.UserView
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		users, err = uowctx.ListUserViews(ctx)
-		return
-	}); err != nil {
+	users, err := s.storage.ListUserViews(ctx)
+	if err != nil {
 		return nil, err
 	}
 	return &models.ListUsersResult{
@@ -128,12 +119,7 @@ func (s *Service) DeleteUser(ctx context.Context, p models.DeleteUserParams) (
 		return nil, err
 	}
 
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		if err = uowctx.DeleteUser(ctx, p.ID); err != nil {
-			return
-		}
-		return
-	}); err != nil {
+	if err := s.storage.DeleteUser(ctx, p.ID); err != nil {
 		return nil, err
 	}
 
@@ -149,10 +135,7 @@ func (s *Service) setUserStatus(ctx context.Context,
 		return errdefs.NilCall()
 	}
 	// set target user state to storage
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		err = uowctx.SetTargetUserStatus(ctx, id, status)
-		return
-	}); err != nil {
+	if err := s.storage.SetTargetUserStatus(ctx, id, status); err != nil {
 		return err
 	}
 

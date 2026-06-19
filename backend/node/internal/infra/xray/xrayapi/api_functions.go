@@ -105,9 +105,9 @@ func getStats(
 
 		switch parts[3] {
 		case uplinkTag:
-			userStat.Upload = s.Value
+			userStat.Uplink = s.Value
 		case downlinkTag:
-			userStat.Download = s.Value
+			userStat.Downlink = s.Value
 		default:
 			log.Warn("unparsed direction", zap.String("tag", parts[3]))
 		}

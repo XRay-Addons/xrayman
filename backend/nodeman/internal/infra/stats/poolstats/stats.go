@@ -56,11 +56,8 @@ type nodePool struct {
 var _ poolop.NodePool = (*nodePool)(nil)
 
 func (p *nodePool) ListNodes(ctx context.Context) ([]models.Node, error) {
-	var nodes []models.Node
-	if err := p.storage.DoUoW(ctx, func(uow UoWContext) (err error) {
-		nodes, err = uow.ListNodes(ctx)
-		return
-	}); err != nil {
+	nodes, err := p.storage.ListNodes(ctx)
+	if err != nil {
 		return nil, err
 	}
 	return nodes, nil

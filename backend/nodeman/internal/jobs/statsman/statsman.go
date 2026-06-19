@@ -15,17 +15,10 @@ type StatsMan struct {
 }
 
 type options struct {
-	interval time.Duration
-	log      *zap.Logger
+	log *zap.Logger
 }
 
 type Option func(o *options)
-
-func WithSyncInterval(interval time.Duration) Option {
-	return func(o *options) {
-		o.interval = interval
-	}
-}
 
 func WithLogger(log *zap.Logger) Option {
 	return func(o *options) {
@@ -35,17 +28,12 @@ func WithLogger(log *zap.Logger) Option {
 	}
 }
 
-const (
-	defaultSyncInterval = 5 * time.Second
-)
-
-func New(updater StatsUpdater, opts ...Option) (*StatsMan, error) {
+func New(updater StatsUpdater, interval time.Duration, opts ...Option) (*StatsMan, error) {
 	if updater == nil {
 		return nil, errdefs.NilArg("updater")
 	}
 	cfg := options{
-		interval: defaultSyncInterval,
-		log:      zap.NewNop(),
+		log: zap.NewNop(),
 	}
 	for _, o := range opts {
 		o(&cfg)
@@ -54,7 +42,7 @@ func New(updater StatsUpdater, opts ...Option) (*StatsMan, error) {
 	jobFn := func(ctx context.Context) (*models.PoolOpResult, error) {
 		return updater.UpdatePoolStats(ctx)
 	}
-	job, err := pooljob.New(jobFn, cfg.interval, "update stats", cfg.log)
+	job, err := pooljob.New(jobFn, interval, "update stats", cfg.log)
 	if err != nil {
 		return nil, err
 	}

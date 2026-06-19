@@ -3,11 +3,10 @@ package users
 import (
 	"context"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/uow"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
-type UoWContext interface {
+type Storage interface {
 	// add new user to storage, assign UserID to user
 	NewUser(ctx context.Context, user *models.User) error
 	// get user by id, return ErrNotFound if not exists
@@ -21,6 +20,3 @@ type UoWContext interface {
 	DeleteUser(ctx context.Context,
 		id models.UserID) error
 }
-
-type UoWFn = uow.Fn[UoWContext]
-type Storage = uow.Storage[UoWContext]

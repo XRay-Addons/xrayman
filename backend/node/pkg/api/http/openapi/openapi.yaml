@@ -166,15 +166,15 @@ components:
       description: User data usage statistics
       required:
         - ID
-        - Upload
-        - Download
+        - Uplink
+        - Downlink
       properties:
         ID:
           $ref: "#/components/schemas/UserID"
-        Upload:
+        Uplink:
           type: integer
           format: int64
-        Download:
+        Downlink:
           type: integer
           format: int64
 

@@ -43,10 +43,7 @@ func (s *Service) NewNode(ctx context.Context, p models.NewNodeParams) (
 
 	node.CurrentStatus = models.NodeStatusStopped
 	node.TargetStatus = models.NodeStatusRunning
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		err = uowctx.NewNode(ctx, &node)
-		return
-	}); err != nil {
+	if err := s.storage.NewNode(ctx, &node); err != nil {
 		return nil, err
 	}
 
@@ -81,11 +78,8 @@ func (s *Service) ListNodes(ctx context.Context, p models.ListNodeParams) (
 	if s == nil {
 		return nil, errdefs.NilCall()
 	}
-	var nodes []models.Node
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		nodes, err = uowctx.ListNodes(ctx)
-		return
-	}); err != nil {
+	nodes, err := s.storage.ListNodes(ctx)
+	if err != nil {
 		return nil, err
 	}
 	return &models.ListNodeResult{
@@ -105,10 +99,7 @@ func (s *Service) DeleteNode(ctx context.Context, p models.DeleteNodeParams) (
 		return nil, err
 	}
 
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		err = uowctx.DeleteNode(ctx, p.ID)
-		return
-	}); err != nil {
+	if err := s.storage.DeleteNode(ctx, p.ID); err != nil {
 		return nil, err
 	}
 
@@ -122,10 +113,7 @@ func (s *Service) setNodeStatus(ctx context.Context,
 		return errdefs.NilCall()
 	}
 	// set target node state to storage
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		err = uowctx.SetTargetNodeStatus(ctx, id, status)
-		return
-	}); err != nil {
+	if err := s.storage.SetTargetNodeStatus(ctx, id, status); err != nil {
 		return err
 	}
 

@@ -48,13 +48,11 @@ func (s *Service) NewHeader(ctx context.Context,
 		return nil, errdefs.NilCall()
 	}
 
-	var header models.Header
-	header.Key = p.Key
-	header.Value = p.Value
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		err = uowctx.NewSubHeader(ctx, &header)
-		return
-	}); err != nil {
+	header := models.Header{
+		Key:   p.Key,
+		Value: p.Value,
+	}
+	if err := s.storage.NewSubHeader(ctx, &header); err != nil {
 		return nil, err
 	}
 
@@ -68,11 +66,8 @@ func (s *Service) ListHeaders(ctx context.Context,
 		return nil, errdefs.NilCall()
 	}
 
-	var headers []models.Header
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		headers, err = uowctx.ListSubHeaders(ctx)
-		return
-	}); err != nil {
+	headers, err := s.storage.ListSubHeaders(ctx)
+	if err != nil {
 		return nil, err
 	}
 
@@ -88,10 +83,7 @@ func (s *Service) DeleteHeader(ctx context.Context,
 		return nil, errdefs.NilCall()
 	}
 
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		err = uowctx.DeleteSubHeader(ctx, p.ID)
-		return
-	}); err != nil {
+	if err := s.storage.DeleteSubHeader(ctx, p.ID); err != nil {
 		return nil, err
 	}
 

@@ -57,11 +57,8 @@ func (s *Service) GetUserSub(ctx context.Context,
 	}
 
 	// get active nodes for user
-	var userNodes []models.Node
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		userNodes, err = uowctx.GetUserNodes(ctx, user.User.Profile.ID)
-		return
-	}); err != nil {
+	userNodes, err := s.storage.GetUserNodes(ctx, user.User.Profile.ID)
+	if err != nil {
 		return nil, err
 	}
 
@@ -82,11 +79,8 @@ func (s *Service) GetUserSub(ctx context.Context,
 
 func (s *Service) findUser(ctx context.Context, p models.UserSubParams) (*models.UserView, error) {
 	// find user with given id
-	var user *models.UserView
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		user, err = uowctx.GetUserView(ctx, p.ID, p.Name)
-		return
-	}); err != nil {
+	user, err := s.storage.GetUserView(ctx, p.ID, p.Name)
+	if err != nil {
 		return nil, err
 	}
 
@@ -135,11 +129,8 @@ func (s *Service) makeNodeClientConfigs(user models.User,
 func (s *Service) makeClientHeaders(ctx context.Context,
 	u models.UserView,
 ) (models.Headers, error) {
-	var headers models.Headers
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		headers, err = uowctx.ListSubHeaders(ctx)
-		return
-	}); err != nil {
+	headers, err := s.storage.ListSubHeaders(ctx)
+	if err != nil {
 		return nil, err
 	}
 	headers = replacePlaceholders(headers, u)

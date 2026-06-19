@@ -21,12 +21,6 @@ type options struct {
 
 type Option func(o *options)
 
-func WithSyncInterval(interval time.Duration) Option {
-	return func(o *options) {
-		o.interval = interval
-	}
-}
-
 func WithLogger(log *zap.Logger) Option {
 	return func(o *options) {
 		if log != nil {
@@ -35,16 +29,15 @@ func WithLogger(log *zap.Logger) Option {
 	}
 }
 
-const (
-	defaultSyncInterval = 60 * time.Second
-)
-
-func New(syncer PoolSyncer, opts ...Option) (*SyncMan, error) {
+func New(syncer PoolSyncer, interval time.Duration, opts ...Option) (*SyncMan, error) {
 	if syncer == nil {
 		return nil, errdefs.NilArg("syncer")
 	}
+	if interval == 0 {
+		return nil, errdefs.NilArg("interval")
+	}
 	cfg := options{
-		interval: defaultSyncInterval,
+		interval: interval,
 		log:      zap.NewNop(),
 	}
 	for _, o := range opts {

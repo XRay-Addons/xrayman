@@ -24,7 +24,9 @@ func LoadConfig() (*RawConfig, error) {
 
 func defaultConfig() *RawConfig {
 	return &RawConfig{
-		Endpoint: "localhost:80",
+		Endpoint:          "localhost:80",
+		StateSyncInterval: 5,
+		StatsSyncInterval: 60,
 	}
 }
 
@@ -37,6 +39,11 @@ func readCLIParams(c *RawConfig) error {
 		"postgress connection string, like postgresql://user@password/127.0.0.1:4321/dbname")
 	fs.StringVar(&c.JwtSecret, "jwt", c.JwtSecret,
 		"jwt secret")
+
+	fs.IntVar(&c.StateSyncInterval, "state", c.StateSyncInterval,
+		"state sync interval, s")
+	fs.IntVar(&c.StatsSyncInterval, "stats", c.StatsSyncInterval,
+		"stats sync interval, s")
 
 	fs.StringVar(&c.ApiServiceUrl, "apisrv", c.ApiServiceUrl,
 		`public base URL of the API as seen by browsers (used for CORS and SPAs config).
@@ -58,6 +65,7 @@ should be like /admin or https://adm.example.com (optional)`)
 		fmt.Printf("Usage:\n")
 		argGroups := [][]string{
 			{"a", "db", "jwt"},
+			{"state", "stats"},
 			{"apisrv", "userspa", "adminspa"},
 			{"admpass"},
 		}
@@ -67,6 +75,9 @@ should be like /admin or https://adm.example.com (optional)`)
 				flag := fs.Lookup(arg)
 				fmt.Printf(" -%s\n", flag.Name)
 				fmt.Printf("%s\n", text.Indent(flag.Usage, "    "))
+				if len(flag.DefValue) > 0 {
+					fmt.Printf("    default: %s\n", flag.DefValue)
+				}
 			}
 			fmt.Printf("\n")
 		}

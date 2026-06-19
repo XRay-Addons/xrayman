@@ -24,9 +24,7 @@ func UpdateNodeStats(ctx context.Context, client Client, storage Storage, log *z
 		return err
 	}
 
-	if err := storage.DoUoW(ctx, func(uowctx UoWContext) error {
-		return uowctx.UpdateNodeStats(ctx, *stats)
-	}); err != nil {
+	if err := storage.UpdateNodeStats(ctx, *stats); err != nil {
 		return err
 	}
 

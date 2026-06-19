@@ -3,7 +3,6 @@ package poolsync
 import (
 	"context"
 
-	"github.com/XRay-Addons/xrayman/common/xerr"
 	node "github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
@@ -15,7 +14,59 @@ type nodeStorage struct {
 
 var _ node.Storage = (*nodeStorage)(nil)
 
-func (s *nodeStorage) DoUoW(ctx context.Context, fn node.UoWFn) error {
+func (n *nodeStorage) FindPendingSyncs(ctx context.Context) (
+	[]models.UserSyncStatus, error,
+) {
+	return n.base.FindPendingSyncs(ctx, n.nodeID)
+}
+
+func (n *nodeStorage) GetNodeStatus(ctx context.Context) (
+	target models.NodeStatus, current models.NodeStatus, err error,
+) {
+	node, err := n.base.GetNode(ctx, n.nodeID)
+	if err != nil {
+		return
+	}
+	target = node.TargetStatus
+	current = node.CurrentStatus
+	return
+}
+
+func (n *nodeStorage) ListUsers(ctx context.Context) (
+	[]models.User, error,
+) {
+	return n.base.ListUsers(ctx)
+}
+
+func (n *nodeStorage) SetClientConfig(ctx context.Context,
+	cfg models.ClientConfigTemplate,
+) error {
+	return n.base.SetClientConfig(ctx, n.nodeID, cfg)
+}
+
+func (n *nodeStorage) SetCurrentNodeStatus(ctx context.Context,
+	s models.NodeStatus,
+) error {
+	return n.base.SetCurrentNodeStatus(ctx, n.nodeID, s)
+}
+
+func (n *nodeStorage) SetNodeUsers(ctx context.Context,
+	patch []models.UserStatusPatch,
+) error {
+	return n.base.SetNodeUsers(ctx, n.nodeID, patch)
+}
+
+func (n *nodeStorage) UpdateNodeUsers(ctx context.Context,
+	patch []models.UserStatusPatch,
+) error {
+	return n.base.UpdateNodeUsers(ctx, n.nodeID, patch)
+}
+
+func (n *nodeStorage) DoTx(ctx context.Context, fn node.TxFn) error {
+	return n.base.DoTx(ctx, fn)
+}
+
+/*func (s *nodeStorage) DoUoW(ctx context.Context, fn node.UoWFn) error {
 	return s.base.DoUoW(ctx, func(uowctx UoWContext) error {
 		nodeUoWCtx := &PoolNodeUoWContext{
 			base:   uowctx,
@@ -79,4 +130,4 @@ func (c *PoolNodeUoWContext) SetCurrentNodeStatus(ctx context.Context,
 	s models.NodeStatus,
 ) error {
 	return c.base.SetCurrentNodeStatus(ctx, c.nodeID, s)
-}
+}*/

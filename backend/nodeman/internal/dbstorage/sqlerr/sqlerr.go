@@ -1,4 +1,4 @@
-package dbstorage
+package sqlerr
 
 import (
 	"context"
@@ -13,13 +13,10 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-func translatePgErr(err error) error {
+func TranslatePgErr(err error) error {
 	if err == nil {
 		return nil
 	}
-
-	// wrap with stack everything
-	err = xerr.WrapWithStack(err)
 
 	// context error
 	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {

@@ -17,6 +17,9 @@ func Validate(c RawConfig) error {
 	if err := checkBaseUrls(c); err != nil {
 		return err
 	}
+	if err := checkSyncIntervals(c); err != nil {
+		return err
+	}
 	if err := checkAuth(c); err != nil {
 		return err
 	}
@@ -52,6 +55,16 @@ func checkBaseUrl(u string) bool {
 	}
 	return (parsed.Scheme == "" && parsed.Host == "") ||
 		(parsed.Scheme != "" && parsed.Host != "")
+}
+
+func checkSyncIntervals(c RawConfig) error {
+	if c.StateSyncInterval <= 0 {
+		return xerr.New("state sync interval invalid")
+	}
+	if c.StatsSyncInterval <= 0 {
+		return xerr.New("stats sync interval invalid")
+	}
+	return nil
 }
 
 func checkAuth(c RawConfig) error {

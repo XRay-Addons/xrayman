@@ -7,11 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/stats/poolstats"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service/users"
 	"github.com/lib/pq"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
@@ -148,12 +144,8 @@ func TestStorage_Time_Syncs(t *testing.T) {
 
 	////////////////////////////////////////////////////////////////////////////
 	// let's go!
-	var pendingSyncs []models.UserSyncStatus
 	expl := db.WithExplanations("FindPendingSyncs", ExplainAnalyze)
-	err = s.PoolSyncStorage().DoUoW(ctx, func(uowctx poolsync.UoWContext) error {
-		pendingSyncs, err = uowctx.FindPendingSyncs(ctx, models.NodeID(nNodes/2))
-		return err
-	})
+	pendingSyncs, err := s.FindPendingSyncs(ctx, models.NodeID(nNodes/2))
 	require.NoError(t, err)
 	metrics, err := expl.Metrics()
 	require.NoError(t, err)
@@ -168,9 +160,7 @@ func TestStorage_Time_Syncs(t *testing.T) {
 		updatePatch[i].Status = models.UserStatusDisabled
 	}
 	expl = db.WithExplanations("UpdateNodeUsers", ExplainAnalyze)
-	err = s.PoolSyncStorage().DoUoW(ctx, func(uowctx poolsync.UoWContext) error {
-		return uowctx.UpdateNodeUsers(ctx, models.NodeID(nNodes/3), updatePatch)
-	})
+	err = s.UpdateNodeUsers(ctx, models.NodeID(nNodes/3), updatePatch)
 	require.NoError(t, err)
 	metrics, err = expl.Metrics()
 	require.NoError(t, err)
@@ -185,9 +175,7 @@ func TestStorage_Time_Syncs(t *testing.T) {
 		setPatch[i].Status = models.UserStatusEnabled
 	}
 	expl = db.WithExplanations("SetNodeUsers", ExplainAnalyze)
-	err = s.PoolSyncStorage().DoUoW(ctx, func(uowctx poolsync.UoWContext) error {
-		return uowctx.SetNodeUsers(ctx, models.NodeID(nNodes/4), setPatch)
-	})
+	err = s.SetNodeUsers(ctx, models.NodeID(nNodes/4), setPatch)
 	require.NoError(t, err)
 	metrics, err = expl.Metrics()
 	require.NoError(t, err)
@@ -197,10 +185,7 @@ func TestStorage_Time_Syncs(t *testing.T) {
 	require.Less(t, nUsers/2, len(pendingSyncs))
 
 	expl = db.WithExplanations("FindPendingSyncs Again", ExplainAnalyze)
-	err = s.PoolSyncStorage().DoUoW(ctx, func(uowctx poolsync.UoWContext) error {
-		pendingSyncs, err = uowctx.FindPendingSyncs(ctx, models.NodeID(nNodes/2))
-		return err
-	})
+	pendingSyncs, err = s.FindPendingSyncs(ctx, models.NodeID(nNodes/2))
 	require.NoError(t, err)
 	metrics, err = expl.Metrics()
 	require.NoError(t, err)
@@ -211,10 +196,7 @@ func TestStorage_Time_Syncs(t *testing.T) {
 
 	var userNodes []models.Node
 	expl = db.WithExplanations("GetUserNodes", ExplainAnalyze)
-	err = s.SubscrStorage().DoUoW(ctx, func(uowctx subscr.UoWContext) error {
-		userNodes, err = uowctx.GetUserNodes(ctx, models.UserID(3))
-		return err
-	})
+	userNodes, err = s.GetUserNodes(ctx, models.UserID(3))
 	metrics, err = expl.Metrics()
 	require.NoError(t, err)
 	metrics.Print(logger)
@@ -250,21 +232,21 @@ func TestStorage_Time_Stats(t *testing.T) {
 	////////////////////////////////////////////////////////////////////////////
 	// add stats, periodically update daily stats
 	for i := range nNodes {
-		err = s.StatsStorage().DoUoW(ctx, func(uowctx poolstats.UoWContext) error {
+		err = s.DoTx(ctx, func(ctx context.Context) error {
 			stats := make([]models.UserStats, nUsers, nUsers)
 			for u := range nUsers {
 				stats[u].ID = u
-				stats[u].Download = int64(u - i)
-				stats[u].Upload = int64(2*u - i)
+				stats[u].Downlink = int64(u - i)
+				stats[u].Uplink = int64(2*u - i)
 			}
-			if err := uowctx.UpdateNodeStats(ctx, i, models.NodeStats{
+			if err := s.UpdateNodeStats(ctx, i, models.NodeStats{
 				Users: stats,
 			}); err != nil {
 				return err
 			}
 			if i%10 == 0 {
 				var randomDayOffset time.Duration = time.Duration(nNodes-i) * 7 * 24 * time.Hour
-				if err := uowctx.UpdateDailyStats(ctx,
+				if err := s.UpdateDailyStats(ctx,
 					time.Now().Add(-randomDayOffset),
 				); err != nil {
 					return err
@@ -279,16 +261,14 @@ func TestStorage_Time_Stats(t *testing.T) {
 	////////////////////////////////////////////////////////////////////////////
 	// update stats
 	expl := db.WithExplanations("UpdateNodeStats", ExplainAnalyze)
-	err = s.StatsStorage().DoUoW(ctx, func(uowctx poolstats.UoWContext) error {
-		stats := make([]models.UserStats, nUsers, nUsers)
-		for u := range nUsers {
-			stats[u].ID = u
-			stats[u].Download = int64(u)
-			stats[u].Upload = int64(2 * u)
-		}
-		return uowctx.UpdateNodeStats(ctx, models.NodeID(nNodes/2), models.NodeStats{
-			Users: stats,
-		})
+	stats := make([]models.UserStats, nUsers, nUsers)
+	for u := range nUsers {
+		stats[u].ID = u
+		stats[u].Downlink = int64(u)
+		stats[u].Uplink = int64(2 * u)
+	}
+	err = s.UpdateNodeStats(ctx, models.NodeID(nNodes/2), models.NodeStats{
+		Users: stats,
 	})
 	require.NoError(t, err)
 	metrics, err := expl.Metrics()
@@ -299,9 +279,7 @@ func TestStorage_Time_Stats(t *testing.T) {
 	////////////////////////////////////////////////////////////////////////////
 	// update daily sync
 	expl = db.WithExplanations("UpdateDailyStats", ExplainAnalyze)
-	err = s.StatsStorage().DoUoW(ctx, func(uowctx poolstats.UoWContext) error {
-		return uowctx.UpdateDailyStats(ctx, time.Now())
-	})
+	err = s.UpdateDailyStats(ctx, time.Now())
 	require.NoError(t, err)
 	metrics, err = expl.Metrics()
 	require.NoError(t, err)
@@ -311,10 +289,7 @@ func TestStorage_Time_Stats(t *testing.T) {
 	////////////////////////////////////////////////////////////////////////////
 	// find user
 	expl = db.WithExplanations("GetUserView", ExplainAnalyze)
-	err = s.UsersStorage().DoUoW(ctx, func(uowctx users.UoWContext) error {
-		_, err = uowctx.GetUserView(ctx, 2, "name 1")
-		return err
-	})
+	_, err = s.GetUserView(ctx, 2, "name 1")
 	require.NoError(t, err)
 	metrics, err = expl.Metrics()
 	require.NoError(t, err)
@@ -324,10 +299,7 @@ func TestStorage_Time_Stats(t *testing.T) {
 	////////////////////////////////////////////////////////////////////////////
 	// list users
 	expl = db.WithExplanations("ListUserViews", ExplainAnalyze)
-	err = s.UsersStorage().DoUoW(ctx, func(uowctx users.UoWContext) error {
-		_, err = uowctx.ListUserViews(ctx)
-		return err
-	})
+	_, err = s.ListUserViews(ctx)
 	require.NoError(t, err)
 	metrics, err = expl.Metrics()
 	require.NoError(t, err)

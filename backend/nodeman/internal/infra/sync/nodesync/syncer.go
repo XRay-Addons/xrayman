@@ -76,10 +76,8 @@ func (s *syncer) fetchNodeStatus(ctx context.Context) (
 	curr, prev, target models.NodeStatus, err error,
 ) {
 	// fetch stored node status
-	if err = s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		target, prev, err = uowctx.GetNodeStatus(ctx)
-		return
-	}); err != nil {
+	target, prev, err = s.storage.GetNodeStatus(ctx)
+	if err != nil {
 		return
 	}
 
@@ -120,14 +118,14 @@ func (s *syncer) startNode(ctx context.Context) (err error) {
 	}
 
 	// update stored node state
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		if err = uowctx.SetNodeUsers(ctx, s.getUsersPatch(users)); err != nil {
+	if err := s.storage.DoTx(ctx, func(ctx context.Context) (err error) {
+		if err = s.storage.SetNodeUsers(ctx, s.getUsersPatch(users)); err != nil {
 			return
 		}
-		if err = uowctx.SetCurrentNodeStatus(ctx, models.NodeStatusRunning); err != nil {
+		if err = s.storage.SetCurrentNodeStatus(ctx, models.NodeStatusRunning); err != nil {
 			return
 		}
-		if err = uowctx.SetClientConfig(ctx, *clientConfig); err != nil {
+		if err = s.storage.SetClientConfig(ctx, *clientConfig); err != nil {
 			return
 		}
 		return
@@ -139,15 +137,7 @@ func (s *syncer) startNode(ctx context.Context) (err error) {
 }
 
 func (s *syncer) getUsers(ctx context.Context) (users []models.User, err error) {
-	// get all users
-	if err = s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		users, err = uowctx.ListUsers(ctx)
-		return
-	}); err != nil {
-		return
-	}
-
-	return
+	return s.storage.ListUsers(ctx)
 }
 
 func (s *syncer) getEnabledUsers(users []models.User) []models.UserProfile {
@@ -182,11 +172,11 @@ func (s *syncer) stopNode(ctx context.Context) (err error) {
 	}
 
 	// update stored node state and remove all users
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		if err = uowctx.SetCurrentNodeStatus(ctx, models.NodeStatusStopped); err != nil {
+	if err := s.storage.DoTx(ctx, func(ctx context.Context) (err error) {
+		if err = s.storage.SetCurrentNodeStatus(ctx, models.NodeStatusStopped); err != nil {
 			return
 		}
-		if err = uowctx.SetNodeUsers(ctx, []models.UserStatusPatch{}); err != nil {
+		if err = s.storage.SetNodeUsers(ctx, []models.UserStatusPatch{}); err != nil {
 			return
 		}
 		return
@@ -224,14 +214,8 @@ func (s *syncer) syncNodeUsers(ctx context.Context, updateNodeStatus bool) error
 	return nil
 }
 
-func (s *syncer) getPendingSyncs(ctx context.Context) (pending []models.UserSyncStatus, err error) {
-	if err = s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		pending, err = uowctx.FindPendingSyncs(ctx)
-		return err
-	}); err != nil {
-		return
-	}
-	return
+func (s *syncer) getPendingSyncs(ctx context.Context) ([]models.UserSyncStatus, error) {
+	return s.storage.FindPendingSyncs(ctx)
 }
 
 func (s *syncer) buildUserUpdate(syncs []models.UserSyncStatus) (
@@ -264,11 +248,11 @@ func (s *syncer) buildUserUpdate(syncs []models.UserSyncStatus) (
 func (s *syncer) applyNodeStatePatch(ctx context.Context,
 	patch []models.UserStatusPatch,
 ) error {
-	return s.storage.DoUoW(ctx, func(uowctx UoWContext) error {
-		if err := uowctx.UpdateNodeUsers(ctx, patch); err != nil {
+	return s.storage.DoTx(ctx, func(ctx context.Context) error {
+		if err := s.storage.UpdateNodeUsers(ctx, patch); err != nil {
 			return err
 		}
-		if err := uowctx.SetCurrentNodeStatus(ctx, models.NodeStatusRunning); err != nil {
+		if err := s.storage.SetCurrentNodeStatus(ctx, models.NodeStatusRunning); err != nil {
 			return err
 		}
 		return nil
@@ -276,10 +260,5 @@ func (s *syncer) applyNodeStatePatch(ctx context.Context,
 }
 
 func (s *syncer) updateStoredStatus(ctx context.Context, status models.NodeStatus) error {
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) error {
-		return uowctx.SetCurrentNodeStatus(ctx, status)
-	}); err != nil {
-		return err
-	}
-	return nil
+	return s.storage.SetCurrentNodeStatus(ctx, status)
 }

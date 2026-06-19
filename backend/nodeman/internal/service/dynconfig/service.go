@@ -27,11 +27,8 @@ func (s *Service) GetDynamicConfig(ctx context.Context) (*models.DynamicConfig, 
 	if s == nil {
 		return nil, errdefs.NilCall()
 	}
-	var cfg *models.DynamicConfig
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		cfg, err = uowctx.GetDynamicConfig(ctx)
-		return
-	}); err != nil {
+	cfg, err := s.storage.GetDynamicConfig(ctx)
+	if err != nil {
 		return nil, err
 	}
 	return cfg, nil
@@ -41,9 +38,17 @@ func (s *Service) SetDynamicConfig(ctx context.Context, cfg models.DynamicConfig
 	if s == nil {
 		return errdefs.NilCall()
 	}
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		return uowctx.SetDynamicConfig(ctx, cfg)
-	}); err != nil {
+	if err := s.storage.SetDynamicConfig(ctx, cfg); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Service) EnsureDefaultConfig(ctx context.Context) error {
+	if s == nil {
+		return errdefs.NilCall()
+	}
+	if err := s.storage.EnsureDynamicConfig(ctx, models.DynamicConfig{}); err != nil {
 		return err
 	}
 	return nil

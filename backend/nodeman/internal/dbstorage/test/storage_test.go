@@ -6,13 +6,7 @@ import (
 	"time"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/auth/password"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/stats/poolstats"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service/dynconfig"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service/users"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 )
@@ -38,9 +32,9 @@ func TestStorage_Nodes(t *testing.T) {
 		CurrentStatus: models.NodeStatusStopped,
 		TargetStatus:  models.NodeStatusUnknown,
 	}
-	err := s.NodesStorage().DoUoW(ctx, func(uowctx nodes.UoWContext) error {
+	err := s.DoTx(ctx, func(ctx context.Context) error {
 		for _, node := range []*models.Node{&node1, &node2, &node3} {
-			if err := uowctx.NewNode(ctx, node); err != nil {
+			if err := s.NewNode(ctx, node); err != nil {
 				return err
 			}
 		}
@@ -48,26 +42,16 @@ func TestStorage_Nodes(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	err = s.NodesStorage().DoUoW(ctx, func(uowctx nodes.UoWContext) error {
-		return uowctx.DeleteNode(ctx, node2.ID)
-	})
+	err = s.DeleteNode(ctx, node2.ID)
 	require.NoError(t, err)
 
-	err = s.NodesStorage().DoUoW(ctx, func(uowctx nodes.UoWContext) error {
-		return uowctx.SetTargetNodeStatus(ctx, node1.ID, models.NodeStatusStopped)
-	})
+	err = s.SetTargetNodeStatus(ctx, node1.ID, models.NodeStatusStopped)
 	require.NoError(t, err)
 
-	err = s.PoolSyncStorage().DoUoW(ctx, func(uowctx poolsync.UoWContext) error {
-		return uowctx.SetCurrentNodeStatus(ctx, node3.ID, models.NodeStatusRunning)
-	})
+	err = s.SetCurrentNodeStatus(ctx, node3.ID, models.NodeStatusRunning)
 	require.NoError(t, err)
 
-	var nodesList []models.Node
-	err = s.NodesStorage().DoUoW(ctx, func(uowctx nodes.UoWContext) error {
-		nodesList, err = uowctx.ListNodes(ctx)
-		return err
-	})
+	nodesList, err := s.ListNodes(ctx)
 	require.NoError(t, err)
 	require.Equal(t, 2, len(nodesList))
 	require.Equal(t, models.NodeStatusStopped, nodesList[0].TargetStatus)
@@ -75,18 +59,11 @@ func TestStorage_Nodes(t *testing.T) {
 	require.Equal(t, models.NodeStatusUnknown, nodesList[1].TargetStatus)
 	require.Equal(t, models.NodeStatusRunning, nodesList[1].CurrentStatus)
 
-	var existedNode *models.Node
-	err = s.PoolSyncStorage().DoUoW(ctx, func(uowctx poolsync.UoWContext) error {
-		existedNode, err = uowctx.GetNode(ctx, node1.ID)
-		return err
-	})
+	existedNode, err := s.GetNode(ctx, node1.ID)
 	require.NoError(t, err)
 	require.Equal(t, node1.ID, existedNode.ID)
 
-	err = s.PoolSyncStorage().DoUoW(ctx, func(uowctx poolsync.UoWContext) error {
-		_, err = uowctx.GetNode(ctx, node2.ID)
-		return err
-	})
+	_, err = s.GetNode(ctx, node2.ID)
 	require.ErrorIs(t, err, errdefs.ErrNotFound)
 }
 
@@ -106,9 +83,9 @@ func TestStorage_Users(t *testing.T) {
 	user3 := models.User{
 		TargetStatus: models.UserStatusUnknown,
 	}
-	err := s.UsersStorage().DoUoW(ctx, func(uowctx users.UoWContext) error {
+	err := s.DoTx(ctx, func(ctx context.Context) error {
 		for _, user := range []*models.User{&user1, &user2, &user3} {
-			if err := uowctx.NewUser(ctx, user); err != nil {
+			if err := s.NewUser(ctx, user); err != nil {
 				return err
 			}
 		}
@@ -116,42 +93,27 @@ func TestStorage_Users(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	err = s.UsersStorage().DoUoW(ctx, func(uowctx users.UoWContext) error {
-		return uowctx.DeleteUser(ctx, user2.Profile.ID)
-	})
+	err = s.DeleteUser(ctx, user2.Profile.ID)
 	require.NoError(t, err)
 
-	err = s.UsersStorage().DoUoW(ctx, func(uowctx users.UoWContext) error {
-		return uowctx.SetTargetUserStatus(ctx, user1.Profile.ID, models.UserStatusDisabled)
-	})
+	err = s.SetTargetUserStatus(ctx, user1.Profile.ID, models.UserStatusDisabled)
 	require.NoError(t, err)
 
-	var usersList []models.User
-	err = s.PoolSyncStorage().DoUoW(ctx, func(uowctx poolsync.UoWContext) error {
-		usersList, err = uowctx.ListUsers(ctx)
-		return err
-	})
+	usersList, err := s.ListUsers(ctx)
 	require.NoError(t, err)
 	require.Equal(t, 2, len(usersList))
 	require.Equal(t, models.UserStatusDisabled, usersList[0].TargetStatus)
 	require.Equal(t, models.UserStatusUnknown, usersList[1].TargetStatus)
 
-	var existedUser *models.UserView
-	err = s.UsersStorage().DoUoW(ctx, func(uowctx users.UoWContext) error {
-		existedUser, err = uowctx.GetUserView(ctx, user1.Profile.ID, user1.Profile.Name)
-		return err
-	})
+	existedUser, err := s.GetUserView(ctx, user1.Profile.ID, user1.Profile.Name)
 	require.NoError(t, err)
 	require.Equal(t, user1.Profile.ID, existedUser.User.Profile.ID)
 
-	err = s.UsersStorage().DoUoW(ctx, func(uowctx users.UoWContext) error {
-		_, err = uowctx.GetUserView(ctx, user2.Profile.ID, user2.Profile.Name)
-		return err
-	})
+	_, err = s.GetUserView(ctx, user2.Profile.ID, user2.Profile.Name)
 	require.ErrorIs(t, err, errdefs.ErrNotFound)
 
-	err = s.UsersStorage().DoUoW(ctx, func(uowctx users.UoWContext) error {
-		_, err = uowctx.GetUserView(ctx, user1.Profile.ID, "fake name")
+	err = s.DoTx(ctx, func(ctx context.Context) error {
+		_, err = s.GetUserView(ctx, user1.Profile.ID, "fake name")
 		return err
 	})
 	require.ErrorIs(t, err, errdefs.ErrNotFound)
@@ -174,9 +136,9 @@ func TestStorage_UserNodes(t *testing.T) {
 		TargetStatus: models.UserStatusDisabled,
 	}
 
-	err := s.UsersStorage().DoUoW(ctx, func(uowctx users.UoWContext) error {
+	err := s.DoTx(ctx, func(ctx context.Context) error {
 		for _, user := range []*models.User{&user1, &user2, &user3} {
-			if err := uowctx.NewUser(ctx, user); err != nil {
+			if err := s.NewUser(ctx, user); err != nil {
 				return err
 			}
 		}
@@ -189,16 +151,10 @@ func TestStorage_UserNodes(t *testing.T) {
 		TargetStatus:  models.NodeStatusRunning,
 	}
 
-	err = s.NodesStorage().DoUoW(ctx, func(uowctx nodes.UoWContext) error {
-		return uowctx.NewNode(ctx, &node1)
-	})
+	err = s.NewNode(ctx, &node1)
 	require.NoError(t, err)
 
-	var pendingSyncs []models.UserSyncStatus
-	err = s.PoolSyncStorage().DoUoW(ctx, func(uowctx poolsync.UoWContext) error {
-		pendingSyncs, err = uowctx.FindPendingSyncs(ctx, node1.ID)
-		return err
-	})
+	pendingSyncs, err := s.FindPendingSyncs(ctx, node1.ID)
 	require.NoError(t, err)
 	require.Equal(t, 1, len(pendingSyncs))
 	require.Equal(t, user1.Profile.ID, pendingSyncs[0].User.Profile.ID)
@@ -209,15 +165,10 @@ func TestStorage_UserNodes(t *testing.T) {
 		{UserID: user1.Profile.ID, Status: models.UserStatusEnabled},
 		{UserID: user2.Profile.ID, Status: models.UserStatusEnabled},
 	}
-	err = s.PoolSyncStorage().DoUoW(ctx, func(uowctx poolsync.UoWContext) error {
-		return uowctx.UpdateNodeUsers(ctx, node1.ID, syncsPath)
-	})
+	err = s.UpdateNodeUsers(ctx, node1.ID, syncsPath)
 	require.NoError(t, err)
 
-	err = s.PoolSyncStorage().DoUoW(ctx, func(uowctx poolsync.UoWContext) error {
-		pendingSyncs, err = uowctx.FindPendingSyncs(ctx, node1.ID)
-		return err
-	})
+	pendingSyncs, err = s.FindPendingSyncs(ctx, node1.ID)
 	require.NoError(t, err)
 	require.Equal(t, 1, len(pendingSyncs))
 	require.Equal(t, user2.Profile.ID, pendingSyncs[0].User.Profile.ID)
@@ -227,14 +178,9 @@ func TestStorage_UserNodes(t *testing.T) {
 	syncsPath = []models.UserStatusPatch{
 		{UserID: user2.Profile.ID, Status: models.UserStatusEnabled},
 	}
-	err = s.PoolSyncStorage().DoUoW(ctx, func(uowctx poolsync.UoWContext) error {
-		return uowctx.SetNodeUsers(ctx, node1.ID, syncsPath)
-	})
+	err = s.SetNodeUsers(ctx, node1.ID, syncsPath)
 	require.NoError(t, err)
-	err = s.PoolSyncStorage().DoUoW(ctx, func(uowctx poolsync.UoWContext) error {
-		pendingSyncs, err = uowctx.FindPendingSyncs(ctx, node1.ID)
-		return err
-	})
+	pendingSyncs, err = s.FindPendingSyncs(ctx, node1.ID)
 	require.NoError(t, err)
 	require.Equal(t, 2, len(pendingSyncs))
 }
@@ -253,9 +199,9 @@ func TestStorage_Stats(t *testing.T) {
 		TargetStatus: models.UserStatusEnabled,
 	}
 
-	err := s.UsersStorage().DoUoW(ctx, func(uowctx users.UoWContext) error {
+	err := s.DoTx(ctx, func(ctx context.Context) error {
 		for _, user := range []*models.User{&user1, &user2} {
-			if err := uowctx.NewUser(ctx, user); err != nil {
+			if err := s.NewUser(ctx, user); err != nil {
 				return err
 			}
 		}
@@ -272,9 +218,9 @@ func TestStorage_Stats(t *testing.T) {
 		TargetStatus:  models.NodeStatusRunning,
 	}
 
-	err = s.NodesStorage().DoUoW(ctx, func(uowctx nodes.UoWContext) error {
+	err = s.DoTx(ctx, func(ctx context.Context) error {
 		for _, node := range []*models.Node{&node1, &node2} {
-			if err := uowctx.NewNode(ctx, node); err != nil {
+			if err := s.NewNode(ctx, node); err != nil {
 				return err
 			}
 		}
@@ -283,28 +229,28 @@ func TestStorage_Stats(t *testing.T) {
 	require.NoError(t, err)
 
 	// update stats
-	err = s.StatsStorage().DoUoW(ctx, func(uowctx poolstats.UoWContext) error {
-		if err := uowctx.UpdateNodeStats(ctx, node1.ID, models.NodeStats{
+	err = s.DoTx(ctx, func(ctx context.Context) error {
+		if err := s.UpdateNodeStats(ctx, node1.ID, models.NodeStats{
 			Users: []models.UserStats{
-				{ID: user1.Profile.ID, Upload: 1, Download: 2},
-				{ID: user2.Profile.ID, Upload: 3, Download: 4},
+				{ID: user1.Profile.ID, Uplink: 1, Downlink: 2},
+				{ID: user2.Profile.ID, Uplink: 3, Downlink: 4},
 			},
 		}); err != nil {
 			return err
 		}
-		if err := uowctx.UpdateNodeStats(ctx, node2.ID, models.NodeStats{
+		if err := s.UpdateNodeStats(ctx, node2.ID, models.NodeStats{
 			Users: []models.UserStats{
-				{ID: user1.Profile.ID, Upload: 5, Download: 6},
+				{ID: user1.Profile.ID, Uplink: 5, Downlink: 6},
 			},
 		}); err != nil {
 			return err
 		}
-		if err := uowctx.UpdateDailyStats(ctx, time.Now().Add(-60*24*time.Hour)); err != nil {
+		if err := s.UpdateDailyStats(ctx, time.Now().Add(-60*24*time.Hour)); err != nil {
 			return err
 		}
-		if err := uowctx.UpdateNodeStats(ctx, node2.ID, models.NodeStats{
+		if err := s.UpdateNodeStats(ctx, node2.ID, models.NodeStats{
 			Users: []models.UserStats{
-				{ID: user2.Profile.ID, Upload: 11, Download: 12},
+				{ID: user2.Profile.ID, Uplink: 11, Downlink: 12},
 			},
 		}); err != nil {
 			return err
@@ -313,11 +259,7 @@ func TestStorage_Stats(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	var usersList []models.UserView
-	err = s.UsersStorage().DoUoW(ctx, func(uowctx users.UoWContext) error {
-		usersList, err = uowctx.ListUserViews(ctx)
-		return err
-	})
+	usersList, err := s.ListUserViews(ctx)
 	require.NoError(t, err)
 	require.Equal(t, 2, len(usersList))
 	require.Equal(t, int64(6), usersList[0].Traffic.Total.Upload)
@@ -330,21 +272,14 @@ func TestStorage_Stats(t *testing.T) {
 	require.Equal(t, int64(11), usersList[1].Traffic.LastMonth.Upload)
 	require.Equal(t, int64(12), usersList[1].Traffic.LastMonth.Download)
 
-	var userView *models.UserView
-	err = s.UsersStorage().DoUoW(ctx, func(uowctx users.UoWContext) error {
-		userView, err = uowctx.GetUserView(ctx, user1.Profile.ID, user1.Profile.Name)
-		return err
-	})
+	userView, err := s.GetUserView(ctx, user1.Profile.ID, user1.Profile.Name)
 	require.NoError(t, err)
 	require.Equal(t, int64(6), userView.Traffic.Total.Upload)
 	require.Equal(t, int64(8), userView.Traffic.Total.Download)
 	require.Equal(t, int64(0), userView.Traffic.LastMonth.Upload)
 	require.Equal(t, int64(0), userView.Traffic.LastMonth.Download)
 
-	err = s.UsersStorage().DoUoW(ctx, func(uowctx users.UoWContext) error {
-		userView, err = uowctx.GetUserView(ctx, user2.Profile.ID, user2.Profile.Name)
-		return err
-	})
+	userView, err = s.GetUserView(ctx, user2.Profile.ID, user2.Profile.Name)
 	require.NoError(t, err)
 	require.Equal(t, int64(14), userView.Traffic.Total.Upload)
 	require.Equal(t, int64(16), userView.Traffic.Total.Download)
@@ -362,16 +297,10 @@ func TestStorage_Password(t *testing.T) {
 	auth := models.Auth{
 		PasswordHash: []byte("hash"),
 	}
-	err := s.PasswordStorage().DoUoW(ctx, func(uowctx password.UoWContext) error {
-		return uowctx.SetAuth(ctx, auth)
-	})
+	err := s.SetAuth(ctx, &auth)
 	require.NoError(t, err)
 
-	var dbauth *models.Auth
-	err = s.PasswordStorage().DoUoW(ctx, func(uowctx password.UoWContext) error {
-		dbauth, err = uowctx.GetAuth(ctx)
-		return err
-	})
+	dbauth, err := s.GetAuth(ctx)
 	require.NoError(t, err)
 	require.Equal(t, auth, *dbauth)
 }
@@ -388,16 +317,10 @@ func TestStorage_DynConfig(t *testing.T) {
 		UsersMessage: "users message",
 		TgPage:       "tg page",
 	}
-	err := s.DynamicConfigStorage().DoUoW(ctx, func(uowctx dynconfig.UoWContext) error {
-		return uowctx.SetDynamicConfig(ctx, cfg)
-	})
+	err := s.SetDynamicConfig(ctx, cfg)
 	require.NoError(t, err)
 
-	var readCfg *models.DynamicConfig
-	err = s.DynamicConfigStorage().DoUoW(ctx, func(uowctx dynconfig.UoWContext) error {
-		readCfg, err = uowctx.GetDynamicConfig(ctx)
-		return err
-	})
+	readCfg, err := s.GetDynamicConfig(ctx)
 	require.NoError(t, err)
 	require.Equal(t, cfg, *readCfg)
 
@@ -406,15 +329,40 @@ func TestStorage_DynConfig(t *testing.T) {
 		UsersMessage: "users message2",
 		TgPage:       "tg page2",
 	}
-	err = s.DynamicConfigStorage().DoUoW(ctx, func(uowctx dynconfig.UoWContext) error {
-		return uowctx.EnsureDynamicConfig(ctx, cfg2)
-	})
+	err = s.EnsureDynamicConfig(ctx, cfg2)
 	require.NoError(t, err)
 
-	err = s.DynamicConfigStorage().DoUoW(ctx, func(uowctx dynconfig.UoWContext) error {
-		readCfg, err = uowctx.GetDynamicConfig(ctx)
-		return err
-	})
+	readCfg, err = s.GetDynamicConfig(ctx)
 	require.NoError(t, err)
 	require.Equal(t, cfg, *readCfg)
+}
+
+func TestStorage_Tx(t *testing.T) {
+	logger := zaptest.NewLogger(t)
+	ctx := context.Background()
+
+	s, _ := setupTestDB(t, logger)
+	logger.Info("new test db inited")
+
+	node1 := models.Node{
+		CurrentStatus: models.NodeStatusRunning,
+		TargetStatus:  models.NodeStatusRunning,
+	}
+
+	err := s.DoTx(ctx, func(ctx context.Context) error {
+		// no error
+		if err := s.NewNode(ctx, &node1); err != nil {
+			return err
+		}
+		// with error
+		if _, err := s.GetNode(ctx, models.NodeID(-1)); err != nil {
+			return err
+		}
+		return nil
+	})
+	require.Error(t, err)
+
+	nodes, err := s.ListNodes(ctx)
+	require.NoError(t, err)
+	require.Equal(t, 0, len(nodes))
 }

@@ -33,6 +33,8 @@ type expquery struct {
 var _ dbstorage.DB = (*ExplainDB)(nil)
 var _ dbstorage.TX = (*ExplainTX)(nil)
 
+// //////////////////////////////////////////////////////////////////////////////
+// ExplainDB impl
 func (e *ExplainDB) Raw() *sql.DB {
 	return e.db
 }
@@ -71,9 +73,37 @@ func (e *ExplainDB) Close() error {
 	return nil
 }
 
+func (e *ExplainDB) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
+	e.processExplainQuery(ctx, query, args...)
+	return e.db.ExecContext(ctx, query, args...)
+}
+
+func (e *ExplainDB) PrepareContext(ctx context.Context, query string) (*sql.Stmt, error) {
+	e.processExplainQuery(ctx, query)
+	return e.db.PrepareContext(ctx, query)
+}
+
+func (e *ExplainDB) QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error) {
+	e.processExplainQuery(ctx, query, args...)
+	return e.db.QueryContext(ctx, query, args...)
+}
+
+func (e *ExplainDB) QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row {
+	e.processExplainQuery(ctx, query, args...)
+	return e.db.QueryRowContext(ctx, query, args...)
+}
+
+func (e *ExplainDB) processExplainQuery(ctx context.Context, query string, args ...any) {
+	processExplainQuery(ctx, e, []expquery{
+		{q: query, args: args},
+	}, e.mode, &e.expl)
+}
+
+// //////////////////////////////////////////////////////////////////////////////
+// ExplainTX impl
 func (e *ExplainTX) Commit() error {
 	err := e.tx.Commit()
-	e.processExplainQuery()
+	e.processExplainQuery(context.TODO())
 	return err
 }
 
@@ -103,31 +133,36 @@ func (e *ExplainTX) QueryRowContext(ctx context.Context, query string, args ...a
 	return e.tx.QueryRowContext(ctx, query, args...)
 }
 
-func (e *ExplainTX) processExplainQuery() {
+func (e *ExplainTX) processExplainQuery(ctx context.Context) {
 	defer func() { e.queries = []expquery{} }()
+	processExplainQuery(ctx, e.db, e.queries, e.mode, e.expl)
+}
 
-	if e.mode == ExplainNone {
+// //////////////////////////////////////////////////////////////////////////////
+// explanation impl
+func processExplainQuery(ctx context.Context, db dbstorage.DB, queries []expquery, mode ExplainMode, expl *Explanations) {
+	if mode == ExplainNone {
 		return
 	}
 
-	tx, err := e.db.BeginTx(context.TODO())
+	tx, err := db.BeginTx(context.TODO())
 	if err != nil {
-		e.expl.Add(fmt.Sprintf("begin explain tx error: %+v", err))
+		expl.Add(fmt.Sprintf("begin explain tx error: %+v", err))
 		return
 	}
 
 	defer func() {
 		if rbErr := tx.Rollback(); rbErr != nil {
-			e.expl.Add(fmt.Sprintf("explain tx rollback error: %+v", err))
+			expl.Add(fmt.Sprintf("explain tx rollback error: %+v", err))
 		}
 		return
 	}()
 
-	for _, q := range e.queries {
+	for _, q := range queries {
 		var b strings.Builder
-		prefix := getModePrefix(e.mode)
+		prefix := getModePrefix(mode)
 
-		rows, err := tx.QueryContext(context.TODO(), prefix+q.q, q.args...)
+		rows, err := tx.QueryContext(ctx, prefix+q.q, q.args...)
 		if err != nil {
 			fmt.Fprintf(&b, "explain error: %+v", err)
 			return
@@ -144,7 +179,7 @@ func (e *ExplainTX) processExplainQuery() {
 			fmt.Fprintln(&b, line)
 		}
 
-		e.expl.Add(b.String())
+		expl.Add(b.String())
 	}
 }
 

@@ -3,11 +3,10 @@ package nodes
 import (
 	"context"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/uow"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
-type UoWContext interface {
+type Storage interface {
 	// add new node to storage, assign NodeID to node
 	NewNode(ctx context.Context, node *models.Node) error
 	// get all nodes
@@ -19,6 +18,3 @@ type UoWContext interface {
 	DeleteNode(ctx context.Context,
 		id models.NodeID) error
 }
-
-type UoWFn = uow.Fn[UoWContext]
-type Storage = uow.Storage[UoWContext]

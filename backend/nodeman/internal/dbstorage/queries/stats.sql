@@ -29,8 +29,8 @@ update_users AS (
 INSERT INTO total_nodes_traffic (node_id, upload, download)
 SELECT 
     sqlc.arg(node_id)::bigint,
-    SUM(upload)::bigint, 
-    SUM(download)::bigint
+    COALESCE(SUM(upload), 0)::bigint, 
+    COALESCE(SUM(download), 0)::bigint
 FROM input_data
 ON CONFLICT (node_id) DO UPDATE
 SET

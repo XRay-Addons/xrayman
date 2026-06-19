@@ -9,4 +9,7 @@ type RawConfig struct {
 	ApiServiceUrl string `env:"API_SERVICE_URL"`
 	UserSpaUrl    string `env:"USER_SPA_URL"`
 	AdminSpaUrl   string `env:"ADMIN_SPA_URL"`
+
+	StateSyncInterval int `env:"STATE_SYNC_INTERVAL"`
+	StatsSyncInterval int `env:"STATS_SYNC_INTERVAL"`
 }
