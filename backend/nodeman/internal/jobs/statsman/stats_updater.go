@@ -8,4 +8,5 @@ import (
 
 type StatsUpdater interface {
 	UpdatePoolStats(ctx context.Context) (*models.PoolOpResult, error)
+	UpdateDailyStats(ctx context.Context) error
 }

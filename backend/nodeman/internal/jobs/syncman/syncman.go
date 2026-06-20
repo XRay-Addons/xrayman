@@ -5,13 +5,13 @@ import (
 	"time"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/pooljob"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/job"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	"go.uber.org/zap"
 )
 
 type SyncMan struct {
-	job *pooljob.PoolJob
+	job *job.PoolJob
 }
 
 type options struct {
@@ -47,7 +47,7 @@ func New(syncer PoolSyncer, interval time.Duration, opts ...Option) (*SyncMan, e
 	jobFn := func(ctx context.Context) (*models.PoolOpResult, error) {
 		return syncer.SyncPoolState(ctx)
 	}
-	job, err := pooljob.New(jobFn, cfg.interval, "sync state", cfg.log)
+	job, err := job.NewPoolJob(jobFn, cfg.interval, "sync state", cfg.log)
 	if err != nil {
 		return nil, err
 	}

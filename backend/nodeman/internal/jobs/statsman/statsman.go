@@ -4,14 +4,16 @@ import (
 	"context"
 	"time"
 
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/pooljob"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/job"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	"go.uber.org/zap"
 )
 
 type StatsMan struct {
-	job *pooljob.PoolJob
+	updateStatsJob *job.PoolJob
+	updateDailyJob *job.Job
 }
 
 type options struct {
@@ -39,32 +41,49 @@ func New(updater StatsUpdater, interval time.Duration, opts ...Option) (*StatsMa
 		o(&cfg)
 	}
 
-	jobFn := func(ctx context.Context) (*models.PoolOpResult, error) {
+	updateJobFn := func(ctx context.Context) (*models.PoolOpResult, error) {
 		return updater.UpdatePoolStats(ctx)
 	}
-	job, err := pooljob.New(jobFn, interval, "update stats", cfg.log)
+	updateStatsJob, err := job.NewPoolJob(updateJobFn, interval, "update stats", cfg.log)
+	if err != nil {
+		return nil, err
+	}
+	updateDailyFn := func(ctx context.Context) error {
+		return updater.UpdateDailyStats(ctx)
+	}
+	// update daily stats every hour for:
+	// - to be sure it runs at least once every day
+	// - to not lost data for more than one hour in case of fail
+	updateDailyJob, err := job.NewJob(updateDailyFn, time.Hour, "update daily stats", cfg.log)
 	if err != nil {
 		return nil, err
 	}
 
 	// init default options
 	m := &StatsMan{
-		job: job,
+		updateStatsJob: updateStatsJob,
+		updateDailyJob: updateDailyJob,
 	}
 
 	return m, nil
 }
 
 func (m *StatsMan) Run() error {
-	if m == nil || m.job == nil {
+	if m == nil || m.updateStatsJob == nil || m.updateDailyJob == nil {
 		return errdefs.NilCall()
 	}
-	return m.job.Run()
+	return xerr.Join(
+		m.updateStatsJob.Run(),
+		m.updateDailyJob.Run(),
+	)
 }
 
 func (m *StatsMan) Stop() error {
-	if m == nil || m.job == nil {
+	if m == nil || m.updateStatsJob == nil || m.updateDailyJob == nil {
 		return nil
 	}
-	return m.job.Stop()
+	return xerr.Join(
+		m.updateStatsJob.Stop(),
+		m.updateDailyJob.Stop(),
+	)
 }

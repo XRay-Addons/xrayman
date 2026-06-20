@@ -1,4 +1,4 @@
-package pooljob
+package job
 
 import (
 	"context"
@@ -12,6 +12,8 @@ import (
 	"go.uber.org/zap"
 )
 
+type PoolOp = func(ctx context.Context) (*models.PoolOpResult, error)
+
 type PoolJob struct {
 	op PoolOp
 
@@ -23,7 +25,7 @@ type PoolJob struct {
 	log  *zap.Logger
 }
 
-func New(op PoolOp, jobInterval time.Duration, name string, log *zap.Logger) (*PoolJob, error) {
+func NewPoolJob(op PoolOp, jobInterval time.Duration, name string, log *zap.Logger) (*PoolJob, error) {
 	if op == nil {
 		return nil, errdefs.NilArg("op")
 	}
@@ -73,19 +75,22 @@ func (j *PoolJob) Stop() error {
 }
 
 func (j *PoolJob) opLoop(ctx context.Context) {
-	ticker := time.NewTicker(j.interval)
-	defer ticker.Stop()
-
 	for {
-		// set job time limit to m.interval
+		if ctx.Err() != nil {
+			return
+		}
+
+		startTime := time.Now()
+
 		jobCtx, cancel := context.WithTimeout(ctx, j.interval)
-		jobRes, err := j.op(jobCtx)
+		result, err := j.op(jobCtx)
 		cancel()
-		j.logJobResult(jobRes, err)
+		j.logJobResult(result, err)
+
+		timeLeft := j.interval - time.Since(startTime)
 
 		select {
-		case <-time.After(j.interval):
-			continue
+		case <-time.After(timeLeft): // immediate if time.left < 0
 		case <-ctx.Done():
 			return
 		}

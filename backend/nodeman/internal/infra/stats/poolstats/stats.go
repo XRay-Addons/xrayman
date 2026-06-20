@@ -2,6 +2,7 @@ package poolstats
 
 import (
 	"context"
+	"time"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/poolop"
@@ -12,7 +13,8 @@ import (
 )
 
 type Stats struct {
-	op *poolop.PoolOp
+	storage Storage
+	op      *poolop.PoolOp
 }
 
 var _ statsman.StatsUpdater = (*Stats)(nil)
@@ -46,6 +48,10 @@ func (s *Stats) Close() {
 
 func (s *Stats) UpdatePoolStats(ctx context.Context) (*models.PoolOpResult, error) {
 	return s.op.Exec(ctx)
+}
+
+func (s *Stats) UpdateDailyStats(ctx context.Context) error {
+	return s.storage.UpdateDailyStats(ctx, time.Now())
 }
 
 // node pool impl
