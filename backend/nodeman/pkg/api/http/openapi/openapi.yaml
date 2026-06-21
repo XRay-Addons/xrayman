@@ -910,6 +910,10 @@ components:
     DynamicConfig:
       type: object
       properties:
+        SubscrTitle:
+          type: string
+        UpdateInterval:
+          type: integer
         UserPage:
           type: string
         UsersMessage:
@@ -917,6 +921,8 @@ components:
         TgPage:
           type: string
       required:
+        - SubscrTitle
+        - UpdateInterval
         - UserPage
         - UsersMessage
         - TgPage

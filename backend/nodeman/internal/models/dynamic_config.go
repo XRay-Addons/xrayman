@@ -1,7 +1,9 @@
 package models
 
 type DynamicConfig struct {
-	UserPage     string
-	UsersMessage string
-	TgPage       string
+	SubscrTitle    string
+	UpdateInterval int
+	UserPage       string
+	UsersMessage   string
+	TgPage         string
 }

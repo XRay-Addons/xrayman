@@ -56,6 +56,7 @@ func New[T any](fn Fn[T]) *WaveExecutor[T] {
 		reqCh: make(chan struct{}, 1),
 		done:  make(chan struct{}),
 	}
+	// PANIC
 	go we.runExecLoop()
 	return we
 }
@@ -135,6 +136,7 @@ func (we *WaveExecutor[T]) anyAliveContext(items ...execWaveItem[T]) context.Con
 	var wg sync.WaitGroup
 	for _, item := range items {
 		wg.Add(1)
+		// PANIC
 		go func() {
 			select {
 			case <-item.ctx.Done():
@@ -145,6 +147,7 @@ func (we *WaveExecutor[T]) anyAliveContext(items ...execWaveItem[T]) context.Con
 		}()
 	}
 
+	// PANIC
 	go func() {
 		wg.Wait()
 		cancel()

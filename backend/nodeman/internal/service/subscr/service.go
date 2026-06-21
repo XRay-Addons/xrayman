@@ -3,12 +3,10 @@ package subscr
 import (
 	"context"
 
-	"github.com/XRay-Addons/xrayman/common/jsonval"
+	"github.com/XRay-Addons/xrayman/common/xerrgroup"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/template"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/go-faster/jx"
 	"go.uber.org/zap"
 )
 
@@ -50,91 +48,42 @@ func (s *Service) GetUserSub(ctx context.Context,
 		return nil, errdefs.NilCall()
 	}
 
+	g, ctx := xerrgroup.WithContext(ctx)
 	// find user
-	user, err := s.findUser(ctx, p)
-	if err != nil {
-		return nil, err
-	}
+	var user *models.UserView
+	g.Go(func() (err error) {
+		user, err = s.storage.GetUserView(ctx, p.ID, p.Name)
+		return
+	})
 
 	// get active nodes for user
-	userNodes, err := s.storage.GetUserNodes(ctx, user.User.Profile.ID)
-	if err != nil {
+	var userNodes []models.Node
+	g.Go(func() (err error) {
+		userNodes, err = s.storage.GetUserNodes(ctx, p.ID)
+		return
+	})
+
+	// get dynamic config
+	var dynConfig *models.DynamicConfig
+	g.Go(func() (err error) {
+		dynConfig, err = s.storage.GetDynamicConfig(ctx)
+		return
+	})
+
+	if err := g.Wait(); err != nil {
 		return nil, err
 	}
 
 	// get subscription content
-	clientCfgs := s.makeClientConfigs(*user, userNodes)
+	clientCfgs := createClientCfgs(user, userNodes, s.log)
 
 	// get subscription headers
-	clientHeaders, err := s.makeClientHeaders(ctx, *user)
-	if err != nil {
-		return nil, err
-	}
+	clientHeaders := createClientHeaders(ctx, user, dynConfig)
 
 	return &models.UserSubResult{
 		Headers:       clientHeaders,
 		ClientConfigs: clientCfgs,
 	}, nil
-}
-
-func (s *Service) findUser(ctx context.Context, p models.UserSubParams) (*models.UserView, error) {
-	// find user with given id
-	user, err := s.storage.GetUserView(ctx, p.ID, p.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	return user, nil
-}
-
-func (s *Service) makeClientConfigs(user models.UserView,
-	userNodes []models.Node,
-) []models.ClientConfigItem {
-	var clientCfgs []models.ClientConfigItem
-	for _, node := range userNodes {
-		nodeClientConfigs, err := s.makeNodeClientConfigs(
-			user.User, node.Config.ClientConfigTemplate)
-		if err != nil {
-			// skip invalid node configs
-			s.log.Warn("node client config", zap.Error(err))
-			continue
-		}
-		clientCfgs = append(clientCfgs, nodeClientConfigs...)
-	}
-
-	return clientCfgs
-}
-
-func (s *Service) makeNodeClientConfigs(user models.User,
-	cfgTemplate models.ClientConfigTemplate,
-) ([]models.ClientConfigItem, error) {
-	nodeConfigs := make([]models.ClientConfigItem, 0, len(cfgTemplate.Template))
-	for _, item := range cfgTemplate.Template {
-		tmpl, err := template.RenderTemplate(item.String(), map[string]string{
-			cfgTemplate.VlessEmailField: user.Profile.VlessEmail(),
-			cfgTemplate.VlessUUIDField:  user.Profile.VlessUUID,
-		})
-		if err != nil {
-			return nil, err
-		}
-		nodeConfig := jx.Raw(tmpl)
-		if err = jsonval.ValidateJsonData(nodeConfig); err != nil {
-			return nil, err
-		}
-		nodeConfigs = append(nodeConfigs, nodeConfig)
-	}
-	return nodeConfigs, nil
-}
-
-func (s *Service) makeClientHeaders(ctx context.Context,
-	u models.UserView,
-) (models.Headers, error) {
-	headers, err := s.storage.ListSubHeaders(ctx)
-	if err != nil {
-		return nil, err
-	}
-	headers = replacePlaceholders(headers, u)
-	return headers, nil
 }
 
 func (s Service) SubHeadersPlaceholders() []string {

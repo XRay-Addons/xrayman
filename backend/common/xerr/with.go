@@ -7,6 +7,9 @@ import (
 
 func WithDetails[T any](details T) option {
 	return func(err error) error {
+		if err == nil {
+			return nil
+		}
 		return &withDetails[T]{
 			details: details,
 			err:     err,

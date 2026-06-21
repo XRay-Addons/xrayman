@@ -1,51 +1,68 @@
 package subscr
 
 import (
+	"context"
 	"fmt"
-
-	"github.com/valyala/fasttemplate"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
 const (
-	UserIDPlaceholder          = "UserID"
-	UserNamePlaceholder        = "UserName"
-	UserDisplayNamePlaceholder = "DisplayName"
-	TotalUploadPlaceholder     = "TotalUpload"
-	TotalDownloadPlaceholder   = "TotalDownload"
+	ProfileTitleHeader          = "profile-title"
+	ProfileUpdateIntervalHeader = "profile-update-interval"
+	TgPageHeader                = "support-url"
+	WebPageHeader               = "profile-web-page-url"
+	AnnounceHeader              = "announce"
+	TrafficStatsHeader          = "subscription-userinfo" // upload=0; download=2153701362; total=0; expire=1790951622
+	TrafficStatsFmt             = "upload=%d; download=%d"
 )
 
-func replacePlaceholders(hs models.Headers, u models.UserView) models.Headers {
-	replaced := make([]models.Header, 0, len(hs))
-	for _, h := range hs {
-		t := fasttemplate.New(h.Value, "{{", "}}")
-		v := t.ExecuteString(map[string]interface{}{
-			UserIDPlaceholder:          fmt.Sprintf("%v", u.User.Profile.ID),
-			UserNamePlaceholder:        u.User.Profile.Name,
-			UserDisplayNamePlaceholder: u.User.Profile.DisplayName,
-			TotalUploadPlaceholder:     u.Traffic.Total.Upload,
-			TotalDownloadPlaceholder:   u.Traffic.Total.Download,
-		})
-		replaced = append(replaced, models.Header{
-			ID:    h.ID,
-			Key:   h.Key,
-			Value: v,
+func createClientHeaders(ctx context.Context,
+	u *models.UserView, cfg *models.DynamicConfig,
+) models.Headers {
+	var headers []models.Header
+
+	// title
+	if cfg.SubscrTitle != "" {
+		headers = append(headers, models.Header{
+			Key:   ProfileTitleHeader,
+			Value: replacePlaceholders(cfg.SubscrTitle, u),
 		})
 	}
-	return replaced
-}
-
-func listPlaceholders() []string {
-	return []string{
-		makePlaceholder(UserIDPlaceholder),
-		makePlaceholder(UserNamePlaceholder),
-		makePlaceholder(UserDisplayNamePlaceholder),
-		makePlaceholder(TotalUploadPlaceholder),
-		makePlaceholder(TotalDownloadPlaceholder),
+	// update interval
+	if cfg.UpdateInterval != 0 {
+		headers = append(headers, models.Header{
+			Key:   ProfileUpdateIntervalHeader,
+			Value: string(cfg.UpdateInterval),
+		})
 	}
-}
-
-func makePlaceholder(h string) string {
-	return "{{" + h + "}}"
+	// tg page
+	if cfg.TgPage != "" {
+		headers = append(headers, models.Header{
+			Key:   TgPageHeader,
+			Value: cfg.TgPage,
+		})
+	}
+	// web page
+	if cfg.UserPage != "" {
+		headers = append(headers, models.Header{
+			Key:   WebPageHeader,
+			Value: replacePlaceholders(cfg.UserPage, u),
+		})
+	}
+	// announce header
+	if cfg.UsersMessage != "" {
+		headers = append(headers, models.Header{
+			Key:   AnnounceHeader,
+			Value: replacePlaceholders(cfg.UsersMessage, u),
+		})
+	}
+	// traffic stats header
+	ts := u.Traffic.Total
+	headers = append(headers, models.Header{
+		Key:   TrafficStatsHeader,
+		Value: fmt.Sprintf(TrafficStatsFmt, ts.Upload, ts.Download),
+	})
+	fmt.Println(headers)
+	return headers
 }

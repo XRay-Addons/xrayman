@@ -2,6 +2,7 @@ package poolstats
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
@@ -35,7 +36,8 @@ func New(client Client, storage Storage, log *zap.Logger) (*Stats, error) {
 		return nil, err
 	}
 	return &Stats{
-		op: op,
+		op:      op,
+		storage: storage,
 	}, nil
 }
 
@@ -47,10 +49,13 @@ func (s *Stats) Close() {
 }
 
 func (s *Stats) UpdatePoolStats(ctx context.Context) (*models.PoolOpResult, error) {
+	fmt.Println("UpdatePoolStats...")
 	return s.op.Exec(ctx)
 }
 
 func (s *Stats) UpdateDailyStats(ctx context.Context) error {
+	fmt.Println("UpdateDailyStats...")
+	fmt.Println(s.storage == nil)
 	return s.storage.UpdateDailyStats(ctx, time.Now())
 }
 

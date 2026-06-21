@@ -2,6 +2,7 @@ package job
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -83,7 +84,9 @@ func (j *Job) opLoop(ctx context.Context) {
 		jobCtx, cancel := context.WithTimeout(ctx, j.interval)
 		err := j.op(jobCtx)
 		cancel()
-		j.logJobResult(err)
+		if !errors.Is(err, context.Canceled) {
+			j.logJobResult(err)
+		}
 
 		timeLeft := j.interval - time.Since(startTime)
 
