@@ -52,6 +52,26 @@ for dep in unzip logrotate curl; do
   fi
 done
 
+fixOwnership() {
+  local path="$1"
+  local user="${2:-xray-node}"
+  local group="${3:-xray-node}"
+
+  # skip if path does not exist
+  if [[ ! -e "$path" ]]; then
+    warn "fixOwnership: path does not exist: $path"
+    return 1
+  fi
+
+  # set ownership if user/group exists
+  if id "$user" &>/dev/null; then
+    chown "$user:$group" "$path" 2>/dev/null || true
+    ok "Ownership set: $user:$group -> $path"
+  else
+    warn "fixOwnership: user '$user' does not exist, skipped"
+  fi
+}
+
 ########## 1. Download latest release ##########
 TMP_DIR="$(mktemp -d /tmp/xray-node-install-XXXX)"
 trap 'rm -rf "$TMP_DIR"' EXIT
@@ -114,6 +134,15 @@ if ! id xray-node >/dev/null 2>&1; then
   ok "Created user xray-node"
 else
   warn "User xray-node already exists"
+fi
+
+INSTALL_USER="${SUDO_USER:-$USER}"
+if id "$INSTALL_USER" &>/dev/null; then
+  usermod -aG xray-node "$INSTALL_USER"
+  ok "Added user '$INSTALL_USER' to group xray-node"
+  warn "You may need to re-login or run: newgrp xray-node"
+else
+  warn "Installer user '$INSTALL_USER' not found, skipping group add"
 fi
 
 ########## 5. Standard directories ##########
@@ -251,6 +280,7 @@ create_config() {
   fi
 
   echo "$content" > "$file"
+  fixOwnership "$file"
 
   ok "Created config file: $name"
 }
@@ -296,7 +326,7 @@ else
     else
       if [[ -f "wgcf-profile.conf" ]]; then
         mv wgcf-profile.conf "$CONFIG_DIR/warp-generated.conf"
-        chmod 644 "$CONFIG_DIR"/warp-generated.conf 2>/dev/null || true
+        fixOwnership "$CONFIG_DIR"/warp-generated.conf"
         ok "Warp config generated and saved"
       else
         warn "wgcf did not produce wgcf-profile.conf"
