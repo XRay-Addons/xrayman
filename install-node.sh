@@ -326,7 +326,7 @@ else
     else
       if [[ -f "wgcf-profile.conf" ]]; then
         mv wgcf-profile.conf "$CONFIG_DIR/warp-generated.conf"
-        fixOwnership "$CONFIG_DIR"/warp-generated.conf"
+        fixOwnership "$CONFIG_DIR/warp-generated.conf"
         ok "Warp config generated and saved"
       else
         warn "wgcf did not produce wgcf-profile.conf"
