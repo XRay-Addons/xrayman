@@ -273,8 +273,8 @@ Group=xray-node
 ExecStart=$BIN_DIR/xray-node -a :$PORT -c $CONFIG_DIR -d $DATA_DIR -p $PERSIST_DIR
 Restart=always
 
-StandardOutput=append:$LOG_DIR/out.log
-StandardError=append:$LOG_DIR/err.log
+StandardOutput=append:$LOG_DIR/xray-node.log
+StandardError=append:$LOG_DIR/xray-node.error.log
 
 [Install]
 WantedBy=multi-user.target
