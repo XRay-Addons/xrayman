@@ -8,6 +8,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 )
 
 func TestWaveExec(t *testing.T) {
@@ -138,4 +140,68 @@ func TestWaveExec_Cancel(t *testing.T) {
 	waveExec.Close()
 
 	require.Equal(t, 0, fnCallsCount)
+}
+
+func TestWaveExec_MultiCancel(t *testing.T) {
+	logger := zaptest.NewLogger(t)
+
+	fnCallsCount := 0
+	fnSuccessCount := 0
+	// fn lasts for 5 seconds
+	fn := func(ctx context.Context) (*any, error) {
+		fnCallsCount++
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-time.NewTimer(5 * time.Second).C:
+			fnSuccessCount++
+			return nil, nil
+		}
+	}
+
+	waveExec := New(fn)
+	var wg sync.WaitGroup
+
+	start := time.Now()
+
+	// call with 2 seconds timeout - should fail by timeout
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+		_, err := waveExec.Invoke(ctx)
+		logger.Info("first call", zap.Duration("duration", time.Now().Sub(start)))
+		assert.Error(t, err)
+	}()
+
+	time.Sleep(1 * time.Second)
+
+	// call with 2 seconds timeout - should wait for first run (2 sec) and fail by timeout anyway
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+		_, err := waveExec.Invoke(ctx)
+		logger.Info("second call", zap.Duration("duration", time.Now().Sub(start)))
+		assert.Error(t, err)
+	}()
+
+	// call with 10 seconds timeout - should be successed
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		_, err := waveExec.Invoke(ctx)
+		logger.Info("third call", zap.Duration("duration", time.Now().Sub(start)))
+		assert.NoError(t, err)
+	}()
+
+	wg.Wait()
+	waveExec.Close()
+
+	require.Equal(t, 2, fnCallsCount)
+	require.Equal(t, 1, fnSuccessCount)
 }
