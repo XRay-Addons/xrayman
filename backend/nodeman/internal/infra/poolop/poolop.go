@@ -73,7 +73,14 @@ func poolOp(ctx context.Context,
 
 		wg.Add(1)
 		go func() {
-			defer wg.Done()
+			defer func() {
+				// panic to error
+				if p := recover(); p != nil {
+					nodeResults[idx].Err = xerr.Panic(p)
+				}
+				defer wg.Done()
+			}()
+
 			// PANIC
 			nodeResults[idx].Err = op.Exec(ctx, node, log)
 		}()

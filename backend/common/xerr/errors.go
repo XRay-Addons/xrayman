@@ -3,6 +3,7 @@ package xerr
 var (
 	ErrNilArg  = Define("nil arg")
 	ErrNilCall = Define("nil object call")
+	ErrPanic   = Define("panic")
 )
 
 func NilArg(name string) error {
@@ -13,5 +14,11 @@ func NilArg(name string) error {
 
 func NilCall() error {
 	return Wrap(ErrNilCall,
+		withStack(1))
+}
+
+func Panic(p any) error {
+	return Wrap(ErrPanic,
+		WithInfof("panic info: %v", p),
 		withStack(1))
 }
