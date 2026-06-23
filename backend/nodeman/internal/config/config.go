@@ -13,6 +13,9 @@ type Config struct {
 	AdminPassword string
 	JwtSecret     string
 
+	NodeCallTimeout    time.Duration
+	StorageCallTimeout time.Duration
+
 	ApiServicePath string
 	UserSpaPath    string
 	AdminSpaPath   string
@@ -27,9 +30,16 @@ type Config struct {
 	AllowedOrigins []string
 }
 
-const apiServicePath = "/api"
-const userSpaPath = "/u"
-const adminSpaPath = "/adm"
+const (
+	apiServicePath = "/api"
+	userSpaPath    = "/u"
+	adminSpaPath   = "/adm"
+)
+
+const (
+	nodeCallTimeout    = 5 * time.Second
+	storageCallTimeout = 5 * time.Second
+)
 
 func Init(r RawConfig) (*Config, error) {
 	c := Config{
@@ -39,9 +49,13 @@ func Init(r RawConfig) (*Config, error) {
 		JwtSecret:         r.JwtSecret,
 		StateSyncInterval: time.Duration(r.StateSyncInterval) * time.Second,
 		StatsSyncInterval: time.Duration(r.StatsSyncInterval) * time.Second,
-		ApiServicePath:    apiServicePath,
-		UserSpaPath:       userSpaPath,
-		AdminSpaPath:      adminSpaPath,
+
+		ApiServicePath: apiServicePath,
+		UserSpaPath:    userSpaPath,
+		AdminSpaPath:   adminSpaPath,
+
+		NodeCallTimeout:    nodeCallTimeout,
+		StorageCallTimeout: storageCallTimeout,
 	}
 
 	c.ApiServiceUrl = or(r.ApiServiceUrl, c.ApiServicePath)

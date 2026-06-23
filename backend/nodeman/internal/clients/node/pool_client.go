@@ -21,62 +21,38 @@ type PoolClient struct {
 	log        *zap.Logger
 }
 
-type Option = func(pc *PoolClient)
-
-func WithSecIssuer(iss string) Option {
-	return func(s *PoolClient) {
-		s.sec.issuer = iss
-	}
-}
-
-func WithSecExpiration(exp time.Duration) Option {
-	return func(s *PoolClient) {
-		s.sec.expiration = exp
-	}
-}
-
-func WithHTTPClient(h HTTPClientFactory) Option {
-	return func(s *PoolClient) {
-		s.httpClient = h
-	}
-}
-
-func WithLogger(l *zap.Logger) Option {
-	return func(s *PoolClient) {
-		if l != nil {
-			s.log = l
-		}
-	}
-}
-
 const (
-	defaultCertExpiration = 10 * time.Minute
+	certExpiration = 10 * time.Minute
+	securityIssuer = "node manager"
 )
 
-func NewPoolClient(opts ...Option) (*PoolClient, error) {
+func NewPoolClient(h HTTPClientFactory, log *zap.Logger) (*PoolClient, error) {
+	if h == nil {
+		return nil, errdefs.NilArg("h")
+	}
+	if log == nil {
+		return nil, errdefs.NilArg("log")
+	}
 	pc := &PoolClient{
 		sec: PoolSecurity{
-			issuer:     "node manager",
-			expiration: defaultCertExpiration,
+			issuer:     securityIssuer,
+			expiration: certExpiration,
 		},
-	}
-	for _, o := range opts {
-		o(pc)
+		httpClient: h,
+		log:        log,
 	}
 	return pc, nil
 }
 
 func (c *PoolClient) GetNodeClient(cfg models.NodeConnectionInfo) (*NodeClient, error) {
-	if c == nil {
+	if c == nil || c.httpClient == nil {
 		return nil, errdefs.NilCall()
 	}
 
 	var err error
 	var httpClient *http.Client
-	if c.httpClient != nil {
-		if httpClient, err = c.httpClient.GetNodeClient(cfg.AccessKey.CertHash); err != nil {
-			return nil, xerr.WrapWithStack(err)
-		}
+	if httpClient, err = c.httpClient.GetNodeClient(cfg.AccessKey.CertHash); err != nil {
+		return nil, xerr.WrapWithStack(err)
 	}
 
 	nodeSec, err := c.sec.GetNodeSecurity(cfg.AccessKey.AccessSecret)

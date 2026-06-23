@@ -74,7 +74,7 @@ func New(rawCfg config.RawConfig, log *zap.Logger) (app *App, err error) {
 	infra.storage.ExplainLog = log
 
 	// pool sync, pool stats
-	poolSyncer, poolStats, err := app.initPoolOps(*infra, log)
+	poolSyncer, poolStats, err := app.initPoolOps(*cfg, *infra, log)
 	if err != nil {
 		return
 	}
@@ -198,18 +198,21 @@ func (a *App) initInfra(cfg config.Config) (infra *infrasturcture, err error) {
 	return infra, nil
 }
 
-func (a *App) initPoolOps(infra infrasturcture, log *zap.Logger) (
+func (a *App) initPoolOps(cfg config.Config, infra infrasturcture, log *zap.Logger) (
 	poolSyncer *poolsync.Syncer, poolStats *poolstats.Stats, err error,
 ) {
 	// nodes http client
-	nc := httpclient.NewClientFactory(httpclient.WithLogger(log))
+	nc, err := httpclient.NewClientFactory(cfg.NodeCallTimeout, log)
+	if err != nil {
+		return
+	}
 	a.core.AddCloser(func(context.Context) error {
 		nc.Close()
 		return nil
 	})
 
 	// pool client
-	pc, err := client.NewPoolClient(client.WithHTTPClient(nc))
+	pc, err := client.NewPoolClient(nc, log)
 	if err != nil {
 		return
 	}
@@ -247,7 +250,7 @@ func (a *App) initServices(
 	ss = &services{}
 
 	// nodes service
-	if ss.nodes, err = nodes.New(ps, s); err != nil {
+	if ss.nodes, err = nodes.New(ps, s, log); err != nil {
 		return
 	}
 

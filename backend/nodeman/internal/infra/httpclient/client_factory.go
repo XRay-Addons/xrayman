@@ -17,21 +17,13 @@ import (
 
 type config struct {
 	dialerTimeout       time.Duration
-	keepAlive           time.Duration
-	maxIdleConns        int
-	idleConnTimeout     time.Duration
 	tlsHandshakeTimeout time.Duration
-	log                 *zap.Logger
-}
+	clientTimeout       time.Duration
 
-type Option func(opts *config)
-
-func WithLogger(l *zap.Logger) Option {
-	return func(opts *config) {
-		if l != nil {
-			opts.log = l
-		}
-	}
+	keepAlive       time.Duration
+	maxIdleConns    int
+	idleConnTimeout time.Duration
+	log             *zap.Logger
 }
 
 type ClientFactory struct {
@@ -42,25 +34,28 @@ type ClientFactory struct {
 }
 
 const (
-	defaultDialerTimeout       = 5 * time.Second
-	defaultKeepAlive           = 30 * time.Second
-	defaultMaxIdleConns        = 24
-	defaultIdleConnTimeout     = 90 * time.Second
-	defaultTlsHandshakeTimeout = 10 * time.Second
+	defaultKeepAlive       = 30 * time.Second
+	defaultMaxIdleConns    = 24
+	defaultIdleConnTimeout = 90 * time.Second
 )
 
-func NewClientFactory(opts ...Option) *ClientFactory {
+func NewClientFactory(timeout time.Duration, log *zap.Logger) (*ClientFactory, error) {
+	if timeout == 0 {
+		return nil, xerr.NilArg("timeout")
+	}
+	if log == nil {
+		return nil, xerr.NilArg("log")
+	}
 	cfg := config{
-		dialerTimeout:       defaultDialerTimeout,
-		keepAlive:           defaultKeepAlive,
-		maxIdleConns:        defaultMaxIdleConns,
-		idleConnTimeout:     defaultIdleConnTimeout,
-		tlsHandshakeTimeout: defaultTlsHandshakeTimeout,
-		log:                 zap.NewNop(),
+		dialerTimeout:       max(2*time.Second, timeout/4),
+		tlsHandshakeTimeout: max(2*time.Second, timeout/4),
+		clientTimeout:       timeout,
+
+		keepAlive:       defaultKeepAlive,
+		maxIdleConns:    defaultMaxIdleConns,
+		idleConnTimeout: defaultIdleConnTimeout,
 	}
-	for _, o := range opts {
-		o(&cfg)
-	}
+
 	return &ClientFactory{
 		cfg: cfg,
 		dialer: net.Dialer{
@@ -68,7 +63,7 @@ func NewClientFactory(opts ...Option) *ClientFactory {
 			KeepAlive: cfg.keepAlive,
 		},
 		clientsPool: make(map[models.CertHash]*http.Client),
-	}
+	}, nil
 }
 
 func (cf *ClientFactory) Close() {
@@ -135,7 +130,7 @@ func (cf *ClientFactory) newHttpClient(certHash models.CertHash) *http.Client {
 
 	client := &http.Client{
 		Transport: transport,
-		Timeout:   cf.cfg.dialerTimeout + cf.cfg.tlsHandshakeTimeout,
+		Timeout:   cf.cfg.clientTimeout,
 	}
 
 	return client

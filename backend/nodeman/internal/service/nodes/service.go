@@ -6,17 +6,20 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
+	"go.uber.org/zap"
 )
 
 type Service struct {
 	storage    Storage
 	poolSyncer Syncer
+	logger     *zap.Logger
 }
 
 var _ handler.NodesService = (*Service)(nil)
 
 func New(poolSyncer Syncer,
 	storage Storage,
+	logger *zap.Logger,
 ) (*Service, error) {
 	if poolSyncer == nil {
 		return nil, errdefs.NilArg("poolSyncer")
@@ -24,10 +27,14 @@ func New(poolSyncer Syncer,
 	if storage == nil {
 		return nil, errdefs.NilArg("storage")
 	}
+	if logger == nil {
+		return nil, errdefs.NilArg("logger")
+	}
 
 	return &Service{
 		storage:    storage,
 		poolSyncer: poolSyncer,
+		logger:     logger,
 	}, nil
 }
 
@@ -94,9 +101,9 @@ func (s *Service) DeleteNode(ctx context.Context, p models.DeleteNodeParams) (
 		return nil, errdefs.NilCall()
 	}
 
-	// stop node before deleting
+	// try to stop node before deleting
 	if err := s.setNodeStatus(ctx, p.ID, models.NodeStatusStopped); err != nil {
-		return nil, err
+		s.logger.Warn("stop deleting node", zap.Error(err))
 	}
 
 	if err := s.storage.DeleteNode(ctx, p.ID); err != nil {
