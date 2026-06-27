@@ -4,29 +4,33 @@ import (
 	"context"
 	"sync"
 
+	"github.com/XRay-Addons/xrayman/common/safego"
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/waveexec"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	"go.uber.org/zap"
 )
 
-type NodePool interface {
-	ListNodes(ctx context.Context) ([]models.Node, error)
-}
+type empty = struct{}
+type nodeExec = *waveexec.WaveExecutor[empty]
 
-type NodeOp interface {
-	Exec(ctx context.Context, node models.Node, log *zap.Logger) error
+type execItem struct {
+	node models.Node
+	err  error
 }
-
-type PoolOpFn = func(ctx context.Context) (*models.PoolOpResult, error)
 
 type PoolOp struct {
-	exec *waveexec.WaveExecutor[models.PoolOpResult]
+	storage Storage
+	nodeOp  NodeOp
+	log     *zap.Logger
+
+	nodeExecs map[models.NodeID]nodeExec
+	mu        sync.RWMutex
 }
 
-func New(pool NodePool, op NodeOp, log *zap.Logger) (*PoolOp, error) {
-	if pool == nil {
-		return nil, xerr.NilArg("pool")
+func New(s Storage, op NodeOp, log *zap.Logger) (*PoolOp, error) {
+	if s == nil {
+		return nil, xerr.NilArg("s")
 	}
 	if op == nil {
 		return nil, xerr.NilArg("op")
@@ -34,60 +38,98 @@ func New(pool NodePool, op NodeOp, log *zap.Logger) (*PoolOp, error) {
 	if log == nil {
 		return nil, xerr.NilArg("log")
 	}
-	poolOpFn := getPoolOp(pool, op, log)
 	return &PoolOp{
-		exec: waveexec.New(poolOpFn),
+		storage: s,
+		nodeOp:  op,
+		log:     log,
+
+		nodeExecs: make(map[models.NodeID]nodeExec),
 	}, nil
 }
 
-func (op *PoolOp) Close() {
-	if op == nil || op.exec == nil {
+func (o *PoolOp) Close() {
+	if o == nil {
 		return
 	}
-	op.exec.Close()
-}
-
-func (op *PoolOp) Exec(ctx context.Context) (*models.PoolOpResult, error) {
-	return op.exec.Invoke(ctx)
-}
-
-func getPoolOp(pool NodePool, op NodeOp, log *zap.Logger) PoolOpFn {
-	return func(ctx context.Context) (*models.PoolOpResult, error) {
-		return poolOp(ctx, pool, op, log)
+	for _, exec := range o.nodeExecs {
+		if exec != nil {
+			exec.Close()
+		}
 	}
 }
 
-func poolOp(ctx context.Context,
-	pool NodePool, op NodeOp, log *zap.Logger,
-) (*models.PoolOpResult, error) {
-	nodes, err := pool.ListNodes(ctx)
+func (o *PoolOp) ExecAll(ctx context.Context) (*models.PoolOpResult, error) {
+	nodes, err := o.storage.ListNodes(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	nodeResults := make([]models.NodeOpResult, len(nodes))
-	var wg sync.WaitGroup
-	for idx, node := range nodes {
-		nodeResults[idx].ID = node.ID
-		nodeResults[idx].Endpoint = node.Config.ConnectionInfo.Endpoint
-
-		wg.Add(1)
-		go func() {
-			defer func() {
-				// panic to error
-				if p := recover(); p != nil {
-					nodeResults[idx].Err = xerr.Panic(p)
-				}
-				defer wg.Done()
-			}()
-
-			// PANIC
-			nodeResults[idx].Err = op.Exec(ctx, node, log)
-		}()
+	execItems := make([]execItem, 0, len(nodes))
+	for _, node := range nodes {
+		execItems = append(execItems, execItem{node: node})
 	}
-	wg.Wait()
+
+	o.exec(ctx, execItems)
+
+	nodeResults := make([]models.NodeOpResult, len(execItems))
+	for i, exec := range execItems {
+		nodeResults[i].ID = exec.node.ID
+		nodeResults[i].Endpoint = exec.node.Config.ConnectionInfo.Endpoint
+		nodeResults[i].Err = exec.err
+	}
 
 	return &models.PoolOpResult{
 		Nodes: nodeResults,
 	}, nil
+}
+
+func (o *PoolOp) ExecNode(ctx context.Context, id models.NodeID) (*models.NodeOpResult, error) {
+	node, err := o.storage.GetNode(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	execItems := []execItem{
+		execItem{node: *node},
+	}
+
+	o.exec(ctx, execItems)
+
+	return &models.NodeOpResult{
+		ID:       execItems[0].node.ID,
+		Endpoint: execItems[0].node.Config.ConnectionInfo.Endpoint,
+		Err:      execItems[0].err,
+	}, nil
+}
+
+func (o *PoolOp) exec(ctx context.Context, items []execItem) {
+	// create execs
+	execs := make([]nodeExec, 0, len(items))
+	o.mu.Lock()
+	for _, item := range items {
+		var nodeExec nodeExec
+		var exists bool
+		if nodeExec, exists = o.nodeExecs[item.node.ID]; !exists {
+			nodeOp := func(ctx context.Context) (*empty, error) {
+				err := o.nodeOp.Exec(ctx, item.node, o.log)
+				return nil, err
+			}
+			nodeExec = waveexec.New(nodeOp)
+			o.nodeExecs[item.node.ID] = nodeExec
+		}
+		execs = append(execs, nodeExec)
+	}
+	o.mu.Unlock()
+
+	// run execs
+	var wg sync.WaitGroup
+	for idx, exec := range execs {
+		wg.Add(1)
+		items[idx].err = safego.Invoke(func() error {
+			defer func() {
+				wg.Done()
+			}()
+			_, err := exec.Invoke(ctx)
+			return err
+		})
+	}
+	wg.Wait()
 }

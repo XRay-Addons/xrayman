@@ -101,14 +101,22 @@ func (s *Service) DeleteNode(ctx context.Context, p models.DeleteNodeParams) (
 		return nil, errdefs.NilCall()
 	}
 
-	// try to stop node before deleting
-	if err := s.setNodeStatus(ctx, p.ID, models.NodeStatusStopped); err != nil {
-		s.logger.Warn("stop deleting node", zap.Error(err))
-	}
-
-	if err := s.storage.DeleteNode(ctx, p.ID); err != nil {
+	// mark node stopped and deleting
+	if err := s.storage.DoTx(ctx, func(ctx context.Context) error {
+		if err := s.storage.SetTargetNodeStatus(ctx,
+			p.ID, models.NodeStatusStopped,
+		); err != nil {
+			return err
+		}
+		if err := s.storage.DeleteNode(ctx, p.ID); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
 		return nil, err
 	}
+
+	_ = s.syncNode(ctx, p.ID)
 
 	return &models.DeleteNodeResult{}, nil
 }

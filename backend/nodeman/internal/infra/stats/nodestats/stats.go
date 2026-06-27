@@ -19,6 +19,7 @@ func UpdateNodeStats(ctx context.Context, client Client, storage Storage, log *z
 	if storage == nil {
 		return errdefs.NilArg("storage")
 	}
+
 	stats, err := client.GetStats(ctx)
 	if err != nil {
 		return err

@@ -6,6 +6,8 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
+type TxFn = func(context.Context) error
+
 type Storage interface {
 	// add new user to storage, assign UserID to user
 	NewUser(ctx context.Context, user *models.User) error
@@ -19,4 +21,6 @@ type Storage interface {
 	// delete user
 	DeleteUser(ctx context.Context,
 		id models.UserID) error
+	// call multiple operations as tx
+	DoTx(ctx context.Context, fn TxFn) error
 }

@@ -3,7 +3,6 @@ package users
 import (
 	"context"
 
-	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
@@ -114,12 +113,18 @@ func (s *Service) DeleteUser(ctx context.Context, p models.DeleteUserParams) (
 	if s == nil {
 		return nil, errdefs.NilCall()
 	}
-	// disable user before deleting
-	if err := s.setUserStatus(ctx, p.ID, models.UserStatusDisabled); err != nil {
-		return nil, err
-	}
 
-	if err := s.storage.DeleteUser(ctx, p.ID); err != nil {
+	if err := s.storage.DoTx(ctx, func(ctx context.Context) error {
+		if err := s.storage.SetTargetUserStatus(ctx,
+			p.ID, models.UserStatusDisabled,
+		); err != nil {
+			return err
+		}
+		if err := s.storage.DeleteUser(ctx, p.ID); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
@@ -150,15 +155,5 @@ func (s *Service) syncAllNodes(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	if len(syncResults.Nodes) == 0 {
-		return nil
-	}
-	var errs []error
-	for _, syncRes := range syncResults.Nodes {
-		if syncRes.Err == nil {
-			return nil
-		}
-		errs = append(errs, syncRes.Err)
-	}
-	return xerr.Join(errs...)
+	return syncResults.GetEntireErr()
 }

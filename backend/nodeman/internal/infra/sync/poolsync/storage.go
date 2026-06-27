@@ -3,6 +3,7 @@ package poolsync
 import (
 	"context"
 
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/poolop"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
@@ -43,3 +44,5 @@ type Storage interface {
 	// call multiple operations as tx
 	DoTx(ctx context.Context, fn TxFn) error
 }
+
+var _ poolop.Storage = (Storage)(nil)

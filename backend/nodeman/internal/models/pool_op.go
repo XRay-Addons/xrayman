@@ -22,3 +22,13 @@ func (r *PoolOpResult) GetNodeErr(id NodeID) error {
 	}
 	return xerr.Newf("node %v not found", id)
 }
+
+func (r *PoolOpResult) GetEntireErr() error {
+	errs := make([]error, 0, len(r.Nodes))
+	for _, node := range r.Nodes {
+		if node.Err != nil {
+			errs = append(errs, node.Err)
+		}
+	}
+	return xerr.Join(errs...)
+}

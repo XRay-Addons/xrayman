@@ -48,12 +48,13 @@ func New(updater StatsUpdater, interval time.Duration, opts ...Option) (*StatsMa
 	if err != nil {
 		return nil, err
 	}
-	updateDailyFn := func(ctx context.Context) error {
-		return updater.UpdateDailyStats(ctx)
-	}
+
 	// update daily stats every hour for:
 	// - to be sure it runs at least once every day
 	// - to not lost data for more than one hour in case of fail
+	updateDailyFn := func(ctx context.Context) error {
+		return updater.UpdateDailyStats(ctx)
+	}
 	updateDailyJob, err := job.NewJob(updateDailyFn, time.Hour, "update daily stats", cfg.log)
 	if err != nil {
 		return nil, err

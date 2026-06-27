@@ -5,7 +5,6 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/poolop"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/jobs/syncman"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
@@ -33,7 +32,7 @@ func New(client Client, storage Storage, log *zap.Logger) (*Syncer, error) {
 	}
 
 	op, err := poolop.New(
-		&nodePool{storage: storage},
+		storage,
 		&nodeOp{storage: storage, client: client},
 		log,
 	)
@@ -52,44 +51,14 @@ func (s *Syncer) Close() {
 	s.op.Close()
 }
 
-func (s *Syncer) SyncPoolState(ctx context.Context) (*models.PoolOpResult, error) {
-	return s.op.Exec(ctx)
+func (s *Syncer) SyncPoolState(ctx context.Context) (
+	*models.PoolOpResult, error,
+) {
+	return s.op.ExecAll(ctx)
 }
 
-// node pool impl
-type nodePool struct {
-	storage Storage
-}
-
-var _ poolop.NodePool = (*nodePool)(nil)
-
-func (p *nodePool) ListNodes(ctx context.Context) ([]models.Node, error) {
-	nodes, err := p.storage.ListNodes(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return nodes, nil
-}
-
-// node op impl
-type nodeOp struct {
-	storage Storage
-	client  Client
-}
-
-var _ poolop.NodeOp = (*nodeOp)(nil)
-
-func (op *nodeOp) Exec(ctx context.Context, node models.Node, log *zap.Logger) error {
-	nodeStorage := &nodeStorage{
-		base:   op.storage,
-		nodeID: node.ID,
-	}
-	nodeClient, err := op.client.GetNodeClient(node.Config.ConnectionInfo)
-	if err != nil {
-		return err
-	}
-	if err := nodesync.SyncState(ctx, nodeClient, nodeStorage); err != nil {
-		return err
-	}
-	return nil
+func (s *Syncer) SyncNodeState(ctx context.Context,
+	id models.NodeID,
+) (*models.NodeOpResult, error) {
+	return s.op.ExecNode(ctx, id)
 }
