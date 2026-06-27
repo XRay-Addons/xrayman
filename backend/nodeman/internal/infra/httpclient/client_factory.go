@@ -54,6 +54,7 @@ func NewClientFactory(timeout time.Duration, log *zap.Logger) (*ClientFactory, e
 		keepAlive:       defaultKeepAlive,
 		maxIdleConns:    defaultMaxIdleConns,
 		idleConnTimeout: defaultIdleConnTimeout,
+		log:             log,
 	}
 
 	return &ClientFactory{

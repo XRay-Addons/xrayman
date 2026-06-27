@@ -348,21 +348,90 @@ func TestStorage_Tx(t *testing.T) {
 		CurrentStatus: models.NodeStatusRunning,
 		TargetStatus:  models.NodeStatusRunning,
 	}
+	node2 := models.Node{
+		CurrentStatus: models.NodeStatusRunning,
+		TargetStatus:  models.NodeStatusRunning,
+	}
+	node3 := models.Node{
+		CurrentStatus: models.NodeStatusRunning,
+		TargetStatus:  models.NodeStatusRunning,
+	}
 
 	err := s.DoTx(ctx, func(ctx context.Context) error {
 		// no error
 		if err := s.NewNode(ctx, &node1); err != nil {
 			return err
 		}
-		// with error
-		if _, err := s.GetNode(ctx, models.NodeID(-1)); err != nil {
-			return err
-		}
+
+		// nested tx - add node and than error op - so rollback
+		err := s.DoTx(ctx, func(ctx context.Context) error {
+			// no error
+			if err := s.NewNode(ctx, &node2); err != nil {
+				return err
+			}
+			// with error
+			if _, err := s.GetNode(ctx, models.NodeID(-1)); err != nil {
+				return err
+			}
+			return nil
+		})
+		require.Error(t, err)
+
+		// nnnested tx - add node and than error op - so rollback
+		err = s.DoTx(ctx, func(ctx context.Context) error {
+			// no error
+			if err := s.NewNode(ctx, &node2); err != nil {
+				return err
+			}
+			return s.DoTx(ctx, func(ctx context.Context) error {
+				// no error
+				if err := s.NewNode(ctx, &node3); err != nil {
+					return err
+				}
+				// with error
+				if _, err := s.GetNode(ctx, models.NodeID(-1)); err != nil {
+					return err
+				}
+				return nil
+			})
+		})
+		require.Error(t, err)
+
+		err = s.DoTx(ctx, func(ctx context.Context) error {
+			// success tttx
+			_ = s.DoTx(ctx, func(ctx context.Context) error {
+				if err := s.NewNode(ctx, &node3); err != nil {
+					return err
+				}
+				return nil
+			})
+			// failed tttx
+			_ = s.DoTx(ctx, func(ctx context.Context) error {
+				if err := s.NewNode(ctx, &node3); err != nil {
+					return err
+				}
+				// with error
+				if _, err := s.GetNode(ctx, models.NodeID(-1)); err != nil {
+					return err
+				}
+				return nil
+			})
+			// success tttx
+			_ = s.DoTx(ctx, func(ctx context.Context) error {
+				if err := s.NewNode(ctx, &node3); err != nil {
+					return err
+				}
+				return nil
+			})
+			return nil
+		})
+		require.NoError(t, err)
+
 		return nil
 	})
-	require.Error(t, err)
+	require.NoError(t, err)
 
 	nodes, err := s.ListNodes(ctx)
 	require.NoError(t, err)
-	require.Equal(t, 0, len(nodes))
+	require.Equal(t, 4, len(nodes))
 }

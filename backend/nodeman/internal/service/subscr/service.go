@@ -3,6 +3,7 @@ package subscr
 import (
 	"context"
 
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/common/xerrgroup"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
@@ -72,6 +73,11 @@ func (s *Service) GetUserSub(ctx context.Context,
 
 	if err := g.Wait(); err != nil {
 		return nil, err
+	}
+
+	// reply NotFound for disabled users
+	if user.User.TargetStatus != models.UserStatusEnabled {
+		return nil, xerr.WrapWithStack(errdefs.ErrNotFound)
 	}
 
 	// get subscription content

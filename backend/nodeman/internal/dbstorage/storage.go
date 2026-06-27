@@ -107,19 +107,28 @@ type txCtxKeyType struct{}
 
 var txCtxKey = txCtxKeyType{}
 
-func (s *Storage) DoTx(ctx context.Context, fn TxFn) (err error) {
-	tx, ok := ctx.Value(txCtxKey).(TX)
-	if ok {
-		return xerr.New("tx in tx, Danila, are you crazy?")
-	}
+const (
+	beginSavepointTx   = "SAVEPOINT sptx"
+	cmSavepointTx      = "RELEASE SAVEPOINT sptx"
+	rbSavepointTx      = "ROLLBACK TO SAVEPOINT sptx"
+	rbSavepointTimeout = 1 * time.Second
+)
 
-	tx, err = s.db.BeginTx(ctx)
+func (s *Storage) DoTx(ctx context.Context, fn TxFn) (err error) {
+	if tx, ok := ctx.Value(txCtxKey).(TX); ok {
+		return s.doSavepointTx(ctx, fn, tx)
+	}
+	return s.doPureTx(ctx, fn)
+}
+
+func (s *Storage) doPureTx(ctx context.Context, fn TxFn) (err error) {
+	tx, err := s.db.BeginTx(ctx)
 	if err != nil {
 		err = xerr.WrapWithStack(err)
 		err = sqlerr.TranslatePgErr(err)
 		return err
 	}
-
+	ctx = context.WithValue(ctx, txCtxKey, tx)
 	defer func() {
 		if err != nil {
 			if rbErr := tx.Rollback(); rbErr != nil {
@@ -136,7 +145,33 @@ func (s *Storage) DoTx(ctx context.Context, fn TxFn) (err error) {
 		}
 	}()
 
-	ctx = context.WithValue(ctx, txCtxKey, tx)
+	return fn(ctx)
+}
+
+func (s *Storage) doSavepointTx(ctx context.Context, fn TxFn, tx TX) (err error) {
+	if _, err = tx.ExecContext(ctx, beginSavepointTx); err != nil {
+		err = sqlerr.TranslatePgErr(err)
+		err = xerr.WrapWithStack(err)
+		return err
+	}
+	defer func() {
+		if err != nil {
+			rbCtx, rbCtxCancel := context.WithTimeout(context.Background(), rbSavepointTimeout)
+			defer rbCtxCancel()
+			if _, rbErr := tx.ExecContext(rbCtx, rbSavepointTx); rbErr != nil {
+				rbErr = xerr.WrapWithStack(rbErr)
+				rbErr = sqlerr.TranslatePgErr(rbErr)
+				err = xerr.Join(err, rbErr)
+			}
+			return
+		}
+		if _, commitErr := tx.ExecContext(ctx, cmSavepointTx); commitErr != nil {
+			commitErr = xerr.WrapWithStack(commitErr)
+			commitErr = sqlerr.TranslatePgErr(commitErr)
+			err = commitErr
+		}
+	}()
+
 	return fn(ctx)
 }
 

@@ -2,6 +2,7 @@ package nodes
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
@@ -132,7 +133,10 @@ func (s *Service) setNodeStatus(ctx context.Context,
 		return err
 	}
 
-	_ = s.syncNode(ctx, id)
+	err := s.syncNode(ctx, id)
+	if err != nil {
+		fmt.Printf("sync node err: %+v\n", err)
+	}
 	return nil
 }
 
