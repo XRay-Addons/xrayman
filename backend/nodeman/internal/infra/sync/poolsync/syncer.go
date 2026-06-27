@@ -59,6 +59,6 @@ func (s *Syncer) SyncPoolState(ctx context.Context) (
 
 func (s *Syncer) SyncNodeState(ctx context.Context,
 	id models.NodeID,
-) (*models.NodeOpResult, error) {
+) error {
 	return s.op.ExecNode(ctx, id)
 }

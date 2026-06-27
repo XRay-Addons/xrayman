@@ -80,7 +80,7 @@ func New(rawCfg config.RawConfig, log *zap.Logger) (app *App, err error) {
 	}
 
 	// services
-	services, err := app.initServices(poolSyncer, infra.authJWT, infra.storage, log)
+	services, err := app.initServices(cfg, poolSyncer, infra.authJWT, infra.storage, log)
 	if err != nil {
 		return
 	}
@@ -242,6 +242,7 @@ type services struct {
 }
 
 func (a *App) initServices(
+	cfg *config.Config,
 	ps *poolsync.Syncer,
 	authJWT *jwt.JWT,
 	s *dbstorage.Storage,
@@ -249,13 +250,14 @@ func (a *App) initServices(
 ) (ss *services, err error) {
 	ss = &services{}
 
+	stateSyncTimeout := cfg.NodeCallTimeout + cfg.StorageCallTimeout
 	// nodes service
-	if ss.nodes, err = nodes.New(ps, s, log); err != nil {
+	if ss.nodes, err = nodes.New(ps, s, stateSyncTimeout, log); err != nil {
 		return
 	}
 
 	// users service
-	if ss.users, err = users.New(ps, s); err != nil {
+	if ss.users, err = users.New(ps, s, stateSyncTimeout, log); err != nil {
 		return
 	}
 

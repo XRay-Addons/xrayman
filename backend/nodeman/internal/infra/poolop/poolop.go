@@ -82,10 +82,10 @@ func (o *PoolOp) ExecAll(ctx context.Context) (*models.PoolOpResult, error) {
 	}, nil
 }
 
-func (o *PoolOp) ExecNode(ctx context.Context, id models.NodeID) (*models.NodeOpResult, error) {
+func (o *PoolOp) ExecNode(ctx context.Context, id models.NodeID) error {
 	node, err := o.storage.GetNode(ctx, id)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	execItems := []execItem{
 		execItem{node: *node},
@@ -93,11 +93,7 @@ func (o *PoolOp) ExecNode(ctx context.Context, id models.NodeID) (*models.NodeOp
 
 	o.exec(ctx, execItems)
 
-	return &models.NodeOpResult{
-		ID:       execItems[0].node.ID,
-		Endpoint: execItems[0].node.Config.ConnectionInfo.Endpoint,
-		Err:      execItems[0].err,
-	}, nil
+	return execItems[0].err
 }
 
 func (o *PoolOp) exec(ctx context.Context, items []execItem) {

@@ -2,10 +2,11 @@ package nodes
 
 import (
 	"context"
-	"fmt"
+	"time"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/supervisor"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	"go.uber.org/zap"
 )
@@ -13,13 +14,18 @@ import (
 type Service struct {
 	storage    Storage
 	poolSyncer Syncer
-	logger     *zap.Logger
+
+	syncTimeout time.Duration
+	sv          *supervisor.Supervisor
+
+	logger *zap.Logger
 }
 
 var _ handler.NodesService = (*Service)(nil)
 
 func New(poolSyncer Syncer,
 	storage Storage,
+	syncTimeout time.Duration,
 	logger *zap.Logger,
 ) (*Service, error) {
 	if poolSyncer == nil {
@@ -33,10 +39,27 @@ func New(poolSyncer Syncer,
 	}
 
 	return &Service{
-		storage:    storage,
-		poolSyncer: poolSyncer,
-		logger:     logger,
+		storage:     storage,
+		poolSyncer:  poolSyncer,
+		syncTimeout: syncTimeout,
+		sv:          supervisor.New(),
+		logger:      logger,
 	}, nil
+}
+
+func (s *Service) Close() {
+	if s == nil || s.sv == nil {
+		return
+	}
+	s.sv.Close()
+}
+
+func (s *Service) requestNodeSync(id models.NodeID) {
+	s.sv.Go(func(ctx context.Context) {
+		if err := s.poolSyncer.SyncNodeState(ctx, id); err != nil {
+			s.logger.Warn("node sync request", zap.Error(err))
+		}
+	}, s.syncTimeout)
 }
 
 func (s *Service) NewNode(ctx context.Context, p models.NewNodeParams) (
@@ -55,7 +78,7 @@ func (s *Service) NewNode(ctx context.Context, p models.NewNodeParams) (
 		return nil, err
 	}
 
-	_ = s.syncNode(ctx, node.ID)
+	s.requestNodeSync(node.ID)
 
 	return &models.NewNodeResult{
 		Node: node,
@@ -117,7 +140,7 @@ func (s *Service) DeleteNode(ctx context.Context, p models.DeleteNodeParams) (
 		return nil, err
 	}
 
-	_ = s.syncNode(ctx, p.ID)
+	s.requestNodeSync(p.ID)
 
 	return &models.DeleteNodeResult{}, nil
 }
@@ -133,20 +156,7 @@ func (s *Service) setNodeStatus(ctx context.Context,
 		return err
 	}
 
-	err := s.syncNode(ctx, id)
-	if err != nil {
-		fmt.Printf("sync node err: %+v\n", err)
-	}
-	return nil
-}
+	s.requestNodeSync(id)
 
-func (s *Service) syncNode(ctx context.Context, id models.NodeID) error {
-	syncResults, err := s.poolSyncer.SyncPoolState(ctx)
-	if err != nil {
-		return err
-	}
-	if err = syncResults.GetNodeErr(id); err != nil {
-		return err
-	}
 	return nil
 }

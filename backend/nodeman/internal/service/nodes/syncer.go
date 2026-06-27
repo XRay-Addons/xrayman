@@ -7,5 +7,5 @@ import (
 )
 
 type Syncer interface {
-	SyncPoolState(ctx context.Context) (*models.PoolOpResult, error)
+	SyncNodeState(ctx context.Context, id models.NodeID) error
 }
