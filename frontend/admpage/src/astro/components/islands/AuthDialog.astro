@@ -38,12 +38,12 @@ import InputGroup from "@xrayman/shared/astro/primitives/InputGroup.astro";
     private pwdInputEl!: InputGroupElement;
     private dialogEl!: HTMLDialogElement;
 
-    connectedCallback() {
-      this.pwdInputEl = this.pt<InputGroupElement>("password-input");
-      this.dialogEl = this.pt<HTMLDialogElement>("auth-dialog");
+    async connectedCallback() {
+      this.pwdInputEl = await this.ptWebComp<InputGroupElement>("password-input");
+      this.dialogEl = this.ptEl<HTMLDialogElement>("auth-dialog");
 
       // keep auth window till success
-      this.pwdInputEl.onClick(async (pwd: string) => {
+      this.pwdInputEl.onclickfn = async (pwd: string) => {
         if (pwd.length == 0) {
           return;
         }
@@ -55,7 +55,7 @@ import InputGroup from "@xrayman/shared/astro/primitives/InputGroup.astro";
           this.close();
           authMan.onLoginSuccess(response.data.access_token);
         }
-      });
+      };
 
       // disable window closing
       this.dialogEl.addEventListener("keydown", (e) => {

@@ -36,5 +36,19 @@ export default defineConfig({
         return { relative: true };
       },
     },
+    server: {
+      proxy: {
+        "/config.js": {
+          target: "http://localhost:1001",
+          changeOrigin: true,
+          rewrite: () => "/adm/config.js",
+        },
+        "/api": {
+          target: "http://localhost:1001",
+          changeOrigin: true,
+          secure: false,
+        },
+      },
+    },
   },
 });

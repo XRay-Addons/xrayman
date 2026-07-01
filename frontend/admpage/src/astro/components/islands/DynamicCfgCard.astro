@@ -1,0 +1,87 @@
+---
+import Title from "@xrayman/shared/astro/primitives/Title.astro";
+import Card from "@xrayman/shared/astro/primitives/Card.astro";
+import RWMap from "@xrayman/shared/astro/primitives/RWMap.astro";
+import Button from "@xrayman/shared/astro/primitives/Button.astro";
+
+import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
+
+const fields = [
+  { name: "subscr-title", i18n: "cards.dynamic-cfg.fields.subscr-title" },
+  { name: "users-message", i18n: "cards.dynamic-cfg.fields.users-message" },
+  { name: "user-page", i18n: "cards.dynamic-cfg.fields.user-page" },
+  { name: "tg-page", i18n: "cards.dynamic-cfg.fields.tg-page" },
+  {
+    name: "update-interval",
+    i18n: "cards.dynamic-cfg.fields.update-interval",
+    props: {
+      type: "number" as const,
+      min: "1",
+      inputmode: "numeric" as const,
+      pattern: "[1-9][0-9]*",
+    },
+  },
+];
+
+const formID = "dynamic-cfg-form";
+---
+
+<dynamic-cfg-card>
+  <Card>
+    <Title class="col-6 mb-2">
+      <I18NText data-i18n="cards.dynamic-cfg.edit-title" />
+    </Title>
+
+    <RWMap fields={fields} data-part="cfg-rwmap" id={formID} />
+
+    <Button
+      data-part="submit-btn"
+      data-i18n="cards.dynamic-cfg.submit"
+      form={formID}
+      type="submit"
+    />
+  </Card>
+</dynamic-cfg-card>
+
+<script>
+  import { getDynamicConfig } from "@/services/api/client";
+  import { notifyApiError } from "@/runtime/notifications/use-notifications";
+  import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+
+  import type { RWMapElement, RWMapData } from "@xrayman/shared/astro/types/RWMap";
+
+  class DynamicCfgCard extends CustomElement {
+    private cfgRWMapEl!: RWMapElement;
+
+    async connectedCallback() {
+      super.connectedCallback();
+      this.cfgRWMapEl = this.pt<RWMapElement>("cfg-rwmap");
+      this.cfgRWMapEl.addEventListener("submit", (e: Event) => {
+        e.preventDefault();
+        const currentData = this.cfgRWMapEl.getValue();
+        console.log(currentData);
+      });
+      await this.updateCfg();
+    }
+
+    protected render() {}
+
+    async updateCfg() {
+      const response = await getDynamicConfig();
+      if (!response.ok) {
+        notifyApiError("get_dyn_cfg", response.reason);
+        return;
+      }
+      const data: RWMapData = {
+        "subscr-title": response.data.SubscrTitle,
+        "users-message": response.data.UsersMessage,
+        "user-page": response.data.UserPage,
+        "tg-page": response.data.TgPage,
+        "update-interval": response.data.UpdateInterval.toString(),
+      };
+      this.cfgRWMapEl.value = data;
+    }
+  }
+
+  customElements.define("dynamic-cfg-card", DynamicCfgCard);
+</script>

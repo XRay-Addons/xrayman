@@ -1,3 +1,3 @@
 export interface CopyGroupElement extends HTMLElement {
-  setValue(val: string): void;
+  set value(val: string);
 }

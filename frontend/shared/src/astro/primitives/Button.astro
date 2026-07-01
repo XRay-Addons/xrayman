@@ -1,12 +1,11 @@
 ---
 import Surface from "./Surface.astro";
 
-interface Props {
-  class?: string;
-  styles?: string;
+interface Props extends astroHTML.JSX.ButtonHTMLAttributes {
+  style?: string;
 }
 
-const { class: extraClass, styles: __, ...rest } = Astro.props;
+const { class: extraClass, style: __, type, ...rest } = Astro.props;
 ---
 
 <Surface depth="var(--button-depth)" color="var(--button-color)" class={extraClass} dynamic>

@@ -10,7 +10,7 @@ const { class: extraClass, styles: __, ...rest } = Astro.props;
 ---
 
 <div class:list={["tag", extraClass]}>
-  <button class="ui-reset-button noselect w-100 h-100 text text-sm crt p-1" {...rest}>
+  <button class="ui-reset-button noselect w-100 h-100 text text-xs crt p-1" {...rest}>
     <slot />
   </button>
 </div>

@@ -1,26 +1,19 @@
 ---
 import InputGroup from "./InputGroup.astro";
 
-type HTMLProps = Record<string, unknown>;
-
 interface Props {
-  "input-props"?: HTMLProps;
-  "button-props"?: HTMLProps;
+  "input-props"?: astroHTML.JSX.InputHTMLAttributes;
+  "button-props"?: astroHTML.JSX.InputHTMLAttributes;
   "data-part"?: string;
-
   [key: string]: unknown; // WTF ts can't guess types
 }
 
 const {
   "input-props": inputProps = {},
   "button-props": buttonProps = {},
-  "data-part": dataPart = "",
+  "data-part": dataPart = undefined,
   ...rest
 } = Astro.props;
-
-const { class: _ic, style: _is, "data-part": _dpInput, ...safeInputProps } = inputProps;
-
-const { class: _bc, style: _bs, "data-part": _dpButton, ...safeButtonProps } = buttonProps;
 ---
 
 <copy-group data-part={dataPart}>
@@ -44,26 +37,28 @@ const { class: _bc, style: _bs, "data-part": _dpButton, ...safeButtonProps } = b
 </style>
 
 <script>
+  import { LitElement, html, render, PropertyValues } from "lit";
+
   import { type CopyGroupElement } from "../types/CopyGroup";
   import type { InputGroupElement } from "../types/InputGroup";
-  import { PartedElement } from "../../runtime/dom/parted-element";
+  import { PartedElement, ptEl } from "../../runtime/dom/parted-element";
+  import { CustomElement, prop } from "../../runtime/dom/custom-element";
 
-  class CopyGroup extends PartedElement implements CopyGroupElement {
+  class CopyGroup extends CustomElement implements CopyGroupElement {
+    @prop accessor value: string = "";
+
     private inputGroupEl!: InputGroupElement;
 
-    setValue(val: string) {
-      this.inputGroupEl.setValue(val);
-    }
-
     connectedCallback() {
+      super.connectedCallback();
+
       this.inputGroupEl = this.pt<InputGroupElement>("input-group");
-      const copyBtnEl = this.inputGroupEl.getButton();
+      const copyBtnEl = this.inputGroupEl.button;
       const originalContent = copyBtnEl.innerHTML;
 
-      this.inputGroupEl.onClick(async (val: string) => {
+      this.inputGroupEl.onclickfn = async (val: string) => {
         try {
           this.inputGroupEl.style.pointerEvents = "none";
-
           await navigator.clipboard.writeText(val);
           copyBtnEl.innerHTML = "✓";
           setTimeout(() => {
@@ -74,7 +69,11 @@ const { class: _bc, style: _bs, "data-part": _dpButton, ...safeButtonProps } = b
         } finally {
           this.inputGroupEl.style.pointerEvents = "auto";
         }
-      });
+      };
+    }
+
+    protected render() {
+      this.inputGroupEl.value = this.value;
     }
 
     disconnectedCallback() {}

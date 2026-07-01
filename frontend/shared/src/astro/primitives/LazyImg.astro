@@ -24,7 +24,7 @@ const { src, class: extraClass = "", ...rest } = Astro.props;
     obs?: IntersectionObserver;
 
     connectedCallback() {
-      const imageEl = this.pt<HTMLImageElement>("image");
+      const imageEl = this.ptEl<HTMLImageElement>("image");
       this.obs = new IntersectionObserver(([entry], obs) => {
         if (entry.isIntersecting) {
           imageEl.src = imageEl.dataset.src!;

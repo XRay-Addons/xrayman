@@ -1,9 +1,9 @@
 export type OnClickFn = (val: string) => Promise<void>;
 
 export interface InputGroupElement extends HTMLElement {
-  getValue(): string;
-  setValue(val: string): void;
-  onClick(fn: OnClickFn): void;
-  getButton(): HTMLButtonElement;
-  getInput(): HTMLInputElement;
+  get value(): string;
+  set value(val: string);
+  set onclickfn(fn: OnClickFn);
+  get button(): HTMLButtonElement;
+  get input(): HTMLInputElement;
 }

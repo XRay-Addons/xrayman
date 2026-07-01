@@ -60,7 +60,7 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
     import { newSubHeader } from "@/services/api/client";
     import { notifyApiError } from "@/runtime/notifications/use-notifications";
     import type { ResettableElement } from "@xrayman/shared/astro/types/Resettable";
-    import { pt, PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
+    import { ptEl, PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
     import { reloadSubHeaders } from "@/actions/sub-headers";
     import { config } from "@/config/config";
 
@@ -71,10 +71,10 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
       private successResultEl!: HTMLElement;
 
       connectedCallback() {
-        this.keyInputEl = this.pt<HTMLInputElement>("key-input");
-        this.valueInputEl = this.pt<HTMLInputElement>("value-input");
-        this.inputSubmitEl = this.pt<HTMLButtonElement>("submit-input");
-        this.successResultEl = this.pt<HTMLElement>("success-result");
+        this.keyInputEl = this.ptEl<HTMLInputElement>("key-input");
+        this.valueInputEl = this.ptEl<HTMLInputElement>("value-input");
+        this.inputSubmitEl = this.ptEl<HTMLButtonElement>("submit-input");
+        this.successResultEl = this.ptEl<HTMLElement>("success-result");
         this.setPlaceholderTags();
 
         this.inputSubmitEl.onclick = async () => {
@@ -101,17 +101,17 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 
       disconnectedCallback() {}
 
-      async setPlaceholderTags() {
-        const tagTemplate = this.pt<HTMLTemplateElement>("placeholder-tag-tmpl");
-        const tagsSection = this.pt<HTMLElement>("placeholder-tags");
+      setPlaceholderTags() {
+        const tagTemplate = this.ptEl<HTMLTemplateElement>("placeholder-tag-tmpl");
+        const tagsSection = this.ptEl<HTMLElement>("placeholder-tags");
 
         const frag = document.createDocumentFragment();
         const tags = config.sub_headers_placeholders;
 
         tags.forEach((tag) => {
           const fragment = tagTemplate.content.cloneNode(true) as HTMLElement;
-          const btn = pt<HTMLButtonElement>(fragment, "placeholder-tag");
-          const text = pt<HTMLSpanElement>(fragment, "placeholder-tag-text");
+          const btn = ptEl<HTMLButtonElement>(fragment, "placeholder-tag");
+          const text = ptEl<HTMLSpanElement>(fragment, "placeholder-tag-text");
           text.innerHTML = tag;
 
           // prevent input focus lose

@@ -1,0 +1,66 @@
+---
+import Info from "@xrayman/shared/astro/primitives/Info.astro";
+import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
+
+interface Props {
+  class?: string;
+}
+const { class: extraClass, ...rest } = Astro.props;
+---
+
+<map-element {...rest}>
+  <Info>
+    <table class="map-table">
+      <tbody data-part="container"></tbody>
+    </table>
+  </Info>
+
+  <template data-part="row-template">
+    <tr class="map-row">
+      <td class="map-key">
+        <I18NText data-i18n="key" data-part="key" />
+      </td>
+      <td class="map-key">: </td>
+      <td class="map-value">
+        <span data-part="value"></span>
+      </td>
+    </tr>
+  </template>
+
+  <style></style>
+
+  <script>
+    import { ptEl, PartedElement } from "../../runtime/dom/parted-element";
+    import { MapElement, Item } from "../types/Map";
+
+    class Map extends PartedElement implements MapElement {
+      private container!: HTMLElement;
+      private template!: HTMLTemplateElement;
+
+      setValue(val: Item[]): void {
+        const frag = document.createDocumentFragment();
+
+        for (const kv of val) {
+          const fragment = this.template.content.cloneNode(true) as HTMLElement;
+
+          const keyEl = ptEl<HTMLElement>(fragment, "key");
+          keyEl.setAttribute("data-i18n", kv.Key);
+          const valueEl = ptEl<HTMLElement>(fragment, "value");
+          valueEl.textContent = kv.Value;
+
+          frag.appendChild(fragment);
+        }
+        this.container.replaceChildren(frag);
+      }
+
+      connectedCallback() {
+        this.container = this.ptEl<HTMLElement>("container");
+        this.template = this.ptEl<HTMLTemplateElement>("row-template");
+      }
+
+      disconnectedCallback() {}
+    }
+
+    customElements.define("map-element", Map);
+  </script>
+</map-element>

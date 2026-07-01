@@ -1,3 +1,3 @@
 export interface BarcodeElement extends HTMLElement {
-  setValue(val: string): void;
+  set value(val: string);
 }

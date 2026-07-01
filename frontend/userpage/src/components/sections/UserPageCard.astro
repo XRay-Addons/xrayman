@@ -38,13 +38,13 @@ import CopyGroup from "@xrayman/shared/astro/primitives/CopyGroup.astro";
     private unsub?: () => void;
 
     connectedCallback() {
-      const userpageOutputEl = this.pt<CopyGroupElement>("result-userpage")!;
+      const userpageOutputEl = this.ptEl<CopyGroupElement>("result-userpage")!;
 
       this.unsub = stateSignal.subscribe(async (state) => {
         if (state.status === State.LoggedIn) {
-          userpageOutputEl.setValue(await ProfileURL.make(state.data));
+          userpageOutputEl.value = await ProfileURL.make(state.data);
         } else {
-          userpageOutputEl.setValue("");
+          userpageOutputEl.value = "";
         }
       });
     }

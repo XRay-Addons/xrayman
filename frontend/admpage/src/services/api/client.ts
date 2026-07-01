@@ -15,8 +15,17 @@ import {
   listSubHeaders as _listSubHeaders,
   deleteSubHeader as _deleteSubHeader,
   newSubHeader as _newSubHeader,
+  getDynamicConfig as _getDynamicConfig,
+  setDynamicConfig as _setDynamicConfig,
 } from "./generated/sdk.gen";
-import type { User, Node, Header, AuthResponse } from "./generated/types.gen";
+import type {
+  User,
+  Node,
+  Header,
+  AuthResponse,
+  UserView,
+  DynamicConfig,
+} from "./generated/types.gen";
 
 export async function auth(pwd: string): Promise<ApiResult<AuthResponse>> {
   return handleAPI(
@@ -25,7 +34,7 @@ export async function auth(pwd: string): Promise<ApiResult<AuthResponse>> {
   );
 }
 
-export async function listUsers(): Promise<ApiResult<Array<User>>> {
+export async function listUsers(): Promise<ApiResult<Array<UserView>>> {
   return handleAPI(
     () => _listUsers(),
     (data) => data.Users,
@@ -112,6 +121,20 @@ export async function newSubHeader(key: string, value: string): Promise<ApiResul
 export async function deleteSubHeader(id: number): Promise<ApiResult<void>> {
   return handleAPI(
     () => _deleteSubHeader({ body: { ID: id } }),
+    () => {},
+  );
+}
+
+export async function getDynamicConfig(): Promise<ApiResult<DynamicConfig>> {
+  return handleAPI(
+    () => _getDynamicConfig(),
+    (data) => data,
+  );
+}
+
+export async function setDynamicConfig(cfg: DynamicConfig): Promise<ApiResult<void>> {
+  return handleAPI(
+    () => _setDynamicConfig({ body: cfg }),
     () => {},
   );
 }

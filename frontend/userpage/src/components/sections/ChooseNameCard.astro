@@ -36,9 +36,9 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 
   class ChooseNameCard extends PartedElement {
     connectedCallback() {
-      const nameInputEl = this.pt<InputGroupElement>("name-input");
+      const nameInputEl = this.ptEl<InputGroupElement>("name-input");
 
-      nameInputEl.onClick(async (displayName: string) => {
+      nameInputEl.onclickfn = async (displayName: string) => {
         if (displayName.length == 0) {
           return;
         }
@@ -50,7 +50,7 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
           // WTF typescript conditions
           notifyApiError("new_user", response.reason);
         }
-      });
+      };
     }
 
     disconnectedCallback() {}

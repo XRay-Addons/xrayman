@@ -24,9 +24,9 @@ const { class: extraClass = "", "content-class": contentClass = "" } = Astro.pro
 </btn-dialog>
 
 <script>
-  import { PartedElement } from "../../runtime/dom/parted-element";
+  import { CustomElement } from "../../runtime/dom/custom-element";
 
-  class BtnDialog extends PartedElement {
+  class BtnDialog extends CustomElement {
     private button!: HTMLButtonElement;
     private dialog!: HTMLDialogElement;
     private page!: HTMLElement;
@@ -52,6 +52,8 @@ const { class: extraClass = "", "content-class": contentClass = "" } = Astro.pro
     }
 
     disconnectedCallback() {}
+
+    protected render() {}
 
     private reset() {
       Array.from(this.page.children).forEach((el) => {

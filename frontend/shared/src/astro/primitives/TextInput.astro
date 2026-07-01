@@ -1,0 +1,11 @@
+---
+import Input from "./Input.astro";
+
+interface Props {
+  class?: string;
+  style?: string;
+}
+const { class: extraClass, style: style, ...rest } = Astro.props;
+---
+
+<Input type="text" class={extraClass} style={style} {...rest} />

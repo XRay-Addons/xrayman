@@ -12,8 +12,6 @@ const (
 	UserIDPlaceholder          = "UserID"
 	UserNamePlaceholder        = "UserName"
 	UserDisplayNamePlaceholder = "DisplayName"
-	TotalUploadPlaceholder     = "TotalUpload"
-	TotalDownloadPlaceholder   = "TotalDownload"
 )
 
 func replacePlaceholders(s string, u *models.UserView) string {
@@ -21,8 +19,6 @@ func replacePlaceholders(s string, u *models.UserView) string {
 		UserIDPlaceholder:          fmt.Sprintf("%v", u.User.Profile.ID),
 		UserNamePlaceholder:        u.User.Profile.Name,
 		UserDisplayNamePlaceholder: u.User.Profile.DisplayName,
-		TotalUploadPlaceholder:     u.Traffic.Total.Upload,
-		TotalDownloadPlaceholder:   u.Traffic.Total.Download,
 	})
 }
 
@@ -31,8 +27,6 @@ func listPlaceholders() []string {
 		makePlaceholder(UserIDPlaceholder),
 		makePlaceholder(UserNamePlaceholder),
 		makePlaceholder(UserDisplayNamePlaceholder),
-		makePlaceholder(TotalUploadPlaceholder),
-		makePlaceholder(TotalDownloadPlaceholder),
 	}
 }
 

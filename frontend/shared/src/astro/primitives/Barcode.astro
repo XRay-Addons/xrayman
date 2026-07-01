@@ -9,17 +9,20 @@ const { ...rest } = Astro.props;
 <script>
   import { generate } from "lean-qr";
   import type { BarcodeElement } from "../types/Barcode";
-  import { PartedElement } from "../../runtime/dom/parted-element";
+  import { CustomElement, prop } from "../../runtime/dom/custom-element";
 
-  class Barcode extends PartedElement implements BarcodeElement {
+  class Barcode extends CustomElement implements BarcodeElement {
+    @prop accessor value: string = "";
+
     private canvasEl!: HTMLCanvasElement;
 
-    connectedCallback() {
+    public connectedCallback() {
+      super.connectedCallback();
       this.canvasEl = this.pt<HTMLCanvasElement>("barcode-canvas");
     }
 
-    setValue(val: string) {
-      const barCode = generate(val);
+    protected render() {
+      const barCode = generate(this.value);
       barCode.toCanvas(this.canvasEl, {
         on: [0, 0, 0, 128],
         pad: 0,

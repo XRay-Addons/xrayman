@@ -62,17 +62,17 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
     private userpageOutputEl!: CopyGroupElement;
 
     connectedCallback() {
-      this.nameInputEl = this.pt<InputGroupElement>("name-input");
-      this.successResultEl = this.pt<HTMLElement>("success-result");
-      this.userpageOutputEl = this.pt<CopyGroupElement>("result-userpage")!;
+      this.nameInputEl = this.ptEl<InputGroupElement>("name-input");
+      this.successResultEl = this.ptEl<HTMLElement>("success-result");
+      this.userpageOutputEl = this.ptEl<CopyGroupElement>("result-userpage")!;
 
-      this.nameInputEl.onClick(async (displayName: string) => {
+      this.nameInputEl.onclickfn = async (displayName: string) => {
         if (displayName.length == 0) {
           return;
         }
         // reset and hide
         this.successResultEl.setAttribute("hidden", "true");
-        this.userpageOutputEl.setValue("");
+        this.userpageOutputEl.value = "";
 
         const response = await newUser(displayName);
         if (!response.ok) {
@@ -83,15 +83,15 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 
         // show back
         this.successResultEl.removeAttribute("hidden");
-        this.userpageOutputEl.setValue(response.data.Profile.Name);
-      });
+        this.userpageOutputEl.value = response.data.Profile.Name;
+      };
     }
 
     disconnectedCallback() {}
 
     reset() {
-      this.nameInputEl.setValue("");
-      this.userpageOutputEl.setValue("");
+      this.nameInputEl.value = "";
+      this.userpageOutputEl.value = "";
       this.successResultEl.hidden = true;
     }
   }

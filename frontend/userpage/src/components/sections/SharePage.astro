@@ -36,13 +36,13 @@ import Barcode from "@xrayman/shared/astro/primitives/Barcode.astro";
     async connectedCallback() {
       const sharingUrl = await MakePageUrl("");
 
-      const btnEl = this.pt<HTMLButtonElement>("share-tg-btn");
+      const btnEl = this.ptEl<HTMLButtonElement>("share-tg-btn");
       btnEl.onclick = () => {
         const text = t("share.page.tg-sharedtext");
         ShareViaTG(sharingUrl, text);
       };
 
-      const barcodeEl = this.pt<BarcodeElement>("share-barcode");
+      const barcodeEl = this.ptEl<BarcodeElement>("share-barcode");
       barcodeEl.setValue(sharingUrl);
     }
 

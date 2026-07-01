@@ -2,7 +2,7 @@
 interface Props {
   "data-i18n": string;
 }
-const { "data-i18n": dataI18n } = Astro.props;
+const { "data-i18n": dataI18n, ...rest } = Astro.props;
 ---
 
-<span data-i18n={dataI18n}></span>
+<span data-i18n={dataI18n} {...rest}></span>
