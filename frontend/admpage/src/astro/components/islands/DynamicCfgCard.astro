@@ -7,9 +7,9 @@ import Button from "@xrayman/shared/astro/primitives/Button.astro";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 
 const fields = [
-  { name: "subscr-title", i18n: "cards.dynamic-cfg.fields.subscr-title" },
-  { name: "users-message", i18n: "cards.dynamic-cfg.fields.users-message" },
-  { name: "user-page", i18n: "cards.dynamic-cfg.fields.user-page" },
+  { name: "subscr-title", i18n: "cards.dynamic-cfg.fields.subscr-title", placeholders: true },
+  { name: "users-message", i18n: "cards.dynamic-cfg.fields.users-message", placeholders: true },
+  { name: "user-page", i18n: "cards.dynamic-cfg.fields.user-page", placeholders: true },
   { name: "tg-page", i18n: "cards.dynamic-cfg.fields.tg-page" },
   {
     name: "update-interval",
@@ -34,6 +34,7 @@ const formID = "dynamic-cfg-form";
 
     <RWMap fields={fields} data-part="cfg-rwmap" id={formID} />
 
+    <Button data-part="refresh-btn" data-i18n="cards.dynamic-cfg.refresh" />
     <Button
       data-part="submit-btn"
       data-i18n="cards.dynamic-cfg.submit"
@@ -44,23 +45,45 @@ const formID = "dynamic-cfg-form";
 </dynamic-cfg-card>
 
 <script>
-  import { getDynamicConfig } from "@/services/api/client";
+  import { getDynamicConfig, setDynamicConfig } from "@/services/api/client";
   import { notifyApiError } from "@/runtime/notifications/use-notifications";
   import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
 
   import type { RWMapElement, RWMapData } from "@xrayman/shared/astro/types/RWMap";
+  import { config } from "@/config/config";
+  import { DynamicConfig } from "@/services/api/generated";
 
   class DynamicCfgCard extends CustomElement {
-    private cfgRWMapEl!: RWMapElement;
+    private cfgEl!: RWMapElement;
 
     async connectedCallback() {
       super.connectedCallback();
-      this.cfgRWMapEl = this.pt<RWMapElement>("cfg-rwmap");
-      this.cfgRWMapEl.addEventListener("submit", (e: Event) => {
+      this.cfgEl = this.pt<RWMapElement>("cfg-rwmap");
+      this.cfgEl.placeholders = config.sub_headers_placeholders;
+      // submit event
+      this.cfgEl.addEventListener("submit", async (e: Event) => {
         e.preventDefault();
-        const currentData = this.cfgRWMapEl.getValue();
-        console.log(currentData);
+        const currentData = this.cfgEl.getValue();
+        const data: DynamicConfig = {
+          SubscrTitle: currentData["subscr-title"],
+          UsersMessage: currentData["users-message"],
+          UserPage: currentData["user-page"],
+          TgPage: currentData["tg-page"],
+          UpdateInterval: parseInt(currentData["update-interval"]),
+        };
+        const response = await setDynamicConfig(data);
+        if (!response.ok) {
+          notifyApiError("set_dyn_cfg", response.reason);
+          return;
+        }
+        this.cfgEl.value = currentData;
       });
+      // refresh event
+      const refreshBtn = this.pt<HTMLButtonElement>("refresh-btn");
+      refreshBtn.addEventListener("click", async (e: Event) => {
+        await this.updateCfg();
+      });
+
       await this.updateCfg();
     }
 
@@ -79,7 +102,7 @@ const formID = "dynamic-cfg-form";
         "tg-page": response.data.TgPage,
         "update-interval": response.data.UpdateInterval.toString(),
       };
-      this.cfgRWMapEl.value = data;
+      this.cfgEl.value = data;
     }
   }
 

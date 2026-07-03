@@ -7,7 +7,7 @@ const { ...rest } = Astro.props;
 ---
 
 <input-tags {...rest}>
-  <div data-part="tags-container" class="d-flex flex-wrap gap-2 mb-2 h-center"></div>
+  <div data-part="tags-container" class="d-flex flex-wrap gap-2 m-1 h-center"></div>
 
   <template data-part="tag-template">
     <div class="d-inline-flex">
@@ -20,10 +20,11 @@ const { ...rest } = Astro.props;
   <script>
     import { CustomElement, prop } from "../../runtime/dom/custom-element";
     import { ptEl } from "../../runtime/dom/parted-element";
-    import { InputTagsElement, InputTagsInit } from "../types/InputTags";
+    import { InputTagsElement } from "../types/InputTags";
 
     class InputTags extends CustomElement implements InputTagsElement {
-      @prop accessor init!: InputTagsInit;
+      @prop accessor input!: HTMLInputElement;
+      @prop accessor tags: string[] = [];
 
       private tagsContainer!: HTMLElement;
       private tagTemplate!: HTMLTemplateElement;
@@ -35,9 +36,9 @@ const { ...rest } = Astro.props;
       }
 
       protected render() {
-        if (!this.init) return;
+        if (!this.input) return;
 
-        const items = this.init.tags.map((tag) => {
+        const items = this.tags.map((tag) => {
           const fragment = this.tagTemplate.content.cloneNode(true) as HTMLElement;
           const btn = ptEl<HTMLButtonElement>(fragment, "tag");
           const text = ptEl<HTMLSpanElement>(fragment, "tag-text");
@@ -58,7 +59,7 @@ const { ...rest } = Astro.props;
       }
 
       private addInputText(text: string) {
-        const input = this.init!.input!;
+        const input = this.input!;
         const start = input.selectionStart ?? input.value.length;
         const end = input.selectionEnd ?? input.value.length;
 

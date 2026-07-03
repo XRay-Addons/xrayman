@@ -4,6 +4,7 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 import Tag from "@xrayman/shared/astro/primitives/Tag.astro";
 import Input from "./Input.astro";
 import InputTags from "./InputTags.astro";
+import Surface from "./Surface.astro";
 
 type SafeInputAttributes = Omit<astroHTML.JSX.InputHTMLAttributes, "slot" | "style">;
 
@@ -27,46 +28,94 @@ const { id, fields, ...rest } = Astro.props;
   <form data-part="form" id={id}>
     {
       fields.map((field: FieldConfig) => (
-        <div>
           <Info>
             <I18NText data-i18n={field.i18n} />
           </Info>
+          <div class="input-container mb-2" data-part="input-container">
+            <Input name={field.name} data-part="input" {...field.props} />
 
-          <Input class="mb-2" name={field.name} {...field.props} list={`${field.name}-list`} />
-
-          <datalist id={`${field.name}-list`}>
-            <option value="one" />
-            <option value="two" />
-            <option value="three" />
-          </datalist>
-
-          {field.placeholders && <InputTags data-part="placeholders" />}
-        </div>
+            { field.placeholders && 
+              <div class="tags-container" data-part="tags-container" hidden >
+                <Surface
+                  depth="var(--input-depth)"
+                  color="var(--input-color)"
+                >
+                  <InputTags data-part="tags" />
+                </Surface>
+              </div>
+            }
+          </div>
       ))
     }
   </form>
 </rwmap-element>
 
-<style></style>
+<style>
+  .input-container {
+    position: relative;
+  }
+  .tags-container {
+    position: absolute;
+    z-index: 1;
+    top: 100%;
+    width: 100%;
+
+    margin-top: calc(-1 * var(--input-depth));
+  }
+</style>
 
 <script>
   import { prop, CustomElement } from "../../runtime/dom/custom-element";
+import { ptEl } from "../../runtime/dom/parted-element";
   import type { InputTagsElement } from "../types/InputTags";
   import { RWMapElement, RWMapData, InputType } from "../types/RWMap";
 
   class RWMap extends CustomElement implements RWMapElement {
     @prop accessor value: RWMapData = {};
+    @prop accessor placeholders: string[] = [];
 
     private formEl!: HTMLFormElement;
+    private tagsEls: InputTagsElement[] = [];
 
-    connectedCallback() {
+    connectedCallback() { 
       super.connectedCallback();
       this.formEl = this.pt<HTMLFormElement>("form");
+
+      const containers = this.formEl.querySelectorAll<HTMLElement>('[data-part="input-container"]');
+
+      containers.forEach((container) => {
+        const inputEl = container.querySelector<HTMLInputElement>('[data-part="input"]');
+        const tagsContainerEl = container.querySelector<HTMLElement>('[data-part="tags-container"]');
+        if (!inputEl || !tagsContainerEl) return;
+
+        inputEl.addEventListener("focus", () => {
+          tagsContainerEl.removeAttribute("hidden");
+        });
+        inputEl.addEventListener("blur", () => {
+          tagsContainerEl.setAttribute("hidden", "");
+        });
+        inputEl.addEventListener("keydown", (event: KeyboardEvent) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+          }
+        });
+        tagsContainerEl.addEventListener("mousedown", (event) => {
+          event.preventDefault();
+        });
+
+        const tagsEl = ptEl<InputTagsElement>(tagsContainerEl, "tags");
+        tagsEl.input = inputEl;
+        this.tagsEls.push(tagsEl);
+      });
     }
 
     disconnectedCallback() {}
 
     protected render() {
+      for (const tagsEl of this.tagsEls) {
+        tagsEl.tags = this.placeholders
+      }
+
       for (const [fieldName, value] of Object.entries(this.value)) {
         const element = this.formEl.elements.namedItem(fieldName);
         if (element instanceof HTMLInputElement) {
@@ -91,197 +140,3 @@ const { id, fields, ...rest } = Astro.props;
 
   customElements.define("rwmap-element", RWMap);
 </script>
-
-<!-- 
-  <div data-part="container"></div>
-
-  <template data-part="key-template">
-    <Info><I18NText data-i18n="key" data-part="key" /></Info>
-  </template>
-  <template data-part="int-value-template">
-    <IntInput data-part="value" class="mb-2" />
-  </template>
-  <template data-part="text-value-template">
-    <TextInput data-part="value" class="mb-2" />
-  </template>
-  <template data-part="placeholders-template">
-    <InputTags data-part="placeholders" />
-  </template>
-
-
-  <style></style>
-
-
-    import { ptEl, ptWebComp, PartedElement } from "../../runtime/dom/parted-element";
-    import type { InputTagsElement } from "../types/InputTags";
-    import { RWMapElement, Item, InputType } from "../types/RWMap";
-
-    class RWMap extends PartedElement implements RWMapElement {
-      private container!: HTMLElement;
-      private keyTemplate!: HTMLTemplateElement;
-      private textValTemplate!: HTMLTemplateElement;
-      private intValTemplate!: HTMLTemplateElement;
-      private placeholdersTemplate!: HTMLTemplateElement;
-
-      connectedCallback() {
-        this.container = this.ptEl<HTMLElement>("container");
-        this.keyTemplate = this.ptEl<HTMLTemplateElement>("key-template");
-        this.textValTemplate = this.ptEl<HTMLTemplateElement>("text-value-template");
-        this.intValTemplate = this.ptEl<HTMLTemplateElement>("int-value-template");
-        this.placeholdersTemplate = this.ptEl<HTMLTemplateElement>("placeholders-template");
-      }
-
-      disconnectedCallback() {}
-
-      async setValue(val: Map<string, Item>): Promise<void> {
-        await customElements.whenDefined("input-tags");
-        const frag = document.createDocumentFragment();
-
-        for (const [k, v] of val) {
-          const itemBlock = document.createElement("div");
-
-          const keyEl = this.addKeyEl(itemBlock, k, v.I18N);
-          const valueEl = this.addValueEl(itemBlock, k, v.Value, v.Type);
-          if (v.Placeholders) {
-            await this.addPhsEl(itemBlock, v.Placeholders!, valueEl);
-          }
-          frag.appendChild(itemBlock);
-        }
-        this.container.replaceChildren(frag);
-      }
-
-      async addKeyEl(parent: HTMLElement, k: string, i18n: string): Promise<DocumentFragment> {
-        const keyFragment = this.keyTemplate.content.cloneNode(true) as DocumentFragment;
-        const keyEl = ptEl<HTMLElement>(keyFragment, "key");
-        keyEl.setAttribute("data-i18n", i18n);
-        keyEl.setAttribute("data-key", k);
-        parent.appendChild(keyFragment);
-        return keyFragment;
-      }
-
-      addValueEl(parent: HTMLElement, k: string, v: string, type?: InputType): DocumentFragment {
-        let valueFragment: DocumentFragment;
-        if (type === "integer") {
-          valueFragment = this.intValTemplate.content.cloneNode(true) as DocumentFragment;
-        } else {
-          valueFragment = this.textValTemplate.content.cloneNode(true) as DocumentFragment;
-        }
-        const valueEl = ptEl<HTMLInputElement>(valueFragment, "value");
-        valueEl.value = v;
-        valueEl.setAttribute("data-base-value", v);
-        parent.appendChild(valueFragment);
-        return valueFragment;
-      }
-
-      async addPhsEl(
-        parent: HTMLElement,
-        phs: string[],
-        valueEl: DocumentFragment,
-      ): Promise<DocumentFragment> {
-        //await customElements.whenDefined("input-tags");
-        const valueInput = ptEl<HTMLInputElement>(parent, "value");
-        const phsFragment = this.placeholdersTemplate.content.cloneNode(true) as DocumentFragment;
-        parent.appendChild(phsFragment);
-
-        const phsEl = await ptWebComp<InputTagsElement>(parent, "placeholders");
-        console.log("defined base:", phsEl.matches(":defined"));
-        await customElements.whenDefined("input-tags");
-        console.log("defined when defined:", phsEl.matches(":defined"));
-        customElements.upgrade(phsEl);
-        console.log("defined when upgrade:", phsEl.matches(":defined"));
-        phsEl.init(["a", "b"], valueInput);
-
-        return phsFragment;
-      }
-
-      getValue(): Map<string, string> {
-        const items = Array.from(this.container.children) as HTMLElement[];
-
-        const map = new Map<string, string>();
-
-        for (const item of items) {
-          const keyEl = ptEl<HTMLElement>(item, "key");
-          const valueEl = ptEl<HTMLInputElement>(item, "value");
-
-          const key = keyEl.getAttribute("data-key")!;
-          const value = valueEl?.value ?? "";
-
-          map.set(key, value);
-        }
-
-        return map;
-      }
-    }
-
-    customElements.define("rwmap-element", RWMap);
-  </script>
-
-
-      /* const phsFragment = this.placeholdersTemplate.content.cloneNode(true) as DocumentFragment;
-      const phsEl = pt<HTMLElement>(phsFragment, "placeholders");
-      for (const ph of v.Placeholders!) {
-        const phFragment = this.placeholderTemplate.content.cloneNode(true) as DocumentFragment;
-        const btn = pt<HTMLButtonElement>(phFragment, "placeholder");
-        const text = pt<HTMLSpanElement>(phFragment, "placeholder-text");
-        text.innerHTML = ph;
-
-        // prevent input focus lose
-        btn.addEventListener("mousedown", (e) => {
-          e.preventDefault();
-        });
-        btn.addEventListener("click", (e) => {
-          e.preventDefault();
-          // addInputText(valueEl, ph);
-        });
-        frag.appendChild(phFragment);
-      }*/
-
-      // makePh(ph: s);
-
-      /*const keyFragment = this.keyTemplate.content.cloneNode(true) as DocumentFragment;
-        const keyEl = pt<HTMLElement>(keyFragment, "key");
-        keyEl.setAttribute("data-i18n", v.I18N);
-        keyEl.setAttribute("data-key", k);
-        itemBlock.appendChild(keyFragment);
-
-        // make typed fragment
-        let valueFragment: DocumentFragment;
-        if (v.Type === "integer") {
-          valueFragment = this.intValTemplate.content.cloneNode(true) as DocumentFragment;
-        } else {
-          valueFragment = this.textValTemplate.content.cloneNode(true) as DocumentFragment;
-        }
-        const valueEl = pt<HTMLInputElement>(valueFragment, "value");
-        valueEl.value = v.Value;
-        valueEl.setAttribute("data-base-value", v.Value);
-        itemBlock.appendChild(valueFragment);
-
-        // add placeholders
-        if (v.Placeholders) {
-          const phsFragment = this.placeholdersTemplate.content.cloneNode(true) as DocumentFragment;
-          const phsEl = pt<HTMLElement>(phsFragment, "placeholders");
-          const frag = document.createDocumentFragment();
-          for (const ph of v.Placeholders!) {
-            const phFragment = this.placeholderTemplate.content.cloneNode(true) as DocumentFragment;
-            const btn = pt<HTMLButtonElement>(phFragment, "placeholder");
-            const text = pt<HTMLSpanElement>(phFragment, "placeholder-text");
-            text.innerHTML = ph;
-
-            // prevent input focus lose
-            btn.addEventListener("mousedown", (e) => {
-              e.preventDefault();
-            });
-            btn.addEventListener("click", (e) => {
-              e.preventDefault();
-              // addInputText(valueEl, ph);
-            });
-            frag.appendChild(phFragment);
-          }
-          phsEl.replaceChildren(frag);
-          itemBlock.appendChild(phsEl);
-        }
-        this.container.replaceChildren(itemBlock);
-      }
-
-      console.log(this.getValue());*/
-      -->
