@@ -6,11 +6,13 @@ import Button from "@xrayman/shared/astro/primitives/Button.astro";
 
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 
+const i18n = "cards.dynamic-cfg";
+const i18nFields = "cards.dynamic-cfg.fields";
 const fields = [
-  { name: "subscr-title", i18n: "cards.dynamic-cfg.fields.subscr-title", placeholders: true },
-  { name: "users-message", i18n: "cards.dynamic-cfg.fields.users-message", placeholders: true },
-  { name: "user-page", i18n: "cards.dynamic-cfg.fields.user-page", placeholders: true },
-  { name: "tg-page", i18n: "cards.dynamic-cfg.fields.tg-page" },
+  { name: "subscr-title", i18n: `${i18nFields}.subscr-title`, placeholders: true },
+  { name: "users-message", i18n: `${i18nFields}.users-message`, placeholders: true },
+  { name: "user-page", i18n: `${i18nFields}.user-page`, placeholders: true },
+  { name: "tg-page", i18n: `${i18nFields}.tg-page` },
   {
     name: "update-interval",
     i18n: "cards.dynamic-cfg.fields.update-interval",
@@ -29,18 +31,13 @@ const formID = "dynamic-cfg-form";
 <dynamic-cfg-card>
   <Card>
     <Title class="col-6 mb-2">
-      <I18NText data-i18n="cards.dynamic-cfg.edit-title" />
+      <I18NText data-i18n=`${i18n}.title` />
     </Title>
 
     <RWMap fields={fields} data-part="cfg-rwmap" id={formID} />
 
-    <Button data-part="refresh-btn" data-i18n="cards.dynamic-cfg.refresh" />
-    <Button
-      data-part="submit-btn"
-      data-i18n="cards.dynamic-cfg.submit"
-      form={formID}
-      type="submit"
-    />
+    <Button data-part="refresh-btn" data-i18n=`${i18n}.refresh` />
+    <Button data-part="submit-btn" data-i18n=`${i18n}.submit` form={formID} type="submit" />
   </Card>
 </dynamic-cfg-card>
 
@@ -60,24 +57,19 @@ const formID = "dynamic-cfg-form";
       super.connectedCallback();
       this.cfgEl = this.pt<RWMapElement>("cfg-rwmap");
       this.cfgEl.placeholders = config.sub_headers_placeholders;
+
       // submit event
       this.cfgEl.addEventListener("submit", async (e: Event) => {
         e.preventDefault();
         const currentData = this.cfgEl.getValue();
-        const data: DynamicConfig = {
-          SubscrTitle: currentData["subscr-title"],
-          UsersMessage: currentData["users-message"],
-          UserPage: currentData["user-page"],
-          TgPage: currentData["tg-page"],
-          UpdateInterval: parseInt(currentData["update-interval"]),
-        };
-        const response = await setDynamicConfig(data);
+        const response = await setDynamicConfig(this.mapToCfg(currentData));
         if (!response.ok) {
           notifyApiError("set_dyn_cfg", response.reason);
           return;
         }
         this.cfgEl.value = currentData;
       });
+
       // refresh event
       const refreshBtn = this.pt<HTMLButtonElement>("refresh-btn");
       refreshBtn.addEventListener("click", async (e: Event) => {
@@ -95,14 +87,27 @@ const formID = "dynamic-cfg-form";
         notifyApiError("get_dyn_cfg", response.reason);
         return;
       }
-      const data: RWMapData = {
-        "subscr-title": response.data.SubscrTitle,
-        "users-message": response.data.UsersMessage,
-        "user-page": response.data.UserPage,
-        "tg-page": response.data.TgPage,
-        "update-interval": response.data.UpdateInterval.toString(),
+      this.cfgEl.value = this.cfgToMap(response.data);
+    }
+
+    mapToCfg(src: RWMapData): DynamicConfig {
+      return {
+        SubscrTitle: src["subscr-title"],
+        UsersMessage: src["users-message"],
+        UserPage: src["user-page"],
+        TgPage: src["tg-page"],
+        UpdateInterval: parseInt(src["update-interval"]),
       };
-      this.cfgEl.value = data;
+    }
+
+    cfgToMap(src: DynamicConfig): RWMapData {
+      return {
+        "subscr-title": src.SubscrTitle,
+        "users-message": src.UsersMessage,
+        "user-page": src.UserPage,
+        "tg-page": src.TgPage,
+        "update-interval": src.UpdateInterval.toString(),
+      };
     }
   }
 

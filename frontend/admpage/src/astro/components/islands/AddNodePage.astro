@@ -6,42 +6,42 @@ import Title from "@xrayman/shared/astro/primitives/Title.astro";
 import Button from "@xrayman/shared/astro/primitives/Button.astro";
 import SuccessMsg from "@xrayman/shared/astro/primitives/SuccessMsg.astro";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
+
+const i18n = "add-node";
+const i18nReq = "add-node.request";
 ---
 
 <add-node-page class="fluid-md">
   <Card>
     <form data-part="form">
       <Title class="mb-2">
-        <I18NText data-i18n="add-node.title" />
+        <I18NText data-i18n=`${i18n}.title` />
       </Title>
 
       <Info>
-        <I18NText data-i18n="add-node.request.endpoint.info" />
+        <I18NText data-i18n=`${i18nReq}.endpoint.info` />
       </Info>
 
-      <Input
-        data-part="endpoint-input"
-        data-i18n-placeholder="add-node.request.endpoint.placeholder"
-      />
+      <Input data-part="endpoint-input" data-i18n-placeholder=`${i18nReq}.endpoint.placeholder` />
 
       <Info>
-        <I18NText data-i18n="add-node.request.accesskey.info" />
+        <I18NText data-i18n=`${i18nReq}.accesskey.info` />
       </Info>
 
       <Input
         data-part="accesskey-input"
-        data-i18n-placeholder="add-node.request.accesskey.placeholder"
+        data-i18n-placeholder=`${i18nReq}.accesskey.placeholder`
         class="mb-2"
       />
       <div class="d-flex justify-content-center">
         <Button data-part="submit-input" class="col-8" type="submit">
-          <I18NText data-i18n="add-node.submit-btn.info" />
+          <I18NText data-i18n=`${i18n}.submit-btn.info` />
         </Button>
       </div>
 
       <div data-part="success-result" hidden>
         <SuccessMsg class="col-8">
-          <I18NText data-i18n="add-node.response.info" />
+          <I18NText data-i18n=`${i18n}.response.info` />
         </SuccessMsg>
       </div>
     </form>

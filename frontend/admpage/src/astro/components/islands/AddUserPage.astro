@@ -6,40 +6,44 @@ import Card from "@xrayman/shared/astro/primitives/Card.astro";
 import Title from "@xrayman/shared/astro/primitives/Title.astro";
 import SuccessMsg from "@xrayman/shared/astro/primitives/SuccessMsg.astro";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
+
+const i18n = "add-user";
+const i18nReq = "add-user.request";
+const i18nResp = "add-user.response";
 ---
 
 <add-user-page class="fluid-md">
   <Card>
     <Title class="mb-2">
-      <I18NText data-i18n="add-user.title" />
+      <I18NText data-i18n=`${i18n}.title` ` />
     </Title>
 
     <Info>
-      <I18NText data-i18n="add-user.request.name.info" />
+      <I18NText data-i18n=`${i18nReq}.name.info` ` />
     </Info>
 
     <InputGroup
       input-props={{
-        "data-i18n-placeholder": "add-user.request.name.placeholder",
+        "data-i18n-placeholder": `${i18nReq}.name.placeholder`,
       }}
       button-props={{
-        "data-i18n": "add-user.request.name.button",
+        "data-i18n": `${i18nReq}.name.button`,
       }}
       data-part="name-input"
     />
 
     <div data-part="success-result" class="mt-2" hidden>
       <SuccessMsg class="col-8">
-        <I18NText data-i18n="add-user.response.info" />
+        <I18NText data-i18n=`${i18nResp}.info` />
       </SuccessMsg>
 
       <Info>
-        <I18NText data-i18n="add-user.response.userpage.info" />
+        <I18NText data-i18n=`${i18nResp}.userpage.info` />
       </Info>
 
       <CopyGroup
         button-props={{
-          "data-i18n": "add-user.response.userpage.copy-button",
+          "data-i18n": `${i18nResp}.userpage.copy-button`,
         }}
         data-part="result-userpage"
       />

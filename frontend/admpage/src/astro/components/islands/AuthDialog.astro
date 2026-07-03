@@ -3,6 +3,7 @@ import Title from "@xrayman/shared/astro/primitives/Title.astro";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 import Card from "@xrayman/shared/astro/primitives/Card.astro";
 import InputGroup from "@xrayman/shared/astro/primitives/InputGroup.astro";
+const i18n = "login";
 ---
 
 <app-login-page>
@@ -11,14 +12,14 @@ import InputGroup from "@xrayman/shared/astro/primitives/InputGroup.astro";
     <div class="hv-center">
       <Card class="fluid-md">
         <Title class="mb-2">
-          <I18NText data-i18n="login.title.authorize" />
+          <I18NText data-i18n=`${i18n}.title.authorize` />
         </Title>
         <InputGroup
           input-props={{
-            "data-i18n-placeholder": "login.password.placeholder",
+            "data-i18n-placeholder": `${i18n}.password.placeholder`,
           }}
           button-props={{
-            "data-i18n": "login.password.button",
+            "data-i18n": `${i18n}.password.button`,
           }}
           data-part="password-input"
         />

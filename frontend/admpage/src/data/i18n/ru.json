@@ -13,6 +13,18 @@
     },
     "sub-headers": {
       "title": "Subscription Headers"
+    },
+    "dynamic-cfg": {
+      "title": "Dynamic Config",
+      "fields": {
+        "subscr-title": "Title",
+        "users-message": "Message",
+        "user-page": "User Page",
+        "tg-page": "TG Group",
+        "update-interval": "Update Interval, h"
+      },
+      "refresh": "Refresh",
+      "submit": "Submit"
     }
   },
 
