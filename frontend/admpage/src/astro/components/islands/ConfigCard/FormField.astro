@@ -1,0 +1,51 @@
+---
+import Info from "@xrayman/shared/astro/primitives/Info.astro";
+import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
+import DataInput from "./DataInput.astro";
+import { type dtype } from "./DataInput";
+
+interface Props extends astroHTML.JSX.InputHTMLAttributes {
+  form: string;
+  field: string;
+  dtype: dtype;
+  i18n: string;
+  "data-part"?: string;
+}
+
+const { form, field, dtype, i18n, "data-part": dataPart, ...attrs } = Astro.props;
+---
+
+<form-field field={field} form={form} data-part={dataPart}>
+  <Info>
+    <I18NText data-i18n={i18n} />
+  </Info>
+  <DataInput data-part="input" dtype={dtype} form={form} {...attrs} />
+</form-field>
+
+<script>
+  import { DataInputElement } from "./DataInput";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
+  import { FormFieldElement } from "./FormField";
+
+  class FormField extends HTMLElement implements FormFieldElement {
+    private inputEl!: DataInputElement;
+    private field!: string;
+
+    connectedCallback() {
+      this.inputEl = pt<DataInputElement>(this, "input");
+      this.field = this.getAttribute("field")!;
+    }
+
+    disconnectedCallback() {}
+
+    updateData(data: Record<string, any>): void {
+      data[this.field] = this.inputEl.value;
+    }
+
+    refreshData(data: Record<string, any>): void {
+      this.inputEl.value = data[this.field];
+    }
+  }
+
+  customElements.define("form-field", FormField);
+</script>

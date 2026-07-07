@@ -41,6 +41,12 @@ importers:
       bootstrap:
         specifier: ^5.3.8
         version: 5.3.8(@popperjs/core@2.11.8)
+      cast:
+        specifier: ^1.1.0
+        version: 1.1.0
+      cast.ts:
+        specifier: ^1.20.0
+        version: 1.20.0
       colorjs.io:
         specifier: ^0.6.1
         version: 0.6.1
@@ -1910,6 +1916,13 @@ packages:
 
   caniuse-lite@1.0.30001792:
     resolution: {integrity: sha512-hVLMUZFgR4JJ6ACt1uEESvQN1/dBVqPAKY0hgrV70eN3391K6juAfTjKZLKvOMsx8PxA7gsY1/tLMMTcfFLLpw==}
+
+  cast.ts@1.20.0:
+    resolution: {integrity: sha512-1hDjKZEKcFF3A5DgMZ3ETyGaZoZjG57t0KSVs9/3+bA1weWMJ/srqiWVynWIsc0ToOuyeqhogdjaVgUppZRCMg==}
+
+  cast@1.1.0:
+    resolution: {integrity: sha512-23ZULM+91htUUL3IrHjHDhdC9MrKpwgTXEgpB6X/fE/ikqesWu4K6K1vKdRJiI0zCs6vZc11C+eWFTOSJ5WFyw==}
+    engines: {node: '>= 0.4'}
 
   ccount@2.0.1:
     resolution: {integrity: sha512-eyrF0jiFpY+3drT6383f1qhkbGsLSifNAjA61IUjZjmLCWjItY6LB9ft9YhoDgwfmclB2zhu51Lc7+95b8NRAg==}
@@ -6545,6 +6558,10 @@ snapshots:
       lodash.uniq: 4.5.0
 
   caniuse-lite@1.0.30001792: {}
+
+  cast.ts@1.20.0: {}
+
+  cast@1.1.0: {}
 
   ccount@2.0.1: {}
 

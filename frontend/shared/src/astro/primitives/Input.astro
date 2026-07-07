@@ -1,10 +1,7 @@
 ---
-import InputTags from "./InputTags.astro";
 import Surface from "./Surface.astro";
 
-interface Props extends astroHTML.JSX.InputHTMLAttributes {
-  style?: string;
-}
+interface Props extends astroHTML.JSX.InputHTMLAttributes {}
 const { class: extraClass, style: __, ...rest } = Astro.props;
 ---
 

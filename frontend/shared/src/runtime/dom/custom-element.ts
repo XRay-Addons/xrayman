@@ -12,9 +12,6 @@ export function prop(value: any, context: ClassAccessorDecoratorContext) {
   });
 
   return {
-    //get(this: any) {
-    //  return value.get.call(this);
-    //},
     set(this: any, newValue: any) {
       const oldValue = value.get.call(this);
       value.set.call(this, newValue);
@@ -45,5 +42,5 @@ export abstract class CustomElement extends HTMLElement {
     return ptEl<T>(this, name);
   }
 
-  protected abstract render(): void;
+  protected render(): void {}
 }
