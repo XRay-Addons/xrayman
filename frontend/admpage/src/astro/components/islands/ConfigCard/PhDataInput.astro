@@ -1,0 +1,84 @@
+---
+// data input with placeholders
+import Surface from "@xrayman/shared/astro/primitives/Surface.astro";
+import InputTags from "@xrayman/shared/astro/primitives/InputTags.astro";
+import DataInput from "./DataInput.astro";
+import { type dtype } from "./DataInput";
+
+interface Props extends astroHTML.JSX.InputHTMLAttributes {
+  dtype: dtype;
+  "data-part"?: string;
+}
+
+const { dtype, "data-part": dataPart, ...rest } = Astro.props;
+---
+
+<ph-data-input>
+  <DataInput data-part="input" dtype={dtype} {...rest} />
+  <div class="tags-container" data-part="tags-container" hidden>
+    <Surface depth="var(--input-depth)" color="var(--input-color)">
+      <InputTags data-part="tags" />
+    </Surface>
+  </div>
+</ph-data-input>
+
+<script>
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
+  import { int, number, string } from "cast.ts";
+  import { DataInputElement, dtype } from "./DataInput";
+
+  class DataInput extends HTMLElement implements DataInputElement {
+    private inputEl!: HTMLInputElement;
+    private dtype!: dtype;
+
+    connectedCallback() {
+      this.inputEl = pt<HTMLInputElement>(this, "input");
+      this.dtype = this.getAttribute("dtype") as dtype;
+      console.log("connected");
+
+      const tagsContainerEl = pt<HTMLElement>(this, "tags-container");
+      this.inputEl.addEventListener("focus", () => {
+        tagsContainerEl.removeAttribute("hidden");
+      });
+      this.inputEl.addEventListener("blur", () => {
+        tagsContainerEl.setAttribute("hidden", "");
+      });
+      this.inputEl.addEventListener("keydown", (event: KeyboardEvent) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+        }
+      });
+      tagsContainerEl.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+      });
+
+      const tagsEl = pt<InputTagsElement>(tagsContainerEl, "tags");
+      tagsEl.input = this.inputEl;
+      //this.tagsEls.push(tagsEl);
+    }
+
+    get value(): number | string {
+      const rawValue = this.inputEl.value;
+      switch (this.dtype) {
+        case "int":
+          return int().parse(rawValue);
+        case "number":
+          return number().parse(rawValue);
+        case "string":
+          return string().parse(rawValue);
+        default:
+          throw Error("unknown data type");
+      }
+    }
+
+    set value(v: number | string | undefined) {
+      if (v) {
+        this.inputEl.value = v.toString();
+      } else {
+        this.inputEl.value = "";
+      }
+    }
+  }
+
+  customElements.define("data-input", DataInput);
+</script>

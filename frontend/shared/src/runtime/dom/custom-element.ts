@@ -1,5 +1,3 @@
-import { ptEl } from "../../runtime/dom/parted-element";
-
 export function prop(value: any, context: ClassAccessorDecoratorContext) {
   const fieldName = context.name;
 
@@ -25,10 +23,6 @@ export function prop(value: any, context: ClassAccessorDecoratorContext) {
 export abstract class CustomElement extends HTMLElement {
   protected _connected: boolean = false;
 
-  constructor() {
-    super();
-  }
-
   connectedCallback() {
     queueMicrotask(() => {
       if (!this._connected) {
@@ -37,10 +31,5 @@ export abstract class CustomElement extends HTMLElement {
       }
     });
   }
-
-  protected pt<T extends Element>(name: string): T {
-    return ptEl<T>(this, name);
-  }
-
   protected render(): void {}
 }

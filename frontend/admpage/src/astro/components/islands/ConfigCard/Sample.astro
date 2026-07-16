@@ -1,0 +1,40 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { ExtractPrefixed, type WithPrefix } from "@xrayman/shared/astro/props/props";
+import type { ComponentProps } from "astro/types";
+import Surface from "@xrayman/shared/astro/primitives/Surface.astro";
+import type { dtype } from "./dtype";
+
+type InputProps = WithPrefix<HTMLAttributes<"input">, "input:">;
+type SurfaceProps = ComponentProps<typeof Surface>;
+
+interface Props extends InputProps, SurfaceProps {
+  dtype?: dtype;
+}
+
+const { dtype = "string", ...props } = Astro.props;
+const inputProps = ExtractPrefixed(props, "input:");
+
+const typeMap = {
+  string: { type: "text" },
+  int: { type: "number", inputmode: "numeric", step: "1", pattern: "[0-9]*" },
+  number: { type: "number", inputmode: "decimal", step: "any", pattern: "[0-9]*([\\.,][0-9]+)?" },
+} satisfies Record<dtype, astroHTML.JSX.InputHTMLAttributes>;
+
+const dtypeProps = typeMap[dtype];
+---
+
+<Surface depth="var(--input-depth)" color="var(--input-color)" {...props}>
+  <input class="ui-reset-input w-100 text text-md crt p-2" {...inputProps} {...dtypeProps} />
+</Surface>
+
+<style>
+  input::-webkit-inner-spin-button,
+  input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input {
+    -moz-appearance: textfield;
+  }
+</style>

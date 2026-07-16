@@ -32,15 +32,15 @@ const styleVars = {
 
   .surface-in {
     position: relative;
-    z-index: 1;
     height: 100%;
     width: 100%;
+  }
 
+  .surface-in {
     border-width: 1px;
     border-style: solid;
     border-color: dddarker(var(--surface-color));
     background-color: var(--surface-color);
-
     color: contrasted(var(--surface-color));
   }
 
@@ -48,23 +48,21 @@ const styleVars = {
     break-inside: avoid;
     page-break-inside: avoid;
     -webkit-column-break-inside: avoid;
+  }
 
-    isolation: isolate;
+  .surface-out {
     position: relative;
-
     padding-right: var(--surface-depth);
     padding-bottom: var(--surface-depth);
   }
 
-  .surface-out::after {
+  .surface-out::before {
     content: "";
     position: absolute;
 
     inset: 0;
     margin-left: var(--surface-depth);
     margin-top: var(--surface-depth);
-
-    z-index: 0;
 
     background-color: dddarker(var(--surface-color));
   }

@@ -30,6 +30,12 @@ export default defineConfig({
         "@xrayman/shared": path.resolve("../shared/src"),
       },
     },
+    esbuild: {
+      target: "es2022",
+    },
+    build: {
+      target: "es2022",
+    },
     experimental: {
       renderBuiltUrl(filename, { hostType, type, ssr }) {
         // for relative paths inside vite framework files

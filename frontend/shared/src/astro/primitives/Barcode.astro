@@ -18,7 +18,7 @@ const { ...rest } = Astro.props;
 
     public connectedCallback() {
       super.connectedCallback();
-      this.canvasEl = this.pt<HTMLCanvasElement>("barcode-canvas");
+      this.canvasEl = pt<HTMLCanvasElement>(this, "barcode-canvas");
     }
 
     protected render() {

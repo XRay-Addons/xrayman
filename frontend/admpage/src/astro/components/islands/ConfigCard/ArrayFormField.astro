@@ -45,11 +45,26 @@ const { i18n, field, form, items, ...rest } = Astro.props;
             </td>
           ))
         }
+        <td>
+          <Button data-part="remove-item-btn">
+            <div class="btn-ellipsed">
+              <I18NText data-i18n="remove-btn-long-text" />
+            </div>
+          </Button>
+        </td>
       </tr>
     </template>
   </table>
-  <Button data-i18n=`${i18n}.add-btn`>+</Button>
+  <Button data-part="add-item-btn" data-i18n=`${i18n}.add-btn`>+</Button>
 </array-field>
+
+<style>
+  .btn-ellipsed {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+</style>
 
 <script>
   import { DataInputElement } from "./DataInput";
@@ -65,6 +80,10 @@ const { i18n, field, form, items, ...rest } = Astro.props;
       this.itemsContainer = pt<HTMLElement>(this, "items-container");
       this.itemTemplate = pt<HTMLTemplateElement>(this, "item-template");
       this.field = this.getAttribute("field")!;
+      const addBtn = pt<HTMLButtonElement>(this, "add-item-btn");
+      addBtn.onclick = () => {
+        this.addItem({});
+      };
     }
 
     disconnectedCallback() {}
@@ -77,16 +96,7 @@ const { i18n, field, form, items, ...rest } = Astro.props;
       this.itemsContainer.replaceChildren();
 
       itemsData.forEach((itemData) => {
-        const fragment = document.importNode(this.itemTemplate.content, true);
-        const rowEl = fragment.firstElementChild as HTMLElement;
-        this.itemsContainer.appendChild(fragment);
-
-        const cellEls = pts<HTMLElement>(rowEl, "item-field-container");
-        cellEls.forEach((cellEl) => {
-          const field = cellEl.dataset["field"]!;
-          const input = pt<DataInputElement>(cellEl, "item-field");
-          input.value = itemData[field];
-        });
+        this.addItem(itemData);
       });
     }
 
@@ -99,11 +109,30 @@ const { i18n, field, form, items, ...rest } = Astro.props;
         cellEls.forEach((cellEl) => {
           const field = cellEl.dataset["field"]!;
           const input = pt<DataInputElement>(cellEl, "item-field");
-          itemData[field] = input.value;
+          if (input.value) {
+            itemData[field] = input.value;
+          }
         });
         itemsData.push(itemData);
       });
       data[this.field] = itemsData;
+    }
+
+    addItem(itemData: Record<string, any>): void {
+      const fragment = document.importNode(this.itemTemplate.content, true);
+      const rowEl = fragment.firstElementChild as HTMLElement;
+      this.itemsContainer.appendChild(fragment);
+
+      const cellEls = pts<HTMLElement>(rowEl, "item-field-container");
+      cellEls.forEach((cellEl) => {
+        const field = cellEl.dataset["field"]!;
+        const input = pt<DataInputElement>(cellEl, "item-field");
+        input.value = itemData[field] || "";
+      });
+      const removeBtn = pt<HTMLButtonElement>(rowEl, "remove-item-btn");
+      removeBtn.onclick = () => {
+        rowEl.remove();
+      };
     }
   }
 

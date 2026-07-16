@@ -63,9 +63,9 @@ const { ...rest } = Astro.props;
         const start = input.selectionStart ?? input.value.length;
         const end = input.selectionEnd ?? input.value.length;
 
-        input.blur();
+        //input.blur();
         input.setRangeText(text, start, end, "end");
-        input.focus();
+        //input.focus();
       }
     }
 

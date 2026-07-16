@@ -1,71 +1,14 @@
 ---
-import Input from "@xrayman/shared/astro/primitives/Input.astro";
-import { type dtype } from "./DataInput";
+import Surface from "@xrayman/shared/astro/primitives/Surface.astro";
+import { type WithPrefix, ExtractPrefixed } from "@xrayman/shared/astro/props/props";
+import type { ComponentProps } from "astro/types";
 
-interface Props extends astroHTML.JSX.InputHTMLAttributes {
-  dtype: dtype;
-  "data-part"?: string;
-}
+interface Props extends ComponentProps<typeof Surface>, WithPrefix<"input", "input:"> {}
 
-const { dtype, "data-part": dataPart, ...rest } = Astro.props;
-
-const typeMap: Record<dtype, astroHTML.JSX.InputHTMLAttributes> = {
-  string: { type: "text" },
-  int: { type: "number", inputmode: "numeric", step: "1", pattern: "[0-9]*" },
-  number: { type: "number", inputmode: "decimal", step: "any", pattern: "[0-9]*([\\.,][0-9]+)?" },
-};
-
-const dtypeAttributes = typeMap[dtype] || {};
+const surfaceProps = { ...Astro.props };
+const inputProps = ExtractPrefixed(surfaceProps, "input:");
 ---
 
-<data-input dtype={dtype} data-part={dataPart}>
-  <Input data-part="input" {...dtypeAttributes} {...rest} />
-</data-input>
-
-<style>
-  input::-webkit-inner-spin-button,
-  input::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-  input {
-    -moz-appearance: textfield;
-  }
-</style>
-
-<script>
-  import { pt } from "@xrayman/shared/runtime/dom/pts";
-  import { int, number, string } from "cast.ts";
-  import { DataInputElement, dtype } from "./DataInput";
-
-  class DataInput extends HTMLElement implements DataInputElement {
-    private inputEl!: HTMLInputElement;
-    private dtype!: dtype;
-
-    connectedCallback() {
-      this.inputEl = pt<HTMLInputElement>(this, "input");
-      this.dtype = this.getAttribute("dtype") as dtype;
-      console.log("connected");
-    }
-
-    get value(): number | string {
-      const rawValue = this.inputEl.value;
-      switch (this.dtype) {
-        case "int":
-          return int().parse(rawValue);
-        case "number":
-          return number().parse(rawValue);
-        case "string":
-          return string().parse(rawValue);
-        default:
-          throw Error("unknown data type");
-      }
-    }
-
-    set value(v: number | boolean | string) {
-      this.inputEl.value = v.toString();
-    }
-  }
-
-  customElements.define("data-input", DataInput);
-</script>
+<Surface depth="var(--input-depth)" color="var(--input-color)" {...surfaceProps}>
+  <input class="ui-reset-input w-100 text text-md crt p-2" {...inputProps} />
+</Surface>

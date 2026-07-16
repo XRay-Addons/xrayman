@@ -1,31 +1,15 @@
 ---
-import Title from "@xrayman/shared/astro/primitives/Title.astro";
-import BaseCard from "@xrayman/shared/astro/primitives/Card.astro";
-import Button from "@xrayman/shared/astro/primitives/Button.astro";
-import ArrayFormField from "./ArrayFormField.astro";
+import type { CardItem } from "./CardBase";
 
-import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
-import FormField from "./FormField.astro";
-import type { ArrayItemProp } from "./ArrayFormField";
-import InputTable from "./InputTable.astro";
-import type { Column } from "./InputTable";
+interface Props {
+  items: CardItem[];
+}
 
-const i18n = "cards.dynamic-cfg";
-const i18nFields = "cards.dynamic-cfg.fields";
-
-const hiddenFormID = "hidden-secret-form-id";
-
-const parts = [
-  { i18n: "field.nfieldA", dtype: "string", field: "nfieldA" },
-  { i18n: "field.nfieldB", dtype: "int", field: "nfieldB" },
-] satisfies ArrayItemProp[];
-
-const columns = [
-  { dtype: "string", field: "nfieldA" },
-  { dtype: "int", field: "nfieldB" },
-] satisfies Column[];
+const { items } = Astro.props;
 ---
 
+{}
+<!---
 <dynamic-cfg-card>
   <BaseCard>
     <Title class="col-6 mb-2">
@@ -63,7 +47,6 @@ const columns = [
         items={parts}
         data-part="form-input"
       />
-      <InputTable form={hiddenFormID} i18n=`${i18n}` columns={columns} />
     </form>
 
     <Button data-part="submit-btn" data-i18n=`${i18n}.submit` form={hiddenFormID} type="submit" />
@@ -125,3 +108,5 @@ const columns = [
 
   customElements.define("dynamic-cfg-card", DynamicCfgCard);
 </script>
+
+-->

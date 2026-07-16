@@ -4,5 +4,6 @@
     "moduleResolution": "Bundler",
     "strict": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "extends": "astro/tsconfigs/strict"
 }

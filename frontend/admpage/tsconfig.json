@@ -10,6 +10,9 @@
     "strict": true,
     "noUnusedLocals": true,
     "noImplicitAny": true,
-    "exactOptionalPropertyTypes": true
-  }
+    "exactOptionalPropertyTypes": true,
+    "target": "ES2022",
+    "experimentalDecorators": false
+  },
+  "extends": "astro/tsconfigs/strict"
 }

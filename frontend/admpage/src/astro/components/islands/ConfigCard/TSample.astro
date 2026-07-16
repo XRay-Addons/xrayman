@@ -1,0 +1,154 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { ExtractPrefixed, type WithPrefix } from "@xrayman/shared/astro/props/props";
+
+import Surface from "@xrayman/shared/astro/primitives/Surface.astro";
+
+type InputProps = WithPrefix<HTMLAttributes<"input">, "input:">;
+type HostProps = HTMLAttributes<"div">;
+
+interface Props extends InputProps, HostProps {}
+
+const { ...props } = Astro.props;
+const { class: inputClass, ...inputProps } = ExtractPrefixed(props, "input:");
+---
+
+<tagged-input {...props}>
+  <Surface depth=" var(--input-depth)" color="var(--input-color)">
+    <input
+      class:list={["ui-reset-input w-100 text text-md crt p-2", inputClass]}
+      data-ppt="input"
+      {...inputProps}
+    />
+  </Surface>
+
+  <div class="tags-container" data-ppt="tags-container" hidden>
+    <Surface depth="var(--input-depth)" color="var(--input-color)">
+      <div data-ppt="tags" class="d-flex flex-wrap gap-2 m-1 h-center"></div>
+      <template data-ppt="tag-template">
+        <button
+          type="button"
+          data-ppt="tag-btn"
+          class="tag ui-reset-button noselect text text-xs crt p-1"
+        >
+        </button>
+      </template>
+    </Surface>
+  </div>
+</tagged-input>
+
+<script>
+  import { CustomElement, prop } from "@xrayman/shared/runtime/dom/custom-element";
+
+  import { ppt } from "@xrayman/shared/runtime/dom/pts";
+
+  class TaggedInput extends CustomElement {
+    @prop accessor tags: string[] = ["one", "two"];
+
+    private inputEl!: HTMLInputElement;
+    private tagsEl!: HTMLElement;
+    private tagTmpl!: HTMLTemplateElement;
+
+    connectedCallback() {
+      super.connectedCallback();
+      this.inputEl = ppt<HTMLInputElement>(this, "input");
+      this.tagsEl = ppt<HTMLElement>(this, "tags");
+      this.tagTmpl = ppt<HTMLTemplateElement>(this, "tag-template");
+
+      const tagsContainerEl = ppt<HTMLElement>(this, "tags-container");
+
+      this.inputEl.addEventListener("focus", () => {
+        tagsContainerEl.removeAttribute("hidden");
+      });
+      this.inputEl.addEventListener("blur", () => {
+        tagsContainerEl.setAttribute("hidden", "");
+      });
+      this.inputEl.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape") return;
+        event.preventDefault();
+        this.inputEl.blur();
+      });
+      tagsContainerEl.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+      });
+
+      this.renderTags();
+    }
+
+    protected render() {
+      this.renderTags();
+    }
+
+    renderTags() {
+      const tags = this.tags.map((ph) => {
+        const tag = this.tagTmpl.content.cloneNode(true) as HTMLElement;
+        const btn = ppt<HTMLButtonElement>(tag, "tag-btn");
+        btn.textContent = ph;
+        btn.addEventListener("click", (e) => {
+          this.addInputText(ph);
+        });
+        return tag;
+      });
+      this.tagsEl.replaceChildren(...tags);
+    }
+
+    private addInputText(text: string) {
+      const input = this.inputEl!;
+      const start = input.selectionStart ?? input.value.length;
+      const end = input.selectionEnd ?? input.value.length;
+      input.setRangeText(text, start, end, "end");
+    }
+  }
+
+  if (!customElements.get("tagged-input")) {
+    customElements.define("tagged-input", TaggedInput);
+  }
+</script>
+
+<style lang="scss">
+  @use "@xrayman/shared/styles/shades.scss" as *;
+
+  tagged-input {
+    display: block;
+    position: relative;
+  }
+
+  input::placeholder {
+    text-indent: 0;
+    padding: 0;
+  }
+
+  input {
+    -moz-appearance: textfield;
+  }
+  input::-webkit-inner-spin-button,
+  input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .tags-container {
+    position: absolute;
+    z-index: 1;
+    top: 100%;
+    width: 100%;
+
+    margin-top: calc(-1 * var(--input-depth));
+  }
+
+  .tag {
+    border: 1px solid dddarker(var(--tag-color));
+    background-color: var(--tag-color);
+    color: contrasted(var(--tag-color));
+  }
+
+  @media (any-hover: hover) {
+    .tag:hover {
+      background-color: darker(var(--tag-color));
+    }
+  }
+
+  .tag:active {
+    background-color: ddarker(var(--tag-color));
+  }
+</style>

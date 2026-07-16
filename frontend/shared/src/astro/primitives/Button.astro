@@ -1,15 +1,17 @@
 ---
 import Surface from "./Surface.astro";
+import type { WithPrefix, Prefixed } from "../props/props.ts";
 
-interface Props extends astroHTML.JSX.ButtonHTMLAttributes {
-  style?: string;
-}
+interface Props extends WithPrefix<"button", "btn:"> {}
 
-const { class: extraClass, style: __, type, ...rest } = Astro.props;
+const { class: extraClass, style: __, "content-class": contentClass = "", ...rest } = Astro.props;
 ---
 
 <Surface depth="var(--button-depth)" color="var(--button-color)" class={extraClass} dynamic>
-  <button class="ui-reset-button noselect w-100 h-100 text text-md crt p-2" {...rest}>
+  <button
+    class:list={["ui-reset-button noselect w-100 h-100 text text-md crt p-2", contentClass]}
+    {...rest}
+  >
     <slot />
   </button>
 </Surface>
