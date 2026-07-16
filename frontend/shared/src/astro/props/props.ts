@@ -44,11 +44,15 @@ export type WithPrefix<Tag extends HTMLTag, Prefix extends string> = {
     : never]?: HTMLAttributes<Tag>[K];
 };*/
 
-export function ExtractPrefixed(props: Record<string, any>, prefix: string) {
+export function ExtractPrefixed(
+  props: Record<string, any>,
+  prefix: string,
+  cutPrefix: boolean = true,
+) {
   const prefixed: Record<string, any> = {};
   for (const [key, value] of Object.entries(props)) {
     if (key.startsWith(prefix)) {
-      prefixed[key.slice(prefix.length)] = value;
+      prefixed[cutPrefix ? key.slice(prefix.length) : key] = value;
       delete props[key];
     }
   }

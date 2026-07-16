@@ -1,9 +1,23 @@
 ---
-import DataInput from "./TSample.astro";
+import Input from "./Input.astro";
+import TaggedInput from "./TaggedInput.astro";
 ---
 
-<div class="config-wrapper">
-  <DataInput class="mb-2" input:placeholder="ph" />
-  <DataInput class="mb-2" />
-  <DataInput class="mb-2" />
-</div>
+<form class="config-wrapper" data-pt="form">
+  <TaggedInput class="mb-2" input:name="first" input:placeholder="ph" input:required />
+  <TaggedInput class="mb-2" input:name="second" input:required />
+  <Input class="mb-2" input:name="third" input:placeholder="phhp" input:required />
+  <TaggedInput class="mb-2" input:name="fourth" input:placeholder="form" input:required />
+
+  <button type="submit">submit</button>
+</form>
+
+<script>
+  document.querySelectorAll<HTMLFormElement>('[data-pt="form"]').forEach((form) => {
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const values = Object.fromEntries(new FormData(form));
+      console.log(values);
+    });
+  });
+</script>
