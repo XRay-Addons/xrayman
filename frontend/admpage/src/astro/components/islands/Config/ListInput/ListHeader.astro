@@ -1,0 +1,46 @@
+---
+import Info from "@xrayman/shared/astro/primitives/Info.astro";
+import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
+import type { ListItemField } from "./ListInput.astro";
+
+interface Props {
+  fields: ListItemField[];
+  i18n: string;
+}
+
+const { fields, i18n } = Astro.props;
+---
+
+<tr>
+  {
+    fields.map(({ name, width = "auto" }) => (
+      <th style={{ width }}>
+        <Info>
+          <div class="header-cell">
+            <I18NText data-i18n={`${i18n}.columns.${name}`} />
+          </div>
+        </Info>
+      </th>
+    ))
+  }
+
+  <th style={{ width: "4rem" }}></th>
+</tr>
+
+<style>
+  th {
+    text-align: center;
+  }
+
+  th {
+    padding: 0;
+    border-collapse: collapse;
+  }
+
+  .header-cell {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+</style>

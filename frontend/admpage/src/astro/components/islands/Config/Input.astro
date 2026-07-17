@@ -1,0 +1,28 @@
+---
+import type { ComponentProps, HTMLAttributes } from "astro/types";
+import Surface from "@xrayman/shared/astro/primitives/Surface.astro";
+import { ExtractPrefixed, type WithPrefix } from "@xrayman/shared/astro/props/props";
+
+type InputProps = WithPrefix<HTMLAttributes<"input">, "input">;
+type HostProps = ComponentProps<typeof Surface>;
+
+interface Props extends InputProps, HostProps {}
+
+const { ...props } = Astro.props;
+const { class: inputClass, ...inputProps } = ExtractPrefixed(props, "input");
+---
+
+<Surface depth="var(--input-depth)" color="var(--input-color)" {...props}>
+  <input class:list={["ui-reset-input w-100 text text-md crt p-2", inputClass]} {...inputProps} />
+</Surface>
+
+<style>
+  input {
+    -moz-appearance: textfield;
+  }
+  input::-webkit-inner-spin-button,
+  input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+</style>

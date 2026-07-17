@@ -1,0 +1,62 @@
+---
+import type { ListItemField } from "./ListInput.astro";
+import Input from "./../Input.astro";
+import TaggedInput from "./../TaggedInput/TaggedInput.astro";
+import Button from "./../Button.astro";
+
+interface Props {
+  fields: ListItemField[];
+  "btn-pt": string;
+  "tagged-pt": string;
+  "input-pt": string;
+}
+
+const { fields, "input-pt": inputPt, "btn-pt": btnPt, "tagged-pt": taggedPt } = Astro.props;
+---
+
+<tr data-row>
+  {
+    fields.map(({ name, type, inputProps = {} }) => {
+      const props = { "input:name": name, "input:data-pt": inputPt, input: inputProps };
+
+      let component;
+
+      switch (type) {
+        case "input":
+          component = <Input {...props} />;
+          break;
+        case "tagged-input":
+          component = <TaggedInput data-pt={taggedPt} {...props} />;
+          break;
+      }
+
+      return (
+        <td>
+          <div class="cell">{component}</div>
+        </td>
+      );
+    })
+  }
+
+  <td>
+    <div class="last-cell">
+      <Button btn:type="button" btn:data-pt={btnPt}> - </Button>
+    </div>
+  </td>
+</tr>
+
+<style>
+  td {
+    padding: 0;
+    border-collapse: collapse;
+  }
+
+  .cell,
+  .last-cell {
+    padding-bottom: 0.25rem;
+  }
+
+  .cell {
+    margin-right: calc(-1 * var(--surface-depth));
+  }
+</style>

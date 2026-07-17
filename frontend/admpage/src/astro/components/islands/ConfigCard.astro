@@ -2,7 +2,7 @@
 import Title from "@xrayman/shared/astro/primitives/Title.astro";
 import BaseCard from "@xrayman/shared/astro/primitives/Card.astro";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
-import SampleUser from "./SampleUser.astro";
+import Config from "./Config/Config.astro";
 //import type { ArrayItemProp } from "./ArrayFormField";
 //import type { Column } from "./InputTable";
 
@@ -15,7 +15,7 @@ const i18n = "cards.dynamic-cfg";
       <I18NText data-i18n=`${i18n}.title` />
     </Title>
 
-    <SampleUser />
+    <Config />
   </BaseCard>
 </dynamic-cfg-card>
 

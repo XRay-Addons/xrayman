@@ -1,0 +1,127 @@
+---
+import Button from "./../Button.astro";
+import type { HTMLAttributes } from "astro/types";
+import ListHeader from "./ListHeader.astro";
+import ListRow from "./ListRow.astro";
+
+type FieldType = "input" | "tagged-input";
+type InputAttrs = Omit<HTMLAttributes<"input">, "name">;
+
+export interface ListItemField {
+  name: string;
+  type: FieldType;
+  inputProps?: InputAttrs;
+  width?: string;
+}
+
+interface Props extends HTMLAttributes<"div"> {
+  name: string;
+  i18n: string;
+  fields: ListItemField[];
+}
+
+const { name, i18n, fields, ...rest } = Astro.props;
+---
+
+<list-input name={name} {...rest}>
+  <table>
+    <thead data-thead>
+      <ListHeader fields={fields} i18n={i18n} />
+    </thead>
+
+    <tbody data-tbody></tbody>
+
+    <template data-row-template>
+      <ListRow
+        fields={fields}
+        input-pt="list-input"
+        btn-pt="remove-row-btn"
+        tagged-pt="tagged-cell"
+      />
+    </template>
+  </table>
+
+  <Button btn:data-add-row-btn class="mb-2">+</Button>
+</list-input>
+
+<style>
+  list-input {
+    display: block;
+  }
+
+  table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    border-spacing: 0;
+  }
+</style>
+
+<script>
+  import { CustomElement, prop } from "@xrayman/shared/runtime/dom/custom-element";
+  import { item, pts, items } from "@xrayman/shared/runtime/dom/pts";
+  import type { TaggedInputElement } from "./../TaggedInput/TaggedInput";
+  import type { ListInputElement } from "./ListInput";
+
+  class ListInput extends CustomElement implements ListInputElement {
+    @prop accessor tags: string[] = [];
+    @prop accessor data: Record<string, string>[] = [];
+
+    private tbody!: HTMLElement;
+    private rowTmpl!: HTMLTemplateElement;
+
+    connectedCallback() {
+      super.connectedCallback();
+
+      this.tbody = item<HTMLElement>(this, "tbody");
+      this.rowTmpl = item<HTMLTemplateElement>(this, "row-template");
+
+      const addBtn = item<HTMLButtonElement>(this, "add-row-btn");
+      addBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        this.tbody.appendChild(this.makeRow({}));
+      });
+    }
+
+    protected render() {
+      const rows = this.data.map((v) => {
+        return this.makeRow(v);
+      });
+      this.tbody.replaceChildren(...rows);
+    }
+
+    private makeRow(data: Record<string, string>): HTMLElement {
+      const fragment = this.rowTmpl.content.cloneNode(true) as HTMLElement;
+      const row = item<HTMLTableRowElement>(fragment, "row");
+      const taggedInputs = pts<TaggedInputElement>(row, "tagged-cell");
+      taggedInputs.forEach((input) => {
+        input.tags = this.tags;
+      });
+
+      Object.entries(data).forEach(([key, value]) => {
+        const input = row.querySelector<HTMLInputElement>(`[name="${key}"]`);
+        if (input) input.value = value;
+      });
+
+      const removeBtn = item<HTMLButtonElement>(fragment, "remove-row-btn");
+      removeBtn.onclick = () => {
+        row.remove();
+      };
+
+      return fragment;
+    }
+
+    get value(): Record<string, string>[] {
+      return items<HTMLTableRowElement>(this, "row").map((row) => {
+        const record: Record<string, string> = {};
+        const cells = items<HTMLInputElement>(row, "list-input");
+        cells.map((cell) => {
+          record[cell.name] = cell.value;
+        });
+        return record;
+      });
+    }
+  }
+
+  customElements.define("list-input", ListInput);
+</script>

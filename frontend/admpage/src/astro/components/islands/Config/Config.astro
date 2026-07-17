@@ -1,0 +1,279 @@
+---
+import Input from "./Input.astro";
+import TaggedInput from "./TaggedInput/TaggedInput.astro";
+import ListInput from "./ListInput/ListInput.astro";
+import type { HTMLAttributes } from "astro/types";
+import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
+import Info from "@xrayman/shared/astro/primitives/Info.astro";
+import type { ListItemField } from "./ListInput/ListInput.astro"
+import { ExtractPrefixed, type WithPrefix } from "@xrayman/shared/astro/props/props";
+
+type FieldType = "input" | "tagged-input" | "list-input";
+type InputAttrs = Omit<HTMLAttributes<"input">, "name">;
+
+interface Field {
+  name: string;
+  type: FieldType;
+}
+
+interface InputField extends Field {
+  inputProps?: InputAttrs;
+}
+
+interface ListField extends Field {
+  listInputs: ListItemField[];
+}
+
+type FormProps = WithPrefix<HTMLAttributes<"form">, "form">;
+type HostProps = HTMLAttributes<"div">;
+
+interface Props extends FormProps, HostProps {
+  i18n: string;
+  fields: (InputField | ListField)[];
+}
+
+
+const { ...props } = Astro.props;
+const { ...formProps } = ExtractPrefixed(props, "form");
+
+// const { i18n, fields } = Astro.props;
+
+const i18n="config-i18n";
+
+
+const listFields: ListItemField[] = [
+  {
+    name: "first",
+    type: "input",
+    inputProps: {
+      placeholder: "12",
+      required: true,
+    },
+  },
+  {
+    name: "second",
+    type: "input",
+    inputProps: {
+      placeholder: "12.5",
+      required: true,
+    },
+  },
+  {
+    name: "third",
+    type: "input",
+    inputProps: {
+      required: true,
+    },
+    width: "4rem",
+  },
+  {
+    name: "fourth",
+    type: "tagged-input",
+    inputProps: {
+      required: true,
+    },
+  },
+];
+
+const fields : (InputField | ListField)[] = [
+  {
+    name: "first",
+    type: "input",
+    inputProps: {
+      placeholder: "12",
+      required: true,
+    },
+  },
+  {
+    name: "second",
+    type: "input",
+    inputProps: {
+      placeholder: "12.5",
+      required: true,
+    },
+  },
+  {
+    name: "third",
+    type: "input",
+    inputProps: {
+      required: true,
+    },
+  },
+  {
+    name: "fourth",
+    type: "tagged-input",
+    inputProps: {
+      required: true,
+    },
+  },
+  {
+    name: "list",
+    type: "list-input",
+    listInputs: listFields,
+  },
+    {
+    name: "fifth",
+    type: "input",
+    inputProps: {
+      placeholder: "12.5",
+      required: true,
+    },
+  },
+];
+
+---
+
+<config-editor {...props}>
+  <form data-config-form { ...formProps}>
+    {
+      fields.map((field) => {
+        let component;
+        switch (field.type) {
+          case "input": {
+            const p = field as InputField;
+            component = (
+              <Input
+                input:name={p.name}
+                input:data-config-input
+                input={{ ...(p.inputProps || {}) }} />
+            );
+            break;
+          }
+          case "tagged-input": {
+            const p = field as InputField;
+            component = (
+              <TaggedInput
+                data-config-tagged-input
+                input:name={p.name}
+                input:data-config-input
+                input={{ ...(p.inputProps || {}) }}
+              />
+            );
+            break;
+          }
+          case "list-input": {
+            const p = field as ListField;
+            component = (
+              <div class="list-input">
+                <ListInput
+                  name={p.name}
+                  data-config-list-input
+                  i18n={`${i18n}.${p.name}`}
+                  fields={ p.listInputs }}
+                />
+              </div>
+            );
+            break;
+          }
+        }
+        return (
+          <Fragment>
+            <Info>
+              <I18NText data-i18n={`${i18n}.${field.name}`} />
+            </Info>
+            {component}
+          </Fragment>
+        );
+      })
+    }
+  </form>
+</config-editor>
+
+<style>
+.list-input {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  background-color: rgba(0, 0, 0, 0.05);
+  border: 2px solid rgba(0, 0, 0, 0.25);
+}
+</style>
+
+<script>
+  /*
+    <Button btn:type="submit" class="mb-2" btn:data-submit-btn>
+      <I18NText data-i18n=`${i18n}.submit`/>
+    </Button>
+    <Button btn:type="button" class="mb-2" btn:data-refresh-btn>
+      <I18NText data-i18n=`${i18n}.refresh`/>
+    </Button>
+
+          /*const form = item<HTMLFormElement>(this, "config-form");
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        console.log("value: ", this.value);
+      });
+
+      const refreshBtn = item<HTMLButtonElement>(this, "refresh-btn");
+      refreshBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        this.render();
+      });
+
+      this.render();
+  */
+
+  import { CustomElement, prop } from "@xrayman/shared/runtime/dom/custom-element";
+  import { items } from "@xrayman/shared/runtime/dom/pts";
+  import type { TaggedInputElement } from "./TaggedInput/TaggedInput";
+  import type { ListInputElement } from "./ListInput/ListInput";
+  import type { ConfigData, ConfigEditorElement } from "./Config"
+
+  class ConfigEditor extends CustomElement implements ConfigEditorElement {
+    @prop accessor tags: string[] = ["one", "two"];
+    @prop accessor data: ConfigData= {};
+
+    private inputs!: HTMLInputElement[];
+    private taggedInputs!: TaggedInputElement[];
+    private listInputs!: ListInputElement[];
+
+    connectedCallback() {
+      super.connectedCallback();
+
+      this.inputs = items<HTMLInputElement>(this, "config-input");
+      this.taggedInputs = items<TaggedInputElement>(this, "config-tagged-input");
+      this.listInputs = items<ListInputElement>(this, "config-list-input");
+    }
+
+    protected render() {
+      // set inputs
+      this.inputs.forEach((input) => {
+        const key = input.getAttribute("name")
+        if (key) {
+          const value = this.data[key];
+          input.value = typeof value === "string" ? value : "";
+        }
+      });
+      // set tags for tagged inputs
+      this.taggedInputs.forEach((taggedInput) => {
+        taggedInput.tags = this.tags
+      })
+      
+      // setup list inputs
+      this.listInputs.forEach((listInput) => {
+        const key = listInput.getAttribute("name")
+        if (key) {
+          const value = this.data[key];
+          listInput.data = Array.isArray(value) ? value : [];
+        }
+        listInput.tags = this.tags
+      })
+    }
+
+    get value(): ConfigData {
+      const data: ConfigData = {}
+       // get inputs
+      this.inputs.forEach((input) => {
+        const key = input.getAttribute("name")
+        if( key ) data[key] = input.value;
+      });
+      // get list inputs
+      this.listInputs.forEach((listInput) => {
+        const key = listInput.getAttribute("name")
+        if( key ) data[key] = listInput.value
+      })
+      return data
+    }
+  }
+
+  customElements.define("config-editor", ConfigEditor);
+</script>

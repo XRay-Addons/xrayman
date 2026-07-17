@@ -18,14 +18,14 @@ export function pts<T extends Element>(el: ParentNode, name: string): T[] {
 }
 
 export function item<T extends Element>(el: ParentNode, name: string): T {
-  const item = el.querySelector(`[data-${name}]`);
+  const item = el.querySelector(`[data-${name}], [data-pt="${name}"]`);
   if (!item) {
-    throw new Error(`<${el}> missing data-${name}`);
+    throw new Error(`<${el}> missing data-${name} or data-pt="${name}"`);
   }
   return item as T;
 }
 
 export function items<T extends Element>(el: ParentNode, name: string): T[] {
-  const items = el.querySelectorAll(`[data-${name}]`);
+  const items = el.querySelectorAll(`[data-${name}], [data-pt="${name}"]`);
   return Array.from(items) as T[];
 }
