@@ -1,5 +1,4 @@
 ---
-import Info from "@xrayman/shared/astro/primitives/Info.astro";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 import type { ListItemField } from "./ListInput.astro";
 
@@ -15,11 +14,9 @@ const { fields, i18n } = Astro.props;
   {
     fields.map(({ name, width = "auto" }) => (
       <th style={{ width }}>
-        <Info>
-          <div class="header-cell">
-            <I18NText data-i18n={`${i18n}.columns.${name}`} />
-          </div>
-        </Info>
+        <div class="text text-xs crt noselect header-cell p-2">
+          <I18NText data-i18n={`${i18n}.columns.${name}`} />
+        </div>
       </th>
     ))
   }

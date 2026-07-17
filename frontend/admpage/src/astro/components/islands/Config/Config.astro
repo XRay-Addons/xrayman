@@ -16,11 +16,11 @@ interface Field {
   type: FieldType;
 }
 
-interface InputField extends Field {
+export interface InputField extends Field {
   inputProps?: InputAttrs;
 }
 
-interface ListField extends Field {
+export interface ListField extends Field {
   listInputs: ListItemField[];
 }
 
@@ -33,94 +33,8 @@ interface Props extends FormProps, HostProps {
 }
 
 
-const { ...props } = Astro.props;
+const { i18n, fields, ...props } = Astro.props;
 const { ...formProps } = ExtractPrefixed(props, "form");
-
-// const { i18n, fields } = Astro.props;
-
-const i18n="config-i18n";
-
-
-const listFields: ListItemField[] = [
-  {
-    name: "first",
-    type: "input",
-    inputProps: {
-      placeholder: "12",
-      required: true,
-    },
-  },
-  {
-    name: "second",
-    type: "input",
-    inputProps: {
-      placeholder: "12.5",
-      required: true,
-    },
-  },
-  {
-    name: "third",
-    type: "input",
-    inputProps: {
-      required: true,
-    },
-    width: "4rem",
-  },
-  {
-    name: "fourth",
-    type: "tagged-input",
-    inputProps: {
-      required: true,
-    },
-  },
-];
-
-const fields : (InputField | ListField)[] = [
-  {
-    name: "first",
-    type: "input",
-    inputProps: {
-      placeholder: "12",
-      required: true,
-    },
-  },
-  {
-    name: "second",
-    type: "input",
-    inputProps: {
-      placeholder: "12.5",
-      required: true,
-    },
-  },
-  {
-    name: "third",
-    type: "input",
-    inputProps: {
-      required: true,
-    },
-  },
-  {
-    name: "fourth",
-    type: "tagged-input",
-    inputProps: {
-      required: true,
-    },
-  },
-  {
-    name: "list",
-    type: "list-input",
-    listInputs: listFields,
-  },
-    {
-    name: "fifth",
-    type: "input",
-    inputProps: {
-      placeholder: "12.5",
-      required: true,
-    },
-  },
-];
-
 ---
 
 <config-editor {...props}>
@@ -158,7 +72,7 @@ const fields : (InputField | ListField)[] = [
                 <ListInput
                   name={p.name}
                   data-config-list-input
-                  i18n={`${i18n}.${p.name}`}
+                  i18n={`${i18n}.fields.${p.name}`}
                   fields={ p.listInputs }}
                 />
               </div>
@@ -166,10 +80,14 @@ const fields : (InputField | ListField)[] = [
             break;
           }
         }
+        const i18nKey = field.type === "list-input"
+            ? `${i18n}.fields.${field.name}.title`
+            : `${i18n}.fields.${field.name}`;
+
         return (
           <Fragment>
             <Info>
-              <I18NText data-i18n={`${i18n}.${field.name}`} />
+              <I18NText data-i18n={i18nKey} />
             </Info>
             {component}
           </Fragment>
@@ -180,6 +98,11 @@ const fields : (InputField | ListField)[] = [
 </config-editor>
 
 <style>
+
+config-editor {
+  display: block;
+}
+
 .list-input {
   padding-left: 0.5rem;
   padding-right: 0.5rem;

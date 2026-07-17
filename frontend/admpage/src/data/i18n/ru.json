@@ -14,14 +14,29 @@
     "sub-headers": {
       "title": "Subscription Headers"
     },
-    "dynamic-cfg": {
-      "title": "Dynamic Config",
+    "config": {
+      "title": "Config",
       "fields": {
         "subscr-title": "Title",
         "users-message": "Message",
         "user-page": "User Page",
         "tg-page": "TG Group",
-        "update-interval": "Update Interval, h"
+        "update-interval": "Update Interval, h",
+        "app-links": {
+          "title": "Application Links",
+          "columns": {
+            "description": "Description",
+            "platforms": "Platforms, regex????",
+            "url": "URL"
+          }
+        },
+        "headers": {
+          "title": "Other Headers",
+          "columns": {
+            "key": "Key",
+            "value": "Value"
+          }
+        }
       },
       "refresh": "Refresh",
       "submit": "Submit"
