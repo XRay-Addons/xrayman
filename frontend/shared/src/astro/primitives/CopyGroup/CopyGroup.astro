@@ -1,0 +1,80 @@
+---
+import InputGroup from "@xrayman/shared/astro/primitives/InputGroup.astro";
+import { ExtractPrefixed, type WithPrefix } from "@xrayman/shared/astro/props/props";
+import type { ComponentProps, HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"div"> {}
+
+const { ...rest } = Astro.props;
+---
+
+<copy-group {...rest}>
+  <InputGroup
+    input:readonly
+    input:data-copy-input
+    btn:data-copy-btn
+    form:data-copy-form
+    {...rest}
+  />
+</copy-group>
+
+<style lang="css">
+  copy-group {
+    display: contents;
+  }
+</style>
+
+<script>
+  import { CustomElement, prop } from "@xrayman/shared/runtime/dom/custom-element";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
+  import { type CopyGroupElement } from "./CopyGroup";
+
+  class CopyGroup extends CustomElement implements CopyGroupElement {
+    @prop accessor value: string = "";
+
+    private inputEl!: HTMLInputElement;
+    private copyBtnEl!: HTMLButtonElement;
+    private originalContent!: string;
+
+    connectedCallback() {
+      super.connectedCallback();
+      console.log("ss");
+      this.inputEl = pt<HTMLInputElement>(this, "copy-input");
+      this.copyBtnEl = pt<HTMLButtonElement>(this, "copy-btn");
+      this.originalContent = this.copyBtnEl.innerHTML;
+
+      const copyFormEl = pt<HTMLFormElement>(this, "copy-form");
+      this.copyBtnEl.addEventListener("click", (e) => {
+        e.preventDefault();
+        copyFormEl.requestSubmit();
+      });
+      copyFormEl.addEventListener("submit", async (e: Event) => {
+        e.preventDefault();
+        await this.onCopyFn(this.inputEl.value);
+      });
+    }
+
+    private async onCopyFn(val: string) {
+      try {
+        this.inputEl.style.pointerEvents = "none";
+        await navigator.clipboard.writeText(val);
+        this.copyBtnEl.innerHTML = "✓";
+        setTimeout(() => {
+          this.copyBtnEl.innerHTML = this.originalContent;
+        }, 2000);
+      } catch (err) {
+        console.error("Clipboard error", err);
+      } finally {
+        this.inputEl.style.pointerEvents = "auto";
+      }
+    }
+
+    protected render() {
+      this.inputEl.value = this.value;
+    }
+
+    disconnectedCallback() {}
+  }
+
+  customElements.define("copy-group", CopyGroup);
+</script>

@@ -1,5 +1,5 @@
 ---
-import Button from "./../Button.astro";
+import Button from "@xrayman/shared/astro/primitives/Button.astro";
 import type { HTMLAttributes } from "astro/types";
 import ListHeader from "./ListHeader.astro";
 import ListRow from "./ListRow.astro";
@@ -59,7 +59,7 @@ const { name, i18n, fields, ...rest } = Astro.props;
 
 <script>
   import { CustomElement, prop } from "@xrayman/shared/runtime/dom/custom-element";
-  import { item, pts, items } from "@xrayman/shared/runtime/dom/pts";
+  import { pt, pts } from "@xrayman/shared/runtime/dom/pts";
   import type { TaggedInputElement } from "./../TaggedInput/TaggedInput";
   import type { ListInputElement } from "./ListInput";
 
@@ -73,10 +73,10 @@ const { name, i18n, fields, ...rest } = Astro.props;
     connectedCallback() {
       super.connectedCallback();
 
-      this.tbody = item<HTMLElement>(this, "tbody");
-      this.rowTmpl = item<HTMLTemplateElement>(this, "row-template");
+      this.tbody = pt<HTMLElement>(this, "tbody");
+      this.rowTmpl = pt<HTMLTemplateElement>(this, "row-template");
 
-      const addBtn = item<HTMLButtonElement>(this, "add-row-btn");
+      const addBtn = pt<HTMLButtonElement>(this, "add-row-btn");
       addBtn.addEventListener("click", (e) => {
         e.preventDefault();
         this.tbody.appendChild(this.makeRow({}));
@@ -92,7 +92,7 @@ const { name, i18n, fields, ...rest } = Astro.props;
 
     private makeRow(data: Record<string, string>): HTMLElement {
       const fragment = this.rowTmpl.content.cloneNode(true) as HTMLElement;
-      const row = item<HTMLTableRowElement>(fragment, "row");
+      const row = pt<HTMLTableRowElement>(fragment, "row");
       const taggedInputs = pts<TaggedInputElement>(row, "tagged-cell");
       taggedInputs.forEach((input) => {
         input.tags = this.tags;
@@ -103,7 +103,7 @@ const { name, i18n, fields, ...rest } = Astro.props;
         if (input) input.value = value;
       });
 
-      const removeBtn = item<HTMLButtonElement>(fragment, "remove-row-btn");
+      const removeBtn = pt<HTMLButtonElement>(fragment, "remove-row-btn");
       removeBtn.onclick = () => {
         row.remove();
       };
@@ -112,9 +112,9 @@ const { name, i18n, fields, ...rest } = Astro.props;
     }
 
     get value(): Record<string, string>[] {
-      return items<HTMLTableRowElement>(this, "row").map((row) => {
+      return pts<HTMLTableRowElement>(this, "row").map((row) => {
         const record: Record<string, string> = {};
-        const cells = items<HTMLInputElement>(row, "list-input");
+        const cells = pts<HTMLInputElement>(row, "list-input");
         cells.map((cell) => {
           record[cell.name] = cell.value;
         });

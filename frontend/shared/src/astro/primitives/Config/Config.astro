@@ -1,11 +1,10 @@
 ---
-import Input from "./Input.astro";
-import TaggedInput from "./TaggedInput/TaggedInput.astro";
-import ListInput from "./ListInput/ListInput.astro";
+import Input from "@xrayman/shared/astro/primitives/Input.astro";
+import TaggedInput from "@xrayman/shared/astro/primitives/TaggedInput/TaggedInput.astro";
+import ListInput, {type  ListItemField } from "@xrayman/shared/astro/primitives/ListInput/ListInput.astro";
 import type { HTMLAttributes } from "astro/types";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 import Info from "@xrayman/shared/astro/primitives/Info.astro";
-import type { ListItemField } from "./ListInput/ListInput.astro"
 import { ExtractPrefixed, type WithPrefix } from "@xrayman/shared/astro/props/props";
 
 type FieldType = "input" | "tagged-input" | "list-input";
@@ -112,31 +111,8 @@ config-editor {
 </style>
 
 <script>
-  /*
-    <Button btn:type="submit" class="mb-2" btn:data-submit-btn>
-      <I18NText data-i18n=`${i18n}.submit`/>
-    </Button>
-    <Button btn:type="button" class="mb-2" btn:data-refresh-btn>
-      <I18NText data-i18n=`${i18n}.refresh`/>
-    </Button>
-
-          /*const form = item<HTMLFormElement>(this, "config-form");
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        console.log("value: ", this.value);
-      });
-
-      const refreshBtn = item<HTMLButtonElement>(this, "refresh-btn");
-      refreshBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        this.render();
-      });
-
-      this.render();
-  */
-
   import { CustomElement, prop } from "@xrayman/shared/runtime/dom/custom-element";
-  import { items } from "@xrayman/shared/runtime/dom/pts";
+  import { pts } from "@xrayman/shared/runtime/dom/pts";
   import type { TaggedInputElement } from "./TaggedInput/TaggedInput";
   import type { ListInputElement } from "./ListInput/ListInput";
   import type { ConfigData, ConfigEditorElement } from "./Config"
@@ -152,9 +128,9 @@ config-editor {
     connectedCallback() {
       super.connectedCallback();
 
-      this.inputs = items<HTMLInputElement>(this, "config-input");
-      this.taggedInputs = items<TaggedInputElement>(this, "config-tagged-input");
-      this.listInputs = items<ListInputElement>(this, "config-list-input");
+      this.inputs = pts<HTMLInputElement>(this, "config-input");
+      this.taggedInputs = pts<TaggedInputElement>(this, "config-tagged-input");
+      this.listInputs = pts<ListInputElement>(this, "config-list-input");
     }
 
     protected render() {

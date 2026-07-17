@@ -1,7 +1,7 @@
 ---
 import type { HTMLAttributes } from "astro/types";
 import { ExtractPrefixed, type WithPrefix } from "@xrayman/shared/astro/props/props";
-import Input from "./../Input.astro";
+import Input from "@xrayman/shared/astro/primitives/Input.astro";
 import Surface from "@xrayman/shared/astro/primitives/Surface.astro";
 
 type InputProps = WithPrefix<HTMLAttributes<"input">, "input">;
@@ -35,7 +35,7 @@ const { ...inputProps } = ExtractPrefixed(props, "input");
 <script>
   import { CustomElement, prop } from "@xrayman/shared/runtime/dom/custom-element";
   import type { TaggedInputElement } from "./TaggedInput";
-  import { item } from "@xrayman/shared/runtime/dom/pts";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
 
   class TaggedInput extends CustomElement implements TaggedInputElement {
     @prop accessor tags: string[] = [];
@@ -47,11 +47,11 @@ const { ...inputProps } = ExtractPrefixed(props, "input");
     connectedCallback() {
       super.connectedCallback();
 
-      this.inputEl = item<HTMLInputElement>(this, "tagged-input");
-      this.tagsEl = item<HTMLElement>(this, "tags");
-      this.tagTmpl = item<HTMLTemplateElement>(this, "tag-template");
+      this.inputEl = pt<HTMLInputElement>(this, "tagged-input");
+      this.tagsEl = pt<HTMLElement>(this, "tags");
+      this.tagTmpl = pt<HTMLTemplateElement>(this, "tag-template");
 
-      const tagsContainerEl = item<HTMLElement>(this, "tags-container");
+      const tagsContainerEl = pt<HTMLElement>(this, "tags-container");
 
       this.inputEl.addEventListener("focus", () => {
         tagsContainerEl.removeAttribute("hidden");
@@ -78,7 +78,7 @@ const { ...inputProps } = ExtractPrefixed(props, "input");
     private renderTags() {
       const tags = this.tags.map((ph) => {
         const tag = this.tagTmpl.content.cloneNode(true) as HTMLElement;
-        const btn = item<HTMLButtonElement>(tag, "tag-btn");
+        const btn = pt<HTMLButtonElement>(tag, "tag-btn");
         btn.textContent = ph;
         btn.addEventListener("click", (e) => {
           this.addInputText(ph);

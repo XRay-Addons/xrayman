@@ -34,7 +34,7 @@ const i18nReq = "add-node.request";
         class="mb-2"
       />
       <div class="d-flex justify-content-center">
-        <Button data-part="submit-input" class="col-8" type="submit">
+        <Button data-part="submit-input" class="col-8" btn:type="submit">
           <I18NText data-i18n=`${i18n}.submit-btn.info` />
         </Button>
       </div>
@@ -53,6 +53,7 @@ const i18nReq = "add-node.request";
     import { reloadNodes } from "@/actions/nodes";
     import type { ResettableElement } from "@xrayman/shared/astro/types/Resettable";
     import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+    import { pt } from "@xrayman/shared/runtime/dom/pts";
 
     class AddNodePage extends CustomElement implements ResettableElement {
       private endpointInputEl!: HTMLInputElement;
@@ -62,11 +63,11 @@ const i18nReq = "add-node.request";
       // private formEl!: HTMLFormElement;
 
       connectedCallback() {
-        this.endpointInputEl = this.pt<HTMLInputElement>("endpoint-input");
-        this.accesskeyInputEl = this.pt<HTMLInputElement>("accesskey-input");
-        this.successResultEl = this.pt<HTMLElement>("success-result");
-        const inputSubmitEl = this.pt<HTMLButtonElement>("submit-input");
-        const formEl = this.pt<HTMLFormElement>("form");
+        this.endpointInputEl = pt<HTMLInputElement>(this, "endpoint-input");
+        this.accesskeyInputEl = pt<HTMLInputElement>(this, "accesskey-input");
+        this.successResultEl = pt<HTMLElement>(this, "success-result");
+        const inputSubmitEl = pt<HTMLButtonElement>(this, "submit-input");
+        const formEl = pt<HTMLFormElement>(this, "form");
         formEl.addEventListener("submit", async (e: Event) => {
           e.preventDefault();
 

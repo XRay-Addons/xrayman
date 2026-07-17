@@ -1,5 +1,5 @@
 ---
-import Button from "./Button.astro";
+import Button from "@xrayman/shared/astro/primitives/Button.astro";
 
 interface Props {
   class?: string;
@@ -10,21 +10,22 @@ const { class: extraClass = "", "content-class": contentClass = "" } = Astro.pro
 
 <btn-dialog>
   <div class={extraClass}>
-    <Button data-part="app-dialog-button" class={contentClass}>
+    <Button data-app-dialog-button class={contentClass}>
       <slot name="button" />
     </Button>
   </div>
 
-  <dialog class="app-dialog" data-part="app-dialog">
-    <div class="app-dialog-overlay" data-part="app-dialog-overlay"></div>
-    <div class="app-dialog-page h-center" data-part="app-dialog-page">
+  <dialog class="app-dialog" data-app-dialog>
+    <div class="app-dialog-overlay" data-app-dialog-overlay></div>
+    <div class="app-dialog-page h-center" data-app-dialog-page>
       <slot name="page" />
     </div>
   </dialog>
 </btn-dialog>
 
 <script>
-  import { CustomElement } from "../../runtime/dom/custom-element";
+  import { CustomElement, prop } from "@xrayman/shared/runtime/dom/custom-element";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
 
   class BtnDialog extends CustomElement {
     private button!: HTMLButtonElement;
@@ -32,9 +33,9 @@ const { class: extraClass = "", "content-class": contentClass = "" } = Astro.pro
     private page!: HTMLElement;
 
     connectedCallback() {
-      this.button = this.pt<HTMLButtonElement>("app-dialog-button");
-      this.dialog = this.pt<HTMLDialogElement>("app-dialog");
-      this.page = this.pt<HTMLElement>("app-dialog-page");
+      this.button = pt<HTMLButtonElement>(this, "app-dialog-button");
+      this.dialog = pt<HTMLDialogElement>(this, "app-dialog");
+      this.page = pt<HTMLElement>(this, "app-dialog-page");
 
       this.button.onclick = async () => {
         this.dialog.showModal();
@@ -44,7 +45,7 @@ const { class: extraClass = "", "content-class": contentClass = "" } = Astro.pro
         this.reset();
       });
 
-      const overlay = this.pt<HTMLElement>("app-dialog-overlay");
+      const overlay = pt<HTMLElement>(this, "app-dialog-overlay");
       overlay.onclick = () => {
         this.dialog.close();
         this.reset();

@@ -23,16 +23,14 @@ const i18nResp = "add-user.response";
     </Info>
 
     <InputGroup
-      input-props={{
-        "data-i18n-placeholder": `${i18nReq}.name.placeholder`,
-      }}
-      button-props={{
-        "data-i18n": `${i18nReq}.name.button`,
-      }}
-      data-part="name-input"
+      input:data-i18n-placeholder=`${i18nReq}.name.placeholder`
+      btn:data-i18n=`${i18nReq}.name.button`
+      input:data-name-input
+      btn:data-name-btn
+      form:data-name-form
     />
 
-    <div data-part="success-result" class="mt-2" hidden>
+    <div data-success-result class="mt-2" hidden>
       <SuccessMsg class="col-8">
         <I18NText data-i18n=`${i18nResp}.info` />
       </SuccessMsg>
@@ -41,54 +39,62 @@ const i18nResp = "add-user.response";
         <I18NText data-i18n=`${i18nResp}.userpage.info` />
       </Info>
 
-      <CopyGroup
-        button-props={{
-          "data-i18n": `${i18nResp}.userpage.copy-button`,
-        }}
-        data-part="result-userpage"
-      />
+      <CopyGroup btn:data-i18n=`${i18nResp}.userpage.copy-button` , data-result-userpage />
     </div>
   </Card>
 </add-user-page>
 
 <script>
-  import { type InputGroupElement } from "@xrayman/shared/astro/types/InputGroup";
   import { type CopyGroupElement } from "@xrayman/shared/astro/types/CopyGroup";
   import type { ResettableElement } from "@xrayman/shared/astro/types/Resettable";
   import { newUser } from "@/services/api/client";
   import { notifyApiError } from "@/runtime/notifications/use-notifications";
   import { reloadUsers } from "@/actions/users";
-  import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
 
-  class AddUserPage extends PartedElement implements ResettableElement {
-    private nameInputEl!: InputGroupElement;
+  import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
+
+  class AddUserPage extends CustomElement implements ResettableElement {
+    private nameInputEl!: HTMLInputElement;
     private successResultEl!: HTMLElement;
     private userpageOutputEl!: CopyGroupElement;
 
     connectedCallback() {
-      this.nameInputEl = this.ptEl<InputGroupElement>("name-input");
-      this.successResultEl = this.ptEl<HTMLElement>("success-result");
-      this.userpageOutputEl = this.ptEl<CopyGroupElement>("result-userpage")!;
+      console.log("connected clvb....");
+      this.nameInputEl = pt<HTMLInputElement>(this, "name-input");
+      this.successResultEl = pt<HTMLElement>(this, "success-result");
+      this.userpageOutputEl = pt<CopyGroupElement>(this, "result-userpage")!;
 
-      this.nameInputEl.onclickfn = async (displayName: string) => {
-        if (displayName.length == 0) {
-          return;
-        }
-        // reset and hide
-        this.successResultEl.setAttribute("hidden", "true");
-        this.userpageOutputEl.value = "";
+      const nameFormEl = pt<HTMLFormElement>(this, "name-form");
+      const nameBtnEl = pt<HTMLButtonElement>(this, "name-btn");
+      nameBtnEl.addEventListener("click", (e) => {
+        e.preventDefault();
+        nameFormEl.requestSubmit();
+      });
+      nameFormEl.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        await this.onSubmitFn(this.nameInputEl.value);
+      });
+    }
 
-        const response = await newUser(displayName);
-        if (!response.ok) {
-          notifyApiError("new_user", response.reason);
-          return;
-        }
-        reloadUsers({ quiet: true });
+    private async onSubmitFn(displayName: string) {
+      if (displayName.length == 0) {
+        return;
+      }
+      // reset and hide
+      this.successResultEl.setAttribute("hidden", "true");
+      this.userpageOutputEl.value = "";
 
-        // show back
-        this.successResultEl.removeAttribute("hidden");
-        this.userpageOutputEl.value = response.data.Profile.Name;
-      };
+      const response = await newUser(displayName);
+      if (!response.ok) {
+        notifyApiError("new_user", response.reason);
+        return;
+      }
+      reloadUsers({ quiet: true });
+
+      // show back
+      this.successResultEl.removeAttribute("hidden");
+      this.userpageOutputEl.value = response.data.Profile.Name;
     }
 
     disconnectedCallback() {}

@@ -1,5 +1,5 @@
 ---
-import Surface from "./Surface.astro";
+import Surface from "@xrayman/shared/astro/primitives/Surface.astro";
 
 interface Props {
   class?: string;
@@ -13,7 +13,7 @@ const { class: extraClass = "", "content-class": contentClass = "" } = Astro.pro
   depth="var(--card-depth)"
   color="var(--card-color)"
   class={extraClass}
-  content-class=`p-2 ${contentClass}`
+  in:class=`p-2 ${contentClass}`
 >
   <slot />
 </Surface>

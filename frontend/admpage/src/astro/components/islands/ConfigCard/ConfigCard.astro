@@ -2,8 +2,8 @@
 import Title from "@xrayman/shared/astro/primitives/Title.astro";
 import Card from "@xrayman/shared/astro/primitives/Card.astro";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
-import Config from "./../Config/Config.astro";
-import Button from "./../Config/Button.astro";
+import Config from "@xrayman/shared/astro/primitives/Config/Config.astro";
+import Button from "@xrayman/shared/astro/primitives/Button.astro";
 import { fields } from "./ConfigFields";
 
 const i18n = "cards.config";
@@ -28,17 +28,17 @@ const i18n = "cards.config";
 
 <script>
   import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
-  import { item } from "@xrayman/shared/runtime/dom/pts";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
   import type { ConfigEditorElement } from "./../Config/Config";
 
   class ConfigCard extends CustomElement {
     connectedCallback() {
       super.connectedCallback();
 
-      const config = item<ConfigEditorElement>(this, "config");
-      const form = item<HTMLFormElement>(this, "config-form");
+      const config = pt<ConfigEditorElement>(this, "config");
+      const form = pt<HTMLFormElement>(this, "config-form");
 
-      const submitBtn = item<HTMLButtonElement>(this, "submit-btn");
+      const submitBtn = pt<HTMLButtonElement>(this, "submit-btn");
       submitBtn.addEventListener("click", (e) => {
         e.preventDefault();
         form.requestSubmit();
@@ -48,7 +48,7 @@ const i18n = "cards.config";
         console.log("value: ", config.value);
       });
 
-      const refreshBtn = item<HTMLButtonElement>(this, "refresh-btn");
+      const refreshBtn = pt<HTMLButtonElement>(this, "refresh-btn");
       refreshBtn.addEventListener("click", (e) => {
         e.preventDefault();
       });

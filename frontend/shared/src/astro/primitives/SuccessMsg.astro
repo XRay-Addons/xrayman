@@ -12,7 +12,7 @@ const { class: extraClass = "", "content-class": contentClass = "" } = Astro.pro
 <div class="d-flex justify-content-center">
   <Surface
     class={extraClass}
-    content-class=`text-center text-md p-2 noselect ${contentClass}`
+    in:class=`text-center text-md p-2 noselect ${contentClass}`
     depth="var(--success-depth)"
     color="var(--success-color)"
   >
