@@ -1,4 +1,4 @@
-import { UserID } from "./user-id";
+import { type UserID } from "./user-id";
 import { type User } from "@/services/api/generated/types.gen";
 import { MakePageUrl } from "@/runtime/utils/paths";
 
@@ -10,11 +10,11 @@ export const ProfileURL = {
     history.pushState(null, "", await this.make(user));
   },
   async reset() {
-    const absPath = await MakePageUrl(`./`);
+    const absPath = MakePageUrl(`./`);
     history.pushState(null, "", absPath);
   },
   async parse(): Promise<UserID | null> {
-    const prefix = await MakePageUrl(`./`);
+    const prefix = MakePageUrl(`./`);
     const path = window.location.href;
     const match = path.match(new RegExp(`${prefix}(\\d+)-(.+)$`));
     if (!match) return null;

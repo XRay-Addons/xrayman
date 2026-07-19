@@ -8,7 +8,7 @@ const errorColor = "white";
 <server-error-card>
   <Error src={errorImg} color={errorColor}>
     <div data-i18n="servererror.main"></div>
-    <div data-part="servererror.reason"></div>
+    <div data-reason></div>
   </Error>
 </server-error-card>
 
@@ -19,15 +19,16 @@ const errorColor = "white";
 </style>
 
 <script>
+  import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
   import { stateSignal } from "@/state/signals";
   import { State } from "@/state/state";
-  import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
 
-  class ServerErrorCard extends PartedElement {
+  class ServerErrorCard extends CustomElement {
     private unsub?: () => void;
 
     connectedCallback() {
-      const reasonSpan = this.pt<HTMLElement>("servererror.reason");
+      const reasonSpan = pt<HTMLElement>(this, "reason");
       this.unsub = stateSignal.subscribe((state) => {
         if (state.status === State.ServerError) {
           console.log("state = server error");

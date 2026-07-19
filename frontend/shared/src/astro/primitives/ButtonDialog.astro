@@ -3,14 +3,14 @@ import Button from "@xrayman/shared/astro/primitives/Button.astro";
 
 interface Props {
   class?: string;
-  "content-class"?: string;
+  "btn:class"?: string;
 }
-const { class: extraClass = "", "content-class": contentClass = "" } = Astro.props;
+const { class: extraClass = "", "btn:class": btnClass = "" } = Astro.props;
 ---
 
 <btn-dialog>
   <div class={extraClass}>
-    <Button data-app-dialog-button class={contentClass}>
+    <Button data-app-dialog-button class={btnClass}>
       <slot name="button" />
     </Button>
   </div>
@@ -51,10 +51,6 @@ const { class: extraClass = "", "content-class": contentClass = "" } = Astro.pro
         this.reset();
       };
     }
-
-    disconnectedCallback() {}
-
-    protected render() {}
 
     private reset() {
       Array.from(this.page.children).forEach((el) => {

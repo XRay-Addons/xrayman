@@ -2,7 +2,10 @@
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "strict": true
+    "strict": true,
+    "paths": {
+      "@xrayman/shared/*": ["./src/*"]
+    }
   },
   "include": ["src"],
   "extends": "astro/tsconfigs/strict"

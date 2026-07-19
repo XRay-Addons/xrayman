@@ -66,11 +66,11 @@ export function useExpandedRowRender<T>(
 }
 
 type CellRenderCtx<T> = {
-  text: any;
+  //text: any;
   record: ExtendedRow<T>;
   index: number;
   column: ExtendedColumn<T>;
-  value: any;
+  //value: any;
 };
 
 const expandedTableTheme = {
@@ -120,16 +120,3 @@ function valCellRender<T>(columns: ExtendedColumn<T>[]) {
     });
   };
 }
-
-/*
-          dataSource: extendedDataSource(ctx.record),
-          columns: extendedTableColumns,
-
-          class: "table-ext-expand-table",
-          showHeader: false,
-          bordered: false,
-          pagination: false,
-          showExpandColumn: false,
-          indentSize: 0,
-        }),
-*/

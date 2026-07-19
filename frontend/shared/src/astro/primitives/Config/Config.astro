@@ -113,8 +113,8 @@ config-editor {
 <script>
   import { CustomElement, prop } from "@xrayman/shared/runtime/dom/custom-element";
   import { pts } from "@xrayman/shared/runtime/dom/pts";
-  import type { TaggedInputElement } from "./TaggedInput/TaggedInput";
-  import type { ListInputElement } from "./ListInput/ListInput";
+  import type { TaggedInputElement } from "@xrayman/shared/astro/primitives/TaggedInput/TaggedInput";
+  import type { ListInputElement } from "@xrayman/shared/astro/primitives/ListInput/ListInput";
   import type { ConfigData, ConfigEditorElement } from "./Config"
 
   class ConfigEditor extends CustomElement implements ConfigEditorElement {

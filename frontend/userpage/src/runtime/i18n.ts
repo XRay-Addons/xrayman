@@ -9,8 +9,20 @@ export function setLanguageState(l: Language) {
   language = l;
 }
 
-const messages = { ru, en } as const;
+type Messages = {
+  [key: string]: string | Messages;
+};
+
+const messages: Messages = { ru, en } as const;
 
 export const t = (text: string): string => {
-  return messages[language][text] ?? text;
+  const value = text.split(".").reduce<unknown>((obj, key) => {
+    if (typeof obj !== "object" || obj === null) {
+      return undefined;
+    }
+
+    return (obj as Record<string, unknown>)[key];
+  }, messages[language]);
+
+  return typeof value === "string" ? value : text;
 };

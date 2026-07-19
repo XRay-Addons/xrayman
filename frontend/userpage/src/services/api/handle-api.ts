@@ -19,7 +19,7 @@ export async function handleAPI<T, R>(
 ): Promise<ApiResult<R>> {
   try {
     ensureClient();
-    let resp = await apiCall();
+    const resp = await apiCall();
     if (!resp.error) {
       return { ok: true, data: transform(resp.data!) };
     }

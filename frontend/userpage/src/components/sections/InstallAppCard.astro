@@ -16,11 +16,11 @@ const buttonsJson = JSON.stringify(PLATFORM_BUTTONS);
     </Info>
 
     <div class="h-center w-100">
-      <EqHeight data-part="install-app-btns" class="row h-center g-1 fluid-lg">
-        <template data-part="install-app-btn-template">
+      <EqHeight data-install-app-btns class="row h-center g-1 fluid-lg">
+        <template data-install-app-btn-template>
           <div class="col-6">
             <Button class="w-100 h-100" data-part="install-app-btn">
-              <span data-part="install-app-btn-text"></span>
+              <span data-install-app-btn-text></span>
             </Button>
           </div>
         </template>
@@ -29,18 +29,30 @@ const buttonsJson = JSON.stringify(PLATFORM_BUTTONS);
   </Card>
 
   <script>
-    import { PartedElement, pt } from "@xrayman/shared/runtime/dom/parted-element";
+    import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+    import { pt } from "@xrayman/shared/runtime/dom/pts";
 
-    class InstallAppCard extends PartedElement {
+    type Platform = "ios" | "macos" | "android" | "windows" | "unknown";
+    type InstallButton = {
+      url: string;
+      text: string;
+    };
+    type PlatformButtons = Record<Platform, InstallButton[]>;
+
+    class InstallAppCard extends CustomElement {
       connectedCallback() {
+        super.connectedCallback();
+
         const raw = this.dataset.platformButtons;
         if (!raw) return;
 
-        const PLATFORM_BUTTONS = JSON.parse(raw);
+        // const PLATFORM_BUTTONS = JSON.parse(raw);
+        // const platform = this.detectPlatform();
+        // const buttons = PLATFORM_BUTTONS[platform] ?? [];
 
+        const PLATFORM_BUTTONS = JSON.parse(raw) as PlatformButtons;
         const platform = this.detectPlatform();
         const buttons = PLATFORM_BUTTONS[platform] ?? [];
-
         this.renderButtons(buttons);
       }
 
@@ -53,9 +65,9 @@ const buttonsJson = JSON.stringify(PLATFORM_BUTTONS);
         return "unknown";
       }
 
-      renderButtons(buttons: any[]) {
-        const btnTemplate = this.pt<HTMLTemplateElement>("install-app-btn-template");
-        const btnsSection = this.pt<HTMLElement>("install-app-btns");
+      renderButtons(buttons: InstallButton[]) {
+        const btnTemplate = pt<HTMLTemplateElement>(this, "install-app-btn-template");
+        const btnsSection = pt<HTMLElement>(this, "install-app-btns");
 
         const frag = document.createDocumentFragment();
 

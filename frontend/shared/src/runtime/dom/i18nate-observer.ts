@@ -1,4 +1,4 @@
-import { i18nateElement, i18nateTree, type T } from "./i18nate-tools";
+import { i18nateTree, type T } from "./i18nate-tools";
 
 export class I18nObserver {
   private observer: MutationObserver | null = null;
@@ -20,7 +20,7 @@ export class I18nObserver {
   }
 
   private processMutation = (mutation: MutationRecord) => {
-    const { type, addedNodes, target, attributeName } = mutation;
+    const { type, addedNodes } = mutation;
 
     switch (type) {
       case "childList":

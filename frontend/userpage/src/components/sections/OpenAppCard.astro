@@ -14,7 +14,7 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 
     <div class="d-flex justify-content-center">
       <div class="h-center fluid-lg">
-        <Button data-part="run-app-btn" class="col-6">
+        <Button btn:data-run-app-btn class="col-6">
           <I18NText data-i18n="runapp.button" />
         </Button>
       </div>
@@ -29,11 +29,12 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 
 <script>
   import { MakeApiUrl } from "@/runtime/utils/paths";
+  import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
   import { stateSignal } from "@/state/signals";
-  import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
   import { State } from "@/state/state";
 
-  class OpenAppCard extends PartedElement {
+  class OpenAppCard extends CustomElement {
     private unsub?: () => void;
     private openHappFn?: () => void;
 
@@ -43,7 +44,7 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
     }
 
     connectedCallback() {
-      const btnEl = this.pt<HTMLButtonElement>("run-app-btn");
+      const btnEl = pt<HTMLButtonElement>(this, "run-app-btn");
 
       this.unsub = stateSignal.subscribe((state) => {
         if (state.status !== State.LoggedIn) {

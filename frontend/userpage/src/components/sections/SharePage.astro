@@ -3,7 +3,7 @@ import Card from "@xrayman/shared/astro/primitives/Card.astro";
 import Button from "@xrayman/shared/astro/primitives/Button.astro";
 import Title from "@xrayman/shared/astro/primitives/Title.astro";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
-import Barcode from "@xrayman/shared/astro/primitives/Barcode.astro";
+import Barcode from "@xrayman/shared/astro/primitives/Barcode/Barcode.astro";
 ---
 
 <share-page class="fluid-sm p-1 justify-content-center">
@@ -24,26 +24,27 @@ import Barcode from "@xrayman/shared/astro/primitives/Barcode.astro";
 </share-page>
 
 <script>
-  import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
-  import { BarcodeElement } from "@xrayman/shared/astro/types/Barcode";
+  import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+  import { type BarcodeElement } from "@xrayman/shared/astro/primitives/Barcode/Barcode";
   import { ShareViaTG } from "@xrayman/shared/features/sharing";
   import { MakePageUrl } from "@/runtime/utils/paths";
   import { t } from "@/runtime/i18n";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
 
-  class SharePage extends PartedElement {
+  class SharePage extends CustomElement {
     private unsub?: () => void;
 
     async connectedCallback() {
-      const sharingUrl = await MakePageUrl("");
+      const sharingUrl = MakePageUrl("");
 
-      const btnEl = this.ptEl<HTMLButtonElement>("share-tg-btn");
+      const btnEl = pt<HTMLButtonElement>(this, "share-tg-btn");
       btnEl.onclick = () => {
         const text = t("share.page.tg-sharedtext");
         ShareViaTG(sharingUrl, text);
       };
 
-      const barcodeEl = this.ptEl<BarcodeElement>("share-barcode");
-      barcodeEl.setValue(sharingUrl);
+      const barcodeEl = pt<BarcodeElement>(this, "share-barcode");
+      barcodeEl.value = sharingUrl;
     }
 
     disconnectedCallback() {

@@ -1,7 +1,6 @@
 ---
 import InputGroup from "@xrayman/shared/astro/primitives/InputGroup.astro";
-import { ExtractPrefixed, type WithPrefix } from "@xrayman/shared/astro/props/props";
-import type { ComponentProps, HTMLAttributes } from "astro/types";
+import type { HTMLAttributes } from "astro/types";
 
 interface Props extends HTMLAttributes<"div"> {}
 
@@ -33,40 +32,40 @@ const { ...rest } = Astro.props;
     @prop accessor value: string = "";
 
     private inputEl!: HTMLInputElement;
-    private copyBtnEl!: HTMLButtonElement;
-    private originalContent!: string;
+    //private copyBtnEl!: HTMLButtonElement;
+    //private originalContent!: string;
 
     connectedCallback() {
       super.connectedCallback();
       console.log("ss");
       this.inputEl = pt<HTMLInputElement>(this, "copy-input");
-      this.copyBtnEl = pt<HTMLButtonElement>(this, "copy-btn");
-      this.originalContent = this.copyBtnEl.innerHTML;
+
+      const copyBtnEl = pt<HTMLButtonElement>(this, "copy-btn");
+      const originalContent = copyBtnEl.innerHTML;
+      const onCopyFn = async (val: string) => {
+        try {
+          this.inputEl.style.pointerEvents = "none";
+          await navigator.clipboard.writeText(val);
+          copyBtnEl.innerHTML = "✓";
+          setTimeout(() => {
+            copyBtnEl.innerHTML = originalContent;
+          }, 2000);
+        } catch (err) {
+          console.error("Clipboard error", err);
+        } finally {
+          this.inputEl.style.pointerEvents = "auto";
+        }
+      };
 
       const copyFormEl = pt<HTMLFormElement>(this, "copy-form");
-      this.copyBtnEl.addEventListener("click", (e) => {
+      copyBtnEl.addEventListener("click", (e: Event) => {
         e.preventDefault();
         copyFormEl.requestSubmit();
       });
       copyFormEl.addEventListener("submit", async (e: Event) => {
         e.preventDefault();
-        await this.onCopyFn(this.inputEl.value);
+        await onCopyFn(this.inputEl.value);
       });
-    }
-
-    private async onCopyFn(val: string) {
-      try {
-        this.inputEl.style.pointerEvents = "none";
-        await navigator.clipboard.writeText(val);
-        this.copyBtnEl.innerHTML = "✓";
-        setTimeout(() => {
-          this.copyBtnEl.innerHTML = this.originalContent;
-        }, 2000);
-      } catch (err) {
-        console.error("Clipboard error", err);
-      } finally {
-        this.inputEl.style.pointerEvents = "auto";
-      }
     }
 
     protected render() {

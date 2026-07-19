@@ -1,4 +1,4 @@
-import { type UserStatus, User, UserProfile, TrafficStats } from "@/services/api/generated";
+import type { UserStatus, User, UserProfile, TrafficStats } from "@/services/api/generated";
 import { MakeApiUrl, MakeUserpageURL } from "@/runtime/utils/paths";
 
 import {
@@ -31,7 +31,7 @@ export function renderTag(status: UserStatus) {
 }
 
 export function renderTraffic(traffic: TrafficStats) {
-  let total = traffic.Download + traffic.Upload;
+  const total = traffic.Download + traffic.Upload;
   return h("span", {}, trafficText(total));
 }
 

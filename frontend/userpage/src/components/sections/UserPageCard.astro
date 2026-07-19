@@ -1,7 +1,7 @@
 ---
 import Card from "@xrayman/shared/astro/primitives/Card.astro";
 import Info from "@xrayman/shared/astro/primitives/Info.astro";
-import CopyGroup from "@xrayman/shared/astro/primitives/CopyGroup.astro";
+import CopyGroup from "@xrayman/shared/astro/primitives/CopyGroup/CopyGroup.astro";
 ---
 
 <user-page-card>
@@ -12,13 +12,7 @@ import CopyGroup from "@xrayman/shared/astro/primitives/CopyGroup.astro";
     </Info>
 
     <div class="h-center g-0 w-100">
-      <CopyGroup
-        button-props={{
-          "data-i18n": "userurl.btntext",
-        }}
-        data-part="result-userpage"
-        class="fluid-lg"
-      />
+      <CopyGroup btn:data-i18n="userurl.btntext" data-part="result-userpage" class="fluid-lg" />
     </div>
 
     <Info>
@@ -30,15 +24,16 @@ import CopyGroup from "@xrayman/shared/astro/primitives/CopyGroup.astro";
 <script>
   import { ProfileURL } from "@/runtime/user/user-utils";
   import { stateSignal } from "@/state/signals";
-  import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
-  import { type CopyGroupElement } from "@xrayman/shared/astro/types/CopyGroup";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
+  import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+  import { type CopyGroupElement } from "@xrayman/shared/astro/primitives/CopyGroup/CopyGroup";
   import { State } from "@/state/state";
 
-  class UserPageCard extends PartedElement {
+  class UserPageCard extends CustomElement {
     private unsub?: () => void;
 
     connectedCallback() {
-      const userpageOutputEl = this.ptEl<CopyGroupElement>("result-userpage")!;
+      const userpageOutputEl = pt<CopyGroupElement>(this, "result-userpage")!;
 
       this.unsub = stateSignal.subscribe(async (state) => {
         if (state.status === State.LoggedIn) {
