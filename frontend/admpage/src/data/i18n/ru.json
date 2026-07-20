@@ -67,13 +67,11 @@
   "add-node": {
     "title": "Add new node",
     "request": {
-      "endpoint": {
-        "info": "Node endpoint",
-        "placeholder": "https://node.com:80"
-      },
-      "accesskey": {
-        "info": "Node access key",
-        "placeholder": "HexAccessKey..."
+      "fields": {
+        "endpoint": "Node endpoint",
+        "endpoint-placeholder": "https://node.com:80",
+        "accesskey": "Node access key",
+        "accesskey-placeholder": "HexAccessKey..."
       }
     },
     "submit-btn": {

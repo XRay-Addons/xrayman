@@ -1,7 +1,7 @@
 ---
 import Card from "@xrayman/shared/astro/primitives/Card.astro";
 import Info from "@xrayman/shared/astro/primitives/Info.astro";
-import InputGroup from "@xrayman/shared/astro/primitives/InputGroup.astro";
+import InputGroup from "@xrayman/shared/astro/primitives/InputGroup/InputGroup.astro";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 ---
 
@@ -13,13 +13,9 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 
     <div class="h-center g-0 w-100">
       <InputGroup
-        input-props={{
-          "data-i18n-placeholder": "choosename.placeholder",
-        }}
-        button-props={{
-          "data-i18n": "choosename.btntext",
-        }}
-        data-part="name-input"
+        input:data-i18n-placeholder="choosename.placeholder"
+        btn:data-i18n="choosename.btntext"
+        data-name-input
         class="col-12 col-md-8"
       />
     </div>

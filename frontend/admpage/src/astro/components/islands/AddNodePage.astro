@@ -1,110 +1,108 @@
 ---
-import Info from "@xrayman/shared/astro/primitives/Info.astro";
-import Input from "@xrayman/shared/astro/primitives/Input.astro";
 import Card from "@xrayman/shared/astro/primitives/Card.astro";
 import Title from "@xrayman/shared/astro/primitives/Title.astro";
 import Button from "@xrayman/shared/astro/primitives/Button.astro";
 import SuccessMsg from "@xrayman/shared/astro/primitives/SuccessMsg.astro";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
+import type { InputField, ListField } from "@xrayman/shared/astro/primitives/Config/Config.astro";
+import Config from "@xrayman/shared/astro/primitives/Config/Config.astro";
 
 const i18n = "add-node";
 const i18nReq = "add-node.request";
+
+const fields: (InputField | ListField)[] = [
+  {
+    name: "endpoint",
+    type: "input",
+    placeholder: true,
+    inputProps: { required: true },
+  },
+  {
+    name: "accesskey",
+    type: "input",
+    placeholder: true,
+    inputProps: { required: true },
+  },
+];
 ---
 
 <add-node-page class="fluid-md">
   <Card>
-    <form data-part="form">
-      <Title class="mb-2">
-        <I18NText data-i18n=`${i18n}.title` />
-      </Title>
+    <Title class="mb-2">
+      <I18NText data-i18n=`${i18n}.title` />
+    </Title>
 
-      <Info>
-        <I18NText data-i18n=`${i18nReq}.endpoint.info` />
-      </Info>
+    <Config i18n={i18nReq} fields={fields} class="mb-2" data-config form:data-config-form />
 
-      <Input data-part="endpoint-input" data-i18n-placeholder=`${i18nReq}.endpoint.placeholder` />
+    <div class="d-flex justify-content-center">
+      <Button btn:data-submit-btn class="col-8" btn:type="submit">
+        <I18NText data-i18n=`${i18n}.submit-btn.info` />
+      </Button>
+    </div>
 
-      <Info>
-        <I18NText data-i18n=`${i18nReq}.accesskey.info` />
-      </Info>
-
-      <Input
-        data-part="accesskey-input"
-        data-i18n-placeholder=`${i18nReq}.accesskey.placeholder`
-        class="mb-2"
-      />
-      <div class="d-flex justify-content-center">
-        <Button data-part="submit-input" class="col-8" btn:type="submit">
-          <I18NText data-i18n=`${i18n}.submit-btn.info` />
-        </Button>
-      </div>
-
-      <div data-part="success-result" hidden>
-        <SuccessMsg class="col-8">
-          <I18NText data-i18n=`${i18n}.response.info` />
-        </SuccessMsg>
-      </div>
-    </form>
+    <div data-success-result hidden>
+      <SuccessMsg class="col-8">
+        <I18NText data-i18n=`${i18n}.response.info` />
+      </SuccessMsg>
+    </div>
   </Card>
+</add-node-page>
 
-  <script>
-    import { newNode } from "@/services/api/client";
-    import { notifyApiError } from "@/runtime/notifications/use-notifications";
-    import { reloadNodes } from "@/actions/nodes";
-    import type { ResettableElement } from "@xrayman/shared/astro/types/Resettable";
-    import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
-    import { pt } from "@xrayman/shared/runtime/dom/pts";
+<script>
+  import { newNode } from "@/services/api/client";
+  import { notifyApiError } from "@/runtime/notifications/use-notifications";
+  import { reloadNodes } from "@/actions/nodes";
+  import type { ResettableElement } from "@xrayman/shared/astro/types/Resettable";
+  import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
+  import type { ConfigEditorElement } from "@xrayman/shared/astro/primitives/Config/Config";
 
-    class AddNodePage extends CustomElement implements ResettableElement {
-      private endpointInputEl!: HTMLInputElement;
-      private accesskeyInputEl!: HTMLInputElement;
-      //private inputSubmitEl!: HTMLButtonElement;
-      private successResultEl!: HTMLElement;
-      // private formEl!: HTMLFormElement;
+  class AddNodePage extends CustomElement implements ResettableElement {
+    private configEl!: ConfigEditorElement;
+    private successResultEl!: HTMLElement;
 
-      connectedCallback() {
-        this.endpointInputEl = pt<HTMLInputElement>(this, "endpoint-input");
-        this.accesskeyInputEl = pt<HTMLInputElement>(this, "accesskey-input");
-        this.successResultEl = pt<HTMLElement>(this, "success-result");
-        const inputSubmitEl = pt<HTMLButtonElement>(this, "submit-input");
-        const formEl = pt<HTMLFormElement>(this, "form");
-        formEl.addEventListener("submit", async (e: Event) => {
-          e.preventDefault();
+    connectedCallback() {
+      super.connectedCallback();
 
-          inputSubmitEl.onclick = async () => {
-            const endpoint = this.endpointInputEl.value;
-            const accesskey = this.accesskeyInputEl.value;
-            if (endpoint.length == 0 || accesskey.length == 0) {
-              return;
-            }
+      this.configEl = pt<ConfigEditorElement>(this, "config");
+      this.successResultEl = pt<HTMLElement>(this, "success-result");
 
-            // reset and hide
-            this.successResultEl.setAttribute("hidden", "true");
+      const submitBtn = pt<HTMLButtonElement>(this, "submit-btn");
+      submitBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        form.requestSubmit();
+      });
 
-            const response = await newNode(endpoint, accesskey);
-            if (!response.ok) {
-              notifyApiError("new_node", response.reason);
-              return;
-            }
-            reloadNodes({ quiet: true });
+      const form = pt<HTMLFormElement>(this, "config-form");
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        console.log("value: ", this.configEl.value);
+        const value = this.configEl.value;
+        const endpoint = value.endpoint as string;
+        const accesskey = value.accesskey as string;
+        if (endpoint.length == 0 || accesskey.length == 0) {
+          return;
+        }
 
-            // show back
-            this.successResultEl?.removeAttribute("hidden");
-          };
-        });
-      }
+        // reset and hide
+        this.successResultEl.setAttribute("hidden", "true");
 
-      protected render(): void {}
+        const response = await newNode(endpoint, accesskey);
+        if (!response.ok) {
+          notifyApiError("new_node", response.reason);
+          return;
+        }
+        reloadNodes({ quiet: true });
 
-      reset() {
-        this.endpointInputEl.value = "";
-        this.accesskeyInputEl.value = "";
-        this.successResultEl.hidden = true;
-      }
-
-      disconnectedCallback() {}
+        // show back
+        this.successResultEl?.removeAttribute("hidden");
+      });
     }
 
-    customElements.define("add-node-page", AddNodePage);
-  </script>
-</add-node-page>
+    reset() {
+      this.configEl.data = {};
+    }
+  }
+
+  customElements.define("add-node-page", AddNodePage);
+</script>

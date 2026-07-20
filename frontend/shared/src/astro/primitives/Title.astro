@@ -1,15 +1,21 @@
 ---
-//import Surface from "./Surface.astro";
+import Surface from "./Surface.astro";
 
 interface Props {
   class?: string;
+  "in:class"?: string;
 }
 
-const { class: extraClass = "" } = Astro.props;
+const { class: extraClass = "", "in:class": inClass = "" } = Astro.props;
 ---
 
 <div class="d-flex justify-content-center">
-  <div class={extraClass} class=`text-center text text-lg crt flicker p-2 noselect `>
+  <Surface
+    class={extraClass}
+    in:class=`text-center text text-lg crt flicker p-2 noselect ${inClass}`
+    depth="var(--title-depth)"
+    color="var(--title-color)"
+  >
     <slot />
-  </div>
+  </Surface>
 </div>

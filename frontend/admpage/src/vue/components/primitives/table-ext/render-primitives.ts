@@ -73,7 +73,7 @@ function makeTag(color: string, i18n: string, icon: Component): VNode {
         display: "block",
         textAlign: "center",
       },
-      icon: icon,
+      icon: h(icon),
     },
     () => t(i18n),
   );

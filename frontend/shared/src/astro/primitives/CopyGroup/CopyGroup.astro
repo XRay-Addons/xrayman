@@ -1,19 +1,27 @@
 ---
-import InputGroup from "@xrayman/shared/astro/primitives/InputGroup.astro";
+import InputGroup from "@xrayman/shared/astro/primitives/InputGroup/InputGroup.astro";
 import type { HTMLAttributes } from "astro/types";
+import { ExtractPrefixed, type WithPrefix } from "@xrayman/shared/astro/props/props";
 
-interface Props extends HTMLAttributes<"div"> {}
+type BtnProps = WithPrefix<HTMLAttributes<"button">, "btn">;
+type InputProps = WithPrefix<HTMLAttributes<"input">, "input">;
+type HostProps = HTMLAttributes<"div">;
 
-const { ...rest } = Astro.props;
+interface Props extends HostProps, BtnProps, InputProps {}
+
+const { ...props } = Astro.props;
+const btnProps = ExtractPrefixed(props, "btn");
+const inputProps = ExtractPrefixed(props, "input");
 ---
 
-<copy-group {...rest}>
+<copy-group {...props}>
   <InputGroup
+    data-input-group
     input:readonly
     input:data-copy-input
     btn:data-copy-btn
-    form:data-copy-form
-    {...rest}
+    input={inputProps}
+    btn={btnProps}
   />
 </copy-group>
 
@@ -27,28 +35,28 @@ const { ...rest } = Astro.props;
   import { CustomElement, prop } from "@xrayman/shared/runtime/dom/custom-element";
   import { pt } from "@xrayman/shared/runtime/dom/pts";
   import { type CopyGroupElement } from "./CopyGroup";
+  import { type InputGroupElement } from "../InputGroup/InputGroup";
 
   class CopyGroup extends CustomElement implements CopyGroupElement {
     @prop accessor value: string = "";
 
     private inputEl!: HTMLInputElement;
-    //private copyBtnEl!: HTMLButtonElement;
-    //private originalContent!: string;
 
     connectedCallback() {
       super.connectedCallback();
-      console.log("ss");
+      const inputGroup = pt<InputGroupElement>(this, "input-group");
       this.inputEl = pt<HTMLInputElement>(this, "copy-input");
 
-      const copyBtnEl = pt<HTMLButtonElement>(this, "copy-btn");
-      const originalContent = copyBtnEl.innerHTML;
-      const onCopyFn = async (val: string) => {
+      const btnEl = pt<HTMLButtonElement>(this, "copy-btn");
+      const originalContent = btnEl.innerHTML;
+
+      inputGroup.submitfn = async (val: string) => {
         try {
           this.inputEl.style.pointerEvents = "none";
           await navigator.clipboard.writeText(val);
-          copyBtnEl.innerHTML = "✓";
+          btnEl.innerHTML = "✓";
           setTimeout(() => {
-            copyBtnEl.innerHTML = originalContent;
+            btnEl.innerHTML = originalContent;
           }, 2000);
         } catch (err) {
           console.error("Clipboard error", err);
@@ -56,16 +64,6 @@ const { ...rest } = Astro.props;
           this.inputEl.style.pointerEvents = "auto";
         }
       };
-
-      const copyFormEl = pt<HTMLFormElement>(this, "copy-form");
-      copyBtnEl.addEventListener("click", (e: Event) => {
-        e.preventDefault();
-        copyFormEl.requestSubmit();
-      });
-      copyFormEl.addEventListener("submit", async (e: Event) => {
-        e.preventDefault();
-        await onCopyFn(this.inputEl.value);
-      });
     }
 
     protected render() {

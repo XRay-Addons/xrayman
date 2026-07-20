@@ -1,12 +1,11 @@
 ---
 import Info from "@xrayman/shared/astro/primitives/Info.astro";
-import InputGroup from "@xrayman/shared/astro/primitives/InputGroup.astro";
+import InputGroup from "@xrayman/shared/astro/primitives/InputGroup/InputGroup.astro";
 import CopyGroup from "@xrayman/shared/astro/primitives/CopyGroup/CopyGroup.astro";
 import Card from "@xrayman/shared/astro/primitives/Card.astro";
-import Titlele from "@xrayman/shared/astro/primitives/Title.astro";
-import SuccessMsg from "@xrayman/shared/astro/primitives/SuccessMsg.astro";
+import Title from "@xrayman/shared/astro/primitives/Title.astro";
+//import SuccessMsg from "@xrayman/shared/astro/primitives/SuccessMsg.astro";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
-import Example from "@xrayman/shared/astro/primitives/Example.astro";
 
 const i18n = "add-user";
 const i18nReq = "add-user.request";
@@ -15,28 +14,22 @@ const i18nResp = "add-user.response";
 
 <add-user-page class="fluid-md">
   <Card>
-    <Titlele class="mb-2" class-kmmlass="mb-2">
+    <Title class="mb-2">
       <I18NText data-i18n=`${i18n}.title` />
-    </Titlele>
-    <Example foo="a" faf-foo="b" />
+    </Title>
 
     <Info>
       <I18NText data-i18n=`${i18nReq}.name.info` />
     </Info>
 
     <InputGroup
+      data-input-group
       input:data-i18n-placeholder=`${i18nReq}.name.placeholder`
-      btn:data-i18n=`${i18nReq}.name.button`
       input:data-name-input
-      btn:data-name-btn
-      form:data-name-form
+      btn:data-i18n=`${i18nReq}.name.button`
     />
 
     <div data-success-result class="mt-2" hidden>
-      <SuccessMsg class="col-8">
-        <I18NText data-i18n=`${i18nResp}.info` />
-      </SuccessMsg>
-
       <Info>
         <I18NText data-i18n=`${i18nResp}.userpage.info` />
       </Info>
@@ -55,6 +48,7 @@ const i18nResp = "add-user.response";
 
   import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
   import { pt } from "@xrayman/shared/runtime/dom/pts";
+  import { InputGroupElement } from "@xrayman/shared/astro/primitives/InputGroup/InputGroup";
 
   class AddUserPage extends CustomElement implements ResettableElement {
     private nameInputEl!: HTMLInputElement;
@@ -62,21 +56,14 @@ const i18nResp = "add-user.response";
     private userpageOutputEl!: CopyGroupElement;
 
     connectedCallback() {
-      console.log("connected clvb....");
+      const inputForm = pt<InputGroupElement>(this, "input-group");
+      inputForm.submitfn = async (val: string) => await this.onSubmitFn(val);
+
       this.nameInputEl = pt<HTMLInputElement>(this, "name-input");
       this.successResultEl = pt<HTMLElement>(this, "success-result");
-      this.userpageOutputEl = pt<CopyGroupElement>(this, "result-userpage")!;
-
-      const nameFormEl = pt<HTMLFormElement>(this, "name-form");
-      const nameBtnEl = pt<HTMLButtonElement>(this, "name-btn");
-      nameBtnEl.addEventListener("click", (e) => {
-        e.preventDefault();
-        nameFormEl.requestSubmit();
-      });
-      nameFormEl.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        await this.onSubmitFn(this.nameInputEl.value);
-      });
+      this.userpageOutputEl = pt<CopyGroupElement>(this, "result-userpage");
+      //const nameFormEl = pt<HTMLFormElement>(this, "name-form");
+      //onSubmit(nameFormEl, async (val: string) => await this.onSubmitFn(val));
     }
 
     private async onSubmitFn(displayName: string) {
@@ -96,7 +83,7 @@ const i18nResp = "add-user.response";
 
       // show back
       this.successResultEl.removeAttribute("hidden");
-      this.userpageOutputEl.value = response.data.Profile.Name;
+      this.userpageOutputEl.value = response.data.Profile.SubscriptionPath;
     }
 
     disconnectedCallback() {}

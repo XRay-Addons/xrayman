@@ -2,13 +2,13 @@
 import Title from "@xrayman/shared/astro/primitives/Title.astro";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 import Card from "@xrayman/shared/astro/primitives/Card.astro";
-import InputGroup from "@xrayman/shared/astro/primitives/InputGroup.astro";
+import InputGroup from "@xrayman/shared/astro/primitives/InputGroup/InputGroup.astro";
 
 const i18n = "login";
 ---
 
 <app-login-page>
-  <dialog class="auth-dialog" data-part="auth-dialog">
+  <dialog class="auth-dialog" data-auth-dialog>
     <div class="auth-dialog-overlay"></div>
     <div class="hv-center">
       <Card class="fluid-md">
@@ -16,13 +16,9 @@ const i18n = "login";
           <I18NText data-i18n=`${i18n}.title.authorize` />
         </Title>
         <InputGroup
-          input-props={{
-            "data-i18n-placeholder": `${i18n}.password.placeholder`,
-          }}
-          button-props={{
-            "data-i18n": `${i18n}.password.button`,
-          }}
-          data-part="password-input"
+          input:data-i18n-placeholder=`${i18n}.password.placeholder`
+          btn:data-i18n=`${i18n}.password.button`
+          data-password-form
         />
       </Card>
     </div>
@@ -30,22 +26,22 @@ const i18n = "login";
 </app-login-page>
 
 <script>
-  import { type InputGroupElement } from "@xrayman/shared/astro/types/InputGroup";
   import { auth } from "@/services/api/client";
   import { notifyApiError } from "@/runtime/notifications/use-notifications";
-  import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
+  import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
   import { authMan, loginRequiredEvent } from "@/services/api/auth-man";
+  import { type InputGroupElement } from "@xrayman/shared/astro/primitives/InputGroup/InputGroup";
 
-  class LoginPage extends PartedElement {
+  class LoginPage extends CustomElement {
     private pwdInputEl!: InputGroupElement;
     private dialogEl!: HTMLDialogElement;
 
     async connectedCallback() {
-      this.pwdInputEl = await this.ptWebComp<InputGroupElement>("password-input");
-      this.dialogEl = this.ptEl<HTMLDialogElement>("auth-dialog");
+      this.pwdInputEl = pt<InputGroupElement>(this, "password-form");
+      this.dialogEl = pt<HTMLDialogElement>(this, "auth-dialog");
 
-      // keep auth window till success
-      this.pwdInputEl.onclickfn = async (pwd: string) => {
+      this.pwdInputEl.submitfn = async (pwd: string) => {
         if (pwd.length == 0) {
           return;
         }

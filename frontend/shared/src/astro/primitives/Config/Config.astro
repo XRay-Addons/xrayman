@@ -16,6 +16,7 @@ interface Field {
 }
 
 export interface InputField extends Field {
+  placeholder?: boolean;
   inputProps?: InputAttrs;
 }
 
@@ -46,9 +47,14 @@ const { ...formProps } = ExtractPrefixed(props, "form");
             const p = field as InputField;
             component = (
               <Input
-                input:name={p.name}
-                input:data-config-input
-                input={{ ...(p.inputProps || {}) }} />
+              input={{
+                name: p.name,
+                "data-config-input": true,
+                ...(p.placeholder && {
+                  "data-i18n-placeholder": `${i18n}.fields.${p.name}-placeholder`,
+                }),
+                ...(p.inputProps ?? {}),
+              }} />
             );
             break;
           }

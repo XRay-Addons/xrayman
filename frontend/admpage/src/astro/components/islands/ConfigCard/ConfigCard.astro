@@ -17,43 +17,47 @@ const i18n = "cards.config";
 
     <Config i18n={i18n} fields={fields} class="mb-2" data-config form:data-config-form />
 
-    <Button btn:type="submit" class="mb-2" btn:data-submit-btn>
-      <I18NText data-i18n=`${i18n}.submit` />
-    </Button>
-    <Button btn:type="button" class="mb-2" btn:data-refresh-btn>
-      <I18NText data-i18n=`${i18n}.refresh` />
-    </Button>
+    <div class="d-flex justify-content-center">
+      <Button btn:type="submit" class="mb-2 col-8" btn:data-submit-btn>
+        <I18NText data-i18n=`${i18n}.submit` />
+      </Button>
+    </div>
+    <div class="d-flex justify-content-center">
+      <Button btn:type="button" class="mb-2 col-8" btn:data-refresh-btn>
+        <I18NText data-i18n=`${i18n}.refresh` />
+      </Button>
+    </div>
   </Card>
-</config-card>
 
-<script>
-  import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
-  import { pt } from "@xrayman/shared/runtime/dom/pts";
-  import type { ConfigEditorElement } from "@xrayman/shared/astro/primitives/Config/Config";
+  <script>
+    import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+    import { pt } from "@xrayman/shared/runtime/dom/pts";
+    import type { ConfigEditorElement } from "@xrayman/shared/astro/primitives/Config/Config";
 
-  class ConfigCard extends CustomElement {
-    connectedCallback() {
-      super.connectedCallback();
+    class ConfigCard extends CustomElement {
+      connectedCallback() {
+        super.connectedCallback();
 
-      const config = pt<ConfigEditorElement>(this, "config");
-      const form = pt<HTMLFormElement>(this, "config-form");
+        const config = pt<ConfigEditorElement>(this, "config");
+        const form = pt<HTMLFormElement>(this, "config-form");
 
-      const submitBtn = pt<HTMLButtonElement>(this, "submit-btn");
-      submitBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        form.requestSubmit();
-      });
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        console.log("value: ", config.value);
-      });
+        const submitBtn = pt<HTMLButtonElement>(this, "submit-btn");
+        submitBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          form.requestSubmit();
+        });
+        form.addEventListener("submit", (e) => {
+          e.preventDefault();
+          console.log("value: ", config.value);
+        });
 
-      const refreshBtn = pt<HTMLButtonElement>(this, "refresh-btn");
-      refreshBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-      });
+        const refreshBtn = pt<HTMLButtonElement>(this, "refresh-btn");
+        refreshBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+        });
+      }
     }
-  }
 
-  customElements.define("config-card", ConfigCard);
-</script>
+    customElements.define("config-card", ConfigCard);
+  </script>
+</config-card>

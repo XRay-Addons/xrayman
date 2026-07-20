@@ -46,10 +46,6 @@ const buttonsJson = JSON.stringify(PLATFORM_BUTTONS);
         const raw = this.dataset.platformButtons;
         if (!raw) return;
 
-        // const PLATFORM_BUTTONS = JSON.parse(raw);
-        // const platform = this.detectPlatform();
-        // const buttons = PLATFORM_BUTTONS[platform] ?? [];
-
         const PLATFORM_BUTTONS = JSON.parse(raw) as PlatformButtons;
         const platform = this.detectPlatform();
         const buttons = PLATFORM_BUTTONS[platform] ?? [];
