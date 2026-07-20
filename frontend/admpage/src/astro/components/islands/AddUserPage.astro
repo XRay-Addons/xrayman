@@ -4,7 +4,6 @@ import InputGroup from "@xrayman/shared/astro/primitives/InputGroup/InputGroup.a
 import CopyGroup from "@xrayman/shared/astro/primitives/CopyGroup/CopyGroup.astro";
 import Card from "@xrayman/shared/astro/primitives/Card.astro";
 import Title from "@xrayman/shared/astro/primitives/Title.astro";
-//import SuccessMsg from "@xrayman/shared/astro/primitives/SuccessMsg.astro";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 
 const i18n = "add-user";
@@ -49,6 +48,7 @@ const i18nResp = "add-user.response";
   import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
   import { pt } from "@xrayman/shared/runtime/dom/pts";
   import { InputGroupElement } from "@xrayman/shared/astro/primitives/InputGroup/InputGroup";
+  import { MakeApiUrl, MakeUserpageURL } from "@/runtime/utils/paths";
 
   class AddUserPage extends CustomElement implements ResettableElement {
     private nameInputEl!: HTMLInputElement;
@@ -62,8 +62,6 @@ const i18nResp = "add-user.response";
       this.nameInputEl = pt<HTMLInputElement>(this, "name-input");
       this.successResultEl = pt<HTMLElement>(this, "success-result");
       this.userpageOutputEl = pt<CopyGroupElement>(this, "result-userpage");
-      //const nameFormEl = pt<HTMLFormElement>(this, "name-form");
-      //onSubmit(nameFormEl, async (val: string) => await this.onSubmitFn(val));
     }
 
     private async onSubmitFn(displayName: string) {
@@ -83,7 +81,8 @@ const i18nResp = "add-user.response";
 
       // show back
       this.successResultEl.removeAttribute("hidden");
-      this.userpageOutputEl.value = response.data.Profile.SubscriptionPath;
+      const profile = response.data.Profile;
+      this.userpageOutputEl.value = MakeUserpageURL(profile.ID, profile.Name);
     }
 
     disconnectedCallback() {}
