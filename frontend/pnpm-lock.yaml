@@ -32,9 +32,9 @@ importers:
       tsx:
         specifier: ^4.23.1
         version: 4.23.1
-      typescript-eslint:
-        specifier: ^8.59.4
-        version: 8.59.4(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
   admpage:
     dependencies:
@@ -120,12 +120,6 @@ importers:
 
   shared:
     dependencies:
-      '@astrojs/check':
-        specifier: ^0.9.9
-        version: 0.9.9(prettier@3.8.3)(typescript@5.9.3)
-      '@xrayman/shared':
-        specifier: workspace:*
-        version: 'link:'
       lean-qr:
         specifier: ^2.7.1
         version: 2.7.1
@@ -136,6 +130,9 @@ importers:
         specifier: ^3.10.0
         version: 3.10.0
     devDependencies:
+      '@astrojs/check':
+        specifier: ^0.9.9
+        version: 0.9.9(prettier@3.8.3)(typescript@5.9.3)
       astro:
         specifier: 7.1.1
         version: 7.1.1(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@types/node@25.6.2)(jiti@2.7.0)(rollup@4.60.3)(sass-embedded@1.99.0)(sass@1.99.0)(terser@5.46.1)(tsx@4.23.1)(yaml@2.8.3)

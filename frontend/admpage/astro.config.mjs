@@ -31,7 +31,13 @@ export default defineConfig({
       },
     },
     esbuild: {
-      target: "es2022",
+      target: "esnext",
+      tsconfigRaw: {
+        compilerOptions: {
+          experimentalDecorators: false,
+          useDefineForClassFields: true,
+        },
+      },
     },
     build: {
       target: "es2022",
