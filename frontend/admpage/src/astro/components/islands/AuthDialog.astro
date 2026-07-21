@@ -37,7 +37,9 @@ const i18n = "login";
     private pwdInputEl!: InputGroupElement;
     private dialogEl!: HTMLDialogElement;
 
-    async connectedCallback() {
+    connectedCallback() {
+      super.connectedCallback();
+
       this.pwdInputEl = pt<InputGroupElement>(this, "password-form");
       this.dialogEl = pt<HTMLDialogElement>(this, "auth-dialog");
 

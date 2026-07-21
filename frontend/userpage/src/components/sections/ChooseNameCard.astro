@@ -23,18 +23,20 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 </choose-name-card>
 
 <script>
-  import { type InputGroupElement } from "@xrayman/shared/astro/types/InputGroup";
   import { newUser } from "@/services/api/client";
   import { stateSignal } from "@/state/signals";
-  import { PartedElement } from "@xrayman/shared/runtime/dom/parted-element";
   import { State } from "@/state/state";
   import { notifyApiError } from "@/runtime/notifications/use-notifications";
+  import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+  import { type InputGroupElement } from "@xrayman/shared/astro/primitives/InputGroup/InputGroup";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
 
-  class ChooseNameCard extends PartedElement {
+  class ChooseNameCard extends CustomElement {
     connectedCallback() {
-      const nameInputEl = this.ptEl<InputGroupElement>("name-input");
+      super.connectedCallback();
+      const nameInputEl = pt<InputGroupElement>(this, "name-input");
 
-      nameInputEl.onclickfn = async (displayName: string) => {
+      nameInputEl.submitfn = async (displayName: string) => {
         if (displayName.length == 0) {
           return;
         }
@@ -48,8 +50,6 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
         }
       };
     }
-
-    disconnectedCallback() {}
   }
 
   customElements.define("choose-name-card", ChooseNameCard);

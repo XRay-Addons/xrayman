@@ -42,6 +42,7 @@ export default defineConfig({
         return { relative: true };
       },
     },
+    // use local go server for backend
     server: {
       proxy: {
         "/config.js": {

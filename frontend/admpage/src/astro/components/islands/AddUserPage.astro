@@ -48,7 +48,7 @@ const i18nResp = "add-user.response";
   import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
   import { pt } from "@xrayman/shared/runtime/dom/pts";
   import { InputGroupElement } from "@xrayman/shared/astro/primitives/InputGroup/InputGroup";
-  import { MakeApiUrl, MakeUserpageURL } from "@/runtime/utils/paths";
+  import { MakeUserpageURL } from "@/runtime/utils/paths";
 
   class AddUserPage extends CustomElement implements ResettableElement {
     private nameInputEl!: HTMLInputElement;
@@ -56,6 +56,8 @@ const i18nResp = "add-user.response";
     private userpageOutputEl!: CopyGroupElement;
 
     connectedCallback() {
+      super.connectedCallback();
+
       const inputForm = pt<InputGroupElement>(this, "input-group");
       inputForm.submitfn = async (val: string) => await this.onSubmitFn(val);
 

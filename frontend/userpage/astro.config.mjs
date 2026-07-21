@@ -33,4 +33,19 @@ export default defineConfig({
       },
     },
   },
+  // use local go server for backend
+  server: {
+    proxy: {
+      "/config.js": {
+        target: "http://localhost:1001",
+        changeOrigin: true,
+        rewrite: () => "/u/config.js",
+      },
+      "/api": {
+        target: "http://localhost:1001",
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 });

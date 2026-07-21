@@ -76,6 +76,7 @@ const fields: (InputField | ListField)[] = [
       const form = pt<HTMLFormElement>(this, "config-form");
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
+        console.log("config el", this.configEl);
         console.log("value: ", this.configEl.value);
         const value = this.configEl.value;
         const endpoint = value.endpoint as string;
