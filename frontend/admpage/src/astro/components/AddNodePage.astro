@@ -53,6 +53,7 @@ const fields: (InputField | ListField)[] = [
   import { pt } from "@xrayman/shared/runtime/dom/pts";
   import type { ConfigEditorElement } from "@xrayman/shared/astro/primitives/Config/Config";
   import type { ActiveSlotElement } from "@xrayman/shared/astro/primitives/ActiveSlot/ActiveSlot";
+  import { t } from "@/runtime/i18n";
 
   class AddNodePage extends CustomElement implements Resettable {
     private configEl!: ConfigEditorElement;
@@ -90,7 +91,7 @@ const fields: (InputField | ListField)[] = [
         reloadNodes({ quiet: true });
 
         // show back
-        submitBtnContent.value = "✓";
+        submitBtnContent.value = t("add-node.submit-btn.success");
         setTimeout(() => {
           submitBtnContent.value = undefined;
         }, 2000);

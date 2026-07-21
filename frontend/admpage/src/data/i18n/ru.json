@@ -75,7 +75,8 @@
       }
     },
     "submit-btn": {
-      "info": "Add!"
+      "info": "Add!",
+      "success": "Added!"
     },
     "response": {
       "info": "Node added successfully!",
