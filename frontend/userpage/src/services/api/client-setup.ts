@@ -7,7 +7,7 @@ export function ensureClient() {
   if (initialized) return;
 
   client.setConfig({
-    baseUrl: config.routes.api_prefix,
+    baseUrl: config().routes.api_prefix,
   });
 
   initialized = true;

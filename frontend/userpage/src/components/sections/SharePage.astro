@@ -9,15 +9,15 @@ import Barcode from "@xrayman/shared/astro/primitives/Barcode/Barcode.astro";
 <share-page class="fluid-sm p-1 justify-content-center">
   <Card>
     <Title class="mb-2">
-      <I18NText data-i18n="share.page.title" />
+      <I18NText data-i18n="share.title" />
     </Title>
 
     <div class="h-center">
-      <Barcode data-part="share-barcode" class="col-8 mb-2" />
+      <Barcode data-share-barcode class="col-8 mb-2" />
     </div>
     <div class="h-center">
-      <Button data-part="share-tg-btn" class="col-6">
-        <I18NText data-i18n="share.page.tg-button" />
+      <Button btn:data-share-tg-btn class="col-6">
+        <I18NText data-i18n="share.tg-button" />
       </Button>
     </div>
   </Card>
@@ -39,7 +39,7 @@ import Barcode from "@xrayman/shared/astro/primitives/Barcode/Barcode.astro";
 
       const btnEl = pt<HTMLButtonElement>(this, "share-tg-btn");
       btnEl.onclick = () => {
-        const text = t("share.page.tg-sharedtext");
+        const text = t("share.tg-sharedtext");
         ShareViaTG(sharingUrl, text);
       };
 

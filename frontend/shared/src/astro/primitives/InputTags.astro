@@ -20,7 +20,7 @@ const { ...rest } = Astro.props;
   <script>
     import { CustomElement, prop } from "../../runtime/dom/custom-element";
     import { ptEl } from "../../runtime/dom/parted-element";
-    import { InputTagsElement } from "../types/InputTags";
+    import { type InputTagsElement } from "../types/InputTags";
 
     class InputTags extends CustomElement implements InputTagsElement {
       @prop accessor input!: HTMLInputElement;

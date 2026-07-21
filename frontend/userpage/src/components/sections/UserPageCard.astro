@@ -2,21 +2,22 @@
 import Card from "@xrayman/shared/astro/primitives/Card.astro";
 import Info from "@xrayman/shared/astro/primitives/Info.astro";
 import CopyGroup from "@xrayman/shared/astro/primitives/CopyGroup/CopyGroup.astro";
+const i18n = "userurl";
 ---
 
 <user-page-card>
   <Card class="mb-2">
     <Info>
       <strong>1.</strong>
-      <span data-i18n="userurl.info"></span>
+      <span data-i18n=`${i18n}.info`></span>
     </Info>
 
     <div class="h-center g-0 w-100">
-      <CopyGroup btn:data-i18n="userurl.btntext" data-result-userpage class="fluid-lg" />
+      <CopyGroup btn:data-i18n=`${i18n}.btntext` data-result-userpage class="fluid-lg" />
     </div>
 
     <Info>
-      <span data-i18n="userurl.donotshare.info"></span>
+      <span data-i18n=`${i18n}.do-not-share`></span>
     </Info>
   </Card>
 </user-page-card>

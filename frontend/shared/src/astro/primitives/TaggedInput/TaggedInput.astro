@@ -80,7 +80,7 @@ const { ...inputProps } = ExtractPrefixed(props, "input");
         const tag = this.tagTmpl.content.cloneNode(true) as HTMLElement;
         const btn = pt<HTMLButtonElement>(tag, "tag-btn");
         btn.textContent = ph;
-        btn.addEventListener("click", (e: Event) => {
+        btn.addEventListener("click", () => {
           this.addInputText(ph);
         });
         return tag;

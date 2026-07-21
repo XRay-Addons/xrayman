@@ -9,7 +9,7 @@ const buttonsJson = JSON.stringify(PLATFORM_BUTTONS);
 ---
 
 <install-app-card data-platform-buttons={buttonsJson}>
-  <Card class="mb-2" data-part="install-app-card">
+  <Card class="mb-2">
     <Info>
       <strong>2.</strong>
       <span data-i18n="installapp.info"></span>
@@ -19,7 +19,7 @@ const buttonsJson = JSON.stringify(PLATFORM_BUTTONS);
       <EqHeight data-install-app-btns class="row h-center g-1 fluid-lg">
         <template data-install-app-btn-template>
           <div class="col-6">
-            <Button class="w-100 h-100" data-part="install-app-btn">
+            <Button class="w-100 h-100" data-install-app-btn>
               <span data-install-app-btn-text></span>
             </Button>
           </div>
@@ -73,7 +73,7 @@ const buttonsJson = JSON.stringify(PLATFORM_BUTTONS);
           const text = pt<HTMLSpanElement>(fragment, "install-app-btn-text");
 
           btn.addEventListener("click", () => window.open(data.url, "_blank", "noopener"));
-          text.dataset.i18n = data.text;
+          text.dataset.i18n = `installapp.${data.text}`;
 
           frag.appendChild(fragment);
         });

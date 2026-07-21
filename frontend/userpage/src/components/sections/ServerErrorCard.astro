@@ -1,13 +1,13 @@
 ---
 import Error from "./Error.astro";
 
-const errorImg = "./error.gif";
+const errorImg = "/error.gif";
 const errorColor = "white";
 ---
 
 <server-error-card>
   <Error src={errorImg} color={errorColor}>
-    <div data-i18n="servererror.main"></div>
+    <div data-i18n="errors.title"></div>
     <div data-reason></div>
   </Error>
 </server-error-card>
