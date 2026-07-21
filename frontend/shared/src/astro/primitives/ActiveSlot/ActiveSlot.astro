@@ -1,0 +1,48 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+type Props = HTMLAttributes<"div">;
+
+const { ...props } = Astro.props;
+---
+
+<active-slot {...props}>
+  <span data-action-original>
+    <slot />
+  </span>
+  <span data-action-value hidden></span>
+</active-slot>
+
+<script>
+  import { CustomElement, prop } from "@xrayman/shared/runtime/dom/custom-element";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
+  import { type ActiveSlotElement } from "./ActiveSlot";
+
+  class ActiveSlot extends CustomElement implements ActiveSlotElement {
+    @prop accessor value: string | undefined = undefined;
+
+    private originalValueEl!: HTMLSpanElement;
+    private valueEl!: HTMLSpanElement;
+
+    connectedCallback() {
+      super.connectedCallback();
+
+      this.originalValueEl = pt<HTMLSpanElement>(this, "action-original");
+      this.valueEl = pt<HTMLSpanElement>(this, "action-value");
+    }
+
+    protected render() {
+      if (this.value) {
+        this.originalValueEl.hidden = true;
+        this.valueEl.innerText = this.value;
+        this.valueEl.hidden = false;
+      } else {
+        this.valueEl.innerText = "";
+        this.valueEl.hidden = true;
+        this.originalValueEl.hidden = false;
+      }
+    }
+  }
+
+  customElements.define("active-slot", ActiveSlot);
+</script>

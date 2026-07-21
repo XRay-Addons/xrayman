@@ -54,7 +54,6 @@ export default defineConfig({
     //},
     // use local go server for backend
     server: {
-      port: 4322,
       proxy: {
         "/config.js": {
           target: "http://localhost:1001",
@@ -78,5 +77,9 @@ export default defineConfig({
         },
       },
     },
+  },
+  server: {
+    port: 4322,
+    strictPort: true,
   },
 });

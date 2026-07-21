@@ -4,7 +4,7 @@ import PageCenter from "@xrayman/shared/astro/primitives/PageCenter.astro";
 import PageLoggedOut from "./PageLoggedOut.astro";
 import PageServerError from "./PageServerError.astro";
 import UserController from "./UserController.astro";
-import MovingBackground from "./MovingBackground.astro";
+// import MovingBackground from "./MovingBackground.astro";
 ---
 
 <script>
@@ -14,10 +14,8 @@ import MovingBackground from "./MovingBackground.astro";
 
 <UserController />
 
-<MovingBackground src="/error.gif">
-  <PageCenter class="fluid-md p-2">
-    <PageLoggedOut />
-    <PageLoggedIn />
-    <PageServerError />
-  </PageCenter>
-</MovingBackground>
+<PageCenter class="fluid-md p-2">
+  <PageLoggedOut />
+  <PageLoggedIn />
+  <PageServerError />
+</PageCenter>

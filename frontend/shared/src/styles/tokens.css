@@ -6,8 +6,6 @@
   --button-color: #eecbff;
   --input-color: #dbdcff;
   --table-color: #d4ffea;
-  --success-color: #feffa3;
-  --tag-color: #feffa3;
 }
 
 /* surface depths */
@@ -17,7 +15,6 @@
   --input-depth: 4px;
   --button-depth: 4px;
   --error-depth: 4px;
-  --success-depth: 4px;
 }
 
 /* typography */

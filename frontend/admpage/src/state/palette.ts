@@ -8,8 +8,6 @@ const paletteValue: Palette = {
   [PaletteItem.Button]: "transparent",
   [PaletteItem.Input]: "transparent",
   [PaletteItem.Table]: "transparent",
-  [PaletteItem.Success]: "transparent",
-  [PaletteItem.Tag]: "transparent",
 };
 
 const palette = shallowRef(paletteValue);

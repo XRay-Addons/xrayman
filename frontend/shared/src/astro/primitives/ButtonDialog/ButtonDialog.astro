@@ -26,6 +26,7 @@ const { class: extraClass = "", "btn:class": btnClass = "" } = Astro.props;
 <script>
   import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
   import { pt } from "@xrayman/shared/runtime/dom/pts";
+  import type { Resettable } from "./ButtonDialog";
 
   class BtnDialog extends CustomElement {
     private button!: HTMLButtonElement;
@@ -54,10 +55,7 @@ const { class: extraClass = "", "btn:class": btnClass = "" } = Astro.props;
 
     private reset() {
       Array.from(this.page.children).forEach((el) => {
-        const resettable = el as any;
-        if (typeof resettable.reset === "function") {
-          resettable.reset();
-        }
+        (el as Partial<Resettable>).reset?.();
       });
     }
   }

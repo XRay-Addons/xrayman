@@ -21,6 +21,12 @@ export default tseslint.config(
     rules: {
       "astro/no-unused-define-vars-in-style": "error",
       "astro/valid-compile": "error",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          varsIgnorePattern: "^_",
+        },
+      ],
     },
   },
 );

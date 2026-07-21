@@ -2,10 +2,10 @@
 import Card from "@xrayman/shared/astro/primitives/Card.astro";
 import Title from "@xrayman/shared/astro/primitives/Title.astro";
 import Button from "@xrayman/shared/astro/primitives/Button.astro";
-import SuccessMsg from "@xrayman/shared/astro/primitives/SuccessMsg.astro";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 import type { InputField, ListField } from "@xrayman/shared/astro/primitives/Config/Config.astro";
 import Config from "@xrayman/shared/astro/primitives/Config/Config.astro";
+import ActiveSlot from "@xrayman/shared/astro/primitives/ActiveSlot/ActiveSlot.astro";
 
 const i18n = "add-node";
 const i18nReq = "add-node.request";
@@ -36,14 +36,10 @@ const fields: (InputField | ListField)[] = [
 
     <div class="d-flex justify-content-center">
       <Button btn:data-submit-btn class="col-8" btn:type="submit">
-        <I18NText data-i18n=`${i18n}.submit-btn.info` />
+        <ActiveSlot data-submit-btn-content>
+          <I18NText data-i18n=`${i18n}.submit-btn.info` />
+        </ActiveSlot>
       </Button>
-    </div>
-
-    <div data-success-result hidden>
-      <SuccessMsg class="col-8">
-        <I18NText data-i18n=`${i18n}.response.info` />
-      </SuccessMsg>
     </div>
   </Card>
 </add-node-page>
@@ -52,22 +48,23 @@ const fields: (InputField | ListField)[] = [
   import { newNode } from "@/services/api/client";
   import { notifyApiError } from "@/runtime/notifications/use-notifications";
   import { reloadNodes } from "@/actions/nodes";
-  import type { ResettableElement } from "@xrayman/shared/astro/types/Resettable";
+  import type { Resettable } from "@xrayman/shared/astro/primitives/ButtonDialog/ButtonDialog";
   import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
   import { pt } from "@xrayman/shared/runtime/dom/pts";
   import type { ConfigEditorElement } from "@xrayman/shared/astro/primitives/Config/Config";
+  import type { ActiveSlotElement } from "@xrayman/shared/astro/primitives/ActiveSlot/ActiveSlot";
 
-  class AddNodePage extends CustomElement implements ResettableElement {
+  class AddNodePage extends CustomElement implements Resettable {
     private configEl!: ConfigEditorElement;
-    private successResultEl!: HTMLElement;
 
     connectedCallback() {
       super.connectedCallback();
 
       this.configEl = pt<ConfigEditorElement>(this, "config");
-      this.successResultEl = pt<HTMLElement>(this, "success-result");
 
       const submitBtn = pt<HTMLButtonElement>(this, "submit-btn");
+      const submitBtnContent = pt<ActiveSlotElement>(this, "submit-btn-content");
+
       submitBtn.addEventListener("click", (e) => {
         e.preventDefault();
         form.requestSubmit();
@@ -76,8 +73,6 @@ const fields: (InputField | ListField)[] = [
       const form = pt<HTMLFormElement>(this, "config-form");
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        console.log("config el", this.configEl);
-        console.log("value: ", this.configEl.value);
         const value = this.configEl.value;
         const endpoint = value.endpoint as string;
         const accesskey = value.accesskey as string;
@@ -86,17 +81,19 @@ const fields: (InputField | ListField)[] = [
         }
 
         // reset and hide
-        this.successResultEl.setAttribute("hidden", "true");
-
         const response = await newNode(endpoint, accesskey);
         if (!response.ok) {
           notifyApiError("new_node", response.reason);
+          submitBtnContent.value = undefined;
           return;
         }
         reloadNodes({ quiet: true });
 
         // show back
-        this.successResultEl?.removeAttribute("hidden");
+        submitBtnContent.value = "✓";
+        setTimeout(() => {
+          submitBtnContent.value = undefined;
+        }, 2000);
       });
     }
 

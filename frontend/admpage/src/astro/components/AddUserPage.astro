@@ -40,7 +40,8 @@ const i18nResp = "add-user.response";
 
 <script>
   import { type CopyGroupElement } from "@xrayman/shared/astro/primitives/CopyGroup/CopyGroup";
-  import type { ResettableElement } from "@xrayman/shared/astro/types/Resettable";
+  import type { Resettable } from "@xrayman/shared/astro/primitives/ButtonDialog/ButtonDialog";
+
   import { newUser } from "@/services/api/client";
   import { notifyApiError } from "@/runtime/notifications/use-notifications";
   import { reloadUsers } from "@/actions/users";
@@ -50,7 +51,7 @@ const i18nResp = "add-user.response";
   import { InputGroupElement } from "@xrayman/shared/astro/primitives/InputGroup/InputGroup";
   import { MakeUserpageURL } from "@/runtime/utils/paths";
 
-  class AddUserPage extends CustomElement implements ResettableElement {
+  class AddUserPage extends CustomElement implements Resettable {
     private nameInputEl!: HTMLInputElement;
     private successResultEl!: HTMLElement;
     private userpageOutputEl!: CopyGroupElement;

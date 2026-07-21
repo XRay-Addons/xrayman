@@ -1,18 +1,25 @@
-export function prop(value: any, context: ClassAccessorDecoratorContext) {
+export function prop(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  value: any,
+  context: ClassAccessorDecoratorContext,
+) {
   const fieldName = context.name;
 
-  context.addInitializer(function (this: any) {
-    if (Object.prototype.hasOwnProperty.call(this, fieldName)) {
-      const oldValue = this[fieldName];
-      delete this[fieldName];
-      value.set.call(this, oldValue);
+  context.addInitializer(function () {
+    const self = this as Record<PropertyKey, unknown>;
+
+    if (Object.prototype.hasOwnProperty.call(self, fieldName)) {
+      const oldValue = self[fieldName];
+      delete self[fieldName];
+      value.set.call(self, oldValue);
     }
   });
 
   return {
-    set(this: any, newValue: any) {
+    set(this: CustomElement, newValue: unknown) {
       const oldValue = value.get.call(this);
       value.set.call(this, newValue);
+
       if (oldValue !== newValue && this._connected) {
         this.render();
       }

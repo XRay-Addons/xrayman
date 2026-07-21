@@ -1,7 +1,9 @@
 ---
 import Input from "@xrayman/shared/astro/primitives/Input.astro";
 import TaggedInput from "@xrayman/shared/astro/primitives/TaggedInput/TaggedInput.astro";
-import ListInput, {type  ListItemField } from "@xrayman/shared/astro/primitives/ListInput/ListInput.astro";
+import ListInput, {
+  type ListItemField,
+} from "@xrayman/shared/astro/primitives/ListInput/ListInput.astro";
 import type { HTMLAttributes } from "astro/types";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 import Info from "@xrayman/shared/astro/primitives/Info.astro";
@@ -32,13 +34,12 @@ interface Props extends FormProps, HostProps {
   fields: (InputField | ListField)[];
 }
 
-
 const { i18n, fields, ...props } = Astro.props;
 const { ...formProps } = ExtractPrefixed(props, "form");
 ---
 
 <config-editor {...props}>
-  <form data-config-form { ...formProps}>
+  <form data-config-form {...formProps}>
     {
       fields.map((field) => {
         let component;
@@ -47,14 +48,15 @@ const { ...formProps } = ExtractPrefixed(props, "form");
             const p = field as InputField;
             component = (
               <Input
-              input={{
-                name: p.name,
-                "data-config-input": true,
-                ...(p.placeholder && {
-                  "data-i18n-placeholder": `${i18n}.fields.${p.name}-placeholder`,
-                }),
-                ...(p.inputProps ?? {}),
-              }} />
+                input={{
+                  name: p.name,
+                  "data-config-input": true,
+                  ...(p.placeholder && {
+                    "data-i18n-placeholder": `${i18n}.fields.${p.name}-placeholder`,
+                  }),
+                  ...(p.inputProps ?? {}),
+                }}
+              />
             );
             break;
           }
@@ -78,14 +80,15 @@ const { ...formProps } = ExtractPrefixed(props, "form");
                   name={p.name}
                   data-config-list-input
                   i18n={`${i18n}.fields.${p.name}`}
-                  fields={ p.listInputs }}
+                  fields={p.listInputs}
                 />
               </div>
             );
             break;
           }
         }
-        const i18nKey = field.type === "list-input"
+        const i18nKey =
+          field.type === "list-input"
             ? `${i18n}.fields.${field.name}.title`
             : `${i18n}.fields.${field.name}`;
 
@@ -103,17 +106,16 @@ const { ...formProps } = ExtractPrefixed(props, "form");
 </config-editor>
 
 <style>
+  config-editor {
+    display: block;
+  }
 
-config-editor {
-  display: block;
-}
-
-.list-input {
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
-  background-color: rgba(0, 0, 0, 0.05);
-  border: 2px solid rgba(0, 0, 0, 0.25);
-}
+  .list-input {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    background-color: rgba(0, 0, 0, 0.05);
+    border: 2px solid rgba(0, 0, 0, 0.25);
+  }
 </style>
 
 <script>
@@ -121,11 +123,11 @@ config-editor {
   import { pts } from "@xrayman/shared/runtime/dom/pts";
   import type { TaggedInputElement } from "@xrayman/shared/astro/primitives/TaggedInput/TaggedInput";
   import type { ListInputElement } from "@xrayman/shared/astro/primitives/ListInput/ListInput";
-  import type { ConfigData, ConfigEditorElement } from "./Config"
+  import type { ConfigData, ConfigEditorElement } from "./Config";
 
   class ConfigEditor extends CustomElement implements ConfigEditorElement {
     @prop accessor tags: string[] = ["one", "two"];
-    @prop accessor data: ConfigData= {};
+    @prop accessor data: ConfigData = {};
 
     private inputs!: HTMLInputElement[];
     private taggedInputs!: TaggedInputElement[];
@@ -142,7 +144,7 @@ config-editor {
     protected render() {
       // set inputs
       this.inputs.forEach((input) => {
-        const key = input.getAttribute("name")
+        const key = input.getAttribute("name");
         if (key) {
           const value = this.data[key];
           input.value = typeof value === "string" ? value : "";
@@ -150,33 +152,33 @@ config-editor {
       });
       // set tags for tagged inputs
       this.taggedInputs.forEach((taggedInput) => {
-        taggedInput.tags = this.tags
-      })
-      
+        taggedInput.tags = this.tags;
+      });
+
       // setup list inputs
       this.listInputs.forEach((listInput) => {
-        const key = listInput.getAttribute("name")
+        const key = listInput.getAttribute("name");
         if (key) {
           const value = this.data[key];
           listInput.data = Array.isArray(value) ? value : [];
         }
-        listInput.tags = this.tags
-      })
+        listInput.tags = this.tags;
+      });
     }
 
     get value(): ConfigData {
-      const data: ConfigData = {}
-       // get inputs
+      const data: ConfigData = {};
+      // get inputs
       this.inputs.forEach((input) => {
-        const key = input.getAttribute("name")
-        if( key ) data[key] = input.value;
+        const key = input.getAttribute("name");
+        if (key) data[key] = input.value;
       });
       // get list inputs
       this.listInputs.forEach((listInput) => {
-        const key = listInput.getAttribute("name")
-        if( key ) data[key] = listInput.value
-      })
-      return data
+        const key = listInput.getAttribute("name");
+        if (key) data[key] = listInput.value;
+      });
+      return data;
     }
   }
 

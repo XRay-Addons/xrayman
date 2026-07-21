@@ -36,11 +36,11 @@ export type WithPrefix<Attrs, Prefix extends string> = {
 };
 
 export function ExtractPrefixed(
-  props: Record<string, any>,
+  props: Record<string, unknown>,
   prefix: string,
   cutPrefix: boolean = true,
 ) {
-  const prefixed: Record<string, any> = props[prefix] ?? {};
+  const prefixed = (props[prefix] ?? {}) as Record<string, unknown>;
   delete props[prefix];
   for (const [key, value] of Object.entries(props)) {
     if (key.startsWith(`${prefix}:`)) {
