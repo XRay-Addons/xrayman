@@ -164,9 +164,7 @@ export function prop(value: PropTarget, context: ClassAccessorDecoratorContext) 
   return {
     set(this: CustomElement, newValue: unknown) {
       const oldValue = value.get.call(this);
-
       value.set.call(this, newValue);
-
       if (oldValue !== newValue && this._connected) {
         this.render();
       }
@@ -197,9 +195,7 @@ export abstract class CustomElement extends HTMLElement {
     for (const prop of props) {
       if (Object.prototype.hasOwnProperty.call(records, prop)) {
         const value = records[prop];
-
         delete records[prop];
-
         records[prop] = value;
       }
     }
