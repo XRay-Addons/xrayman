@@ -1,0 +1,5 @@
+.astro/
+.vscode/
+node_modules/
+dist/
+src/services/api/generated/
