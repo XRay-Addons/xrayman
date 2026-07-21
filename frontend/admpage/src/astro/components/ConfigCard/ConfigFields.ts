@@ -21,7 +21,16 @@ export const numInput = {
 } satisfies HTMLAttributes<"input">;
 
 // -------------------------------------------------------------------------
+// field names
+export const SubscrTitle = "subscr-title";
+export const UsersMessage = "users-message";
+export const UserPage = "user-page";
+export const TgPage = "tg-page";
+export const UpdateInterval = "update-interval";
+export const AppLinks = "app-links";
+export const Headers = "headers";
 
+// -------------------------------------------------------------------------
 const appLinkFields: ListItemField[] = [
   {
     name: "description",
@@ -58,37 +67,37 @@ export const headersFields: ListItemField[] = [
 
 export const fields: (InputField | ListField)[] = [
   {
-    name: "subscr-title",
+    name: SubscrTitle,
     type: "tagged-input",
     inputProps: { required: false },
   },
   {
-    name: "users-message",
+    name: UsersMessage,
     type: "tagged-input",
     inputProps: { required: false },
   },
   {
-    name: "user-page",
+    name: UserPage,
     type: "tagged-input",
     inputProps: { required: false },
   },
   {
-    name: "tg-page",
+    name: TgPage,
     type: "input",
     inputProps: { required: false },
   },
   {
-    name: "update-interval",
+    name: UpdateInterval,
     type: "input",
     inputProps: { required: true, ...intInput },
   },
   {
-    name: "app-links",
+    name: AppLinks,
     type: "list-input",
     listInputs: appLinkFields,
   },
   {
-    name: "headers",
+    name: Headers,
     type: "list-input",
     listInputs: headersFields,
   },

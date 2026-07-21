@@ -33,28 +33,56 @@ const i18n = "cards.config";
     import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
     import { pt } from "@xrayman/shared/runtime/dom/pts";
     import type { ConfigEditorElement } from "@xrayman/shared/astro/primitives/Config/Config";
+    import { getDynamicConfig, setDynamicConfig } from "@/services/api/client";
+    import { notifyApiError } from "@/runtime/notifications/use-notifications";
+    import { fromRawData, toRawData } from "./DataConverter";
+    import { config } from "@/config/config";
 
     class ConfigCard extends CustomElement {
-      connectedCallback() {
+      private configEl!: ConfigEditorElement;
+
+      async connectedCallback() {
         super.connectedCallback();
 
-        const config = pt<ConfigEditorElement>(this, "config");
+        this.configEl = pt<ConfigEditorElement>(this, "config");
         const form = pt<HTMLFormElement>(this, "config-form");
+        this.configEl.tags = config().sub_headers_placeholders;
 
         const submitBtn = pt<HTMLButtonElement>(this, "submit-btn");
         submitBtn.addEventListener("click", (e) => {
           e.preventDefault();
           form.requestSubmit();
         });
-        form.addEventListener("submit", (e) => {
+        form.addEventListener("submit", async (e) => {
           e.preventDefault();
-          console.log("value: ", config.value);
+          await this.update();
         });
 
         const refreshBtn = pt<HTMLButtonElement>(this, "refresh-btn");
-        refreshBtn.addEventListener("click", (e) => {
+        refreshBtn.addEventListener("click", async (e) => {
           e.preventDefault();
+          await this.refresh();
         });
+
+        await this.refresh();
+      }
+
+      private async refresh() {
+        const result = await getDynamicConfig();
+        if (!result.ok) {
+          notifyApiError("get_dynamic_config", result.reason);
+          return;
+        }
+        this.configEl.data = toRawData(result.data);
+      }
+
+      private async update() {
+        const value = fromRawData(this.configEl.value);
+        const result = await setDynamicConfig(value);
+        if (!result.ok) {
+          notifyApiError("set_dynamic_config", result.reason);
+          return;
+        }
       }
     }
 

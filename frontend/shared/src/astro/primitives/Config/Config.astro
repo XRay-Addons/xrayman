@@ -126,7 +126,7 @@ const { ...formProps } = ExtractPrefixed(props, "form");
   import type { ConfigData, ConfigEditorElement } from "./Config";
 
   class ConfigEditor extends CustomElement implements ConfigEditorElement {
-    @prop accessor tags: string[] = ["one", "two"];
+    @prop accessor tags: string[] = [];
     @prop accessor data: ConfigData = {};
 
     private inputs!: HTMLInputElement[];
