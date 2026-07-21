@@ -6,13 +6,14 @@
       "@/*": ["./src/*"],
       "@xrayman/shared/*": ["../shared/src/*"]
     },
-    "moduleResolution": "bundler",
 
     "strict": true,
     "noUnusedLocals": true,
     "noImplicitAny": true,
     "exactOptionalPropertyTypes": true,
     "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "experimentalDecorators": false
   },
   "astro": {

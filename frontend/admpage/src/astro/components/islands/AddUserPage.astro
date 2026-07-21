@@ -50,10 +50,6 @@ const i18nResp = "add-user.response";
   import { InputGroupElement } from "@xrayman/shared/astro/primitives/InputGroup/InputGroup";
   import { MakeUserpageURL } from "@/runtime/utils/paths";
 
-  import { Test } from "./test-decorators";
-
-  new Test();
-
   class AddUserPage extends CustomElement implements ResettableElement {
     private nameInputEl!: HTMLInputElement;
     private successResultEl!: HTMLElement;

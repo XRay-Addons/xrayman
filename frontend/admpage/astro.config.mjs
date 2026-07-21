@@ -3,14 +3,17 @@ import purgecss from "astro-purgecss";
 import vue from "@astrojs/vue";
 import relativeLinks from "astro-relative-links";
 import compress from "astro-compress";
+import swc from "unplugin-swc";
 import path from "node:path";
 
 export default defineConfig({
   output: "static",
+
   build: {
     outDir: "./dist",
     minify: true,
   },
+
   integrations: [
     relativeLinks(),
     purgecss(),
@@ -23,32 +26,38 @@ export default defineConfig({
       appEntrypoint: "./src/vue/entry.ts",
     }),
   ],
+
   vite: {
+    plugins: [
+      swc.vite({
+        jsc: {
+          parser: {
+            syntax: "typescript",
+            decorators: true,
+          },
+          transform: {
+            legacyDecorator: false,
+            decoratorVersion: "2023-11",
+          },
+        },
+      }),
+    ],
+
+    ssr: {
+      noExternal: ["@xrayman/shared"],
+    },
+
     resolve: {
       alias: {
         "@": path.resolve("./src"),
         "@xrayman/shared": path.resolve("../shared/src"),
       },
     },
-    esbuild: {
-      target: "esnext",
-      tsconfigRaw: {
-        compilerOptions: {
-          experimentalDecorators: false,
-          useDefineForClassFields: true,
-        },
-      },
-    },
+
     build: {
       target: "es2022",
     },
-    experimental: {
-      renderBuiltUrl(filename, { hostType, type, ssr }) {
-        // for relative paths inside vite framework files
-        return { relative: true };
-      },
-    },
-    // use local go server for backend
+
     server: {
       proxy: {
         "/config.js": {
