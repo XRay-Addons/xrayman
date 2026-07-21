@@ -13,9 +13,6 @@
     "nodes": {
       "title": "Ноды"
     },
-    "sub-headers": {
-      "title": "Subscription Headers"
-    },
     "config": {
       "title": "Config",
       "fields": {
@@ -41,7 +38,10 @@
         }
       },
       "refresh": "Refresh",
-      "submit": "Submit"
+      "submit-btn": {
+        "info": "Submit",
+        "success": "Submitted!"
+      }
     }
   },
 
@@ -83,29 +83,6 @@
     "response": {
       "info": "Node added successfully!",
       "endpoint": "Node endpoint:"
-    },
-    "button": {
-      "text": "+"
-    }
-  },
-
-  "add-sub-header": {
-    "title": "Add new subsription header",
-    "request": {
-      "key": {
-        "info": "Header name",
-        "placeholder": "Header"
-      },
-      "value": {
-        "info": "Header value",
-        "placeholder": "value"
-      }
-    },
-    "submit-btn": {
-      "info": "Add!"
-    },
-    "response": {
-      "info": "Subscription Header added successfully!"
     },
     "button": {
       "text": "+"

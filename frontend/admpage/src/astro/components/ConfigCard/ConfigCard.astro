@@ -5,6 +5,7 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 import Config from "@xrayman/shared/astro/primitives/Config/Config.astro";
 import Button from "@xrayman/shared/astro/primitives/Button.astro";
 import { fields } from "./ConfigFields";
+import ActiveSlot from "@xrayman/shared/astro/primitives/ActiveSlot/ActiveSlot.astro";
 
 const i18n = "cards.config";
 ---
@@ -19,7 +20,9 @@ const i18n = "cards.config";
 
     <div class="d-flex justify-content-center">
       <Button btn:type="submit" class="mb-2 col-8" btn:data-submit-btn>
-        <I18NText data-i18n=`${i18n}.submit` />
+        <ActiveSlot data-submit-btn-content>
+          <I18NText data-i18n=`${i18n}.submit-btn.info` />
+        </ActiveSlot>
       </Button>
     </div>
     <div class="d-flex justify-content-center">
@@ -37,6 +40,8 @@ const i18n = "cards.config";
     import { notifyApiError } from "@/runtime/notifications/use-notifications";
     import { fromRawData, toRawData } from "./DataConverter";
     import { config } from "@/config/config";
+    import { ActiveSlotElement } from "@xrayman/shared/astro/primitives/ActiveSlot/ActiveSlot";
+    import { t } from "@/runtime/i18n";
 
     class ConfigCard extends CustomElement {
       private configEl!: ConfigEditorElement;
@@ -49,40 +54,47 @@ const i18n = "cards.config";
         this.configEl.tags = config().sub_headers_placeholders;
 
         const submitBtn = pt<HTMLButtonElement>(this, "submit-btn");
+        const submitBtnContent = pt<ActiveSlotElement>(this, "submit-btn-content");
+
+        const refresh = async () => {
+          const result = await getDynamicConfig();
+          if (!result.ok) {
+            notifyApiError("get_dynamic_config", result.reason);
+            return;
+          }
+          this.configEl.data = toRawData(result.data);
+        };
+
+        const update = async () => {
+          const value = fromRawData(this.configEl.value);
+          const result = await setDynamicConfig(value);
+          if (!result.ok) {
+            notifyApiError("set_dynamic_config", result.reason);
+            return;
+          }
+          // show back
+          submitBtnContent.value = t("cards.config.submit-btn.success");
+          setTimeout(() => {
+            submitBtnContent.value = undefined;
+          }, 2000);
+        };
+
         submitBtn.addEventListener("click", (e) => {
           e.preventDefault();
           form.requestSubmit();
         });
         form.addEventListener("submit", async (e) => {
           e.preventDefault();
-          await this.update();
+          await update();
         });
 
         const refreshBtn = pt<HTMLButtonElement>(this, "refresh-btn");
         refreshBtn.addEventListener("click", async (e) => {
           e.preventDefault();
-          await this.refresh();
+          await refresh();
         });
 
-        await this.refresh();
-      }
-
-      private async refresh() {
-        const result = await getDynamicConfig();
-        if (!result.ok) {
-          notifyApiError("get_dynamic_config", result.reason);
-          return;
-        }
-        this.configEl.data = toRawData(result.data);
-      }
-
-      private async update() {
-        const value = fromRawData(this.configEl.value);
-        const result = await setDynamicConfig(value);
-        if (!result.ok) {
-          notifyApiError("set_dynamic_config", result.reason);
-          return;
-        }
+        await refresh();
       }
     }
 

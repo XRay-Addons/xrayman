@@ -5,8 +5,6 @@ type CfgWindow = Window & {
   __CONFIG__: AdminPageConfig;
 };
 
-//export const config = (window as unknown as CfgWindow).__CONFIG__;
-
 export function config(): AdminPageConfig {
   const cfg = (window as unknown as CfgWindow).__CONFIG__;
   if (!cfg) {
