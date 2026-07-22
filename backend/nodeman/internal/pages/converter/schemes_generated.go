@@ -12,13 +12,15 @@ func ConvertAdminPageCfg(source *pagecfg.AdminPageCfg) *schemasgen.AdminpagecfgJ
 	var pSchemeAdminpagecfgJson *schemasgen.AdminpagecfgJson
 	if source != nil {
 		var schemeAdminpagecfgJson schemasgen.AdminpagecfgJson
-		schemeAdminpagecfgJson.Routes = pagecfgAdminRoutesToSchemeAdminpagecfgJsonRoutes((*source).Routes)
-		if (*source).SubHeadersPlaceholders != nil {
-			schemeAdminpagecfgJson.SubHeadersPlaceholders = make([]string, len((*source).SubHeadersPlaceholders))
-			for i := 0; i < len((*source).SubHeadersPlaceholders); i++ {
-				schemeAdminpagecfgJson.SubHeadersPlaceholders[i] = (*source).SubHeadersPlaceholders[i]
+		schemeAdminpagecfgJson.AdminPrefix = (*source).AdminPrefix
+		schemeAdminpagecfgJson.ApiPrefix = (*source).ApiPrefix
+		if (*source).SettingsTags != nil {
+			schemeAdminpagecfgJson.SettingsTags = make([]string, len((*source).SettingsTags))
+			for i := 0; i < len((*source).SettingsTags); i++ {
+				schemeAdminpagecfgJson.SettingsTags[i] = (*source).SettingsTags[i]
 			}
 		}
+		schemeAdminpagecfgJson.UserPrefix = (*source).UserPrefix
 		pSchemeAdminpagecfgJson = &schemeAdminpagecfgJson
 	}
 	return pSchemeAdminpagecfgJson
@@ -27,21 +29,23 @@ func ConvertUserPageCfg(source *pagecfg.UserPageCfg) *schemasgen.UserpagecfgJson
 	var pSchemeUserpagecfgJson *schemasgen.UserpagecfgJson
 	if source != nil {
 		var schemeUserpagecfgJson schemasgen.UserpagecfgJson
-		schemeUserpagecfgJson.Routes = pagecfgUserRoutesToSchemeUserpagecfgJsonRoutes((*source).Routes)
+		schemeUserpagecfgJson.ApiPrefix = (*source).ApiPrefix
+		if (*source).AppLinks != nil {
+			schemeUserpagecfgJson.AppLinks = make([]schemasgen.UserpagecfgJsonAppLinksElem, len((*source).AppLinks))
+			for i := 0; i < len((*source).AppLinks); i++ {
+				schemeUserpagecfgJson.AppLinks[i] = pagecfgAppLinkToSchemeUserpagecfgJsonAppLinksElem((*source).AppLinks[i])
+			}
+		}
+		schemeUserpagecfgJson.SupportLink = (*source).SupportLink
+		schemeUserpagecfgJson.UserPrefix = (*source).UserPrefix
 		pSchemeUserpagecfgJson = &schemeUserpagecfgJson
 	}
 	return pSchemeUserpagecfgJson
 }
-func pagecfgAdminRoutesToSchemeAdminpagecfgJsonRoutes(source pagecfg.AdminRoutes) schemasgen.AdminpagecfgJsonRoutes {
-	var schemeAdminpagecfgJsonRoutes schemasgen.AdminpagecfgJsonRoutes
-	schemeAdminpagecfgJsonRoutes.AdminPrefix = source.AdminPrefix
-	schemeAdminpagecfgJsonRoutes.ApiPrefix = source.ApiPrefix
-	schemeAdminpagecfgJsonRoutes.UserPrefix = source.UserPrefix
-	return schemeAdminpagecfgJsonRoutes
-}
-func pagecfgUserRoutesToSchemeUserpagecfgJsonRoutes(source pagecfg.UserRoutes) schemasgen.UserpagecfgJsonRoutes {
-	var schemeUserpagecfgJsonRoutes schemasgen.UserpagecfgJsonRoutes
-	schemeUserpagecfgJsonRoutes.ApiPrefix = source.ApiPrefix
-	schemeUserpagecfgJsonRoutes.UserPrefix = source.UserPrefix
-	return schemeUserpagecfgJsonRoutes
+func pagecfgAppLinkToSchemeUserpagecfgJsonAppLinksElem(source pagecfg.AppLink) schemasgen.UserpagecfgJsonAppLinksElem {
+	var schemeUserpagecfgJsonAppLinksElem schemasgen.UserpagecfgJsonAppLinksElem
+	schemeUserpagecfgJsonAppLinksElem.Name = source.Name
+	schemeUserpagecfgJsonAppLinksElem.Platforms = source.Platforms
+	schemeUserpagecfgJsonAppLinksElem.URL = source.URL
+	return schemeUserpagecfgJsonAppLinksElem
 }

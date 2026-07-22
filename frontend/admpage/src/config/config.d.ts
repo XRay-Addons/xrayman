@@ -6,22 +6,20 @@
  */
 
 export interface AdminPageConfig {
-  routes: {
-    /**
-     * prefix for api requests
-     */
-    api_prefix: string;
-    /**
-     * prefix for admin page spa
-     */
-    admin_prefix: string;
-    /**
-     * prefix for user page spa
-     */
-    user_prefix: string;
-  };
   /**
-   * List of allowed subscription header placeholders
+   * prefix for api requests
    */
-  sub_headers_placeholders: string[];
+  ApiPrefix: string;
+  /**
+   * prefix for admin page spa
+   */
+  AdminPrefix: string;
+  /**
+   * prefix for user page spa
+   */
+  UserPrefix: string;
+  /**
+   * List of allowed settings placeholders
+   */
+  SettingsTags: string[];
 }

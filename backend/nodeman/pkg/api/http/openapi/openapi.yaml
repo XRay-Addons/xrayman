@@ -790,10 +790,10 @@ components:
           type: string
         Routing:
           type: string
-        PlatformApps:
+        AppLinks:
           type: array
           items:
-            $ref: "#/components/schemas/PlatformApp"
+            $ref: "#/components/schemas/AppLink"
         Headers:
           type: array
           items:
@@ -805,10 +805,10 @@ components:
         - UsersMessage
         - TgPage
         - Routing
-        - PlatformApps
+        - AppLinks
         - Headers
 
-    PlatformApp:
+    AppLink:
       type: object
       properties:
         Name:

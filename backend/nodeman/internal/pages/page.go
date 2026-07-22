@@ -26,5 +26,6 @@ func new(contentFS fs.FS, contentDir string, config any) (*Page, error) {
 }
 
 func (p *Page) Mount(r chi.Router, prefix string, log *zap.Logger) error {
-	return spa.Mount(r, prefix, p.content, p.config, log)
+	configFn := func() any { return p.config }
+	return spa.Mount(r, prefix, p.content, configFn, log)
 }

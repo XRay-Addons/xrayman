@@ -291,10 +291,9 @@ func (a *App) initHttpServer(
 
 	// userpage spa
 	userpageCfg := pagecfg.UserPageCfg{
-		Routes: pagecfg.UserRoutes{
-			ApiPrefix:  cfg.ApiServiceUrl,
-			UserPrefix: cfg.UserSpaUrl,
-		},
+		ApiPrefix:  cfg.ApiServiceUrl,
+		UserPrefix: cfg.UserSpaUrl,
+		AppLinks:   []pagecfg.AppLink{},
 	}
 	userpageSpa, err := pages.NewUserPage(userpageCfg)
 	if err != nil {
@@ -303,12 +302,10 @@ func (a *App) initHttpServer(
 
 	// admpage spa
 	adminpageCfg := pagecfg.AdminPageCfg{
-		Routes: pagecfg.AdminRoutes{
-			ApiPrefix:   cfg.ApiServiceUrl,
-			AdminPrefix: cfg.AdminSpaUrl,
-			UserPrefix:  cfg.UserSpaUrl,
-		},
-		SubHeadersPlaceholders: s.subscr.SubHeadersPlaceholders(),
+		ApiPrefix:    cfg.ApiServiceUrl,
+		AdminPrefix:  cfg.AdminSpaUrl,
+		UserPrefix:   cfg.UserSpaUrl,
+		SettingsTags: s.subscr.SubHeadersPlaceholders(),
 	}
 
 	admpageSpa, err := pages.NewAdmPage(adminpageCfg)

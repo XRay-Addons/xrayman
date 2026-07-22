@@ -27,7 +27,7 @@ export const UsersMessage = "users-message";
 export const UserPage = "user-page";
 export const TgPage = "tg-page";
 export const UpdateInterval = "update-interval";
-export const PlatformApps = "app-links";
+export const AppLinks = "app-links";
 export const Routing = "routing";
 export const Headers = "headers";
 
@@ -98,7 +98,7 @@ export const fields: (InputField | ListField)[] = [
     inputProps: { required: false },
   },
   {
-    name: PlatformApps,
+    name: AppLinks,
     type: "list-input",
     listInputs: platformAppFields,
   },

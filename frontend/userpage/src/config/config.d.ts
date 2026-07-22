@@ -6,14 +6,24 @@
  */
 
 export interface UserPageConfig {
-  routes: {
-    /**
-     * prefix for api requests
-     */
-    api_prefix: string;
-    /**
-     * prefix for user page spa
-     */
-    user_prefix: string;
-  };
+  /**
+   * prefix for api requests
+   */
+  ApiPrefix: string;
+  /**
+   * prefix for user page spa
+   */
+  UserPrefix: string;
+  /**
+   * prefix for user page spa
+   */
+  SupportLink: string;
+  /**
+   * application links
+   */
+  AppLinks: {
+    Name: string;
+    Platforms: string;
+    URL: string;
+  }[];
 }

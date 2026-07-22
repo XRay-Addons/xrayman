@@ -5,7 +5,7 @@ type DynamicConfigHeader struct {
 	Value string
 }
 
-type PlatformApp struct {
+type AppLink struct {
 	Name      string
 	Platforms string
 	URL       string
@@ -19,6 +19,6 @@ type DynamicConfig struct {
 	TgPage         string
 	Routing        string
 
-	PlatformApps []PlatformApp
-	Headers      []DynamicConfigHeader
+	AppLinks []AppLink
+	Headers  []DynamicConfigHeader
 }

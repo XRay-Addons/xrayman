@@ -15,14 +15,7 @@ import {
   getDynamicConfig as _getDynamicConfig,
   setDynamicConfig as _setDynamicConfig,
 } from "./generated/sdk.gen";
-import type {
-  User,
-  Node,
-  Header,
-  AuthResponse,
-  UserView,
-  DynamicConfig,
-} from "./generated/types.gen";
+import type { User, Node, AuthResponse, UserView, DynamicConfig } from "./generated/types.gen";
 
 export async function auth(pwd: string): Promise<ApiResult<AuthResponse>> {
   return handleAPI(

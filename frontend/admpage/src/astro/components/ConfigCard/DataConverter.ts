@@ -7,7 +7,7 @@ import {
   TgPage,
   UpdateInterval,
   Routing,
-  PlatformApps,
+  AppLinks,
   Headers,
 } from "./ConfigFields";
 
@@ -20,7 +20,7 @@ export function toRawData(data: DynamicConfig): ConfigData {
     [Routing]: data.Routing,
     [UpdateInterval]: String(data.UpdateInterval),
 
-    [PlatformApps]: data.PlatformApps.map((app) => ({
+    [AppLinks]: data.AppLinks.map((app) => ({
       Name: app.Name,
       Platforms: app.Platforms,
       URL: app.URL,
@@ -43,7 +43,7 @@ export function fromRawData(data: ConfigData): DynamicConfig {
     Routing: getString(data, Routing) ?? "",
     UpdateInterval: parseInteger(getString(data, UpdateInterval) ?? "1"),
 
-    PlatformApps: getObjectArray(data, PlatformApps, {
+    AppLinks: getObjectArray(data, AppLinks, {
       Name: "",
       Platforms: "",
       URL: "",

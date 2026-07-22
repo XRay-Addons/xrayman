@@ -10,7 +10,7 @@ export function ensureClient() {
 
   client.setConfig({
     auth: getToken,
-    baseUrl: config().routes.api_prefix,
+    baseUrl: config().ApiPrefix,
     fetch: authFetch,
   });
 
