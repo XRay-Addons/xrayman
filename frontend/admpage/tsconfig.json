@@ -14,7 +14,7 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "experimentalDecorators": false
+    "experimentalDecorators": true
   },
   "astro": {
     "check": {

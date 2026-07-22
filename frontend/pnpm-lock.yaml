@@ -41,6 +41,9 @@ importers:
       unplugin-swc:
         specifier: ^1.5.9
         version: 1.5.9(@swc/core@1.15.46)(rollup@4.60.3)
+      vite-plugin-swc-transform:
+        specifier: ^1.1.1
+        version: 1.1.1(rollup@4.60.3)(vite@8.1.5(@types/node@25.6.2)(esbuild@0.28.1)(jiti@2.7.0)(sass-embedded@1.99.0)(sass@1.99.0)(terser@5.46.1)(tsx@4.23.1)(yaml@2.8.3))
 
   admpage:
     dependencies:
@@ -116,7 +119,7 @@ importers:
         version: 1.7.0(eslint@10.4.0(jiti@2.7.0))
       eslint-plugin-vue:
         specifier: ^10.9.1
-        version: 10.9.1(@typescript-eslint/parser@8.59.4(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3))(eslint@10.4.0(jiti@2.7.0))(vue-eslint-parser@10.4.0(eslint@10.4.0(jiti@2.7.0)))
+        version: 10.9.1(@typescript-eslint/parser@8.64.0(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3))(eslint@10.4.0(jiti@2.7.0))(vue-eslint-parser@10.4.0(eslint@10.4.0(jiti@2.7.0)))
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -4798,6 +4801,12 @@ packages:
       '@nuxt/kit':
         optional: true
 
+  vite-plugin-swc-transform@1.1.1:
+    resolution: {integrity: sha512-uef69pFsfSQTPM95ubXzhqKevWQWCAUh/VQ/FW7IsEgjDkK/OJOXrdmuCSQT0VHZPH6wyhO3I1PWkV4lHK2IZA==}
+    engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
+    peerDependencies:
+      vite: ^7 || ^6 || ^5
+
   vite-plugin-vue-devtools@8.1.2:
     resolution: {integrity: sha512-gt5h1CNryR9Hy0tvhSbqY3j0F7aj0pGxBxWLa1lXSiZVkhdWDf0vbCOZyjh8ivFGE6FDHTGy3zkcZGlMZdVHig==}
     engines: {node: '>=v14.21.3'}
@@ -7828,7 +7837,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-vue@10.9.1(@typescript-eslint/parser@8.59.4(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3))(eslint@10.4.0(jiti@2.7.0))(vue-eslint-parser@10.4.0(eslint@10.4.0(jiti@2.7.0))):
+  eslint-plugin-vue@10.9.1(@typescript-eslint/parser@8.64.0(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3))(eslint@10.4.0(jiti@2.7.0))(vue-eslint-parser@10.4.0(eslint@10.4.0(jiti@2.7.0))):
     dependencies:
       '@eslint-community/eslint-utils': 4.9.1(eslint@10.4.0(jiti@2.7.0))
       eslint: 10.4.0(jiti@2.7.0)
@@ -7839,7 +7848,7 @@ snapshots:
       vue-eslint-parser: 10.4.0(eslint@10.4.0(jiti@2.7.0))
       xml-name-validator: 4.0.0
     optionalDependencies:
-      '@typescript-eslint/parser': 8.59.4(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3)
+      '@typescript-eslint/parser': 8.64.0(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3)
 
   eslint-scope@8.4.0:
     dependencies:
@@ -9771,6 +9780,15 @@ snapshots:
       vite-dev-rpc: 1.1.0(vite@7.3.3(@types/node@25.6.2)(jiti@2.7.0)(lightningcss@1.32.0)(sass-embedded@1.99.0)(sass@1.99.0)(terser@5.46.1)(tsx@4.23.1)(yaml@2.8.3))
     transitivePeerDependencies:
       - supports-color
+
+  vite-plugin-swc-transform@1.1.1(rollup@4.60.3)(vite@8.1.5(@types/node@25.6.2)(esbuild@0.28.1)(jiti@2.7.0)(sass-embedded@1.99.0)(sass@1.99.0)(terser@5.46.1)(tsx@4.23.1)(yaml@2.8.3)):
+    dependencies:
+      '@rollup/pluginutils': 5.4.0(rollup@4.60.3)
+      '@swc/core': 1.15.46
+      vite: 8.1.5(@types/node@25.6.2)(esbuild@0.28.1)(jiti@2.7.0)(sass-embedded@1.99.0)(sass@1.99.0)(terser@5.46.1)(tsx@4.23.1)(yaml@2.8.3)
+    transitivePeerDependencies:
+      - '@swc/helpers'
+      - rollup
 
   vite-plugin-vue-devtools@8.1.2(vite@7.3.3(@types/node@25.6.2)(jiti@2.7.0)(lightningcss@1.32.0)(sass-embedded@1.99.0)(sass@1.99.0)(terser@5.46.1)(tsx@4.23.1)(yaml@2.8.3))(vue@3.5.34(typescript@5.9.3)):
     dependencies:

@@ -143,43 +143,47 @@
  * custom element lifecycle, while all property-upgrade complexity stays inside
  * the base class.
  */
-type PropTarget = ClassAccessorDecoratorTarget<unknown, unknown>;
 
-export function prop(value: PropTarget, context: ClassAccessorDecoratorContext) {
-  context.addInitializer(function () {
-    const self = this as CustomElement;
-    const ctor = self.constructor as typeof CustomElement;
+export function prop(target: any, propertyKey: string | symbol): any {
+  const propName = String(propertyKey);
+  const ctor = target.constructor;
 
-    if (!Object.hasOwn(ctor, "_props")) {
-      ctor._props = [...ctor._props];
-    }
+  // 1. Maintain the tracking of unique properties on the static constructor
+  if (!Object.hasOwn(ctor, "_props")) {
+    ctor._props = [...ctor._props];
+  }
+  if (!ctor._props.includes(propName)) {
+    ctor._props.push(propName);
+  }
 
-    const propName = String(context.name);
+  // 2. Define a private storage key for the instance value
+  const privateKey = Symbol(`_${propName}`);
 
-    if (!ctor._props.includes(propName)) {
-      ctor._props.push(propName);
-    }
-  });
-
+  // 3. Return a property descriptor that defines getters/setters dynamically
   return {
+    get(this: CustomElement) {
+      return (this as any)[privateKey];
+    },
     set(this: CustomElement, newValue: unknown) {
-      const oldValue = value.get.call(this);
-      value.set.call(this, newValue);
+      const oldValue = (this as any)[privateKey];
+      (this as any)[privateKey] = newValue;
+
+      // Call render if the value changed and the component is connected
       if (oldValue !== newValue && this._connected) {
         this.render();
       }
     },
+    enumerable: true,
+    configurable: true,
   };
 }
 
 export abstract class CustomElement extends HTMLElement {
   static _props: string[] = [];
-
   protected _connected = false;
 
   connectedCallback() {
     this.upgradeProperties();
-
     queueMicrotask(() => {
       if (!this._connected) {
         this._connected = true;

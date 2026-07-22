@@ -2,6 +2,8 @@
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
     "strict": true,
     "paths": {
       "@xrayman/shared/*": ["./src/*"]

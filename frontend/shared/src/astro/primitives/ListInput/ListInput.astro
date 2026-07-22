@@ -64,8 +64,8 @@ const { name, i18n, fields, ...rest } = Astro.props;
   import type { ListInputElement } from "./ListInput";
 
   class ListInput extends CustomElement implements ListInputElement {
-    @prop accessor tags: string[] = [];
-    @prop accessor data: Record<string, string>[] = [];
+    @prop tags: string[] = [];
+    @prop data: Record<string, string>[] = [];
 
     private tbody!: HTMLElement;
     private rowTmpl!: HTMLTemplateElement;

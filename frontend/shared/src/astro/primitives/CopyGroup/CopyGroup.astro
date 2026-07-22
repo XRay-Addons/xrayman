@@ -32,7 +32,7 @@ const inputProps = ExtractPrefixed(props, "input");
   import { type InputGroupElement } from "../InputGroup/InputGroup";
 
   class CopyGroup extends CustomElement implements CopyGroupElement {
-    @prop accessor value: string = "";
+    @prop value: string = "";
 
     private inputEl!: HTMLInputElement;
 

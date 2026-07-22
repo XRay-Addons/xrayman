@@ -2,7 +2,7 @@ import { defineConfig } from "astro/config";
 import purgecss from "astro-purgecss";
 import relativeLinks from "astro-relative-links";
 import compress from "astro-compress";
-import swc from "unplugin-swc";
+import swc from "vite-plugin-swc-transform";
 import path from "node:path";
 
 export default defineConfig({
@@ -22,15 +22,20 @@ export default defineConfig({
   ],
   vite: {
     plugins: [
-      swc.vite({
-        jsc: {
-          parser: {
-            syntax: "typescript",
-            decorators: true,
-          },
-          transform: {
-            legacyDecorator: false,
-            decoratorVersion: "2023-11",
+      swc({
+        include: [/\.ts$/, /astro&type=script/],
+        swcOptions: {
+          // 1. Force SWC to output modern JavaScript
+          jsc: {
+            target: "es2022",
+            parser: {
+              syntax: "typescript",
+              decorators: true,
+            },
+            transform: {
+              legacyDecorator: true,
+              useDefineForClassFields: false,
+            },
           },
         },
       }),

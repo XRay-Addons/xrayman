@@ -3,7 +3,6 @@ import purgecss from "astro-purgecss";
 import vue from "@astrojs/vue";
 import relativeLinks from "astro-relative-links";
 import compress from "astro-compress";
-import swc from "unplugin-swc";
 import path from "node:path";
 
 export default defineConfig({
@@ -28,20 +27,7 @@ export default defineConfig({
   ],
 
   vite: {
-    plugins: [
-      swc.vite({
-        jsc: {
-          parser: {
-            syntax: "typescript",
-            decorators: true,
-          },
-          transform: {
-            legacyDecorator: false,
-            decoratorVersion: "2023-11",
-          },
-        },
-      }),
-    ],
+    plugins: [],
 
     ssr: {
       noExternal: ["@xrayman/shared"],
