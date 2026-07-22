@@ -144,38 +144,57 @@
  * the base class.
  */
 
-export function prop(target: any, propertyKey: string | symbol): any {
+type PrivateStorage = {
+  [key: symbol]: unknown;
+};
+
+type CustomElementConstructor = {
+  new (...args: never[]): CustomElement;
+  _props?: string[];
+};
+
+function getStorage(target: CustomElement): PrivateStorage {
+  return target as unknown as PrivateStorage;
+}
+
+export function prop(target: object, propertyKey: string | symbol): void {
   const propName = String(propertyKey);
-  const ctor = target.constructor;
+  const ctor = target.constructor as CustomElementConstructor;
 
-  // 1. Maintain the tracking of unique properties on the static constructor
+  // Keep separate property metadata for every custom element class.
+  // Copy inherited metadata before modifying it to avoid sharing between subclasses.
   if (!Object.hasOwn(ctor, "_props")) {
-    ctor._props = [...ctor._props];
-  }
-  if (!ctor._props.includes(propName)) {
-    ctor._props.push(propName);
+    ctor._props = [...(ctor._props ?? [])];
   }
 
-  // 2. Define a private storage key for the instance value
+  const props = ctor._props!;
+
+  if (!props.includes(propName)) {
+    props.push(propName);
+  }
+
+  // Store the actual value privately on each instance.
   const privateKey = Symbol(`_${propName}`);
 
-  // 3. Return a property descriptor that defines getters/setters dynamically
-  return {
+  Object.defineProperty(target, propertyKey, {
     get(this: CustomElement) {
-      return (this as any)[privateKey];
+      return getStorage(this)[privateKey];
     },
-    set(this: CustomElement, newValue: unknown) {
-      const oldValue = (this as any)[privateKey];
-      (this as any)[privateKey] = newValue;
 
-      // Call render if the value changed and the component is connected
+    set(this: CustomElement, newValue: unknown) {
+      const storage = getStorage(this);
+
+      const oldValue = storage[privateKey];
+      storage[privateKey] = newValue;
+
       if (oldValue !== newValue && this._connected) {
         this.render();
       }
     },
+
     enumerable: true,
     configurable: true,
-  };
+  });
 }
 
 export abstract class CustomElement extends HTMLElement {
