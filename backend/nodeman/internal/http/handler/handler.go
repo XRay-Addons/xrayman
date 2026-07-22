@@ -20,7 +20,6 @@ type Handler struct {
 	us  UsersService
 	ns  NodesService
 	ss  SubscrService
-	shs SubHeadersService
 	dcs DynConfigService
 	as  AuthService
 	log *zap.Logger
@@ -43,7 +42,6 @@ func New(
 	us UsersService,
 	ns NodesService,
 	ss SubscrService,
-	shs SubHeadersService,
 	dcs DynConfigService,
 	as AuthService,
 	opts ...option,
@@ -57,9 +55,6 @@ func New(
 	if ss == nil {
 		return nil, errdefs.NilArg("ss")
 	}
-	if shs == nil {
-		return nil, errdefs.NilArg("shs")
-	}
 	if dcs == nil {
 		return nil, errdefs.NilArg("dcs")
 	}
@@ -70,7 +65,6 @@ func New(
 		us:  us,
 		ns:  ns,
 		ss:  ss,
-		shs: shs,
 		dcs: dcs,
 		as:  as,
 		log: zap.NewNop(),
@@ -130,7 +124,7 @@ func (h *Handler) logError(ctx context.Context, err error) {
 	)
 }
 
-func (h *Handler) writeHeaders(ctx context.Context, headers models.Headers) error {
+func (h *Handler) writeHeaders(ctx context.Context, headers models.SubHeaders) error {
 	headersResp := mw.GetHeaders(ctx)
 	if headersResp == nil {
 		return xerr.New("request context doesn't support headers")

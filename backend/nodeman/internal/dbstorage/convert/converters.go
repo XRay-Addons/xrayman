@@ -186,13 +186,3 @@ func UpdateNodeStatsReq(nodeID models.NodeID,
 	}
 	return req
 }
-
-func ListSubHeadersResp(r []queries.ListSubHeadersRow) []models.Header {
-	return cnvArrNoErr(r,
-		func(from *queries.ListSubHeadersRow, to *models.Header) {
-			to.ID = models.HeaderID(from.HeaderID)
-			to.Key = from.HeaderKey
-			to.Value = from.HeaderValue
-		},
-	)
-}

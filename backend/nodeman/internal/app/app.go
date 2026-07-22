@@ -29,7 +29,6 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/auth"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/dynconfig"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subheaders"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/users"
 
@@ -233,12 +232,11 @@ func (a *App) initPoolOps(cfg config.Config, infra infrasturcture, log *zap.Logg
 }
 
 type services struct {
-	nodes      *nodes.Service
-	users      *users.Service
-	subscr     *subscr.Service
-	subHeaders *subheaders.Service
-	dynConfig  *dynconfig.Service
-	auth       *auth.Service
+	nodes     *nodes.Service
+	users     *users.Service
+	subscr    *subscr.Service
+	dynConfig *dynconfig.Service
+	auth      *auth.Service
 }
 
 func (a *App) initServices(
@@ -263,11 +261,6 @@ func (a *App) initServices(
 
 	// subscr service
 	if ss.subscr, err = subscr.New(s, subscr.WithLogger(log)); err != nil {
-		return
-	}
-
-	// subscr headers service
-	if ss.subHeaders, err = subheaders.New(s); err != nil {
 		return
 	}
 
@@ -356,7 +349,6 @@ func (a *App) initHandler(s services, authJWT *jwt.JWT, log *zap.Logger) (h http
 		s.users,
 		s.nodes,
 		s.subscr,
-		s.subHeaders,
 		s.dynConfig,
 		s.auth,
 		handler.WithLogger(log))
