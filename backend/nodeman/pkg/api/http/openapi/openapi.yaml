@@ -790,6 +790,14 @@ components:
           type: string
         Routing:
           type: string
+        PlatformApps:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlatformApp"
+        Headers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Header"
       required:
         - SubscrTitle
         - UpdateInterval
@@ -797,3 +805,30 @@ components:
         - UsersMessage
         - TgPage
         - Routing
+        - PlatformApps
+        - Headers
+
+    PlatformApp:
+      type: object
+      properties:
+        Name:
+          type: string
+        Platforms:
+          type: string
+        URL:
+          type: string
+      required:
+        - Name
+        - Platforms
+        - URL
+
+    Header:
+      type: object
+      properties:
+        Key:
+          type: string
+        Value:
+          type: string
+      required:
+        - Key
+        - Value

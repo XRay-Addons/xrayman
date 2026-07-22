@@ -21,19 +21,20 @@
         "user-page": "User Page",
         "tg-page": "TG Group",
         "update-interval": "Update Interval, h",
+        "routing": "Routing, like happ://routing/onadd/....",
         "app-links": {
           "title": "Application Links",
           "columns": {
-            "description": "Description",
-            "platforms": "Platforms, regex????",
-            "url": "URL"
+            "Name": "Name",
+            "Platforms": "Platforms, regex????",
+            "URL": "URL"
           }
         },
         "headers": {
           "title": "Other Headers",
           "columns": {
-            "key": "Key",
-            "value": "Value"
+            "Key": "Key",
+            "Value": "Value"
           }
         }
       },

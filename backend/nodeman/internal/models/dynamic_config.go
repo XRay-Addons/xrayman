@@ -8,7 +8,7 @@ type DynamicConfigHeader struct {
 type PlatformApp struct {
 	Name      string
 	Platforms string
-	Url       string
+	URL       string
 }
 
 type DynamicConfig struct {

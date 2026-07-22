@@ -27,25 +27,26 @@ export const UsersMessage = "users-message";
 export const UserPage = "user-page";
 export const TgPage = "tg-page";
 export const UpdateInterval = "update-interval";
-export const AppLinks = "app-links";
+export const PlatformApps = "app-links";
+export const Routing = "routing";
 export const Headers = "headers";
 
 // -------------------------------------------------------------------------
-const appLinkFields: ListItemField[] = [
+const platformAppFields: ListItemField[] = [
   {
-    name: "description",
+    name: "Name",
     type: "input",
     inputProps: { required: true },
     width: "20%",
   },
   {
-    name: "platforms",
+    name: "Platforms",
     type: "input",
     inputProps: { required: true },
     width: "20%",
   },
   {
-    name: "url",
+    name: "URL",
     type: "input",
     inputProps: { required: true },
     width: "60%",
@@ -54,12 +55,12 @@ const appLinkFields: ListItemField[] = [
 
 export const headersFields: ListItemField[] = [
   {
-    name: "key",
+    name: "Key",
     type: "input",
     inputProps: { required: true },
   },
   {
-    name: "value",
+    name: "Value",
     type: "tagged-input",
     inputProps: { required: false },
   },
@@ -92,9 +93,14 @@ export const fields: (InputField | ListField)[] = [
     inputProps: { required: true, ...intInput },
   },
   {
-    name: AppLinks,
+    name: Routing,
+    type: "input",
+    inputProps: { required: false },
+  },
+  {
+    name: PlatformApps,
     type: "list-input",
-    listInputs: appLinkFields,
+    listInputs: platformAppFields,
   },
   {
     name: Headers,
