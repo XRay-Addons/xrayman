@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	mw "github.com/XRay-Addons/xrayman/common/http/middleware"
 	"github.com/XRay-Addons/xrayman/common/xerr"
@@ -130,7 +129,7 @@ func (h *Handler) writeHeaders(ctx context.Context, headers models.SubHeaders) e
 		return xerr.New("request context doesn't support headers")
 	}
 	for _, h := range headers {
-		fmt.Println(h.Key, h.Value)
+
 		headersResp.Set(h.Key, h.Value)
 	}
 	return nil

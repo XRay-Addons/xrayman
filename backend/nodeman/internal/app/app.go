@@ -97,7 +97,7 @@ func New(rawCfg config.RawConfig, log *zap.Logger) (app *App, err error) {
 	}
 
 	// background stats job
-	_, err = statsman.New(poolStats, cfg.StateSyncInterval, statsman.WithLogger(log))
+	statsJob, err := statsman.New(poolStats, cfg.StateSyncInterval, statsman.WithLogger(log))
 	if err != nil {
 		return
 	}
@@ -153,14 +153,14 @@ func New(rawCfg config.RawConfig, log *zap.Logger) (app *App, err error) {
 	)
 
 	// background stats
-	/*app.core.AddRunner("background stats",
+	app.core.AddRunner("background stats",
 		func() (err error) {
 			return statsJob.Run()
 		},
 		func(context.Context) error {
 			return statsJob.Stop()
 		},
-	)*/
+	)
 
 	///////////////////////////////////////////////////////////////////////////
 
