@@ -1,15 +1,21 @@
 import { type Handler } from "@xrayman/shared/runtime/dom/size-observer";
 
-const breakpoints = [576, 768, 992, 1200] as const;
+// x1.33 x1.29 x1.21
+const breakpoints = [400, 600, 800, 1200, 1800] as const;
 
 const fluidWidths = {
-  // continious version of col-10 col-md-6 col-lg-4 col-xl-2
-  "fluid-sm": [86.7, 50, 33.3, 16.7],
-  // continious version of col-12 col-md-8 col-lg-6 col-xl-4
-  "fluid-md": [100, 66.7, 50, 33.3],
-  // continious version of col-12 col-md-10 col-lg-8 col-xl-8
-  "fluid-lg": [100, 83.3, 66.7, 66.7],
+  "fluid-sm": [100.0, 80.0, 60.0, 30.0, 20.0],
+  "fluid-md": [100.0, 100.0, 80.0, 50.0, 40.0],
+  "fluid-lg": [100.0, 100.0, 80.0, 80.0, 80.0],
 } as const;
+
+for (const [name, widths] of Object.entries(fluidWidths)) {
+  console.log(name);
+
+  for (let i = 0; i < breakpoints.length; i++) {
+    console.log(`  ${breakpoints[i]}: ${(breakpoints[i] * widths[i]) / 100}px`);
+  }
+}
 
 function interpolate(width: number, values: readonly number[]) {
   // TODO: binary search
@@ -19,10 +25,12 @@ function interpolate(width: number, values: readonly number[]) {
 
   for (let i = 1; i < breakpoints.length; i++) {
     const x1 = breakpoints[i - 1];
+    const val1 = x1 * values[i - 1];
     const x2 = breakpoints[i];
+    const val2 = x2 * values[i];
 
     if (width <= x2) {
-      return values[i - 1] + ((values[i] - values[i - 1]) * (width - x1)) / (x2 - x1);
+      return (val1 + ((val2 - val1) * (width - x1)) / (x2 - x1)) / width;
     }
   }
 
