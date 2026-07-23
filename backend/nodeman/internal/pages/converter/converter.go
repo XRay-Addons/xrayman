@@ -11,6 +11,6 @@ import (
 //
 //go:generate goverter gen .
 type PageCfgConverter interface {
-	ConvertUserPageCfg(r *cfgs.UserPageCfg) *schemas.UserpagecfgJson
-	ConvertAdminPageCfg(r *cfgs.AdminPageCfg) *schemas.AdminpagecfgJson
+	ConvertUserPageCfg(r cfgs.UserPageCfg) schemas.UserpagecfgJson
+	ConvertAdminPageCfg(r cfgs.AdminPageCfg) schemas.AdminpagecfgJson
 }

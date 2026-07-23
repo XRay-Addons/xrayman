@@ -9,12 +9,12 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/pages/pagecfg"
 )
 
-//go:embed userpage/**
-var userpageFS embed.FS
+//go:embed admpage/**
+var admpageFS embed.FS
 
-type UserCfgHandler = func(context.Context) (*pagecfg.UserPageCfg, error)
+type AdminCfgHandler = func(context.Context) (*pagecfg.AdminPageCfg, error)
 
-func NewUserPage(cfgHandler UserCfgHandler) (*Page, error) {
+func NewAdmPage(cfgHandler AdminCfgHandler) (*Page, error) {
 	if cfgHandler == nil {
 		return nil, xerr.NilArg("cfgHandler")
 	}
@@ -24,9 +24,9 @@ func NewUserPage(cfgHandler UserCfgHandler) (*Page, error) {
 		if err != nil {
 			return nil, err
 		}
-		cfgData := converter.ConvertUserPageCfg(*cfg)
+		cfgData := converter.ConvertAdminPageCfg(*cfg)
 		return cfgData, nil
 	}
 
-	return new(userpageFS, "userpage", pageCfgHandler)
+	return new(admpageFS, "admpage", pageCfgHandler)
 }

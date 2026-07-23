@@ -31,34 +31,31 @@ const buttonsJson = JSON.stringify(PLATFORM_BUTTONS);
   <script>
     import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
     import { pt } from "@xrayman/shared/runtime/dom/pts";
+    import { config } from "@/config/config";
+    import {
+      detectPlatform,
+      checkPlatform,
+      type Platform,
+    } from "@xrayman/shared/runtime/platforms/platforms";
 
-    type Platform = "ios" | "macos" | "android" | "windows" | "unknown";
     type InstallButton = {
       url: string;
       text: string;
     };
-    type PlatformButtons = Record<Platform, InstallButton[]>;
 
     class InstallAppCard extends CustomElement {
       connectedCallback() {
         super.connectedCallback();
 
-        const raw = this.dataset.platformButtons;
-        if (!raw) return;
-
-        const PLATFORM_BUTTONS = JSON.parse(raw) as PlatformButtons;
-        const platform = this.detectPlatform();
-        const buttons = PLATFORM_BUTTONS[platform] ?? [];
+        const platform = detectPlatform();
+        const buttons = this.getPlatformLinks(platform);
         this.renderButtons(buttons);
       }
 
-      detectPlatform() {
-        const ua = navigator.userAgent.toLowerCase();
-        if (/iphone|ipad|ipod/.test(ua)) return "ios";
-        if (/macintosh/.test(ua)) return "macos";
-        if (/android/.test(ua)) return "android";
-        if (/windows/.test(ua)) return "windows";
-        return "unknown";
+      getPlatformLinks(platform: Platform): InstallButton[] {
+        return config().AppLinks.flatMap((app) => {
+          return checkPlatform(app.Platforms, platform) ? [{ url: app.URL, text: app.Name }] : [];
+        });
       }
 
       renderButtons(buttons: InstallButton[]) {
@@ -73,7 +70,7 @@ const buttonsJson = JSON.stringify(PLATFORM_BUTTONS);
           const text = pt<HTMLSpanElement>(fragment, "install-app-btn-text");
 
           btn.addEventListener("click", () => window.open(data.url, "_blank", "noopener"));
-          text.dataset.i18n = `installapp.${data.text}`;
+          text.innerText = data.text;
 
           frag.appendChild(fragment);
         });

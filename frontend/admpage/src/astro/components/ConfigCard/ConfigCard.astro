@@ -37,11 +37,12 @@ const i18n = "cards.config";
     import { pt } from "@xrayman/shared/runtime/dom/pts";
     import type { ConfigEditorElement } from "@xrayman/shared/astro/primitives/Config/Config";
     import { getDynamicConfig, setDynamicConfig } from "@/services/api/client";
-    import { notifyApiError } from "@/runtime/notifications/use-notifications";
+    import { notifyApiError, notifyError } from "@/runtime/notifications/use-notifications";
     import { fromRawData, toRawData } from "./DataConverter";
     import { config } from "@/config/config";
     import { ActiveSlotElement } from "@xrayman/shared/astro/primitives/ActiveSlot/ActiveSlot";
     import { t } from "@/runtime/i18n";
+    import { checkConfig } from "./ConfigCheck";
 
     class ConfigCard extends CustomElement {
       private configEl!: ConfigEditorElement;
@@ -67,6 +68,11 @@ const i18n = "cards.config";
 
         const update = async () => {
           const value = fromRawData(this.configEl.value);
+          const err = checkConfig(value);
+          if (err) {
+            notifyError(err.name, err.message);
+            return;
+          }
           const result = await setDynamicConfig(value);
           if (!result.ok) {
             notifyApiError("set_dynamic_config", result.reason);

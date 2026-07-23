@@ -2,6 +2,7 @@ package spa
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io/fs"
 	"net/http"
@@ -15,10 +16,12 @@ import (
 )
 
 // return anything marshallable
-type ConfigFn = func() any
+type CfgHandler = func(ctx context.Context) (any, error)
 
 // config is nillable for no config
-func Mount(r chi.Router, prefix string, content fs.FS, config ConfigFn, log *zap.Logger) error {
+func Mount(r chi.Router, prefix string, content fs.FS, cfgHandler CfgHandler,
+	log *zap.Logger,
+) error {
 	if r == nil {
 		return errdefs.NilArg("r")
 	}
@@ -33,8 +36,8 @@ func Mount(r chi.Router, prefix string, content fs.FS, config ConfigFn, log *zap
 	}
 
 	// host config on /config.js
-	if config != nil {
-		mountConfig(r, prefix, config, log)
+	if cfgHandler != nil {
+		mountConfig(r, prefix, cfgHandler, log)
 	}
 
 	// host content
@@ -52,18 +55,17 @@ func mountPrefixNormalizer(r chi.Router, prefix string) {
 
 const configPath = "config.js"
 
-func mountConfig(r chi.Router, prefix string, cfg ConfigFn, log *zap.Logger) {
+func mountConfig(r chi.Router, prefix string, cfgHandler CfgHandler, log *zap.Logger) {
 
 	r.Get(prefix+configPath, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
 		w.Header().Set("Cache-Control", "no-store")
 
 		// make config js
-		cfgData, err := json.Marshal(cfg)
+		cfgData, err := getConfigData(r.Context(), cfgHandler)
 		if err != nil {
-			err = xerr.WrapWithStack(err)
 			w.WriteHeader(http.StatusInternalServerError)
-			log.Warn("response writing", zap.String("path", prefix+configPath), zap.Error(err))
+			log.Warn("get config", zap.String("path", prefix+configPath), zap.Error(err))
 			return
 		}
 
@@ -78,6 +80,18 @@ func mountConfig(r chi.Router, prefix string, cfg ConfigFn, log *zap.Logger) {
 			log.Warn("response writing", zap.String("path", prefix+configPath), zap.Error(err))
 		}
 	})
+}
+
+func getConfigData(ctx context.Context, cfgHandler CfgHandler) ([]byte, error) {
+	cfg, err := cfgHandler(ctx)
+	if err != nil {
+		return nil, err
+	}
+	cfgData, err := json.Marshal(cfg)
+	if err != nil {
+		return nil, xerr.WrapWithStack(err)
+	}
+	return cfgData, nil
 }
 
 func mountContent(r chi.Router, prefix string, content fs.FS) error {

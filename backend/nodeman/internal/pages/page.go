@@ -11,21 +11,20 @@ import (
 )
 
 type Page struct {
-	content fs.FS
-	config  any
+	content    fs.FS
+	cfgHandler spa.CfgHandler
 }
 
 var _ router.SPA = (*Page)(nil)
 
-func new(contentFS fs.FS, contentDir string, config any) (*Page, error) {
+func new(contentFS fs.FS, contentDir string, cfgHandler spa.CfgHandler) (*Page, error) {
 	content, err := fs.Sub(contentFS, contentDir)
 	if err != nil {
 		return nil, xerr.WrapWithStack(err)
 	}
-	return &Page{content: content, config: config}, nil
+	return &Page{content: content, cfgHandler: cfgHandler}, nil
 }
 
 func (p *Page) Mount(r chi.Router, prefix string, log *zap.Logger) error {
-	configFn := func() any { return p.config }
-	return spa.Mount(r, prefix, p.content, configFn, log)
+	return spa.Mount(r, prefix, p.content, p.cfgHandler, log)
 }

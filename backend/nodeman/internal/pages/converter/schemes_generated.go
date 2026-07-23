@@ -4,45 +4,38 @@
 package converter
 
 import (
+	models "github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	pagecfg "github.com/XRay-Addons/xrayman/nodeman/internal/pages/pagecfg"
 	schemasgen "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/schemas-gen"
 )
 
-func ConvertAdminPageCfg(source *pagecfg.AdminPageCfg) *schemasgen.AdminpagecfgJson {
-	var pSchemeAdminpagecfgJson *schemasgen.AdminpagecfgJson
-	if source != nil {
-		var schemeAdminpagecfgJson schemasgen.AdminpagecfgJson
-		schemeAdminpagecfgJson.AdminPrefix = (*source).AdminPrefix
-		schemeAdminpagecfgJson.ApiPrefix = (*source).ApiPrefix
-		if (*source).SettingsTags != nil {
-			schemeAdminpagecfgJson.SettingsTags = make([]string, len((*source).SettingsTags))
-			for i := 0; i < len((*source).SettingsTags); i++ {
-				schemeAdminpagecfgJson.SettingsTags[i] = (*source).SettingsTags[i]
-			}
+func ConvertAdminPageCfg(source pagecfg.AdminPageCfg) schemasgen.AdminpagecfgJson {
+	var schemeAdminpagecfgJson schemasgen.AdminpagecfgJson
+	schemeAdminpagecfgJson.AdminPrefix = source.AdminPrefix
+	schemeAdminpagecfgJson.ApiPrefix = source.ApiPrefix
+	if source.SettingsTags != nil {
+		schemeAdminpagecfgJson.SettingsTags = make([]string, len(source.SettingsTags))
+		for i := 0; i < len(source.SettingsTags); i++ {
+			schemeAdminpagecfgJson.SettingsTags[i] = source.SettingsTags[i]
 		}
-		schemeAdminpagecfgJson.UserPrefix = (*source).UserPrefix
-		pSchemeAdminpagecfgJson = &schemeAdminpagecfgJson
 	}
-	return pSchemeAdminpagecfgJson
+	schemeAdminpagecfgJson.UserPrefix = source.UserPrefix
+	return schemeAdminpagecfgJson
 }
-func ConvertUserPageCfg(source *pagecfg.UserPageCfg) *schemasgen.UserpagecfgJson {
-	var pSchemeUserpagecfgJson *schemasgen.UserpagecfgJson
-	if source != nil {
-		var schemeUserpagecfgJson schemasgen.UserpagecfgJson
-		schemeUserpagecfgJson.ApiPrefix = (*source).ApiPrefix
-		if (*source).AppLinks != nil {
-			schemeUserpagecfgJson.AppLinks = make([]schemasgen.UserpagecfgJsonAppLinksElem, len((*source).AppLinks))
-			for i := 0; i < len((*source).AppLinks); i++ {
-				schemeUserpagecfgJson.AppLinks[i] = pagecfgAppLinkToSchemeUserpagecfgJsonAppLinksElem((*source).AppLinks[i])
-			}
+func ConvertUserPageCfg(source pagecfg.UserPageCfg) schemasgen.UserpagecfgJson {
+	var schemeUserpagecfgJson schemasgen.UserpagecfgJson
+	schemeUserpagecfgJson.ApiPrefix = source.ApiPrefix
+	if source.AppLinks != nil {
+		schemeUserpagecfgJson.AppLinks = make([]schemasgen.UserpagecfgJsonAppLinksElem, len(source.AppLinks))
+		for i := 0; i < len(source.AppLinks); i++ {
+			schemeUserpagecfgJson.AppLinks[i] = modelsAppLinkToSchemeUserpagecfgJsonAppLinksElem(source.AppLinks[i])
 		}
-		schemeUserpagecfgJson.SupportLink = (*source).SupportLink
-		schemeUserpagecfgJson.UserPrefix = (*source).UserPrefix
-		pSchemeUserpagecfgJson = &schemeUserpagecfgJson
 	}
-	return pSchemeUserpagecfgJson
+	schemeUserpagecfgJson.SupportLink = source.SupportLink
+	schemeUserpagecfgJson.UserPrefix = source.UserPrefix
+	return schemeUserpagecfgJson
 }
-func pagecfgAppLinkToSchemeUserpagecfgJsonAppLinksElem(source pagecfg.AppLink) schemasgen.UserpagecfgJsonAppLinksElem {
+func modelsAppLinkToSchemeUserpagecfgJsonAppLinksElem(source models.AppLink) schemasgen.UserpagecfgJsonAppLinksElem {
 	var schemeUserpagecfgJsonAppLinksElem schemasgen.UserpagecfgJsonAppLinksElem
 	schemeUserpagecfgJsonAppLinksElem.Name = source.Name
 	schemeUserpagecfgJsonAppLinksElem.Platforms = source.Platforms

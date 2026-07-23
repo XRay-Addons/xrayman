@@ -42,6 +42,10 @@
       "submit-btn": {
         "info": "Submit",
         "success": "Submitted!"
+      },
+      "errors": {
+        "app-links": "App Links error",
+        "no-platform-apps": "No apps for platform"
       }
     }
   },

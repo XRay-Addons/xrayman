@@ -85,7 +85,7 @@ func New(rawCfg config.RawConfig, log *zap.Logger) (app *App, err error) {
 	}
 
 	// http server
-	httpServer, err := app.initHttpServer(*cfg, *services, infra.authJWT, log)
+	httpServer, err := app.initHttpServer(*cfg, infra.storage, *services, infra.authJWT, log)
 	if err != nil {
 		return
 	}
@@ -279,6 +279,7 @@ func (a *App) initServices(
 
 func (a *App) initHttpServer(
 	cfg config.Config,
+	storage dynconfig.Storage,
 	s services,
 	authJWT *jwt.JWT,
 	log *zap.Logger,
@@ -290,25 +291,35 @@ func (a *App) initHttpServer(
 	}
 
 	// userpage spa
-	userpageCfg := pagecfg.UserPageCfg{
-		ApiPrefix:  cfg.ApiServiceUrl,
-		UserPrefix: cfg.UserSpaUrl,
-		AppLinks:   []pagecfg.AppLink{},
+	userCfgHandler := func(ctx context.Context) (*pagecfg.UserPageCfg, error) {
+		dyncfg, err := storage.GetDynamicConfig(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return &pagecfg.UserPageCfg{
+			ApiPrefix:   cfg.ApiServiceUrl,
+			UserPrefix:  cfg.UserSpaUrl,
+			SupportLink: dyncfg.TgPage,
+			AppLinks:    dyncfg.AppLinks,
+		}, nil
 	}
-	userpageSpa, err := pages.NewUserPage(userpageCfg)
+
+	userpageSpa, err := pages.NewUserPage(userCfgHandler)
 	if err != nil {
 		return
 	}
 
 	// admpage spa
-	adminpageCfg := pagecfg.AdminPageCfg{
-		ApiPrefix:    cfg.ApiServiceUrl,
-		AdminPrefix:  cfg.AdminSpaUrl,
-		UserPrefix:   cfg.UserSpaUrl,
-		SettingsTags: s.subscr.SubHeadersPlaceholders(),
+	adminCfgHandler := func(ctx context.Context) (*pagecfg.AdminPageCfg, error) {
+		return &pagecfg.AdminPageCfg{
+			ApiPrefix:    cfg.ApiServiceUrl,
+			AdminPrefix:  cfg.AdminSpaUrl,
+			UserPrefix:   cfg.UserSpaUrl,
+			SettingsTags: s.subscr.SubHeadersPlaceholders(),
+		}, nil
 	}
 
-	admpageSpa, err := pages.NewAdmPage(adminpageCfg)
+	admpageSpa, err := pages.NewAdmPage(adminCfgHandler)
 	if err != nil {
 		return
 	}

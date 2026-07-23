@@ -89,7 +89,7 @@ func (db *SqlDB) Close() error {
 	if db == nil {
 		return nil
 	}
-	if err := db.Close(); err != nil {
+	if err := db.DB.Close(); err != nil {
 		return xerr.WrapWithStack(err)
 	}
 	return nil

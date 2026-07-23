@@ -1,5 +1,5 @@
 {
-  "include": ["src"],
+  "include": ["src", "../shared/src/runtime/platforms"],
   "compilerOptions": {
     "module": "ESNext",
     "experimentalDecorators": true,

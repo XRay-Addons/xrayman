@@ -1,20 +1,10 @@
 package pagecfg
 
-/*
-	type UserRoutes struct {
-		ApiPrefix  string
-		UserPrefix string
-	}
-*/
-type AppLink struct {
-	Name      string
-	Platforms string
-	URL       string
-}
+import "github.com/XRay-Addons/xrayman/nodeman/internal/models"
 
 type UserPageCfg struct {
 	ApiPrefix   string
 	UserPrefix  string
 	SupportLink string
-	AppLinks    []AppLink
+	AppLinks    []models.AppLink
 }
