@@ -11,14 +11,14 @@ import (
 func (h *Handler) UserSub(ctx context.Context, req api.UserSubParams) (
 	api.UserSubContent, error,
 ) {
-	if h == nil || h.ss == nil {
+	if h == nil || h.subscr == nil {
 		return nil, errdefs.NilCall()
 	}
 	p, err := converter.ConvertUserSubRequest(&req)
 	if err != nil {
 		return nil, err
 	}
-	sub, err := h.ss.GetUserSub(ctx, *p)
+	sub, err := h.subscr.GetUserSub(ctx, *p)
 	if err != nil {
 		return nil, err
 	}

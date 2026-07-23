@@ -1,4 +1,4 @@
-import { DynamicConfig } from "@/services/api/generated/types.gen";
+import { Settings } from "@/services/api/generated/types.gen";
 import type { ConfigData } from "@xrayman/shared/astro/primitives/Config/Config";
 import {
   SubscrTitle,
@@ -8,10 +8,10 @@ import {
   UpdateInterval,
   Routing,
   AppLinks,
-  Headers,
-} from "./ConfigFields";
+  CustomHeaders,
+} from "./SettingsFields";
 
-export function toRawData(data: DynamicConfig): ConfigData {
+export function toRawData(data: Settings): ConfigData {
   const rd = {
     [SubscrTitle]: data.SubscrTitle,
     [UsersMessage]: data.UsersMessage,
@@ -26,7 +26,7 @@ export function toRawData(data: DynamicConfig): ConfigData {
       URL: app.URL,
     })),
 
-    [Headers]: data.Headers.map((header) => ({
+    [CustomHeaders]: data.CustomHeaders.map((header) => ({
       Key: header.Key,
       Value: header.Value,
     })),
@@ -34,7 +34,7 @@ export function toRawData(data: DynamicConfig): ConfigData {
   return rd;
 }
 
-export function fromRawData(data: ConfigData): DynamicConfig {
+export function fromRawData(data: ConfigData): Settings {
   return {
     SubscrTitle: getString(data, SubscrTitle) ?? "",
     UsersMessage: getString(data, UsersMessage) ?? "",
@@ -49,7 +49,7 @@ export function fromRawData(data: ConfigData): DynamicConfig {
       URL: "",
     }),
 
-    Headers: getObjectArray(data, Headers, {
+    CustomHeaders: getObjectArray(data, CustomHeaders, {
       Key: "",
       Value: "",
     }),

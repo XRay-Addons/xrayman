@@ -4,10 +4,10 @@ import Card from "@xrayman/shared/astro/primitives/Card.astro";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 import Config from "@xrayman/shared/astro/primitives/Config/Config.astro";
 import Button from "@xrayman/shared/astro/primitives/Button.astro";
-import { fields } from "./ConfigFields";
+import { fields } from "./SettingsFields";
 import ActiveSlot from "@xrayman/shared/astro/primitives/ActiveSlot/ActiveSlot.astro";
 
-const i18n = "cards.config";
+const i18n = "cards.settings";
 ---
 
 <config-card>
@@ -36,13 +36,13 @@ const i18n = "cards.config";
     import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
     import { pt } from "@xrayman/shared/runtime/dom/pts";
     import type { ConfigEditorElement } from "@xrayman/shared/astro/primitives/Config/Config";
-    import { getDynamicConfig, setDynamicConfig } from "@/services/api/client";
+    import { getSettings, setSettings } from "@/services/api/client";
     import { notifyApiError, notifyError } from "@/runtime/notifications/use-notifications";
     import { fromRawData, toRawData } from "./DataConverter";
     import { config } from "@/config/config";
     import { ActiveSlotElement } from "@xrayman/shared/astro/primitives/ActiveSlot/ActiveSlot";
     import { t } from "@/runtime/i18n";
-    import { checkConfig } from "./ConfigCheck";
+    import { checkSettings } from "./SettingsCheck";
 
     class ConfigCard extends CustomElement {
       private configEl!: ConfigEditorElement;
@@ -58,9 +58,9 @@ const i18n = "cards.config";
         const submitBtnContent = pt<ActiveSlotElement>(this, "submit-btn-content");
 
         const refresh = async () => {
-          const result = await getDynamicConfig();
+          const result = await getSettings();
           if (!result.ok) {
-            notifyApiError("get_dynamic_config", result.reason);
+            notifyApiError("get_settings", result.reason);
             return;
           }
           this.configEl.data = toRawData(result.data);
@@ -68,18 +68,18 @@ const i18n = "cards.config";
 
         const update = async () => {
           const value = fromRawData(this.configEl.value);
-          const err = checkConfig(value);
+          const err = checkSettings(value);
           if (err) {
             notifyError(err.name, err.message);
             return;
           }
-          const result = await setDynamicConfig(value);
+          const result = await setSettings(value);
           if (!result.ok) {
-            notifyApiError("set_dynamic_config", result.reason);
+            notifyApiError("set_settings", result.reason);
             return;
           }
           // show back
-          submitBtnContent.value = t("cards.config.submit-btn.success");
+          submitBtnContent.value = t("cards.settings.submit-btn.success");
           setTimeout(() => {
             submitBtnContent.value = undefined;
           }, 2000);

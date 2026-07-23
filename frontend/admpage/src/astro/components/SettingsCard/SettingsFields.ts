@@ -29,7 +29,7 @@ export const TgPage = "tg-page";
 export const UpdateInterval = "update-interval";
 export const AppLinks = "app-links";
 export const Routing = "routing";
-export const Headers = "headers";
+export const CustomHeaders = "custom-headers";
 
 // -------------------------------------------------------------------------
 const platformAppFields: ListItemField[] = [
@@ -103,7 +103,7 @@ export const fields: (InputField | ListField)[] = [
     listInputs: platformAppFields,
   },
   {
-    name: Headers,
+    name: CustomHeaders,
     type: "list-input",
     listInputs: headersFields,
   },

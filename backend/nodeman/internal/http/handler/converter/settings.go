@@ -7,11 +7,11 @@ import (
 
 // goverter:converter
 // goverter:output:format function
-// goverter:output:file ./dynamic_config_generated.go
+// goverter:output:file ./settings_generated.go
 // goverter:enum:unknown @panic
 //
 //go:generate goverter gen .
 type DynamicConfig interface {
-	ConvertDynamicConfigRequest(r api.DynamicConfig) (*models.DynamicConfig, error)
-	ConvertDynamicConfigResult(r models.DynamicConfig) *api.DynamicConfig
+	ConvertSettingsRequest(r api.Settings) (*models.Settings, error)
+	ConvertSettingsResult(r models.Settings) *api.Settings
 }

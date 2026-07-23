@@ -12,8 +12,8 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/auth"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service/dynconfig"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service/settings"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/users"
 	"go.uber.org/zap"
@@ -49,7 +49,7 @@ var _ nodes.Storage = (*Storage)(nil)
 var _ subscr.Storage = (*Storage)(nil)
 var _ auth.Storage = (*Storage)(nil)
 var _ poolsync.Storage = (*Storage)(nil)
-var _ dynconfig.Storage = (*Storage)(nil)
+var _ settings.Storage = (*Storage)(nil)
 
 func New(db DB) (s *Storage, err error) {
 	if db == nil {

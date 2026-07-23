@@ -17,12 +17,12 @@ import (
 )
 
 type Handler struct {
-	us  UsersService
-	ns  NodesService
-	ss  SubscrService
-	dcs DynConfigService
-	as  AuthService
-	log *zap.Logger
+	users    UsersService
+	nodes    NodesService
+	subscr   SubscrService
+	auth     AuthService
+	settings SettingsService
+	log      *zap.Logger
 }
 
 func WithLogger(log *zap.Logger) option {
@@ -39,35 +39,35 @@ type option = func(h *Handler)
 var _ api.Handler = (*Handler)(nil)
 
 func New(
-	us UsersService,
-	ns NodesService,
-	ss SubscrService,
-	dcs DynConfigService,
-	as AuthService,
+	users UsersService,
+	nodes NodesService,
+	subscr SubscrService,
+	settings SettingsService,
+	auth AuthService,
 	opts ...option,
 ) (*Handler, error) {
-	if us == nil {
-		return nil, errdefs.NilArg("us")
+	if users == nil {
+		return nil, errdefs.NilArg("users")
 	}
-	if ns == nil {
-		return nil, errdefs.NilArg("ns")
+	if nodes == nil {
+		return nil, errdefs.NilArg("nodes")
 	}
-	if ss == nil {
-		return nil, errdefs.NilArg("ss")
+	if subscr == nil {
+		return nil, errdefs.NilArg("subscr")
 	}
-	if dcs == nil {
-		return nil, errdefs.NilArg("dcs")
+	if settings == nil {
+		return nil, errdefs.NilArg("settings")
 	}
-	if as == nil {
-		return nil, errdefs.NilArg("as")
+	if auth == nil {
+		return nil, errdefs.NilArg("auth")
 	}
 	handler := &Handler{
-		us:  us,
-		ns:  ns,
-		ss:  ss,
-		dcs: dcs,
-		as:  as,
-		log: zap.NewNop(),
+		users:    users,
+		nodes:    nodes,
+		subscr:   subscr,
+		settings: settings,
+		auth:     auth,
+		log:      zap.NewNop(),
 	}
 	for _, o := range opts {
 		o(handler)

@@ -1,17 +1,12 @@
 package models
 
-type DynamicConfigHeader struct {
-	Key   string
-	Value string
-}
-
 type AppLink struct {
 	Name      string
 	Platforms string
 	URL       string
 }
 
-type DynamicConfig struct {
+type Settings struct {
 	SubscrTitle    string
 	UpdateInterval int
 	UserPage       string
@@ -19,6 +14,6 @@ type DynamicConfig struct {
 	TgPage         string
 	Routing        string
 
-	AppLinks []AppLink
-	Headers  []DynamicConfigHeader
+	AppLinks      []AppLink
+	CustomHeaders []SubHeader
 }

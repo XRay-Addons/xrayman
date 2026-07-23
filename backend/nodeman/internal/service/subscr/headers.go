@@ -19,57 +19,60 @@ const (
 )
 
 func createClientHeaders(ctx context.Context,
-	u *models.UserView, cfg *models.DynamicConfig,
+	u *models.UserView, settings *models.Settings,
 ) models.SubHeaders {
 	var headers []models.SubHeader
 
 	// title
-	if cfg.SubscrTitle != "" {
+	if settings.SubscrTitle != "" {
 		headers = append(headers, models.SubHeader{
 			Key:   ProfileTitleHeader,
-			Value: replacePlaceholders(cfg.SubscrTitle, u),
+			Value: replacePlaceholders(settings.SubscrTitle, u),
 		})
 	}
 	// update interval
-	if cfg.UpdateInterval != 0 {
+	if settings.UpdateInterval != 0 {
 		headers = append(headers, models.SubHeader{
 			Key:   ProfileUpdateIntervalHeader,
-			Value: string(cfg.UpdateInterval),
+			Value: string(settings.UpdateInterval),
 		})
 	}
 	// tg page
-	if cfg.TgPage != "" {
+	if settings.TgPage != "" {
 		headers = append(headers, models.SubHeader{
 			Key:   TgPageHeader,
-			Value: cfg.TgPage,
+			Value: settings.TgPage,
 		})
 	}
 	// web page
-	if cfg.UserPage != "" {
+	if settings.UserPage != "" {
 		headers = append(headers, models.SubHeader{
 			Key:   WebPageHeader,
-			Value: replacePlaceholders(cfg.UserPage, u),
+			Value: replacePlaceholders(settings.UserPage, u),
 		})
 	}
 	// announce header
-	if cfg.UsersMessage != "" {
+	if settings.UsersMessage != "" {
 		headers = append(headers, models.SubHeader{
 			Key:   AnnounceHeader,
-			Value: replacePlaceholders(cfg.UsersMessage, u),
+			Value: replacePlaceholders(settings.UsersMessage, u),
 		})
 	}
 	// announce header
-	if cfg.Routing != "" {
+	if settings.Routing != "" {
 		headers = append(headers, models.SubHeader{
 			Key:   RoutingHeader,
-			Value: cfg.Routing,
+			Value: settings.Routing,
 		})
 	}
+	// custom headers
+	headers = append(headers, settings.CustomHeaders...)
 	// traffic stats header
 	ts := u.Traffic.Total
 	headers = append(headers, models.SubHeader{
 		Key:   TrafficStatsHeader,
 		Value: fmt.Sprintf(TrafficStatsFmt, ts.Upload, ts.Download),
 	})
+
 	return headers
 }

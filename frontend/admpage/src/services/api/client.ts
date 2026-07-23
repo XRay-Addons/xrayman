@@ -12,10 +12,10 @@ import {
   stopNode as _stopNode,
   newNode as _newNode,
   deleteNode as _deleteNode,
-  getDynamicConfig as _getDynamicConfig,
-  setDynamicConfig as _setDynamicConfig,
+  getSettings as _getSettings,
+  setSettings as _setSettings,
 } from "./generated/sdk.gen";
-import type { User, Node, AuthResponse, UserView, DynamicConfig } from "./generated/types.gen";
+import type { User, Node, AuthResponse, UserView, Settings } from "./generated/types.gen";
 
 export async function auth(pwd: string): Promise<ApiResult<AuthResponse>> {
   return handleAPI(
@@ -94,16 +94,16 @@ export async function deleteNode(id: number): Promise<ApiResult<void>> {
   );
 }
 
-export async function getDynamicConfig(): Promise<ApiResult<DynamicConfig>> {
+export async function getSettings(): Promise<ApiResult<Settings>> {
   return handleAPI(
-    () => _getDynamicConfig(),
+    () => _getSettings(),
     (data) => data,
   );
 }
 
-export async function setDynamicConfig(cfg: DynamicConfig): Promise<ApiResult<void>> {
+export async function setSettings(settings: Settings): Promise<ApiResult<void>> {
   return handleAPI(
-    () => _setDynamicConfig({ body: cfg }),
+    () => _setSettings({ body: settings }),
     () => {},
   );
 }

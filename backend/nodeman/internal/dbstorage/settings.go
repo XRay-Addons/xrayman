@@ -9,48 +9,48 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
-func (s *Storage) EnsureDynamicConfig(ctx context.Context, cfg models.DynamicConfig) error {
+func (s *Storage) EnsureSettings(ctx context.Context, settings models.Settings) error {
 	// pre-convert
-	raw, err := json.Marshal(cfg)
+	raw, err := json.Marshal(settings)
 	if err != nil {
 		return xerr.WrapWithStack(err)
 	}
 
 	// request
 	return doVoid(ctx, s, func(ctx context.Context, q *queries.Queries) error {
-		return q.EnsureDynamicConfig(ctx, raw)
+		return q.EnsureSettings(ctx, raw)
 	})
 }
 
-func (s *Storage) GetDynamicConfig(ctx context.Context) (*models.DynamicConfig, error) {
+func (s *Storage) GetSettings(ctx context.Context) (*models.Settings, error) {
 	// request
 	raw, err := doAny(ctx, s, func(ctx context.Context,
 		q *queries.Queries,
 	) (json.RawMessage, error) {
-		return q.GetDynamicConfig(ctx)
+		return q.GetSettings(ctx)
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	// post-convert
-	var cfg models.DynamicConfig
-	err = json.Unmarshal(raw, &cfg)
+	var settings models.Settings
+	err = json.Unmarshal(raw, &settings)
 	if err != nil {
 		return nil, xerr.WrapWithStack(err)
 	}
-	return &cfg, nil
+	return &settings, nil
 }
 
-func (s *Storage) SetDynamicConfig(ctx context.Context, cfg models.DynamicConfig) error {
+func (s *Storage) SetSettings(ctx context.Context, settings models.Settings) error {
 	// pre-convert
-	raw, err := json.Marshal(cfg)
+	raw, err := json.Marshal(settings)
 	if err != nil {
 		return xerr.WrapWithStack(err)
 	}
 
 	// request
 	return doVoid(ctx, s, func(ctx context.Context, q *queries.Queries) error {
-		return q.SetDynamicConfig(ctx, raw)
+		return q.SetSettings(ctx, raw)
 	})
 }

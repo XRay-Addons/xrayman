@@ -27,8 +27,8 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/pages"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/pages/pagecfg"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/auth"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service/dynconfig"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service/settings"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/users"
 
@@ -122,9 +122,9 @@ func New(rawCfg config.RawConfig, log *zap.Logger) (app *App, err error) {
 		return errors.Is(err, errdefs.ErrTemporaryUnavailable)
 	})
 
-	// set default dynamic config
-	app.core.AddBootstrap("ensure dynamic config", func(ctx context.Context) error {
-		return services.dynConfig.EnsureDefaultConfig(ctx)
+	// set default settings
+	app.core.AddBootstrap("ensure settings", func(ctx context.Context) error {
+		return services.settings.EnsureSettings(ctx)
 	}, func(err error) bool {
 		return errors.Is(err, errdefs.ErrTemporaryUnavailable)
 	})
@@ -232,11 +232,11 @@ func (a *App) initPoolOps(cfg config.Config, infra infrasturcture, log *zap.Logg
 }
 
 type services struct {
-	nodes     *nodes.Service
-	users     *users.Service
-	subscr    *subscr.Service
-	dynConfig *dynconfig.Service
-	auth      *auth.Service
+	nodes    *nodes.Service
+	users    *users.Service
+	subscr   *subscr.Service
+	settings *settings.Service
+	auth     *auth.Service
 }
 
 func (a *App) initServices(
@@ -264,8 +264,8 @@ func (a *App) initServices(
 		return
 	}
 
-	// dynamic config service
-	if ss.dynConfig, err = dynconfig.New(s); err != nil {
+	// settings service
+	if ss.settings, err = settings.New(s); err != nil {
 		return
 	}
 
@@ -279,7 +279,7 @@ func (a *App) initServices(
 
 func (a *App) initHttpServer(
 	cfg config.Config,
-	storage dynconfig.Storage,
+	storage settings.Storage,
 	s services,
 	authJWT *jwt.JWT,
 	log *zap.Logger,
@@ -292,15 +292,15 @@ func (a *App) initHttpServer(
 
 	// userpage spa
 	userCfgHandler := func(ctx context.Context) (*pagecfg.UserPageCfg, error) {
-		dyncfg, err := storage.GetDynamicConfig(ctx)
+		settings, err := storage.GetSettings(ctx)
 		if err != nil {
 			return nil, err
 		}
 		return &pagecfg.UserPageCfg{
 			ApiPrefix:   cfg.ApiServiceUrl,
 			UserPrefix:  cfg.UserSpaUrl,
-			SupportLink: dyncfg.TgPage,
-			AppLinks:    dyncfg.AppLinks,
+			SupportLink: settings.TgPage,
+			AppLinks:    settings.AppLinks,
 		}, nil
 	}
 
@@ -357,7 +357,7 @@ func (a *App) initHandler(s services, authJWT *jwt.JWT, log *zap.Logger) (h http
 		s.users,
 		s.nodes,
 		s.subscr,
-		s.dynConfig,
+		s.settings,
 		s.auth,
 		handler.WithLogger(log))
 	if err != nil {

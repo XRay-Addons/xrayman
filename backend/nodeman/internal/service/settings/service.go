@@ -1,9 +1,10 @@
-package dynconfig
+package settings
 
 import (
 	"context"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
@@ -11,7 +12,7 @@ type Service struct {
 	storage Storage
 }
 
-//var _ handler.NodesService = (*Service)(nil)
+var _ handler.SettingsService = (*Service)(nil)
 
 func New(storage Storage) (*Service, error) {
 	if storage == nil {
@@ -23,32 +24,32 @@ func New(storage Storage) (*Service, error) {
 	}, nil
 }
 
-func (s *Service) GetDynamicConfig(ctx context.Context) (*models.DynamicConfig, error) {
+func (s *Service) GetSettings(ctx context.Context) (*models.Settings, error) {
 	if s == nil {
 		return nil, errdefs.NilCall()
 	}
-	cfg, err := s.storage.GetDynamicConfig(ctx)
+	settings, err := s.storage.GetSettings(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return cfg, nil
+	return settings, nil
 }
 
-func (s *Service) SetDynamicConfig(ctx context.Context, cfg models.DynamicConfig) error {
+func (s *Service) SetSettings(ctx context.Context, settings models.Settings) error {
 	if s == nil {
 		return errdefs.NilCall()
 	}
-	if err := s.storage.SetDynamicConfig(ctx, cfg); err != nil {
+	if err := s.storage.SetSettings(ctx, settings); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *Service) EnsureDefaultConfig(ctx context.Context) error {
+func (s *Service) EnsureSettings(ctx context.Context) error {
 	if s == nil {
 		return errdefs.NilCall()
 	}
-	if err := s.storage.EnsureDynamicConfig(ctx, models.DynamicConfig{}); err != nil {
+	if err := s.storage.EnsureSettings(ctx, models.Settings{}); err != nil {
 		return err
 	}
 	return nil

@@ -64,10 +64,10 @@ func (s *Service) GetUserSub(ctx context.Context,
 		return
 	})
 
-	// get dynamic config
-	var dynConfig *models.DynamicConfig
+	// get settings
+	var settings *models.Settings
 	g.Go(func() (err error) {
-		dynConfig, err = s.storage.GetDynamicConfig(ctx)
+		settings, err = s.storage.GetSettings(ctx)
 		return
 	})
 
@@ -84,7 +84,7 @@ func (s *Service) GetUserSub(ctx context.Context,
 	clientCfgs := createClientCfgs(user, userNodes, s.log)
 
 	// get subscription headers
-	clientHeaders := createClientHeaders(ctx, user, dynConfig)
+	clientHeaders := createClientHeaders(ctx, user, settings)
 
 	return &models.UserSubResult{
 		Headers:       clientHeaders,

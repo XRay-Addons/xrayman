@@ -305,36 +305,36 @@ func TestStorage_Password(t *testing.T) {
 	require.Equal(t, auth, *dbauth)
 }
 
-func TestStorage_DynConfig(t *testing.T) {
+func TestStorage_Settings(t *testing.T) {
 	logger := zaptest.NewLogger(t)
 	ctx := context.Background()
 
 	s, _ := setupTestDB(t, logger)
 	logger.Info("new test db inited")
 
-	cfg := models.DynamicConfig{
+	settings := models.Settings{
 		UserPage:     "user page",
 		UsersMessage: "users message",
 		TgPage:       "tg page",
 	}
-	err := s.SetDynamicConfig(ctx, cfg)
+	err := s.SetSettings(ctx, settings)
 	require.NoError(t, err)
 
-	readCfg, err := s.GetDynamicConfig(ctx)
+	readSettings, err := s.GetSettings(ctx)
 	require.NoError(t, err)
-	require.Equal(t, cfg, *readCfg)
+	require.Equal(t, settings, *readSettings)
 
-	cfg2 := models.DynamicConfig{
+	settings2 := models.Settings{
 		UserPage:     "user page2",
 		UsersMessage: "users message2",
 		TgPage:       "tg page2",
 	}
-	err = s.EnsureDynamicConfig(ctx, cfg2)
+	err = s.EnsureSettings(ctx, settings2)
 	require.NoError(t, err)
 
-	readCfg, err = s.GetDynamicConfig(ctx)
+	readSettings, err = s.GetSettings(ctx)
 	require.NoError(t, err)
-	require.Equal(t, cfg, *readCfg)
+	require.Equal(t, settings, *readSettings)
 }
 
 func TestStorage_Tx(t *testing.T) {

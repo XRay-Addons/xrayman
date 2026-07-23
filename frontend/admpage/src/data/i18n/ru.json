@@ -3,7 +3,7 @@
     "title": "Оттепелль-Адм"
   },
   "title": {
-    "main-page": "Смотри, Таблички!"
+    "main": "Смотри, Таблички!"
   },
 
   "cards": {
@@ -13,8 +13,8 @@
     "nodes": {
       "title": "Ноды"
     },
-    "config": {
-      "title": "Config",
+    "settings": {
+      "title": "Настройки",
       "fields": {
         "subscr-title": "Title",
         "users-message": "Message",
@@ -30,8 +30,8 @@
             "URL": "URL"
           }
         },
-        "headers": {
-          "title": "Other Headers",
+        "custom-headers": {
+          "title": "Custom Headers",
           "columns": {
             "Key": "Key",
             "Value": "Value"

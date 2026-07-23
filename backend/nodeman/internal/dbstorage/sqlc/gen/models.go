@@ -32,12 +32,6 @@ type DailyUsersTraffic struct {
 	Upload   int64
 }
 
-type DynamicConfig struct {
-	ID        bool
-	Config    json.RawMessage
-	UpdatedAt time.Time
-}
-
 type Node struct {
 	NodeID            int64
 	ClientCfgTemplate string
@@ -48,6 +42,12 @@ type Node struct {
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
 	DeletedAt         sql.NullTime
+}
+
+type Setting struct {
+	ID        bool
+	Settings  json.RawMessage
+	UpdatedAt time.Time
 }
 
 type SubHeader struct {
