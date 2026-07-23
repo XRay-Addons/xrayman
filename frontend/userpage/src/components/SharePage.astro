@@ -3,6 +3,7 @@ import Card from "@xrayman/shared/astro/primitives/Card.astro";
 import Button from "@xrayman/shared/astro/primitives/Button.astro";
 import Title from "@xrayman/shared/astro/primitives/Title.astro";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
+import ActiveSlot from "@xrayman/shared/astro/primitives/ActiveSlot/ActiveSlot.astro";
 import Barcode from "@xrayman/shared/astro/primitives/Barcode/Barcode.astro";
 ---
 
@@ -16,7 +17,14 @@ import Barcode from "@xrayman/shared/astro/primitives/Barcode/Barcode.astro";
       <Barcode data-share-barcode class="col-8 mb-2" />
     </div>
     <div class="h-center">
-      <Button btn:data-share-tg-btn class="col-6">
+      <Button btn:data-share-copy-btn class="col-8 mb-2">
+        <ActiveSlot data-share-copy-slot>
+          <I18NText data-i18n="share.copy" />
+        </ActiveSlot>
+      </Button>
+    </div>
+    <div class="h-center">
+      <Button btn:data-share-tg-btn class="col-8">
         <I18NText data-i18n="share.tg-button" />
       </Button>
     </div>
@@ -26,29 +34,34 @@ import Barcode from "@xrayman/shared/astro/primitives/Barcode/Barcode.astro";
 <script>
   import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
   import { type BarcodeElement } from "@xrayman/shared/astro/primitives/Barcode/Barcode";
+  import { type ActiveSlotElement } from "@xrayman/shared/astro/primitives/ActiveSlot/ActiveSlot";
   import { ShareViaTG } from "@xrayman/shared/features/sharing";
   import { MakePageUrl } from "@/runtime/utils/paths";
   import { t } from "@/runtime/i18n";
   import { pt } from "@xrayman/shared/runtime/dom/pts";
 
   class SharePage extends CustomElement {
-    private unsub?: () => void;
-
     async connectedCallback() {
       const sharingUrl = MakePageUrl("");
 
-      const btnEl = pt<HTMLButtonElement>(this, "share-tg-btn");
-      btnEl.onclick = () => {
+      const shareBtnEl = pt<HTMLButtonElement>(this, "share-tg-btn");
+      shareBtnEl.onclick = () => {
         const text = t("share.tg-sharedtext");
         ShareViaTG(sharingUrl, text);
       };
 
+      const copyBtnEl = pt<HTMLButtonElement>(this, "share-copy-btn");
+      const copySlotEl = pt<ActiveSlotElement>(this, "share-copy-slot");
+      copyBtnEl.onclick = async () => {
+        await navigator.clipboard.writeText(sharingUrl);
+        copySlotEl.value = t("share.copy-success");
+        setTimeout(() => {
+          copySlotEl.value = undefined;
+        }, 2000);
+      };
+
       const barcodeEl = pt<BarcodeElement>(this, "share-barcode");
       barcodeEl.value = sharingUrl;
-    }
-
-    disconnectedCallback() {
-      this.unsub?.();
     }
   }
 
