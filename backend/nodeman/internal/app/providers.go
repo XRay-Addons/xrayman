@@ -6,8 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/XRay-Addons/xrayman/common/app"
-	fx "github.com/XRay-Addons/xrayman/common/app"
+	"github.com/XRay-Addons/xrayman/common/gx"
 	"github.com/XRay-Addons/xrayman/common/http/router"
 	"github.com/XRay-Addons/xrayman/common/http/server"
 	client "github.com/XRay-Addons/xrayman/nodeman/internal/clients/node"
@@ -37,13 +36,13 @@ import (
 
 var CfgProvider = config.Init
 
-var DbProvider = app.Annotate(
-	func(lc app.Lifecycle, cfg *config.Config) (*sqldb.SqlDB, error) {
+var DbProvider = gx.Annotate(
+	func(lc gx.Lifecycle, cfg *config.Config) (*sqldb.SqlDB, error) {
 		db, err := sqldb.New(cfg.DBConn)
 		if err != nil {
 			return nil, err
 		}
-		lc.AppendCloser(app.Closer{
+		lc.AppendCloser(gx.Closer{
 			Name: "db",
 			OnStop: func(context.Context) error {
 				return db.Close()
@@ -51,35 +50,35 @@ var DbProvider = app.Annotate(
 		})
 		return db, nil
 	},
-	app.As(new(dbstorage.DB)),
+	gx.As(new(dbstorage.DB)),
 )
 
-var StorageProvider = app.Annotate(
+var StorageProvider = gx.Annotate(
 	dbstorage.New,
-	app.As(new(users.Storage)),
-	app.As(new(nodes.Storage)),
-	app.As(new(subscr.Storage)),
-	app.As(new(poolsync.Storage)),
-	app.As(new(poolstats.Storage)),
-	app.As(new(settings.Storage)),
-	app.As(new(auth.Storage)),
+	gx.As(new(users.Storage)),
+	gx.As(new(nodes.Storage)),
+	gx.As(new(subscr.Storage)),
+	gx.As(new(poolsync.Storage)),
+	gx.As(new(poolstats.Storage)),
+	gx.As(new(settings.Storage)),
+	gx.As(new(auth.Storage)),
 )
 
-var JwtProvider = app.Annotate(
+var JwtProvider = gx.Annotate(
 	func(cfg *config.Config) (*jwt.JWT, error) {
 		return jwt.New(cfg.JwtSecret, jwt.WithIssuer(JWTIssuer))
 	},
-	app.As(new(auth.JWT)),
-	app.As(new(security.JWT)),
+	gx.As(new(auth.JWT)),
+	gx.As(new(security.JWT)),
 )
 
-var HttpClientProvider = app.Annotate(
-	func(lc app.Lifecycle, cfg *config.Config, log *zap.Logger) (*httpclient.ClientFactory, error) {
+var HttpClientProvider = gx.Annotate(
+	func(lc gx.Lifecycle, cfg *config.Config, log *zap.Logger) (*httpclient.ClientFactory, error) {
 		clientFactory, err := httpclient.NewClientFactory(cfg.NodeCallTimeout, log)
 		if err != nil {
 			return nil, err
 		}
-		lc.AppendCloser(app.Closer{
+		lc.AppendCloser(gx.Closer{
 			Name: "client factory",
 			OnStop: func(context.Context) error {
 				clientFactory.Close()
@@ -88,8 +87,8 @@ var HttpClientProvider = app.Annotate(
 		})
 		return clientFactory, nil
 	},
-	app.As(new(client.HTTPClientFactory)),
-	app.As(app.Self()),
+	gx.As(new(client.HTTPClientFactory)),
+	gx.As(gx.Self()),
 )
 
 var PoolClientProvider = client.NewPoolClient
@@ -98,67 +97,67 @@ func SyncClientProvider(poolclient *client.PoolClient) poolsync.Client {
 	return poolclient.PoolSyncClient()
 }
 
-var PoolSyncProvider = app.Annotate(
+var PoolSyncProvider = gx.Annotate(
 	poolsync.New,
-	app.As(new(users.Syncer)),
-	app.As(new(nodes.Syncer)),
-	app.As(new(syncman.PoolSyncer)),
+	gx.As(new(users.Syncer)),
+	gx.As(new(nodes.Syncer)),
+	gx.As(new(syncman.PoolSyncer)),
 )
 
 func StatsClientProvider(poolclient *client.PoolClient) poolstats.Client {
 	return poolclient.PoolStatsClient()
 }
 
-var PoolStatsProvider = app.Annotate(
+var PoolStatsProvider = gx.Annotate(
 	poolstats.New,
-	app.As(new(statsman.StatsUpdater)),
+	gx.As(new(statsman.StatsUpdater)),
 )
 
-var SyncTimeoutProvider = app.Annotate(
+var SyncTimeoutProvider = gx.Annotate(
 	func(cfg *config.Config) time.Duration {
 		return cfg.StorageCallTimeout + cfg.NodeCallTimeout
 	},
-	app.ResultTags(`name:"sync-timeout"`),
+	gx.ResultTags(`name:"sync-timeout"`),
 )
 
-var NodesServiceProvider = app.Annotate(
+var NodesServiceProvider = gx.Annotate(
 	nodes.New,
-	app.ParamTags(``, ``, `name:"sync-timeout"`, ``),
-	app.As(new(handler.NodesService)),
+	gx.ParamTags(``, ``, `name:"sync-timeout"`, ``),
+	gx.As(new(handler.NodesService)),
 )
-var UsersServiceProvider = app.Annotate(
+var UsersServiceProvider = gx.Annotate(
 	users.New,
-	app.ParamTags(``, ``, `name:"sync-timeout"`, ``),
-	app.As(new(handler.UsersService)),
+	gx.ParamTags(``, ``, `name:"sync-timeout"`, ``),
+	gx.As(new(handler.UsersService)),
 )
-var SubscrServiceProvider = app.Annotate(
+var SubscrServiceProvider = gx.Annotate(
 	subscr.New,
-	app.As(new(handler.SubscrService)),
-	app.As(app.Self()),
+	gx.As(new(handler.SubscrService)),
+	gx.As(gx.Self()),
 )
-var SettingsServiceProvider = app.Annotate(
+var SettingsServiceProvider = gx.Annotate(
 	settings.New,
-	app.As(new(handler.SettingsService)),
+	gx.As(new(handler.SettingsService)),
 )
-var AuthServiceProvider = app.Annotate(
+var AuthServiceProvider = gx.Annotate(
 	auth.New,
-	app.As(new(handler.AuthService)),
+	gx.As(new(handler.AuthService)),
 )
 
-var HttpHandlerProvider = app.Annotate(
+var HttpHandlerProvider = gx.Annotate(
 	handler.New,
-	app.As(new(genapi.Handler)),
+	gx.As(new(genapi.Handler)),
 )
-var HttpSecurityProvider = app.Annotate(
+var HttpSecurityProvider = gx.Annotate(
 	security.New,
-	app.As(new(genapi.SecurityHandler)),
+	gx.As(new(genapi.SecurityHandler)),
 )
-var ApiHandlerProvider = app.Annotate(
+var ApiHandlerProvider = gx.Annotate(
 	api.NewHandler,
-	app.ResultTags(`name:"api-handler"`),
+	gx.ResultTags(`name:"api-handler"`),
 )
 
-var UserPageProvider = app.Annotate(
+var UserPageProvider = gx.Annotate(
 	func(cfg *config.Config, s settings.Storage) (*pages.Page, error) {
 		pageConfigHandler := func(ctx context.Context) (*pagecfg.UserPageCfg, error) {
 			settings, err := s.GetSettings(ctx)
@@ -174,10 +173,10 @@ var UserPageProvider = app.Annotate(
 		}
 		return pages.NewUserPage(pageConfigHandler)
 	},
-	app.ResultTags(`name:"user-page"`),
+	gx.ResultTags(`name:"user-page"`),
 )
 
-var AdminPageProvider = app.Annotate(
+var AdminPageProvider = gx.Annotate(
 	func(cfg *config.Config, s *subscr.Service) (*pages.Page, error) {
 		pageConfigHandler := func(ctx context.Context) (*pagecfg.AdminPageCfg, error) {
 			return &pagecfg.AdminPageCfg{
@@ -189,18 +188,18 @@ var AdminPageProvider = app.Annotate(
 		}
 		return pages.NewAdmPage(pageConfigHandler)
 	},
-	app.ResultTags(`name:"admin-page"`),
+	gx.ResultTags(`name:"admin-page"`),
 )
 
 type RouterProviderParams struct {
-	app.In
+	gx.In
 
 	ApiHandler http.Handler `name:"api-handler"`
 	UserPage   *pages.Page  `name:"user-page"`
 	AdminPage  *pages.Page  `name:"admin-page"`
 }
 
-var RouterProvider = app.Annotate(
+var RouterProvider = gx.Annotate(
 	func(cfg *config.Config, p RouterProviderParams, l *zap.Logger) (http.Handler, error) {
 		return router.New(
 			router.WithHandler(cfg.ApiServicePath, p.ApiHandler),
@@ -209,33 +208,33 @@ var RouterProvider = app.Annotate(
 			router.WithCrossOrigin(cfg.AllowedOrigins),
 			router.WithLogger(l))
 	},
-	app.ResultTags(`name:"router"`),
+	//gx.ResultTags(`name:"router"`),
 )
 
 type ServerProviderParams struct {
-	app.In
-	Router http.Handler `name:"router"`
+	gx.In
+	Router http.Handler //`name:"router"`
 }
 
-var ServerProvider = app.Annotate(
+var ServerProvider = gx.Annotate(
 	func(cfg *config.Config, p ServerProviderParams) (*server.HttpServer, error) {
 		return server.New(cfg.Endpoint, p.Router)
 	},
 )
 
-var SyncJobProvider = app.Provide(
+var SyncJobProvider = gx.Provide(
 	func(ps syncman.PoolSyncer, cfg *config.Config, l *zap.Logger) (*syncman.SyncMan, error) {
 		return syncman.New(ps, cfg.StateSyncInterval, syncman.WithLogger(l))
 	},
 )
 
-var StatsJobProvider = app.Provide(
+var StatsJobProvider = gx.Provide(
 	func(ps statsman.StatsUpdater, cfg *config.Config, l *zap.Logger) (*statsman.StatsMan, error) {
 		return statsman.New(ps, cfg.StatsSyncInterval, statsman.WithLogger(l))
 	},
 )
 
-var HelloMessageInvoker = fx.Invoke(
+var HelloMessageInvoker = gx.Invoke(
 	func(cfg *config.Config, log *zap.Logger) {
 		log.Warn(fmt.Sprintf("api available on %s via %s",
 			cfg.ApiServicePath, cfg.ApiServiceUrl))
@@ -246,9 +245,9 @@ var HelloMessageInvoker = fx.Invoke(
 	},
 )
 
-var HttpServerJob = fx.Invoke(
-	func(s *server.HttpServer, lc fx.Lifecycle) {
-		lc.AppendJob(fx.Job{
+var HttpServerJob = gx.Invoke(
+	func(s *server.HttpServer, lc gx.Lifecycle) {
+		lc.AppendJob(gx.Job{
 			Name: "http server",
 			OnStart: func(context.Context) error {
 				return s.Listen()
@@ -260,9 +259,9 @@ var HttpServerJob = fx.Invoke(
 	},
 )
 
-var BackgroundSyncJob = fx.Invoke(
-	func(s *syncman.SyncMan, lc fx.Lifecycle) {
-		lc.AppendJob(fx.Job{
+var BackgroundSyncJob = gx.Invoke(
+	func(s *syncman.SyncMan, lc gx.Lifecycle) {
+		lc.AppendJob(gx.Job{
 			Name: "background sync",
 			OnStart: func(context.Context) error {
 				return s.Run()
@@ -275,9 +274,9 @@ var BackgroundSyncJob = fx.Invoke(
 	},
 )
 
-var BackgroundStatsJob = fx.Invoke(
-	func(s *statsman.StatsMan, lc fx.Lifecycle) {
-		lc.AppendJob(fx.Job{
+var BackgroundStatsJob = gx.Invoke(
+	func(s *statsman.StatsMan, lc gx.Lifecycle) {
+		lc.AppendJob(gx.Job{
 			Name: "background stats",
 			OnStart: func(context.Context) error {
 				return s.Run()

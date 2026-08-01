@@ -1,4 +1,4 @@
-package app
+package gx
 
 import (
 	"context"
@@ -14,7 +14,8 @@ import (
 )
 
 /*
-Package app provides better wrapper around App.
+Package 'gx' provides better wrapper around 'fx'.
+(g > f)
 
 How it works when you call [Run]:
     1. Init

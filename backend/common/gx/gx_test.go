@@ -1,4 +1,4 @@
-package app
+package gx
 
 import (
 	"context"
@@ -54,7 +54,7 @@ type A struct{}
 type B struct{}
 type C struct{}
 
-func TestApp_Simple(t *testing.T) {
+func TestGx_Simple(t *testing.T) {
 	logger, err := logging.New()
 	require.NoError(t, err)
 
@@ -158,13 +158,13 @@ func TestApp_Simple(t *testing.T) {
 	logger.Warn("app stopped")
 }
 
-func TestApp_New(t *testing.T) {
+func TestGx_New(t *testing.T) {
 	logger := zaptest.NewLogger(t)
 	app := New(WithLogger(logger))
 	require.NotNil(t, app)
 }
 
-func TestApp_Success(t *testing.T) {
+func TestGx_Success(t *testing.T) {
 	logger := zaptest.NewLogger(t)
 	app := New(
 		WithLogger(logger),
@@ -215,7 +215,7 @@ func TestApp_Success(t *testing.T) {
 	logger.Warn("app stopped")
 }
 
-func TestApp_ProvideFail(t *testing.T) {
+func TestGx_ProvideFail(t *testing.T) {
 
 	logger := zaptest.NewLogger(t)
 	provideErr := xerr.New("provide timeout error")
@@ -246,7 +246,7 @@ func TestApp_ProvideFail(t *testing.T) {
 	logger.Warn("app stopped")
 }
 
-func TestApp_BootstrapFail(t *testing.T) {
+func TestGx_BootstrapFail(t *testing.T) {
 
 	logger := zaptest.NewLogger(t)
 	bootstrapErr := xerr.New("init timeout error")
@@ -300,7 +300,7 @@ func TestApp_BootstrapFail(t *testing.T) {
 	logger.Warn("app stopped")
 }
 
-func TestApp_JobFail(t *testing.T) {
+func TestGx_JobFail(t *testing.T) {
 	logger := zaptest.NewLogger(t)
 
 	// bootstrap (2 seconds)

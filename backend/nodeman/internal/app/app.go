@@ -1,7 +1,7 @@
 package app
 
 import (
-	fx "github.com/XRay-Addons/xrayman/common/app"
+	"github.com/XRay-Addons/xrayman/common/gx"
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/config"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
@@ -10,7 +10,7 @@ import (
 )
 
 type App struct {
-	core *fx.App
+	core *gx.App
 }
 
 const JWTIssuer = "nodeman"
@@ -22,23 +22,23 @@ func New(rawCfg config.RawConfig, log *zap.Logger) (*App, error) {
 
 	///////////////////////////////////////////////////////////////////////////
 	// create app components - chaotic good init order
-	var ParamsProvider = fx.Options(
-		fx.Provide(
+	var ParamsProvider = gx.Options(
+		gx.Provide(
 			func() config.RawConfig {
 				return rawCfg
 			},
 		),
-		fx.WithLogger(log),
+		gx.WithLogger(log),
 	)
 
-	var InfraModule = fx.Provide(
+	var InfraModule = gx.Provide(
 		CfgProvider,
 		DbProvider,
 		StorageProvider,
 		JwtProvider,
 	)
 
-	var PoolOpsModule = fx.Provide(
+	var PoolOpsModule = gx.Provide(
 		HttpClientProvider,
 		PoolClientProvider,
 		SyncClientProvider,
@@ -46,7 +46,7 @@ func New(rawCfg config.RawConfig, log *zap.Logger) (*App, error) {
 		StatsClientProvider,
 		PoolStatsProvider,
 	)
-	var ServicesModule = fx.Provide(
+	var ServicesModule = gx.Provide(
 		SyncTimeoutProvider,
 		NodesServiceProvider,
 		UsersServiceProvider,
@@ -55,7 +55,7 @@ func New(rawCfg config.RawConfig, log *zap.Logger) (*App, error) {
 		AuthServiceProvider,
 	)
 
-	var HttpServerModule = fx.Provide(
+	var HttpServerModule = gx.Provide(
 		HttpHandlerProvider,
 		HttpSecurityProvider,
 		ApiHandlerProvider,
@@ -108,7 +108,7 @@ func New(rawCfg config.RawConfig, log *zap.Logger) (*App, error) {
 		return
 	*/
 
-	appcore := fx.New(
+	appcore := gx.New(
 		ParamsProvider,
 		InfraModule,
 		PoolOpsModule,
@@ -136,25 +136,25 @@ func (app *App) Run() error {
 /*ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := fx.Start(ctx); err != nil {
+	if err := gx.Start(ctx); err != nil {
 		panic(err)
 	}
 
 	fmt.Println("started")
 
-	if err := fx.Stop(ctx); err != nil {
+	if err := gx.Stop(ctx); err != nil {
 		panic(err)
 	}
 
 	fmt.Println("stopped")
 }
 
-/*var ServiceModule = fx.Options()
-var HTTPModule = fx.Options()
-var JobsModule = fx.Options()
+/*var ServiceModule = gx.Options()
+var HTTPModule = gx.Options()
+var JobsModule = gx.Options()
 
-var Module = fx.Options(
-	fx.Provide()
+var Module = gx.Options(
+	gx.Provide()
 	InfraModule,
 	ServiceModule,
 	HTTPModule,
@@ -168,26 +168,26 @@ if err != nil {
 }
 
 // infrasturcture
-infra, err := fx.initInfra(*cfg)
+infra, err := gx.initInfra(*cfg)
 if err != nil {
 	return
 }
 infra.storage.ExplainLog = log
 
 // pool sync, pool stats
-poolSyncer, poolStats, err := fx.initPoolOps(*cfg, *infra, log)
+poolSyncer, poolStats, err := gx.initPoolOps(*cfg, *infra, log)
 if err != nil {
 	return
 }
 
 // services
-services, err := fx.initServices(cfg, poolSyncer, infra.authJWT, infra.storage, log)
+services, err := gx.initServices(cfg, poolSyncer, infra.authJWT, infra.storage, log)
 if err != nil {
 	return
 }
 
 // http server
-httpServer, err := fx.initHttpServer(*cfg, infra.storage, *services, infra.authJWT, log)
+httpServer, err := gx.initHttpServer(*cfg, infra.storage, *services, infra.authJWT, log)
 if err != nil {
 	return
 }
@@ -208,14 +208,14 @@ if err != nil {
 // bootstrap app components
 
 // migrate db
-fx.core.AddBootstrap("migrate db", func(ctx context.Context) error {
+gx.core.AddBootstrap("migrate db", func(ctx context.Context) error {
 	return infra.storage.Migrate(ctx, dbstorage.WithLogger(log))
 }, func(err error) bool {
 	return errors.Is(err, errdefs.ErrTemporaryUnavailable)
 })
 
 // set password
-fx.core.AddBootstrap("set password", func(ctx context.Context) error {
+gx.core.AddBootstrap("set password", func(ctx context.Context) error {
 	if cfg.AdminPassword == "" {
 		return nil
 	}
@@ -225,7 +225,7 @@ fx.core.AddBootstrap("set password", func(ctx context.Context) error {
 })
 
 // set default settings
-fx.core.AddBootstrap("ensure settings", func(ctx context.Context) error {
+gx.core.AddBootstrap("ensure settings", func(ctx context.Context) error {
 	return services.settings.EnsureSettings(ctx)
 }, func(err error) bool {
 	return errors.Is(err, errdefs.ErrTemporaryUnavailable)
@@ -235,7 +235,7 @@ fx.core.AddBootstrap("ensure settings", func(ctx context.Context) error {
 // run app components
 
 // http server
-fx.core.AddRunner("http server",
+gx.core.AddRunner("http server",
 	func() (err error) {
 		return httpServer.Listen()
 	},
@@ -245,7 +245,7 @@ fx.core.AddRunner("http server",
 )
 
 // background syncer
-fx.core.AddRunner("background sync",
+gx.core.AddRunner("background sync",
 	func() (err error) {
 		return syncJob.Run()
 	},
@@ -255,7 +255,7 @@ fx.core.AddRunner("background sync",
 )
 
 // background stats
-fx.core.AddRunner("background stats",
+gx.core.AddRunner("background stats",
 	func() (err error) {
 		return statsJob.Run()
 	},
@@ -484,9 +484,9 @@ func (app *App) Run() error {
 		return errdefs.NilCall()
 	}
 
-	if err := fx.core.Bootstrap(); err != nil {
+	if err := gx.core.Bootstrap(); err != nil {
 		return err
 	}
 
-	return fx.core.Run()
+	return gx.core.Run()
 }*/
