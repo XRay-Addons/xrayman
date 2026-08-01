@@ -59,19 +59,19 @@ func (j *PoolJob) Run() error {
 	defer j.wg.Done()
 	j.opLoop(ctx)
 
-	return ctx.Err() //nolint:wrapcheck
+	return nil
 }
 
-func (j *PoolJob) Stop() error {
+func (j *PoolJob) Stop() {
 	if j == nil {
-		return nil
+		return
 	}
 	if j.cancel != nil {
 		j.cancel()
 		j.cancel = nil
 	}
 	j.wg.Wait()
-	return nil
+	return
 }
 
 func (j *PoolJob) opLoop(ctx context.Context) {

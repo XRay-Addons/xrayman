@@ -2,203 +2,129 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
-	"github.com/oklog/run"
-	"github.com/sethvargo/go-retry"
+	"go.uber.org/fx"
+	"go.uber.org/fx/fxevent"
 	"go.uber.org/zap"
 )
 
-type runFn = func() error
-type closeFn = func(context.Context) error
+/*
+Package app provides better wrapper around App.
 
-type bootstrapFn = func(context.Context) error
-type retryFn = func(error) bool
+How it works when you call [Run]:
+    1. Init
+		- builds the dependency graph;
+		- executes all Invoke functions;
+		- collects jobs and closers registered in the custom Lifecycle.
+    2. Starts all registered jobs by calling Job.OnStart in parallel.
+       Execution continues until one of the following happens:
+         - all jobs exit successfully;
+         - any job returns an error;
+         - the application receives an interrupt signal (Ctrl+C, SIGINT, SIGTERM).
 
-type bootstrap struct {
-	name  string
-	fn    bootstrapFn
-	retry retryFn
-}
+    3. Calls Job.OnStop for every registered job (running or already finished),
+       then waits until every Job.OnStart function has returned.
 
-type runner struct {
-	name  string
-	run   runFn
-	close closeFn
-}
+    4. Returns a single error created with xerr.Join containing all job start
+       and stop errors.
 
-type App struct {
-	log           *zap.Logger
-	cancelTimeout time.Duration
+Differences from the original fx lifecycle:
+  - Context is provided so you can use it even in Invoke and Provide functions
+  - Uses a custom Lifecycle instead of Lifecycle.
+  - Lifecycle contains named jobs and closers instead of generic hooks.
+  - Jobs have explicit start and stop callbacks.
+  - Shutdown is coordinated by the wrapper rather than by App.
+*/
 
-	closers    []closeFn
-	bootstraps []bootstrap
-	runners    []runner
-
-	ctx    context.Context
-	cancel context.CancelFunc
-}
-
-type Option func(app *App)
-
-func WithLogger(l *zap.Logger) Option {
-	return func(app *App) {
-		if l != nil {
-			app.log = l
-		}
-	}
-}
-
-func WithCancelTimeout(timeout time.Duration) Option {
-	return func(app *App) {
-		app.cancelTimeout = timeout
-	}
-}
-
-const (
-	defaultCancelTimeout = 5 * time.Second
+// reexport fx tools
+type (
+	Option = fx.Option
+	In     = fx.In
+	Out    = fx.Out
 )
 
-func New(opts ...Option) *App {
-	app := &App{
-		log:           zap.NewNop(),
-		cancelTimeout: defaultCancelTimeout,
-	}
+var (
+	Provide    = fx.Provide
+	Invoke     = fx.Invoke
+	Supply     = fx.Supply
+	Options    = fx.Options
+	Annotate   = fx.Annotate
+	Module     = fx.Module
+	As         = fx.As
+	Self       = fx.Self
+	ParamTags  = fx.ParamTags
+	ResultTags = fx.ResultTags
+)
 
-	for _, o := range opts {
-		o(app)
-	}
-
-	app.ctx, app.cancel = signal.NotifyContext(context.Background(),
-		os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
-	app.log.Info("App starting, press Ctrl+C to cancel...")
-
-	return app
-}
-
-func (a *App) Close() error {
-	defer a.cancel()
-
-	var closeErrs []error
-	for i := len(a.closers) - 1; i >= 0; i-- {
-		ctx, cancel := context.WithTimeout(context.Background(), a.cancelTimeout)
-		err := a.closers[i](ctx)
-		cancel()
-
-		if err != nil {
-			closeErrs = append(closeErrs, err)
-		}
-	}
-
-	if len(closeErrs) == 0 {
+// upgraded fx tools
+func WithLogger(log *zap.Logger) Option {
+	if log == nil {
 		return nil
 	}
-
-	return xerr.Join(closeErrs...)
+	return Options(
+		Invoke(func(lc *lifecycle) { lc.log = log }),
+		Supply(log),
+		fx.WithLogger(func() fxevent.Logger {
+			return &fxevent.ZapLogger{Logger: log}
+		}),
+	)
 }
 
-func (a *App) AddBootstrap(name string,
-	fn func(context.Context) error, retry func(error) bool,
-) {
-	a.bootstraps = append(a.bootstraps, bootstrap{
-		name:  name,
-		fn:    fn,
-		retry: retry,
+func WithCancelTimeout(to time.Duration) Option {
+	return Invoke(func(lc *lifecycle) {
+		lc.closeTimeout = to
 	})
 }
 
-func (a *App) AddCloser(c func(context.Context) error) {
-	if c != nil {
-		a.closers = append(a.closers, c)
-	}
+// app impl
+type App struct {
+	options []Option
 }
 
-func (a *App) AddRunner(name string,
-	r func() error, c func(context.Context) error,
-) {
-	a.runners = append(a.runners, runner{
-		name:  name,
-		run:   r,
-		close: c,
-	})
-}
-
-func (a *App) Bootstrap() (err error) {
-	const retryInterval = 1000 * time.Millisecond
-	backoff := retry.NewConstant(retryInterval)
-
-	for _, bs := range a.bootstraps {
-		if err = retry.Do(a.ctx, backoff, func(ctx context.Context) error {
-			err := bs.fn(a.ctx)
-			if err != nil && bs.retry != nil && bs.retry(err) {
-				a.log.Warn(fmt.Sprintf("bootstrap %s: retry", bs.name), zap.Error(err))
-				return retry.RetryableError(err)
-			}
-			return err
-		}); err != nil {
-			a.log.Warn(fmt.Sprintf("bootstrap %s: unretriable error", bs.name), zap.Error(err))
-			return err
-		}
-	}
-
-	return nil
+func New(opts ...Option) App {
+	return App{options: opts}
 }
 
 func (a *App) Run() (err error) {
-	// CTRL + C - cancelable context
-	a.log.Info("App started, press Ctrl+C to cancel...")
-
-	var g run.Group
-
-	// run runners, collect errors
-	var runErrs = make([]error, len(a.runners))
-	var closeErrs = make([]error, len(a.runners))
-	for i, r := range a.runners {
-		runFn := func() error {
-			a.log.Info(fmt.Sprintf("run %s...", r.name))
-			if r.run == nil {
-				return nil
-			}
-			runErrs[i] = r.run()
-			return runErrs[i]
-		}
-		closeFn := func(error) {
-			a.log.Info(fmt.Sprintf("stop %s...", r.name))
-			if r.close == nil {
-				return
-			}
-			ctx, cancel := context.WithTimeout(context.Background(), a.cancelTimeout)
-			closeErrs[i] = r.close(ctx)
-			cancel()
-		}
-		g.Add(runFn, closeFn)
+	if a == nil {
+		return xerr.NilCall()
 	}
 
-	// wait for cancel
-	done := make(chan struct{})
-	g.Add(
-		func() error {
-			select {
-			case <-a.ctx.Done():
-				return nil
-			case <-done:
-				return nil
-			}
-		},
-		func(error) {
-			close(done)
-		},
-	)
+	// collect all options
+	options := append([]Option{}, a.options...)
 
-	// all errors collected, ignore this (it's first of runner errors)
-	_ = g.Run()
+	// lifecycle option
+	lc := &lifecycle{
+		log: zap.NewNop(),
+	}
+	options = append(options, Supply(Annotate(
+		lc,
+		As(new(Lifecycle)),
+		As(Self()),
+	)))
 
-	// join all errors
-	allErrors := append(runErrs, closeErrs...)
-	return xerr.Join(allErrors...)
+	// interruptable context option
+	ctx, cancel := signal.NotifyContext(context.Background(),
+		os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
+	options = append(options, Supply(Annotate(
+		ctx,
+		As(new(context.Context)),
+	)))
+
+	app := fx.New(options...)
+	defer func() {
+		err = xerr.Join(err, lc.Close())
+	}()
+
+	if err = app.Err(); err != nil {
+		return
+	}
+
+	return lc.Run(ctx)
 }

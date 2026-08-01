@@ -37,7 +37,7 @@ const (
 	defaultMaxConnIdletime = 300 * time.Minute
 )
 
-func New(dbConn string, opts ...option) (sqldb *SqlDB, err error) {
+func New(dbConn string, opts ...option) (*SqlDB, error) {
 	cfg := options{
 		maxOpenConns:    defaultMaxOpenConns,
 		maxIdleConns:    defaultMaxIdleConns,

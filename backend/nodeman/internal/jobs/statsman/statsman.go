@@ -79,12 +79,14 @@ func (m *StatsMan) Run() error {
 	)
 }
 
-func (m *StatsMan) Stop() error {
-	if m == nil || m.updateStatsJob == nil || m.updateDailyJob == nil {
-		return nil
+func (m *StatsMan) Stop() {
+	if m == nil {
+		return
 	}
-	return xerr.Join(
-		m.updateStatsJob.Stop(),
-		m.updateDailyJob.Stop(),
-	)
+	if m.updateStatsJob != nil {
+		m.updateStatsJob.Stop()
+	}
+	if m.updateDailyJob != nil {
+		m.updateDailyJob.Stop()
+	}
 }

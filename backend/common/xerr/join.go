@@ -23,6 +23,9 @@ func Join(errs ...error) error {
 	if len(j.errs) == 0 {
 		return nil
 	}
+	if len(j.errs) == 1 {
+		return j.errs[0]
+	}
 
 	return &j
 }

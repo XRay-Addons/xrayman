@@ -1,6 +1,7 @@
 package xerr
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -37,8 +38,8 @@ func render(b *strings.Builder,
 		render(b, u.Unwrap(), indentSize, detailsOnly, "")
 
 	case interface{ Unwrap() []error }:
-		for _, e := range u.Unwrap() {
-			render(b, e, indentSize+1, false, "* ")
+		for i, e := range u.Unwrap() {
+			render(b, e, indentSize+1, false, fmt.Sprintf("[%d] ", i))
 		}
 	}
 }

@@ -67,9 +67,9 @@ func (m *SyncMan) Run() error {
 	return m.job.Run()
 }
 
-func (m *SyncMan) Stop() error {
+func (m *SyncMan) Stop() {
 	if m == nil || m.job == nil {
-		return nil
+		return
 	}
-	return m.job.Stop()
+	m.job.Stop()
 }

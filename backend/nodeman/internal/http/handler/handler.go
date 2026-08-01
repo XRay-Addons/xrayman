@@ -24,17 +24,6 @@ type Handler struct {
 	log      *zap.Logger
 }
 
-func WithLogger(log *zap.Logger) option {
-	return func(h *Handler) {
-		if log == nil {
-			return
-		}
-		h.log = log
-	}
-}
-
-type option = func(h *Handler)
-
 var _ api.Handler = (*Handler)(nil)
 
 func New(
@@ -43,7 +32,7 @@ func New(
 	subscr SubscrService,
 	settings SettingsService,
 	auth AuthService,
-	opts ...option,
+	logger *zap.Logger,
 ) (*Handler, error) {
 	if users == nil {
 		return nil, errdefs.NilArg("users")
@@ -60,18 +49,17 @@ func New(
 	if auth == nil {
 		return nil, errdefs.NilArg("auth")
 	}
-	handler := &Handler{
+	if logger == nil {
+		return nil, errdefs.NilArg("logger")
+	}
+	return &Handler{
 		users:    users,
 		nodes:    nodes,
 		subscr:   subscr,
 		settings: settings,
 		auth:     auth,
-		log:      zap.NewNop(),
-	}
-	for _, o := range opts {
-		o(handler)
-	}
-	return handler, nil
+		log:      logger,
+	}, nil
 }
 
 func (h *Handler) NewError(ctx context.Context, err error) *api.ErrorStatusCode {

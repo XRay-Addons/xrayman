@@ -22,20 +22,20 @@ func New() (*zap.Logger, error) {
 	}
 
 	// All -> stdout
-	/*stdoutCore := zapcore.NewCore(
+	stdoutCore := zapcore.NewCore(
 		encoder,
 		zapcore.AddSync(os.Stdout),
 		zapcore.DebugLevel,
-	)*/
+	)
 
 	// Warn, Err -> stderr
-	stderrCore := zapcore.NewCore(
+	/*stderrCore := zapcore.NewCore(
 		encoder,
 		zapcore.AddSync(os.Stderr),
 		zapcore.WarnLevel,
-	)
+	)*/
 
-	core := zapcore.NewTee(stderrCore)
+	core := zapcore.NewTee(stdoutCore)
 
 	logger := zap.New(core)
 

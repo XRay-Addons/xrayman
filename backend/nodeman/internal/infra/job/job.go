@@ -58,19 +58,18 @@ func (j *Job) Run() error {
 	defer j.wg.Done()
 	j.opLoop(ctx)
 
-	return ctx.Err() //nolint:wrapcheck
+	return nil
 }
 
-func (j *Job) Stop() error {
+func (j *Job) Stop() {
 	if j == nil {
-		return nil
+		return
 	}
 	if j.cancel != nil {
 		j.cancel()
 		j.cancel = nil
 	}
 	j.wg.Wait()
-	return nil
 }
 
 func (j *Job) opLoop(ctx context.Context) {

@@ -1,173 +1,274 @@
 package app
 
 import (
-	"context"
-	"errors"
-	"fmt"
-	"net/http"
-
-	appcore "github.com/XRay-Addons/xrayman/common/app"
-	"github.com/XRay-Addons/xrayman/common/http/router"
-	"github.com/XRay-Addons/xrayman/common/http/server"
+	fx "github.com/XRay-Addons/xrayman/common/app"
 	"github.com/XRay-Addons/xrayman/common/xerr"
-	client "github.com/XRay-Addons/xrayman/nodeman/internal/clients/node"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/config"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/dbstorage"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/dbstorage/sqldb"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/http/api"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/http/security"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/httpclient"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/jwt"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/stats/poolstats"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/jobs/statsman"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/jobs/syncman"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/pages"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/pages/pagecfg"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service/auth"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service/settings"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service/users"
 
 	"go.uber.org/zap"
 )
 
 type App struct {
-	core *appcore.App
+	core *fx.App
 }
 
 const JWTIssuer = "nodeman"
 
-func New(rawCfg config.RawConfig, log *zap.Logger) (app *App, err error) {
+func New(rawCfg config.RawConfig, log *zap.Logger) (*App, error) {
 	if log == nil {
 		return nil, errdefs.NilArg("log")
 	}
 
-	app = &App{
-		core: appcore.New(appcore.WithLogger(log)),
-	}
-
-	defer func() {
-		if err != nil {
-			err = xerr.Join(err, app.core.Close())
-		}
-	}()
-
 	///////////////////////////////////////////////////////////////////////////
 	// create app components - chaotic good init order
+	var ParamsProvider = fx.Options(
+		fx.Provide(
+			func() config.RawConfig {
+				return rawCfg
+			},
+		),
+		fx.WithLogger(log),
+	)
 
-	// runtime config
-	cfg, err := config.Init(rawCfg)
-	if err != nil {
-		return
-	}
+	var InfraModule = fx.Provide(
+		CfgProvider,
+		DbProvider,
+		StorageProvider,
+		JwtProvider,
+	)
 
-	// infrasturcture
-	infra, err := app.initInfra(*cfg)
-	if err != nil {
-		return
-	}
-	infra.storage.ExplainLog = log
+	var PoolOpsModule = fx.Provide(
+		HttpClientProvider,
+		PoolClientProvider,
+		SyncClientProvider,
+		PoolSyncProvider,
+		StatsClientProvider,
+		PoolStatsProvider,
+	)
+	var ServicesModule = fx.Provide(
+		SyncTimeoutProvider,
+		NodesServiceProvider,
+		UsersServiceProvider,
+		SubscrServiceProvider,
+		SettingsServiceProvider,
+		AuthServiceProvider,
+	)
 
-	// pool sync, pool stats
-	poolSyncer, poolStats, err := app.initPoolOps(*cfg, *infra, log)
-	if err != nil {
-		return
-	}
+	var HttpServerModule = fx.Provide(
+		HttpHandlerProvider,
+		HttpSecurityProvider,
+		ApiHandlerProvider,
 
-	// services
-	services, err := app.initServices(cfg, poolSyncer, infra.authJWT, infra.storage, log)
-	if err != nil {
-		return
-	}
-
-	// http server
-	httpServer, err := app.initHttpServer(*cfg, infra.storage, *services, infra.authJWT, log)
-	if err != nil {
-		return
-	}
-
-	// background sync job
-	syncJob, err := syncman.New(poolSyncer, cfg.StateSyncInterval, syncman.WithLogger(log))
-	if err != nil {
-		return
-	}
-
-	// background stats job
-	statsJob, err := statsman.New(poolStats, cfg.StateSyncInterval, statsman.WithLogger(log))
-	if err != nil {
-		return
-	}
-
-	///////////////////////////////////////////////////////////////////////////
-	// bootstrap app components
-
-	// migrate db
-	app.core.AddBootstrap("migrate db", func(ctx context.Context) error {
-		return infra.storage.Migrate(ctx, dbstorage.WithLogger(log))
-	}, func(err error) bool {
-		return errors.Is(err, errdefs.ErrTemporaryUnavailable)
-	})
-
-	// set password
-	app.core.AddBootstrap("set password", func(ctx context.Context) error {
-		if cfg.AdminPassword == "" {
-			return nil
+		UserPageProvider,
+		AdminPageProvider,
+		RouterProvider,
+		ServerProvider,
+	)
+	/*
+		// admpage spa
+		adminCfgHandler := func(ctx context.Context) (*pagecfg.AdminPageCfg, error) {
+			return &pagecfg.AdminPageCfg{
+				ApiPrefix:    cfg.ApiServiceUrl,
+				AdminPrefix:  cfg.AdminSpaUrl,
+				UserPrefix:   cfg.UserSpaUrl,
+				SettingsTags: s.subscr.SubHeadersPlaceholders(),
+			}, nil
 		}
-		return services.auth.Update(ctx, cfg.AdminPassword)
-	}, func(err error) bool {
-		return errors.Is(err, errdefs.ErrTemporaryUnavailable)
-	})
 
-	// set default settings
-	app.core.AddBootstrap("ensure settings", func(ctx context.Context) error {
-		return services.settings.EnsureSettings(ctx)
-	}, func(err error) bool {
-		return errors.Is(err, errdefs.ErrTemporaryUnavailable)
-	})
+		admpageSpa, err := pages.NewAdmPage(adminCfgHandler)
+		if err != nil {
+			return
+		}
 
-	///////////////////////////////////////////////////////////////////////////
-	// run app components
+		// router
+		r, err := router.New(
+			router.WithHandler(cfg.ApiServicePath, apiHandler),
+			router.WithSPA(cfg.UserSpaPath, userpageSpa),
+			router.WithSPA(cfg.AdminSpaPath, admpageSpa),
+			router.WithCrossOrigin(cfg.AllowedOrigins),
+			router.WithLogger(log))
+		if err != nil {
+			return
+		}
 
-	// http server
-	app.core.AddRunner("http server",
-		func() (err error) {
-			return httpServer.Listen()
-		},
-		func(ctx context.Context) error {
-			return httpServer.Shutdown(ctx)
-		},
+		// http server
+		if h, err = server.New(cfg.Endpoint, r); err != nil {
+			return
+		}
+
+		// log info
+		log.Warn(fmt.Sprintf("api available on %s via %s",
+			cfg.ApiServicePath, cfg.ApiServiceUrl))
+		log.Warn(fmt.Sprintf("user page available on %s via %s",
+			cfg.UserSpaPath, cfg.UserSpaUrl))
+		log.Warn(fmt.Sprintf("admin page available on %s via %s",
+			cfg.AdminSpaPath, cfg.AdminSpaUrl))
+
+		return
+	*/
+
+	appcore := fx.New(
+		ParamsProvider,
+		InfraModule,
+		PoolOpsModule,
+		ServicesModule,
+		HttpServerModule,
+		SyncJobProvider,
+		StatsJobProvider,
+		HelloMessageInvoker,
+		HttpServerJob,
+		BackgroundSyncJob,
+		BackgroundStatsJob,
 	)
+	return &App{
+		core: &appcore,
+	}, nil
+}
 
-	// background syncer
-	app.core.AddRunner("background sync",
-		func() (err error) {
-			return syncJob.Run()
-		},
-		func(context.Context) error {
-			return syncJob.Stop()
-		},
-	)
+func (app *App) Run() error {
+	if app == nil || app.core == nil {
+		return xerr.NilCall()
+	}
+	return app.core.Run()
+}
 
-	// background stats
-	app.core.AddRunner("background stats",
-		func() (err error) {
-			return statsJob.Run()
-		},
-		func(context.Context) error {
-			return statsJob.Stop()
-		},
-	)
+/*ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-	///////////////////////////////////////////////////////////////////////////
+	if err := fx.Start(ctx); err != nil {
+		panic(err)
+	}
 
+	fmt.Println("started")
+
+	if err := fx.Stop(ctx); err != nil {
+		panic(err)
+	}
+
+	fmt.Println("stopped")
+}
+
+/*var ServiceModule = fx.Options()
+var HTTPModule = fx.Options()
+var JobsModule = fx.Options()
+
+var Module = fx.Options(
+	fx.Provide()
+	InfraModule,
+	ServiceModule,
+	HTTPModule,
+	JobsModule,
+)
+
+// runtime config
+cfg, err := config.Init(rawCfg)
+if err != nil {
 	return
 }
 
-type infrasturcture struct {
+// infrasturcture
+infra, err := fx.initInfra(*cfg)
+if err != nil {
+	return
+}
+infra.storage.ExplainLog = log
+
+// pool sync, pool stats
+poolSyncer, poolStats, err := fx.initPoolOps(*cfg, *infra, log)
+if err != nil {
+	return
+}
+
+// services
+services, err := fx.initServices(cfg, poolSyncer, infra.authJWT, infra.storage, log)
+if err != nil {
+	return
+}
+
+// http server
+httpServer, err := fx.initHttpServer(*cfg, infra.storage, *services, infra.authJWT, log)
+if err != nil {
+	return
+}
+
+// background sync job
+syncJob, err := syncman.New(poolSyncer, cfg.StateSyncInterval, syncman.WithLogger(log))
+if err != nil {
+	return
+}
+
+// background stats job
+statsJob, err := statsman.New(poolStats, cfg.StateSyncInterval, statsman.WithLogger(log))
+if err != nil {
+	return
+}
+
+///////////////////////////////////////////////////////////////////////////
+// bootstrap app components
+
+// migrate db
+fx.core.AddBootstrap("migrate db", func(ctx context.Context) error {
+	return infra.storage.Migrate(ctx, dbstorage.WithLogger(log))
+}, func(err error) bool {
+	return errors.Is(err, errdefs.ErrTemporaryUnavailable)
+})
+
+// set password
+fx.core.AddBootstrap("set password", func(ctx context.Context) error {
+	if cfg.AdminPassword == "" {
+		return nil
+	}
+	return services.auth.Update(ctx, cfg.AdminPassword)
+}, func(err error) bool {
+	return errors.Is(err, errdefs.ErrTemporaryUnavailable)
+})
+
+// set default settings
+fx.core.AddBootstrap("ensure settings", func(ctx context.Context) error {
+	return services.settings.EnsureSettings(ctx)
+}, func(err error) bool {
+	return errors.Is(err, errdefs.ErrTemporaryUnavailable)
+})
+
+///////////////////////////////////////////////////////////////////////////
+// run app components
+
+// http server
+fx.core.AddRunner("http server",
+	func() (err error) {
+		return httpServer.Listen()
+	},
+	func(ctx context.Context) error {
+		return httpServer.Shutdown(ctx)
+	},
+)
+
+// background syncer
+fx.core.AddRunner("background sync",
+	func() (err error) {
+		return syncJob.Run()
+	},
+	func(context.Context) error {
+		return syncJob.Stop()
+	},
+)
+
+// background stats
+fx.core.AddRunner("background stats",
+	func() (err error) {
+		return statsJob.Run()
+	},
+	func(context.Context) error {
+		return statsJob.Stop()
+	},
+)
+
+///////////////////////////////////////////////////////////////////////////
+
+return*/
+
+/*type infrasturcture struct {
 	storage *dbstorage.Storage
 	authJWT *jwt.JWT
 }
@@ -359,7 +460,7 @@ func (a *App) initHandler(s services, authJWT *jwt.JWT, log *zap.Logger) (h http
 		s.subscr,
 		s.settings,
 		s.auth,
-		handler.WithLogger(log))
+		log)
 	if err != nil {
 		return
 	}
@@ -383,9 +484,9 @@ func (app *App) Run() error {
 		return errdefs.NilCall()
 	}
 
-	if err := app.core.Bootstrap(); err != nil {
+	if err := fx.core.Bootstrap(); err != nil {
 		return err
 	}
 
-	return app.core.Run()
-}
+	return fx.core.Run()
+}*/
