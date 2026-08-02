@@ -18,7 +18,7 @@ export default defineConfig({
     relativeLinks(),
     purgecss(),
     compress({
-      JavaScript: true,
+      JavaScript: false,
       CSS: true,
       HTML: true,
     }),
