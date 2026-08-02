@@ -17,13 +17,20 @@ type Job struct {
 }
 
 type Closer struct {
-	Name   string
-	OnStop func(context.Context) error
+	Name    string
+	OnClose func(context.Context) error
 }
 
 type Lifecycle interface {
-	AppendJob(j Job)
-	AppendCloser(c Closer)
+	AppendJob(name string,
+		onStart func(context.Context) error,
+		onStop func(context.Context) error)
+	AppendJobEx(
+		j Job)
+	AppendCloser(name string,
+		fn func(context.Context) error)
+	AppendCloserEx(
+		c Closer)
 }
 
 type lifecycle struct {
@@ -34,11 +41,31 @@ type lifecycle struct {
 	closers []Closer
 }
 
-func (lc *lifecycle) AppendJob(j Job) {
-	lc.jobs = append(lc.jobs, j)
+func (lc *lifecycle) AppendJob(name string,
+	onStart func(context.Context) error,
+	onStop func(context.Context) error,
+) {
+	lc.AppendJobEx(Job{
+		Name:    name,
+		OnStart: onStart,
+		OnStop:  onStop,
+	})
 }
 
-func (lc *lifecycle) AppendCloser(c Closer) {
+func (lc *lifecycle) AppendJobEx(job Job) {
+	lc.jobs = append(lc.jobs, job)
+}
+
+func (lc *lifecycle) AppendCloser(name string,
+	onClose func(context.Context) error,
+) {
+	lc.AppendCloserEx(Closer{
+		Name:    name,
+		OnClose: onClose,
+	})
+}
+
+func (lc *lifecycle) AppendCloserEx(c Closer) {
 	lc.closers = append(lc.closers, c)
 }
 
@@ -135,7 +162,7 @@ func (lc *lifecycle) invokeClosers(ctx context.Context) error {
 	for i := len(lc.closers) - 1; i >= 0; i-- {
 		closer := lc.closers[i]
 		lc.log.Warn(fmt.Sprintf("close '%s'", closer.Name))
-		if err := closer.OnStop(ctx); err != nil {
+		if err := closer.OnClose(ctx); err != nil {
 			lc.log.Error(fmt.Sprintf("close '%s'", closer.Name), zap.Error(err))
 			errs = append(errs, xerr.WrapWithInfof(err, "closer %s", closer.Name))
 		}

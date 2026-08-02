@@ -44,9 +44,10 @@ Differences from the original fx lifecycle:
 
 // reexport fx tools
 type (
-	Option = fx.Option
-	In     = fx.In
-	Out    = fx.Out
+	Option     = fx.Option
+	In         = fx.In
+	Out        = fx.Out
+	Annotation = fx.Annotation
 )
 
 var (

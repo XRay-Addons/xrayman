@@ -75,7 +75,7 @@ func TestGx_Simple(t *testing.T) {
 		// a, b, c - long providers
 		fx.Provide(func(lc Lifecycle, l *zap.Logger) (A, error) {
 			time.Sleep(3 * time.Second)
-			lc.AppendJob(Job{
+			lc.AppendJobEx(Job{
 				Name: "A Hook",
 				OnStart: func(context.Context) error {
 					aStart.Call()
@@ -87,9 +87,9 @@ func TestGx_Simple(t *testing.T) {
 		}),
 		fx.Provide(func(lc Lifecycle, l *zap.Logger, a A) (B, error) {
 			time.Sleep(3 * time.Second)
-			lc.AppendCloser(Closer{
+			lc.AppendCloserEx(Closer{
 				Name: "B Hook",
-				OnStop: func(context.Context) error {
+				OnClose: func(context.Context) error {
 					bStart.Call()
 					time.Sleep(3 * time.Second)
 					return nil
@@ -99,7 +99,7 @@ func TestGx_Simple(t *testing.T) {
 		}),
 		fx.Provide(func(lc Lifecycle, l *zap.Logger, a A, b B) (C, error) {
 			time.Sleep(3 * time.Second)
-			lc.AppendJob(Job{
+			lc.AppendJobEx(Job{
 				Name: "C Hook",
 				OnStart: func(context.Context) error {
 					cStart.Call()
@@ -118,7 +118,7 @@ func TestGx_Simple(t *testing.T) {
 		// long invokers
 		fx.Invoke(func(lc Lifecycle, l *zap.Logger, c C) error {
 			time.Sleep(3 * time.Second)
-			lc.AppendJob(Job{
+			lc.AppendJobEx(Job{
 				Name: "Long invoke",
 				OnStart: func(context.Context) error {
 					iI.Call()
@@ -135,7 +135,7 @@ func TestGx_Simple(t *testing.T) {
 		// long invokers
 		fx.Invoke(func(lc Lifecycle, l *zap.Logger, c C) error {
 			ctx, cancel := context.WithCancel(context.Background())
-			lc.AppendJob(Job{
+			lc.AppendJobEx(Job{
 				Name: "Infinite invoke",
 				OnStart: func(context.Context) error {
 					<-ctx.Done()
@@ -172,9 +172,9 @@ func TestGx_Success(t *testing.T) {
 		// bootstrap
 		fx.Invoke(func(lc Lifecycle, log *zap.Logger) {
 			log.Info("bootsrtap 1")
-			lc.AppendCloser(Closer{
+			lc.AppendCloserEx(Closer{
 				Name: "bs1 closer",
-				OnStop: func(context.Context) error {
+				OnClose: func(context.Context) error {
 					log.Info("bootsrtap closer 1")
 					return nil
 				}})
@@ -182,7 +182,7 @@ func TestGx_Success(t *testing.T) {
 
 		// jobs
 		fx.Invoke(func(lc Lifecycle, log *zap.Logger) {
-			lc.AppendJob(Job{
+			lc.AppendJobEx(Job{
 				Name: "job 1",
 				OnStart: func(context.Context) error {
 					log.Info("job 1")
@@ -195,7 +195,7 @@ func TestGx_Success(t *testing.T) {
 			})
 		}),
 		fx.Invoke(func(lc Lifecycle, log *zap.Logger) {
-			lc.AppendJob(Job{
+			lc.AppendJobEx(Job{
 				Name: "job 2",
 				OnStart: func(context.Context) error {
 					log.Info("job 2")
@@ -267,7 +267,7 @@ func TestGx_BootstrapFail(t *testing.T) {
 
 		// jobs
 		fx.Invoke(func(lc Lifecycle, log *zap.Logger) {
-			lc.AppendJob(Job{
+			lc.AppendJobEx(Job{
 				Name: "job 1",
 				OnStart: func(context.Context) error {
 					log.Info("job 1")
@@ -280,7 +280,7 @@ func TestGx_BootstrapFail(t *testing.T) {
 			})
 		}),
 		fx.Invoke(func(lc Lifecycle, log *zap.Logger) {
-			lc.AppendJob(Job{
+			lc.AppendJobEx(Job{
 				Name: "job 2",
 				OnStart: func(context.Context) error {
 					log.Info("job 2")
@@ -337,7 +337,7 @@ func TestGx_JobFail(t *testing.T) {
 		WithLogger(logger),
 		fx.Invoke(bootstrapFn),
 		fx.Invoke(func(lc Lifecycle) {
-			lc.AppendJob(Job{
+			lc.AppendJobEx(Job{
 				Name:    "job",
 				OnStart: runFn,
 				OnStop:  stopFn,
