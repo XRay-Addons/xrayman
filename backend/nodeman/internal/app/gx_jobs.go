@@ -13,7 +13,7 @@ import (
 
 var httpServerJob = gx.Invoke(
 	func(s *server.HttpServer, lc gx.Lifecycle) {
-		lc.AppendJobEx(gx.Job{
+		lc.AppendJob(gx.Job{
 			Name: "http server",
 			OnStart: func(context.Context) error {
 				return s.Listen()
@@ -33,7 +33,7 @@ var backgroundSyncJob = gx.Options(
 	),
 	gx.Invoke(
 		func(s *syncman.SyncMan, lc gx.Lifecycle) {
-			lc.AppendJobEx(gx.Job{
+			lc.AppendJob(gx.Job{
 				Name: "background sync",
 				OnStart: func(context.Context) error {
 					return s.Run()
@@ -55,7 +55,7 @@ var backgroundStatsJob = gx.Options(
 	),
 	gx.Invoke(
 		func(s *statsman.StatsMan, lc gx.Lifecycle) {
-			lc.AppendJobEx(gx.Job{
+			lc.AppendJob(gx.Job{
 				Name: "background stats",
 				OnStart: func(context.Context) error {
 					return s.Run()

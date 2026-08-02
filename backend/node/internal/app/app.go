@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	appcore "github.com/XRay-Addons/xrayman/common/app"
+	"github.com/XRay-Addons/xrayman/common/gx"
 	"github.com/XRay-Addons/xrayman/common/http/router"
 	"github.com/XRay-Addons/xrayman/common/http/server"
 	"github.com/XRay-Addons/xrayman/common/xerr"
@@ -19,8 +20,6 @@ import (
 	"github.com/XRay-Addons/xrayman/node/internal/infra/tlscfg"
 	"github.com/XRay-Addons/xrayman/node/internal/infra/xray/clientcfg"
 	"github.com/XRay-Addons/xrayman/node/internal/infra/xray/servercfg"
-	"github.com/XRay-Addons/xrayman/node/internal/infra/xray/xrayapi"
-	"github.com/XRay-Addons/xrayman/node/internal/infra/xray/xrayservice"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 	"github.com/XRay-Addons/xrayman/node/internal/service"
 	"go.uber.org/zap"
@@ -35,7 +34,32 @@ func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 		return nil, errdefs.NilArg("log")
 	}
 
-	app = &App{
+	srcProvider := gx.Provide(
+		func() (config.Config, *zap.Logger) {
+			return cfg, log
+		},
+	)
+
+	appcore := gx.New(
+		srcProvider,
+
+		Config,
+		Security,
+		//Storage,
+		//Nodes,
+		Services,
+		XRay,
+		Server,
+		//Jobs,
+		//Startup,
+		Startup,
+	)
+
+	return &App{
+		core: &appcore,
+	}, nil
+
+	/*app = &App{
 		core: appcore.New(appcore.WithLogger(log)),
 	}
 
@@ -43,22 +67,22 @@ func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 		if err != nil {
 			err = xerr.Join(err, app.core.Close())
 		}
-	}()
+	}()*/
 
 	// configs
-	configs, err := app.initConfigs(cfg)
+	/*configs, err := app.initConfigs(cfg)
 	if err != nil {
 		return
-	}
-	log.Warn("node access", zap.String("key",
+	}*/
+	/*log.Warn("node access", zap.String("key",
 		configs.accessKey.String()))
 	log.Warn("node access", zap.String("key",
 		configs.accessKey.String()))
 	log.Warn("node access", zap.String("key",
-		configs.accessKey.String()))
+		configs.accessKey.String()))*/
 
 	// xray service
-	xrayService, err := xrayservice.New(cfg.XRayDataDir,
+	/*xrayService, err := xrayservice.New(cfg.XRayDataDir,
 		xrayservice.WithLogger(log))
 	if err != nil {
 		return
@@ -75,20 +99,20 @@ func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
 	}
 	app.core.AddCloser(func(ctx context.Context) error {
 		return xrayAPI.Close(ctx)
-	})
+	})*/
 
 	// service
-	s, err := service.New(configs.serverCfg, configs.clientCfg,
+	/*s, err := service.New(configs.serverCfg, configs.clientCfg,
 		xrayService, xrayAPI)
 	if err != nil {
 		return
-	}
+	}*/
 
 	// jwt
-	jwt, err := jwt.New(configs.accessKey.AccessSecret)
+	/*jwt, err := jwt.New(configs.accessKey.AccessSecret)
 	if err != nil {
 		return
-	}
+	}*/
 
 	// http
 	httpServer, err := app.initHttpServer(cfg, s, jwt, configs.tlsCfg, log)

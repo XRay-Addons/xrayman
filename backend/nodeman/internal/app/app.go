@@ -19,13 +19,14 @@ func New(rawCfg config.RawConfig, log *zap.Logger) (*App, error) {
 	if log == nil {
 		return nil, errdefs.NilArg("log")
 	}
-	srcProvider := gx.Provide(
-		func() (config.RawConfig, *zap.Logger) {
-			return rawCfg, log
-		},
+	srcProvider := gx.Options(
+		gx.Provide(
+			func() config.RawConfig {
+				return rawCfg
+			},
+		),
+		gx.WithLogger(log),
 	)
-	///////////////////////////////////////////////////////////////////////////
-	// create app components - chaotic good init order
 
 	appcore := gx.New(
 		srcProvider,
@@ -36,6 +37,8 @@ func New(rawCfg config.RawConfig, log *zap.Logger) (*App, error) {
 		Nodes,
 		Services,
 		Server,
+
+		Bootstrap,
 		Jobs,
 		Startup,
 	)

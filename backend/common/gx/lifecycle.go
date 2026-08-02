@@ -7,8 +7,15 @@ import (
 	"time"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
+	"github.com/sethvargo/go-retry"
 	"go.uber.org/zap"
 )
+
+type Bootstrap struct {
+	Name  string
+	Fn    func(context.Context) error
+	Retry func(error) bool
+}
 
 type Job struct {
 	Name    string
@@ -22,54 +29,37 @@ type Closer struct {
 }
 
 type Lifecycle interface {
-	AppendJob(name string,
-		onStart func(context.Context) error,
-		onStop func(context.Context) error)
-	AppendJobEx(
-		j Job)
-	AppendCloser(name string,
-		fn func(context.Context) error)
-	AppendCloserEx(
-		c Closer)
+	AppendBootstrap(bs Bootstrap)
+	AppendJob(j Job)
+	AppendCloser(c Closer)
 }
 
 type lifecycle struct {
 	log          *zap.Logger
 	closeTimeout time.Duration
 
-	jobs    []Job
-	closers []Closer
+	bootstraps []Bootstrap
+	jobs       []Job
+	closers    []Closer
 }
 
-func (lc *lifecycle) AppendJob(name string,
-	onStart func(context.Context) error,
-	onStop func(context.Context) error,
-) {
-	lc.AppendJobEx(Job{
-		Name:    name,
-		OnStart: onStart,
-		OnStop:  onStop,
-	})
+func (lc *lifecycle) AppendBootstrap(bs Bootstrap) {
+	lc.bootstraps = append(lc.bootstraps, bs)
 }
 
-func (lc *lifecycle) AppendJobEx(job Job) {
+func (lc *lifecycle) AppendJob(job Job) {
 	lc.jobs = append(lc.jobs, job)
 }
 
-func (lc *lifecycle) AppendCloser(name string,
-	onClose func(context.Context) error,
-) {
-	lc.AppendCloserEx(Closer{
-		Name:    name,
-		OnClose: onClose,
-	})
-}
-
-func (lc *lifecycle) AppendCloserEx(c Closer) {
+func (lc *lifecycle) AppendCloser(c Closer) {
 	lc.closers = append(lc.closers, c)
 }
 
 func (lc *lifecycle) Run(ctx context.Context) error {
+	if err := lc.invokeBootstraps(ctx); err != nil {
+		return err
+	}
+
 	// wg for waiting all jobs completed (successfully or not)
 	wg := sync.WaitGroup{}
 
@@ -126,15 +116,38 @@ func wgChan(wg *sync.WaitGroup) <-chan struct{} {
 	return done
 }
 
+func (lc *lifecycle) invokeBootstraps(ctx context.Context) error {
+	const retryInterval = 1000 * time.Millisecond
+	backoff := retry.NewConstant(retryInterval)
+
+	for _, bs := range lc.bootstraps {
+		lc.log.Warn(fmt.Sprintf("run bootstrap '%s'", bs.Name))
+		if err := retry.Do(ctx, backoff, func(ctx context.Context) error {
+			err := bs.Fn(ctx)
+			if err != nil && bs.Retry != nil && bs.Retry(err) {
+				lc.log.Warn(fmt.Sprintf("bootstrap '%s': retry", bs.Name), zap.Error(err))
+				return retry.RetryableError(err)
+			}
+			return err
+		}); err != nil {
+			lc.log.Warn(fmt.Sprintf("bootstrap '%s'", bs.Name), zap.Error(err))
+			return xerr.WrapWithInfof(err, "bootstrap %s", bs.Name)
+		}
+		lc.log.Warn(fmt.Sprintf("bootstrap '%s' done", bs.Name))
+	}
+
+	return nil
+}
+
 func (lc *lifecycle) invokeJobRunner(ctx context.Context, job Job) error {
 	if job.OnStart == nil {
 		return nil
 	}
 
-	lc.log.Info(fmt.Sprintf("run job '%s'...", job.Name))
+	lc.log.Warn(fmt.Sprintf("run job '%s'...", job.Name))
 	err := job.OnStart(ctx)
 	if err == nil {
-		lc.log.Info(fmt.Sprintf("job '%s' done", job.Name), zap.Error(err))
+		lc.log.Warn(fmt.Sprintf("job '%s' done", job.Name))
 		return nil
 	}
 
@@ -148,7 +161,7 @@ func (lc *lifecycle) invokeJobClosers(ctx context.Context) error {
 		if job.OnStop == nil {
 			continue
 		}
-		lc.log.Info(fmt.Sprintf("job '%s' stopping signal sent", job.Name))
+		lc.log.Warn(fmt.Sprintf("job '%s' stopping signal sent", job.Name))
 		if err := job.OnStop(ctx); err != nil {
 			lc.log.Error(fmt.Sprintf("job '%s' stoppping", job.Name), zap.Error(err))
 			errs[idx] = xerr.WrapWithInfof(err, "job %s", job.Name)

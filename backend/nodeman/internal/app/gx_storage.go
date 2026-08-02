@@ -22,8 +22,11 @@ var db = gx.ProvideAnnotated(
 		if err != nil {
 			return nil, err
 		}
-		lc.AppendCloser("db", func(context.Context) error {
-			return db.Close()
+		lc.AppendCloser(gx.Closer{
+			Name: "db",
+			OnClose: func(context.Context) error {
+				return db.Close()
+			},
 		})
 		return db, nil
 	},
@@ -39,6 +42,7 @@ var storage = gx.ProvideAnnotated(
 	gx.As(new(poolstats.Storage)),
 	gx.As(new(settings.Storage)),
 	gx.As(new(auth.Storage)),
+	gx.As(gx.Self()),
 )
 
 var Storage = gx.Module("storage",

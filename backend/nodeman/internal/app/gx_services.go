@@ -29,9 +29,11 @@ var Services = gx.Module("services",
 	gx.ProvideAnnotated(
 		settings.New,
 		gx.As(new(handler.SettingsService)),
+		gx.As(gx.Self()),
 	),
 	gx.ProvideAnnotated(
 		auth.New,
 		gx.As(new(handler.AuthService)),
+		gx.As(gx.Self()),
 	),
 )

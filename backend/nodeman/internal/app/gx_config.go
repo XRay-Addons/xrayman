@@ -28,6 +28,12 @@ var Config = gx.Module("config", gx.Provide(
 		"jwt-secret",
 	),
 	gx.Named(
+		func(cfg *config.Config) string {
+			return cfg.AdminPassword
+		},
+		"admin-password",
+	),
+	gx.Named(
 		func() string {
 			return JWTIssuer
 		},

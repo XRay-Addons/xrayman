@@ -29,9 +29,12 @@ var httpClient = gx.ProvideAnnotated(
 		if err != nil {
 			return nil, err
 		}
-		p.Lc.AppendCloser("client factory", func(context.Context) error {
-			f.Close()
-			return nil
+		p.Lc.AppendCloser(gx.Closer{
+			Name: "client factory",
+			OnClose: func(context.Context) error {
+				f.Close()
+				return nil
+			},
 		})
 		return f, nil
 	},
