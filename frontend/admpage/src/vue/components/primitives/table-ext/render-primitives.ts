@@ -26,7 +26,16 @@ export function i18nateColumns<T>(
 }
 
 export function makeConfigLine(text: string, copyable: boolean = false): VNode {
-  const textItem = h(TypographyText, { style: { fontFamily: "monospace" } }, () => text);
+  const textItem = h(
+    TypographyText,
+    {
+      style: {
+        fontFamily: "monospace",
+        userSelect: "text",
+      },
+    },
+    () => text,
+  );
   if (!copyable) {
     return textItem;
   }
@@ -46,6 +55,7 @@ export function makeConfigText(text: string): VNode {
         overflowY: "auto",
         fontFamily: "monospace",
         margin: 0,
+        userSelect: "text",
       },
     },
     text,

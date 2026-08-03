@@ -23,8 +23,9 @@ export function UseRandomTheme(palettes: string[][], callback: OnSetPalette) {
 
   document.addEventListener("click", (e) => {
     const target = e.target as HTMLElement | null;
+
     if (!target) return;
-    if (target.closest("button, input, textarea, select, label")) {
+    if (target.closest("button, input, textarea, select, label, table")) {
       return;
     }
 
