@@ -1,12 +1,15 @@
 package config
 
-import "path"
+import (
+	"path"
+)
 
 type Config struct {
 	Endpoint      string `env:"ENDPOINT"`
 	XRayDataDir   string `env:"XRAY_DATA_DIR"`
 	XRayConfigDir string `env:"XRAY_CONFIG_DIR"`
 	PersistentDir string `env:"PERSISTENT_DIR"`
+	LogLevel      string `env:"LOG_LEVEL"`
 }
 
 func (c *Config) XRayServer() string {

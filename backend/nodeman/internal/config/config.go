@@ -37,6 +37,7 @@ const (
 )
 
 func Init(r RawConfig) (*Config, error) {
+
 	c := Config{
 		Endpoint:          r.Endpoint,
 		DBConn:            r.DBConn,

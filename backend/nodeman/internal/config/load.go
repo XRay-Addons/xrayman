@@ -8,6 +8,7 @@ import (
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/caarlos0/env/v6"
 	"github.com/kr/text"
+	"go.uber.org/zap/zapcore"
 )
 
 func LoadConfig() (*RawConfig, error) {
@@ -29,6 +30,7 @@ func defaultConfig() *RawConfig {
 		StatsSyncInterval:  60,
 		StorageCallTimeout: 5,
 		NodeCallTimeout:    5,
+		LogLevel:           zapcore.InfoLevel.String(),
 	}
 }
 
@@ -67,6 +69,10 @@ should be like /admin or https://adm.example.com (optional)`)
 		`storage call timeout, s (optional)`)
 	fs.IntVar(&c.NodeCallTimeout, "node-timeout", c.NodeCallTimeout,
 		`node call timeout, s (optional)`)
+
+	fs.StringVar(&c.LogLevel, "log-lvl", c.LogLevel,
+		`zap log level (optional)`)
+
 	fs.Usage = func() {
 		fmt.Printf("Usage:\n")
 		argGroups := [][]string{
@@ -75,6 +81,7 @@ should be like /admin or https://adm.example.com (optional)`)
 			{"apisrv", "userspa", "adminspa"},
 			{"admpass"},
 			{"storage-timeout", "node-timeout"},
+			{"log-lvl"},
 		}
 
 		for _, argGroup := range argGroups {

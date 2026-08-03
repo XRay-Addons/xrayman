@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func New() (*zap.Logger, error) {
+func New(lvl zapcore.Level) (*zap.Logger, error) {
 	const human = true
 	var encoder zapcore.Encoder
 	if human {
@@ -25,17 +25,17 @@ func New() (*zap.Logger, error) {
 	stdoutCore := zapcore.NewCore(
 		encoder,
 		zapcore.AddSync(os.Stdout),
-		zapcore.DebugLevel,
+		lvl,
 	)
 
 	// Warn, Err -> stderr
-	/*stderrCore := zapcore.NewCore(
+	stderrCore := zapcore.NewCore(
 		encoder,
 		zapcore.AddSync(os.Stderr),
 		zapcore.WarnLevel,
-	)*/
+	)
 
-	core := zapcore.NewTee(stdoutCore)
+	core := zapcore.NewTee(stdoutCore, stderrCore)
 
 	logger := zap.New(core)
 

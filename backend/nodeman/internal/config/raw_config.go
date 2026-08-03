@@ -15,4 +15,6 @@ type RawConfig struct {
 
 	NodeCallTimeout    int `env:"NODE_CALL_TIMEOUT"`
 	StorageCallTimeout int `env:"STORAGE_CALL_TIMEOUT"`
+
+	LogLevel string `env:"LOG_LEVEL"`
 }

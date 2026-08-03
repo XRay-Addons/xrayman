@@ -11,6 +11,7 @@ import (
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap/zapcore"
 )
 
 const (
@@ -67,7 +68,7 @@ var testXRayInbounds = []models.Inbound{
 func TestXRayAPI(t *testing.T) {
 	ctx := context.TODO()
 
-	log, err := logging.New()
+	log, err := logging.New(zapcore.InfoLevel)
 	require.NoError(t, err)
 
 	// create xray api

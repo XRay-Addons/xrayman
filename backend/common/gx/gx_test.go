@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"go.uber.org/zap/zaptest"
 )
 
@@ -55,7 +56,7 @@ type B struct{}
 type C struct{}
 
 func TestGx_Simple(t *testing.T) {
-	logger, err := logging.New()
+	logger, err := logging.New(zapcore.InfoLevel)
 	require.NoError(t, err)
 
 	var aStart, bStart, cStart, cStop, iI, iIstop, iII, iIIstop CallsCounter
