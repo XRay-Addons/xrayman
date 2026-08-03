@@ -1,0 +1,27 @@
+---
+import UsersTableCard from "./UsersTableCard.astro";
+import NodesTableCard from "./NodesTableCard.astro";
+---
+
+<div class="page-columns mb-2">
+  <div class="page-column">
+    <UsersTableCard />
+  </div>
+  <div class="page-column">
+    <NodesTableCard />
+  </div>
+</div>
+
+<style>
+  .page-columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(50ch, 1fr));
+    gap: 0.5rem;
+    align-items: start;
+  }
+  .page-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+</style>

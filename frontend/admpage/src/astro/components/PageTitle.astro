@@ -1,0 +1,21 @@
+---
+import Title from "@xrayman/shared/astro/primitives/Title.astro";
+import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
+import SettingsDialog from "./SettingsDialog.astro";
+---
+
+<div class="d-flex h-center align-items-stretch mb-2">
+  <Title class="flex-grow-1">
+    <I18NText data-i18n="title.main" />
+  </Title>
+
+  <div class="settings-btn text-lg">
+    <SettingsDialog />
+  </div>
+</div>
+
+<style>
+  .settings-btn {
+    margin-left: calc(-1 * var(--input-depth));
+  }
+</style>
