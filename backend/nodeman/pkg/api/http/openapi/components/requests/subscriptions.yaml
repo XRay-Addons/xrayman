@@ -1,0 +1,8 @@
+UserSubResponse:
+  description: List of subscription (may include arbitrary headers)
+  content:
+    application/json:
+      schema:
+        type: array
+      items:
+        $ref: "../models/configs.yaml#/ClientConfigItem"

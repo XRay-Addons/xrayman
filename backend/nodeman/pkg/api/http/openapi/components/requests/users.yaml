@@ -1,0 +1,58 @@
+NewUserRequest:
+  type: object
+  properties:
+    DisplayName:
+      $ref: "../models/users.yaml#/DisplayName"
+  required:
+    - DisplayName
+
+NewUserResponse:
+  $ref: "../models/users.yaml#/User"
+
+GetUserRequest:
+  type: object
+  properties:
+    ID:
+      $ref: "../models/users.yaml#/UserID"
+    Name:
+      $ref: "../models/users.yaml#/UserName"
+  required:
+    - ID
+    - Name
+
+GetUserResponse:
+  $ref: "../models/users.yaml#/UserView"
+
+ListUsersResponse:
+  type: object
+  properties:
+    Users:
+      type: array
+      items:
+        $ref: "../models/users.yaml#/UserView"
+  required:
+    - Users
+
+EnableUserRequest:
+  type: object
+  properties:
+    ID:
+      $ref: "../models/users.yaml#/UserID"
+  required:
+    - ID
+
+DisableUserRequest:
+  type: object
+  properties:
+    ID:
+      $ref: "../models/users.yaml#/UserID"
+  required:
+    - ID
+
+DeleteUserRequest:
+  type: object
+  properties:
+    ID:
+      $ref: "../models/users.yaml#/UserID"
+  required:
+    - ID

@@ -3,6 +3,7 @@ package converter
 import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/openapi-gen"
+	jx "github.com/go-faster/jx"
 )
 
 // goverter:converter
@@ -14,5 +15,5 @@ import (
 type Subscriptions interface {
 	ConvertUserSubRequest(r *api.UserSubParams) (*models.UserSubParams, error)
 
-	ConvertUserSubResultBody(r []models.ClientConfigItem) (api.UserSubContent, error)
+	ConvertUserSubResultBody(r []models.ClientConfigItem) ([]jx.Raw, error)
 }

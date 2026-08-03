@@ -1,0 +1,55 @@
+NodeID:
+  type: integer
+
+Endpoint:
+  type: string
+  maxLength: 256
+
+NodeStatus:
+  type: string
+  enum: [unknown, stopped, running]
+
+AccessKey:
+  type: string
+  minLength: 88
+  maxLength: 88
+  description: Base64-encoded 32-byte access secret + 32-byte cert hash
+
+NodeConnectionInfo:
+  type: object
+  properties:
+    Endpoint:
+      $ref: "#/Endpoint"
+    AccessKey:
+      type: string
+  required:
+    - Endpoint
+    - AccessKey
+
+NodeConfig:
+  type: object
+  properties:
+    ClientConfigTemplate:
+      $ref: "./configs.yaml#/ClientConfigTemplate"
+    ConnectionInfo:
+      $ref: "#/NodeConnectionInfo"
+  required:
+    - ClientConfigTemplate
+    - ConnectionInfo
+
+Node:
+  type: object
+  properties:
+    ID:
+      $ref: "#/NodeID"
+    Config:
+      $ref: "#/NodeConfig"
+    CurrentStatus:
+      $ref: "#/NodeStatus"
+    TargetStatus:
+      $ref: "#/NodeStatus"
+  required:
+    - ID
+    - Config
+    - CurrentStatus
+    - TargetStatus

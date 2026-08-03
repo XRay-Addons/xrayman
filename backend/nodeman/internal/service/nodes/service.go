@@ -85,30 +85,23 @@ func (s *Service) NewNode(ctx context.Context, p models.NewNodeParams) (
 	}, nil
 }
 
-func (s *Service) StartNode(ctx context.Context, p models.StartNodeParams) (
-	*models.StartNodeResult, error,
-) {
+func (s *Service) StartNode(ctx context.Context, p models.StartNodeParams) error {
 	if err := s.setNodeStatus(ctx, p.ID, models.NodeStatusRunning); err != nil {
-		return nil, err
+		return err
 	}
-	return &models.StartNodeResult{}, nil
+	return nil
 }
 
-func (s *Service) StopNode(ctx context.Context, p models.StopNodeParams) (
-	*models.StopNodeResult, error,
-) {
+func (s *Service) StopNode(ctx context.Context, p models.StopNodeParams) error {
 	if err := s.setNodeStatus(ctx, p.ID, models.NodeStatusStopped); err != nil {
-		return nil, err
+		return err
 	}
-	return &models.StopNodeResult{}, nil
+	return nil
 }
 
-func (s *Service) ListNodes(ctx context.Context, p models.ListNodeParams) (
+func (s *Service) ListNodes(ctx context.Context) (
 	*models.ListNodeResult, error,
 ) {
-	if s == nil {
-		return nil, errdefs.NilCall()
-	}
 	nodes, err := s.storage.ListNodes(ctx)
 	if err != nil {
 		return nil, err
@@ -118,13 +111,7 @@ func (s *Service) ListNodes(ctx context.Context, p models.ListNodeParams) (
 	}, nil
 }
 
-func (s *Service) DeleteNode(ctx context.Context, p models.DeleteNodeParams) (
-	*models.DeleteNodeResult, error,
-) {
-	if s == nil {
-		return nil, errdefs.NilCall()
-	}
-
+func (s *Service) DeleteNode(ctx context.Context, p models.DeleteNodeParams) error {
 	// mark node stopped and deleting
 	if err := s.storage.DoTx(ctx, func(ctx context.Context) error {
 		if err := s.storage.SetTargetNodeStatus(ctx,
@@ -137,12 +124,12 @@ func (s *Service) DeleteNode(ctx context.Context, p models.DeleteNodeParams) (
 		}
 		return nil
 	}); err != nil {
-		return nil, err
+		return err
 	}
 
 	s.requestNodeSync(p.ID)
 
-	return &models.DeleteNodeResult{}, nil
+	return nil
 }
 
 func (s *Service) setNodeStatus(ctx context.Context,

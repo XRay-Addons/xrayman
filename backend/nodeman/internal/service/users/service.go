@@ -115,7 +115,7 @@ func (s *Service) GetUserView(ctx context.Context, p models.GetUserParams) (
 	return userView, nil
 }
 
-func (s *Service) ListUsers(ctx context.Context, p models.ListUserParams) (
+func (s *Service) ListUsers(ctx context.Context) (
 	*models.ListUsersResult, error,
 ) {
 	if s == nil {
@@ -130,31 +130,21 @@ func (s *Service) ListUsers(ctx context.Context, p models.ListUserParams) (
 	}, nil
 }
 
-func (s *Service) EnableUser(ctx context.Context, p models.EnableUserParams) (
-	*models.EnableUserResult, error,
-) {
+func (s *Service) EnableUser(ctx context.Context, p models.EnableUserParams) error {
 	if err := s.setUserStatus(ctx, p.ID, models.UserStatusEnabled); err != nil {
-		return nil, err
+		return err
 	}
-	return &models.EnableUserResult{}, nil
+	return nil
 }
 
-func (s *Service) DisableUser(ctx context.Context, p models.DisableUserParams) (
-	*models.DisableUserResult, error,
-) {
+func (s *Service) DisableUser(ctx context.Context, p models.DisableUserParams) error {
 	if err := s.setUserStatus(ctx, p.ID, models.UserStatusDisabled); err != nil {
-		return nil, err
+		return err
 	}
-	return &models.DisableUserResult{}, nil
+	return nil
 }
 
-func (s *Service) DeleteUser(ctx context.Context, p models.DeleteUserParams) (
-	*models.DeleteUserResult, error,
-) {
-	if s == nil {
-		return nil, errdefs.NilCall()
-	}
-
+func (s *Service) DeleteUser(ctx context.Context, p models.DeleteUserParams) error {
 	if err := s.storage.DoTx(ctx, func(ctx context.Context) error {
 		if err := s.storage.SetTargetUserStatus(ctx,
 			p.ID, models.UserStatusDisabled,
@@ -166,12 +156,12 @@ func (s *Service) DeleteUser(ctx context.Context, p models.DeleteUserParams) (
 		}
 		return nil
 	}); err != nil {
-		return nil, err
+		return err
 	}
 
 	s.requestNodesSync()
 
-	return &models.DeleteUserResult{}, nil
+	return nil
 }
 
 func (s *Service) setUserStatus(ctx context.Context,

@@ -6,7 +6,7 @@
   "scripts": {
     "gen:admin": "pnpm --filter admpage run api:generate && pnpm --filter admpage run schema:generate",
     "gen:user": "pnpm --filter userpage run api:generate && pnpm --filter userpage run schema:generate",
-    "gen": "pnpm -r run api:generate",
+    "gen": "pnpm run gen:user && pnpm run gen:admin",
     "build:admin": "pnpm --filter admpage run build",
     "build:user": "pnpm --filter userpage run build",
     "build": "pnpm run build:user && pnpm run build:admin",

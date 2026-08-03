@@ -1,0 +1,6 @@
+Error:
+  description: General Error
+  content:
+    application/json:
+      schema:
+        $ref: "../models/error.yaml#/Error"

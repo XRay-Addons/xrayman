@@ -5,7 +5,6 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/converter"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/openapi-gen"
 )
 
@@ -44,7 +43,7 @@ func (h *Handler) ListUsers(ctx context.Context) (*api.ListUsersResponse, error)
 	if h == nil || h.users == nil {
 		return nil, errdefs.NilCall()
 	}
-	res, err := h.users.ListUsers(ctx, models.ListUserParams{})
+	res, err := h.users.ListUsers(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -59,8 +58,7 @@ func (h *Handler) EnableUser(ctx context.Context, req *api.EnableUserRequest) er
 	if err != nil {
 		return err
 	}
-	_, err = h.users.EnableUser(ctx, *p)
-	if err != nil {
+	if err = h.users.EnableUser(ctx, *p); err != nil {
 		return err
 	}
 	return nil
@@ -74,8 +72,7 @@ func (h *Handler) DisableUser(ctx context.Context, req *api.DisableUserRequest) 
 	if err != nil {
 		return err
 	}
-	_, err = h.users.DisableUser(ctx, *p)
-	if err != nil {
+	if err = h.users.DisableUser(ctx, *p); err != nil {
 		return err
 	}
 	return nil
@@ -89,8 +86,7 @@ func (h *Handler) DeleteUser(ctx context.Context, req *api.DeleteUserRequest) er
 	if err != nil {
 		return err
 	}
-	_, err = h.users.DeleteUser(ctx, *p)
-	if err != nil {
+	if err = h.users.DeleteUser(ctx, *p); err != nil {
 		return err
 	}
 	return nil

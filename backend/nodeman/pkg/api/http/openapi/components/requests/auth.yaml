@@ -1,0 +1,26 @@
+AuthRequest:
+  type: object
+  required:
+    - password
+  properties:
+    password:
+      type: string
+      format: password
+      description: password
+
+AuthResponse:
+  type: object
+  required:
+    - access_token
+    - token_type
+    - expires_in
+  properties:
+    access_token:
+      type: string
+      description: JWT access token
+    token_type:
+      type: string
+      example: Bearer
+    expires_in:
+      type: integer
+      description: Token lifetime in seconds
