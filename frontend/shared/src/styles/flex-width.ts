@@ -9,14 +9,6 @@ const fluidWidths = {
   "fluid-lg": [100.0, 100.0, 80.0, 80.0, 80.0],
 } as const;
 
-for (const [name, widths] of Object.entries(fluidWidths)) {
-  console.log(name);
-
-  for (let i = 0; i < breakpoints.length; i++) {
-    console.log(`  ${breakpoints[i]}: ${(breakpoints[i] * widths[i]) / 100}px`);
-  }
-}
-
 function interpolate(width: number, values: readonly number[]) {
   // TODO: binary search
   if (width <= values[0]) {

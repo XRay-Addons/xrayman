@@ -13,8 +13,7 @@ const { ...rest } = Astro.props;
   import { pt } from "@xrayman/shared/runtime/dom/pts";
 
   class Barcode extends CustomElement implements BarcodeElement {
-    @prop value: string = "";
-
+    @prop({ default: "" }) value!: string;
     private canvasEl!: HTMLCanvasElement;
 
     public connectedCallback() {

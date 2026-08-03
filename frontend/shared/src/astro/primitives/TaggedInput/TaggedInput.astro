@@ -38,7 +38,7 @@ const { ...inputProps } = ExtractPrefixed(props, "input");
   import { pt } from "@xrayman/shared/runtime/dom/pts";
 
   class TaggedInput extends CustomElement implements TaggedInputElement {
-    @prop tags: string[] = [];
+    @prop({ default: [] }) tags!: string[];
 
     private inputEl!: HTMLInputElement;
     private tagsEl!: HTMLElement;
