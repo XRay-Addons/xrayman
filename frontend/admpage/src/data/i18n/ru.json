@@ -12,41 +12,6 @@
     },
     "nodes": {
       "title": "Ноды"
-    },
-    "settings": {
-      "title": "Настройки",
-      "fields": {
-        "subscr-title": "Title",
-        "users-message": "Message",
-        "user-page": "User Page",
-        "tg-page": "TG Group",
-        "update-interval": "Update Interval, h",
-        "routing": "Routing, like happ://routing/onadd/....",
-        "app-links": {
-          "title": "Application Links",
-          "columns": {
-            "Name": "Name",
-            "Platforms": "Platforms, regex????",
-            "URL": "URL"
-          }
-        },
-        "custom-headers": {
-          "title": "Custom Headers",
-          "columns": {
-            "Key": "Key",
-            "Value": "Value"
-          }
-        }
-      },
-      "refresh": "Refresh",
-      "submit-btn": {
-        "info": "Submit",
-        "success": "Submitted!"
-      },
-      "errors": {
-        "app-links": "App Links error",
-        "no-platform-apps": "No apps for platform"
-      }
     }
   },
 
@@ -91,6 +56,45 @@
     },
     "button": {
       "text": "+"
+    }
+  },
+
+  "settings": {
+    "button": {
+      "text": "⚙"
+    },
+    "title": "Настройки",
+    "fields": {
+      "subscr-title": "Title",
+      "users-message": "Message",
+      "user-page": "User Page",
+      "tg-page": "TG Group",
+      "update-interval": "Update Interval, h",
+      "routing": "Routing, like happ://routing/onadd/....",
+      "app-links": {
+        "title": "Application Links",
+        "columns": {
+          "Name": "Name",
+          "Platforms": "Platforms, regex????",
+          "URL": "URL"
+        }
+      },
+      "custom-headers": {
+        "title": "Custom Headers",
+        "columns": {
+          "Key": "Key",
+          "Value": "Value"
+        }
+      }
+    },
+    "refresh": "Refresh",
+    "submit-btn": {
+      "info": "Submit",
+      "success": "Submitted!"
+    },
+    "errors": {
+      "app-links": "App Links error",
+      "no-platform-apps": "No apps for platform"
     }
   },
 
