@@ -62,6 +62,11 @@ export default defineConfig({
     build: {
       target: "es2022",
     },
+    experimental: {
+      renderBuiltUrl(filename, { type }) {
+        return { relative: true };
+      },
+    },
 
     server: {
       proxy: {
