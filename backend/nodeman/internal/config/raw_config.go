@@ -12,4 +12,7 @@ type RawConfig struct {
 
 	StateSyncInterval int `env:"STATE_SYNC_INTERVAL"`
 	StatsSyncInterval int `env:"STATS_SYNC_INTERVAL"`
+
+	NodeCallTimeout    int `env:"NODE_CALL_TIMEOUT"`
+	StorageCallTimeout int `env:"STORAGE_CALL_TIMEOUT"`
 }

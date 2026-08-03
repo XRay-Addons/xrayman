@@ -92,9 +92,9 @@ func setupTestDB(t *testing.T, logger *zap.Logger) (
 		db:   sqldb,
 		mode: ExplainNone,
 	}
-	storage, err = dbstorage.New(db)
+	storage, err = dbstorage.New(db, dbstorage.WithLogger(logger))
 	require.NoError(t, err)
-	storage.Migrate(ctx, dbstorage.WithLogger(logger))
+	storage.Migrate(ctx)
 
 	t.Cleanup(func() {
 		_ = db.Close()

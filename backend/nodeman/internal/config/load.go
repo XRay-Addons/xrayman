@@ -24,9 +24,11 @@ func LoadConfig() (*RawConfig, error) {
 
 func defaultConfig() *RawConfig {
 	return &RawConfig{
-		Endpoint:          "localhost:80",
-		StateSyncInterval: 5,
-		StatsSyncInterval: 60,
+		Endpoint:           "localhost:80",
+		StateSyncInterval:  5,
+		StatsSyncInterval:  60,
+		StorageCallTimeout: 5,
+		NodeCallTimeout:    5,
 	}
 }
 
@@ -61,6 +63,10 @@ should be like /admin or https://adm.example.com (optional)`)
 	fs.StringVar(&c.AdminPassword, "admpass", c.AdminPassword,
 		`admin password to change (optional)`)
 
+	fs.IntVar(&c.StorageCallTimeout, "storage-timeout", c.StorageCallTimeout,
+		`storage call timeout, s (optional)`)
+	fs.IntVar(&c.NodeCallTimeout, "node-timeout", c.NodeCallTimeout,
+		`node call timeout, s (optional)`)
 	fs.Usage = func() {
 		fmt.Printf("Usage:\n")
 		argGroups := [][]string{
@@ -68,6 +74,7 @@ should be like /admin or https://adm.example.com (optional)`)
 			{"state", "stats"},
 			{"apisrv", "userspa", "adminspa"},
 			{"admpass"},
+			{"storage-timeout", "node-timeout"},
 		}
 
 		for _, argGroup := range argGroups {

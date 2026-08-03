@@ -36,11 +36,6 @@ const (
 	adminSpaPath   = "/adm"
 )
 
-const (
-	nodeCallTimeout    = 5 * time.Second
-	storageCallTimeout = 5 * time.Second
-)
-
 func Init(r RawConfig) (*Config, error) {
 	c := Config{
 		Endpoint:          r.Endpoint,
@@ -54,8 +49,8 @@ func Init(r RawConfig) (*Config, error) {
 		UserSpaPath:    userSpaPath,
 		AdminSpaPath:   adminSpaPath,
 
-		NodeCallTimeout:    nodeCallTimeout,
-		StorageCallTimeout: storageCallTimeout,
+		NodeCallTimeout:    time.Duration(r.NodeCallTimeout) * time.Second,
+		StorageCallTimeout: time.Duration(r.StorageCallTimeout) * time.Second,
 	}
 
 	c.ApiServiceUrl = or(r.ApiServiceUrl, c.ApiServicePath)
