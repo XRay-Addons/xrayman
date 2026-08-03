@@ -10,44 +10,41 @@ import (
 )
 
 func (h *Handler) NewUser(ctx context.Context, req *api.NewUserRequest) (*api.User, error) {
-	if h == nil || h.us == nil {
+	if h == nil || h.users == nil {
 		return nil, errdefs.NilCall()
 	}
 	p, err := converter.ConvertNewUserRequest(req)
 	if err != nil {
 		return nil, err
 	}
-	res, err := h.us.NewUser(ctx, *p)
+	res, err := h.users.NewUser(ctx, *p)
 	if err != nil {
 		return nil, err
 	}
-	return converter.ConvertUserResult(res), nil
+	return converter.ConvertNewUserResult(res), nil
 }
 
-func (h *Handler) GetUser(ctx context.Context, req api.GetUserParams) (*api.User, error) {
-	if h == nil || h.us == nil {
+func (h *Handler) GetUser(ctx context.Context, req api.GetUserParams) (*api.UserView, error) {
+	if h == nil || h.users == nil {
 		return nil, errdefs.NilCall()
 	}
 	p, err := converter.ConvertGetUserRequest(&req)
 	if err != nil {
 		return nil, err
 	}
-	user, exists, err := h.us.GetUser(ctx, *p)
+	user, err := h.users.GetUserView(ctx, *p)
 	if err != nil {
 		return nil, err
 	}
-	if !exists {
-		return nil, errdefs.NotFound("user")
-	}
-	userResponse := converter.ConvertUserResult(user)
+	userResponse := converter.ConvertGetUserResult(user)
 	return userResponse, nil
 }
 
 func (h *Handler) ListUsers(ctx context.Context) (*api.ListUsersResponse, error) {
-	if h == nil || h.us == nil {
+	if h == nil || h.users == nil {
 		return nil, errdefs.NilCall()
 	}
-	res, err := h.us.ListUsers(ctx, models.ListUserParams{})
+	res, err := h.users.ListUsers(ctx, models.ListUserParams{})
 	if err != nil {
 		return nil, err
 	}
@@ -55,14 +52,14 @@ func (h *Handler) ListUsers(ctx context.Context) (*api.ListUsersResponse, error)
 }
 
 func (h *Handler) EnableUser(ctx context.Context, req *api.EnableUserRequest) error {
-	if h == nil || h.us == nil {
+	if h == nil || h.users == nil {
 		return errdefs.NilCall()
 	}
 	p, err := converter.ConvertEnableUserRequest(req)
 	if err != nil {
 		return err
 	}
-	_, err = h.us.EnableUser(ctx, *p)
+	_, err = h.users.EnableUser(ctx, *p)
 	if err != nil {
 		return err
 	}
@@ -70,14 +67,14 @@ func (h *Handler) EnableUser(ctx context.Context, req *api.EnableUserRequest) er
 }
 
 func (h *Handler) DisableUser(ctx context.Context, req *api.DisableUserRequest) error {
-	if h == nil || h.us == nil {
+	if h == nil || h.users == nil {
 		return errdefs.NilCall()
 	}
 	p, err := converter.ConvertDisableUserRequest(req)
 	if err != nil {
 		return err
 	}
-	_, err = h.us.DisableUser(ctx, *p)
+	_, err = h.users.DisableUser(ctx, *p)
 	if err != nil {
 		return err
 	}
@@ -85,14 +82,14 @@ func (h *Handler) DisableUser(ctx context.Context, req *api.DisableUserRequest) 
 }
 
 func (h *Handler) DeleteUser(ctx context.Context, req *api.DeleteUserRequest) error {
-	if h == nil || h.us == nil {
+	if h == nil || h.users == nil {
 		return errdefs.NilCall()
 	}
 	p, err := converter.ConvertDeleteUserRequest(req)
 	if err != nil {
 		return err
 	}
-	_, err = h.us.DeleteUser(ctx, *p)
+	_, err = h.users.DeleteUser(ctx, *p)
 	if err != nil {
 		return err
 	}

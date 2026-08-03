@@ -9,12 +9,15 @@ import (
 
 func Validate(c RawConfig) error {
 	if _, err := net.ResolveTCPAddr("tcp", c.Endpoint); err != nil {
-		return xerr.New("invalid endpoint", xerr.Withf("endpoint: %s", c.Endpoint))
+		return xerr.Newf("invalid endpoint: %s", c.Endpoint)
 	}
 	if err := checkDBConn(c); err != nil {
 		return err
 	}
 	if err := checkBaseUrls(c); err != nil {
+		return err
+	}
+	if err := checkSyncIntervals(c); err != nil {
 		return err
 	}
 	if err := checkAuth(c); err != nil {
@@ -52,6 +55,16 @@ func checkBaseUrl(u string) bool {
 	}
 	return (parsed.Scheme == "" && parsed.Host == "") ||
 		(parsed.Scheme != "" && parsed.Host != "")
+}
+
+func checkSyncIntervals(c RawConfig) error {
+	if c.StateSyncInterval <= 0 {
+		return xerr.New("state sync interval invalid")
+	}
+	if c.StatsSyncInterval <= 0 {
+		return xerr.New("stats sync interval invalid")
+	}
+	return nil
 }
 
 func checkAuth(c RawConfig) error {

@@ -3,23 +3,43 @@
   "title": "UserPageConfig",
   "type": "object",
   "additionalProperties": false,
-  "required": ["routes"],
+  "required": ["ApiPrefix", "UserPrefix", "SupportLink", "AppLinks"],
 
   "properties": {
-    "routes": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["api_prefix", "user_prefix"],
+    "ApiPrefix": {
+      "type": "string",
+      "description": "prefix for api requests"
+    },
 
-      "properties": {
-        "api_prefix": {
-          "type": "string",
-          "description": "prefix for api requests"
-        },
+    "UserPrefix": {
+      "type": "string",
+      "description": "prefix for user page spa"
+    },
 
-        "user_prefix": {
-          "type": "string",
-          "description": "prefix for user page spa"
+    "SupportLink": {
+      "type": "string",
+      "description": "prefix for user page spa"
+    },
+
+    "AppLinks": {
+      "type": "array",
+      "description": "application links",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["Name", "Platforms", "URL"],
+        "properties": {
+          "Name": {
+            "type": "string"
+          },
+
+          "Platforms": {
+            "type": "string"
+          },
+
+          "URL": {
+            "type": "string"
+          }
         }
       }
     }

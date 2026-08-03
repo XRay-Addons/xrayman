@@ -2,15 +2,16 @@ package xrayapi
 
 import (
 	"context"
-	"os"
-	"os/exec"
-	"path/filepath"
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/XRay-Addons/xrayman/common/logging"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/xray/xrayservice"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap/zapcore"
 )
 
 const (
@@ -21,7 +22,7 @@ const (
 
   "api": {
     "tag": "api",
-    "listen": "127.0.0.1:32999",
+    "listen": "127.0.0.1:32997",
     "services": ["HandlerService", "LoggerService", "StatsService", "ReflectionService"]
   },
 
@@ -51,7 +52,7 @@ const (
   "outbounds": [{ "protocol": "freedom", "settings": {} }]
 }`
 
-	testApiURL = "127.0.0.1:32999"
+	testApiURL = "127.0.0.1:32997"
 )
 
 var testXRayUser = models.User{
@@ -67,7 +68,7 @@ var testXRayInbounds = []models.Inbound{
 func TestXRayAPI(t *testing.T) {
 	ctx := context.TODO()
 
-	log, err := logging.New()
+	log, err := logging.New(zapcore.InfoLevel)
 	require.NoError(t, err)
 
 	// create xray api
@@ -84,26 +85,17 @@ func TestXRayAPI(t *testing.T) {
 
 	// write xray config to file,
 	// remove it after execution
-	testCfgPath := filepath.Join(t.TempDir(), "config.json")
-	err = os.WriteFile(testCfgPath, []byte(testXRayCfg), 0o600)
-	require.NoError(t, err)
+	xray, err := xrayservice.New("")
+	assert.NoError(t, err)
+	err = xray.Start(t.Context(), testXRayCfg)
+	assert.NoError(t, err)
+	fmt.Println("started ok")
+	time.Sleep(5 * time.Second)
+
 	defer func() {
-		err := os.Remove(testCfgPath)
+		err = xray.Close(t.Context())
 		assert.NoError(t, err)
 	}()
-
-	// run xray
-	xrayCmd := exec.CommandContext(t.Context(), testExecPath, "-config", testCfgPath) // #nosec
-	err = xrayCmd.Start()
-	require.NoError(t, err)
-	defer func() {
-		err := xrayCmd.Process.Kill()
-		require.NoError(t, err, "xray kill error")
-	}()
-
-	// connect to xray api
-	// err = xrayapi.Connect(ctx)
-	//require.NoError(t, err)
 
 	// ping xray service
 	err = xrayapi.Ping(ctx)

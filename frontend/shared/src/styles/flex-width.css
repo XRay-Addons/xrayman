@@ -1,0 +1,5 @@
+.fluid-sm,
+.fluid-md,
+.fluid-lg {
+  width: calc(var(--fluid-width) * 1%);
+}

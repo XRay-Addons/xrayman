@@ -1,7 +1,6 @@
 package models
 
 import (
-	"database/sql/driver"
 	"encoding/base64"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
@@ -24,20 +23,22 @@ func (k *AccessKey) MarshalText() ([]byte, error) {
 
 func (k *AccessKey) UnmarshalText(text []byte) error {
 	raw := make([]byte, base64.StdEncoding.DecodedLen(len(text)))
-	n, err := base64.StdEncoding.Decode(raw, text)
-	if err != nil {
+	if _, err := base64.StdEncoding.Decode(raw, text); err != nil {
 		return xerr.WrapWithStack(err)
 	}
-	if n != len(k.CertHash)+len(k.AccessSecret) {
-		return xerr.New("invalid access key length")
-	}
-	copy(k.CertHash[:], raw[:len(k.CertHash)])
-	copy(k.AccessSecret[:], raw[len(k.CertHash):])
-	return nil
+	return k.setKeyData(raw)
 }
 
 func (k AccessKey) String() string {
 	return base64.StdEncoding.EncodeToString(k.getKeyData())
+}
+
+func (k AccessKey) Value() ([]byte, error) {
+	return k.getKeyData(), nil
+}
+
+func (k *AccessKey) Scan(src []byte) error {
+	return k.setKeyData(src)
 }
 
 func (k AccessKey) getKeyData() []byte {
@@ -47,23 +48,11 @@ func (k AccessKey) getKeyData() []byte {
 	return data
 }
 
-func (k AccessKey) Value() (driver.Value, error) {
-	return k.getKeyData(), nil
-}
-
-func (k *AccessKey) Scan(src any) error {
-	if src == nil {
-		*k = AccessKey{}
-		return nil
-	}
-	b, ok := src.([]byte)
-	if !ok {
-		return xerr.New("invalid type for AccessKey")
-	}
-	if len(b) != len(CertHash{})+len(AccessSecret{}) {
+func (k *AccessKey) setKeyData(src []byte) error {
+	if len(src) != len(CertHash{})+len(AccessSecret{}) {
 		return xerr.New("invalid length for AccessKey")
 	}
-	copy(k.CertHash[:], b[:len(k.CertHash)])
-	copy(k.AccessSecret[:], b[len(k.CertHash):])
+	copy(k.CertHash[:], src[:len(k.CertHash)])
+	copy(k.AccessSecret[:], src[len(k.CertHash):])
 	return nil
 }

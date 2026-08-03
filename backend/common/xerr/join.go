@@ -5,19 +5,14 @@ import (
 	"strings"
 )
 
-type multierr interface {
-	Error() string
-	Unwrap() []error
-}
-
-type joined struct {
+type xjoined struct {
 	errs []error
 }
 
-var _ error = (*joined)(nil)
+var _ error = (*xjoined)(nil)
 
 func Join(errs ...error) error {
-	j := joined{
+	j := xjoined{
 		errs: make([]error, 0, len(errs)),
 	}
 	for _, e := range errs {
@@ -28,11 +23,14 @@ func Join(errs ...error) error {
 	if len(j.errs) == 0 {
 		return nil
 	}
+	if len(j.errs) == 1 {
+		return j.errs[0]
+	}
 
 	return &j
 }
 
-func (j *joined) Error() string {
+func (j *xjoined) Error() string {
 	var b strings.Builder
 	for i, e := range j.errs {
 		if i > 0 {
@@ -43,17 +41,22 @@ func (j *joined) Error() string {
 	return b.String()
 }
 
-func (j *joined) Unwrap() []error {
+func (j *xjoined) Unwrap() []error {
 	return j.errs
 }
 
-func (j *joined) Format(f fmt.State, verb rune) {
+func (j *xjoined) Format(f fmt.State, verb rune) {
 	if j == nil {
 		return
 	}
 
 	ffallback := "%" + string(verb)
-	for _, e := range j.errs {
+	for i, e := range j.errs {
+		if f.Flag('+') {
+			fmt.Fprint(f, "\n\t* ")
+		} else if i > 0 {
+			fmt.Fprint(f, "; ")
+		}
 		// format nested components
 		formatErrQuant(e, f, verb, ffallback)
 	}

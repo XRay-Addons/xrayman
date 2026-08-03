@@ -1,0 +1,18 @@
+---
+import PageCenter from "@xrayman/shared/astro/primitives/PageCenter.astro";
+import AuthDialog from "./AuthDialog.astro";
+import PageTitle from "./PageTitle.astro";
+import PageBody from "./PageBody.astro";
+---
+
+<script>
+  import { useRandomTheme } from "@/features/use-random-theme";
+  useRandomTheme();
+</script>
+
+<AuthDialog />
+
+<PageCenter class="fluid-lg">
+  <PageTitle />
+  <PageBody />
+</PageCenter>

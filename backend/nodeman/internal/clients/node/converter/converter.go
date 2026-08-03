@@ -16,6 +16,7 @@ type Converter interface {
 	ConvertUsers(users []models.UserProfile) []api.User
 	ConvertClientConfig(cfg api.ClientConfigTemplate) models.ClientConfigTemplate
 	ConvertUsersUpdate(users models.NodeUsersUpdate) api.EditUsersRequest
+	ConvertNodeStats(stats *api.StatsResponse) *models.NodeStats
 }
 
 func ConvertNodeStatus(s api.ServiceStatus) models.NodeStatus {

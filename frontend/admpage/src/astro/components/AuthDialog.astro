@@ -1,0 +1,101 @@
+---
+import Title from "@xrayman/shared/astro/primitives/Title.astro";
+import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
+import Card from "@xrayman/shared/astro/primitives/Card.astro";
+import InputGroup from "@xrayman/shared/astro/primitives/InputGroup/InputGroup.astro";
+
+const i18n = "login";
+---
+
+<app-login-page>
+  <dialog class="auth-dialog" data-auth-dialog>
+    <div class="auth-dialog-overlay"></div>
+    <div class="hv-center">
+      <Card class="fluid-md">
+        <Title class="mb-2">
+          <I18NText data-i18n=`${i18n}.title.authorize` />
+        </Title>
+        <InputGroup
+          input:data-i18n-placeholder=`${i18n}.password.placeholder`
+          btn:data-i18n=`${i18n}.password.button`
+          data-password-form
+        />
+      </Card>
+    </div>
+  </dialog>
+</app-login-page>
+
+<script>
+  import { auth } from "@/services/api/client";
+  import { notifyApiError } from "@/runtime/notifications/use-notifications";
+  import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
+  import { authMan, loginRequiredEvent } from "@/services/api/auth-man";
+  import { type InputGroupElement } from "@xrayman/shared/astro/primitives/InputGroup/InputGroup";
+
+  class LoginPage extends CustomElement {
+    private pwdInputEl!: InputGroupElement;
+    private dialogEl!: HTMLDialogElement;
+
+    connectedCallback() {
+      super.connectedCallback();
+
+      this.pwdInputEl = pt<InputGroupElement>(this, "password-form");
+      this.dialogEl = pt<HTMLDialogElement>(this, "auth-dialog");
+
+      this.pwdInputEl.submitfn = async (pwd: string) => {
+        if (pwd.length == 0) {
+          return;
+        }
+
+        const response = await auth(pwd);
+        if (!response.ok) {
+          notifyApiError("auth", response.reason);
+        } else {
+          this.close();
+          authMan.onLoginSuccess(response.data.access_token);
+        }
+      };
+
+      // disable window closing
+      this.dialogEl.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      });
+
+      window.addEventListener(loginRequiredEvent, this.open);
+    }
+
+    disconnectedCallback() {}
+
+    private open = () => {
+      this.dialogEl.showModal();
+    };
+
+    private close() {
+      this.dialogEl.close();
+    }
+  }
+
+  customElements.define("app-login-page", LoginPage);
+</script>
+
+<style>
+  .auth-dialog {
+    background: transparent;
+    border: none;
+    width: 100%;
+    padding: 0;
+  }
+
+  .auth-dialog::backdrop {
+    background: transparent;
+  }
+  .auth-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.5);
+  }
+</style>

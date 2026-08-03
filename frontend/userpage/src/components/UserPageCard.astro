@@ -1,0 +1,54 @@
+---
+import Card from "@xrayman/shared/astro/primitives/Card.astro";
+import Info from "@xrayman/shared/astro/primitives/Info.astro";
+import CopyGroup from "@xrayman/shared/astro/primitives/CopyGroup/CopyGroup.astro";
+const i18n = "userurl";
+---
+
+<user-page-card>
+  <Card class="mb-2">
+    <Info>
+      <strong>1.</strong>
+      <span data-i18n=`${i18n}.info`></span>
+    </Info>
+
+    <div class="h-center g-0 w-100">
+      <CopyGroup btn:data-i18n=`${i18n}.btntext` data-result-userpage class="fluid-lg" />
+    </div>
+
+    <Info>
+      <span data-i18n=`${i18n}.do-not-share`></span>
+    </Info>
+  </Card>
+</user-page-card>
+
+<script>
+  import { ProfileURL } from "@/runtime/user/user-utils";
+  import { stateSignal } from "@/state/signals";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
+  import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+  import { type CopyGroupElement } from "@xrayman/shared/astro/primitives/CopyGroup/CopyGroup";
+  import { State } from "@/state/state";
+
+  class UserPageCard extends CustomElement {
+    private unsub?: () => void;
+
+    connectedCallback() {
+      const userpageOutputEl = pt<CopyGroupElement>(this, "result-userpage")!;
+
+      this.unsub = stateSignal.subscribe(async (state) => {
+        if (state.status === State.LoggedIn) {
+          userpageOutputEl.value = await ProfileURL.make(state.data);
+        } else {
+          userpageOutputEl.value = "";
+        }
+      });
+    }
+
+    disconnectedCallback() {
+      this.unsub?.();
+    }
+  }
+
+  customElements.define("user-page-card", UserPageCard);
+</script>

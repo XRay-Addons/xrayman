@@ -1,7 +1,7 @@
 <template>
   <a-config-provider :theme="theme">
     <a-table
-      class="table-ext"
+      class="table-ext noselect"
       :data-source="dataSource"
       :columns="mainCols"
       :row-key="rowKey"

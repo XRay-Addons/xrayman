@@ -1,0 +1,71 @@
+---
+import InputGroup from "@xrayman/shared/astro/primitives/InputGroup/InputGroup.astro";
+import type { HTMLAttributes } from "astro/types";
+import { ExtractPrefixed, type WithPrefix } from "@xrayman/shared/astro/props/props";
+
+type BtnProps = WithPrefix<HTMLAttributes<"button">, "btn">;
+type InputProps = WithPrefix<HTMLAttributes<"input">, "input">;
+type HostProps = HTMLAttributes<"div">;
+
+interface Props extends HostProps, BtnProps, InputProps {}
+
+const { ...props } = Astro.props;
+const btnProps = ExtractPrefixed(props, "btn");
+const inputProps = ExtractPrefixed(props, "input");
+---
+
+<copy-group {...props}>
+  <InputGroup
+    data-input-group
+    input:readonly
+    input:data-copy-input
+    btn:data-copy-btn
+    input={inputProps}
+    btn={btnProps}
+  />
+</copy-group>
+
+<script>
+  import { CustomElement, prop } from "@xrayman/shared/runtime/dom/custom-element";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
+  import { type CopyGroupElement } from "./CopyGroup";
+  import { type InputGroupElement } from "../InputGroup/InputGroup";
+
+  class CopyGroup extends CustomElement implements CopyGroupElement {
+    @prop({ default: "" }) value!: string;
+
+    private inputEl!: HTMLInputElement;
+
+    connectedCallback() {
+      super.connectedCallback();
+      const inputGroup = pt<InputGroupElement>(this, "input-group");
+      this.inputEl = pt<HTMLInputElement>(this, "copy-input");
+
+      const btnEl = pt<HTMLButtonElement>(this, "copy-btn");
+      const originalContent = btnEl.innerHTML;
+
+      inputGroup.submitfn = async (val: string) => {
+        try {
+          this.inputEl.style.pointerEvents = "none";
+          await navigator.clipboard.writeText(val);
+          btnEl.innerHTML = "✓";
+          setTimeout(() => {
+            btnEl.innerHTML = originalContent;
+          }, 2000);
+        } catch (err) {
+          console.error("Clipboard error", err);
+        } finally {
+          this.inputEl.style.pointerEvents = "auto";
+        }
+      };
+    }
+
+    protected render() {
+      this.inputEl.value = this.value;
+    }
+
+    disconnectedCallback() {}
+  }
+
+  customElements.define("copy-group", CopyGroup);
+</script>

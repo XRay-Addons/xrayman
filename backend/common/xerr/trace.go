@@ -6,12 +6,21 @@ import (
 	"strings"
 )
 
-func getTrace(skip int) []string {
-	callstack := getCallstack(skip + 1)
-	return callstack
+type trace struct {
+	frames []string
 }
 
-func getCallstack(skip int) []string {
+func (t *trace) Format(f fmt.State, verb rune) {
+	if len(t.frames) == 0 {
+		fmt.Fprint(f, "callstack is empty")
+		return
+	}
+	format := "%" + string(verb)
+	traceText := "\n\t-> " + strings.Join(t.frames, "\n\t-> ")
+	fmt.Fprintf(f, format, traceText)
+}
+
+func getTrace(skip int) trace {
 	const maxStackDepth = 32
 	pcs := make([]uintptr, maxStackDepth)
 	n := runtime.Callers(skip+1, pcs)
@@ -19,20 +28,15 @@ func getCallstack(skip int) []string {
 
 	var frames []string
 	for {
-		rawFrame, more := callFrames.Next()
-		frames = append(frames, makePrettyFrame(rawFrame))
+		f, more := callFrames.Next()
+		frame := fmt.Sprintf("%s:%d %s", f.File, f.Line, getFuncName(f))
+		frames = append(frames, frame)
 		if !more {
 			break
 		}
 	}
 
-	reverseFrames(frames)
-
-	return frames
-}
-
-func makePrettyFrame(f runtime.Frame) string {
-	return fmt.Sprintf("%s:%d %s", f.File, f.Line, getFuncName(f))
+	return trace{frames}
 }
 
 func getFuncName(f runtime.Frame) string {
@@ -42,10 +46,4 @@ func getFuncName(f runtime.Frame) string {
 		return "<anonymous func>"
 	}
 	return funcName[pos+1:]
-}
-
-func reverseFrames(frames []string) {
-	for i, j := 0, len(frames)-1; i < j; i, j = i+1, j-1 {
-		frames[i], frames[j] = frames[j], frames[i]
-	}
 }

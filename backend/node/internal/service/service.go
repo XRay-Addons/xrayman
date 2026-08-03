@@ -91,6 +91,8 @@ func (s *Service) Status(ctx context.Context,
 	if err != nil {
 		return nil, err
 	}
+	s.xrayAPI.GetStats(ctx)
+
 	return &models.StatusResult{ServiceStatus: status}, nil
 }
 
@@ -105,4 +107,16 @@ func (s *Service) EditUsers(ctx context.Context,
 		return nil, err
 	}
 	return &models.EditUsersResult{}, nil
+}
+
+func (s *Service) GetStats(ctx context.Context) (*models.StatsResult, error) {
+	if s == nil {
+		return nil, errdefs.NilCall()
+	}
+
+	stats, err := s.xrayAPI.GetStats(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return stats, nil
 }

@@ -10,13 +10,14 @@
     "dev": "astro dev",
     "prebuild": "pnpm run api:generate && pnpm run schema:generate",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "check": "astro check && eslint ."
   },
   "dependencies": {
     "@hey-api/client-fetch": "^0.13.1",
     "@xrayman/shared": "workspace:*",
     "@zokki/astro-purgecss": "^1.0.4",
-    "astro": "^5.17.1",
+    "astro": "^7.1.1",
     "astro-compress": "^2.4.0",
     "astro-purgecss": "^6.0.1",
     "astro-relative-links": "^0.4.2",

@@ -2,23 +2,31 @@ package users
 
 import (
 	"context"
+	"time"
 
-	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/supervisor"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
+	"go.uber.org/zap"
 )
 
 type Service struct {
 	storage    Storage
-	poolSyncer poolsync.Syncer
+	poolSyncer Syncer
+
+	syncTimeout time.Duration
+	sv          *supervisor.Supervisor
+
+	logger *zap.Logger
 }
 
 var _ handler.UsersService = (*Service)(nil)
 
-func New(poolSyncer poolsync.Syncer,
+func New(poolSyncer Syncer,
 	storage Storage,
+	syncTimeout time.Duration,
+	logger *zap.Logger,
 ) (*Service, error) {
 	if poolSyncer == nil {
 		return nil, errdefs.NilArg("poolSyncer")
@@ -26,11 +34,32 @@ func New(poolSyncer poolsync.Syncer,
 	if storage == nil {
 		return nil, errdefs.NilArg("storage")
 	}
+	if logger == nil {
+		return nil, errdefs.NilArg("logger")
+	}
 
 	return &Service{
-		storage:    storage,
-		poolSyncer: poolSyncer,
+		storage:     storage,
+		poolSyncer:  poolSyncer,
+		syncTimeout: syncTimeout,
+		sv:          supervisor.New(),
+		logger:      logger,
 	}, nil
+}
+
+func (s *Service) Close() {
+	if s == nil || s.sv == nil {
+		return
+	}
+	s.sv.Close()
+}
+
+func (s *Service) requestNodesSync() {
+	s.sv.Go(func(ctx context.Context) {
+		if err := s.syncAllNodes(ctx); err != nil {
+			s.logger.Warn("nodes sync request", zap.Error(err))
+		}
+	}, s.syncTimeout)
 }
 
 func (s *Service) NewUser(ctx context.Context, p models.NewUserParams) (
@@ -51,41 +80,39 @@ func (s *Service) NewUser(ctx context.Context, p models.NewUserParams) (
 	user.Profile.VlessUUID = vlessUUID
 	user.TargetStatus = models.UserStatusEnabled
 
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		err = uowctx.NewUser(ctx, &user)
-		return
+	// sync all nodes on user add to return valid configuration
+	// to new user and avoid situation when nodes are temporary
+	// unavailable, user successfully created and get empty
+	// subscription config just after that.
+	if err := s.storage.DoTx(ctx, func(context.Context) error {
+		if err := s.storage.NewUser(ctx, &user); err != nil {
+			return err
+		}
+		if err := s.syncAllNodes(ctx); err != nil {
+			return err
+		}
+		return nil
 	}); err != nil {
 		return nil, err
 	}
 
-	_ = s.syncAllNodes(ctx)
-
 	return &user, nil
 }
 
-func (s *Service) GetUser(ctx context.Context, p models.GetUserParams) (
-	*models.User, bool, error,
+func (s *Service) GetUserView(ctx context.Context, p models.GetUserParams) (
+	*models.UserView, error,
 ) {
 	if s == nil {
-		return nil, false, errdefs.NilCall()
+		return nil, errdefs.NilCall()
 	}
 
 	// find user with given id
-	var user *models.User
-	var exists bool
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		user, exists, err = uowctx.GetUser(ctx, p.ID)
-		return
-	}); err != nil {
-		return nil, false, err
+	userView, err := s.storage.GetUserView(ctx, p.ID, p.Name)
+	if err != nil {
+		return nil, err
 	}
 
-	// check user name
-	if !exists || user.Profile.Name != p.Name {
-		return nil, false, nil
-	}
-
-	return user, true, nil
+	return userView, nil
 }
 
 func (s *Service) ListUsers(ctx context.Context, p models.ListUserParams) (
@@ -94,11 +121,8 @@ func (s *Service) ListUsers(ctx context.Context, p models.ListUserParams) (
 	if s == nil {
 		return nil, errdefs.NilCall()
 	}
-	var users []models.User
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		users, err = uowctx.ListUsers(ctx)
-		return
-	}); err != nil {
+	users, err := s.storage.ListUserViews(ctx)
+	if err != nil {
 		return nil, err
 	}
 	return &models.ListUsersResult{
@@ -130,21 +154,22 @@ func (s *Service) DeleteUser(ctx context.Context, p models.DeleteUserParams) (
 	if s == nil {
 		return nil, errdefs.NilCall()
 	}
-	// disable user before deleting
-	if err := s.setUserStatus(ctx, p.ID, models.UserStatusDisabled); err != nil {
-		return nil, err
-	}
 
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		if err = uowctx.DeleteUser(ctx, p.ID); err != nil {
-			return
+	if err := s.storage.DoTx(ctx, func(ctx context.Context) error {
+		if err := s.storage.SetTargetUserStatus(ctx,
+			p.ID, models.UserStatusDisabled,
+		); err != nil {
+			return err
 		}
-		return
+		if err := s.storage.DeleteUser(ctx, p.ID); err != nil {
+			return err
+		}
+		return nil
 	}); err != nil {
 		return nil, err
 	}
 
-	_ = s.syncAllNodes(ctx)
+	s.requestNodesSync()
 
 	return &models.DeleteUserResult{}, nil
 }
@@ -156,15 +181,13 @@ func (s *Service) setUserStatus(ctx context.Context,
 		return errdefs.NilCall()
 	}
 	// set target user state to storage
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		err = uowctx.SetTargetUserStatus(ctx, id, status)
-		return
-	}); err != nil {
+	if err := s.storage.SetTargetUserStatus(ctx, id, status); err != nil {
 		return err
 	}
 
 	// sync nodes. errors is not a problem, it will updates in background
-	_ = s.syncAllNodes(ctx)
+	s.requestNodesSync()
+
 	return nil
 }
 
@@ -174,15 +197,5 @@ func (s *Service) syncAllNodes(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	if len(syncResults.Nodes) == 0 {
-		return nil
-	}
-	var errs []error
-	for _, syncRes := range syncResults.Nodes {
-		if syncRes.Err == nil {
-			return nil
-		}
-		errs = append(errs, syncRes.Err)
-	}
-	return xerr.Join(errs...)
+	return syncResults.GetEntireErr()
 }

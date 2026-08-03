@@ -13,10 +13,10 @@ import (
 //go:generate goverter gen .
 type Users interface {
 	ConvertNewUserRequest(r *api.NewUserRequest) (*models.NewUserParams, error)
-
-	ConvertUserResult(r *models.User) *api.User
+	ConvertNewUserResult(r *models.User) *api.User
 
 	ConvertGetUserRequest(r *api.GetUserParams) (*models.GetUserParams, error)
+	ConvertGetUserResult(r *models.UserView) *api.UserView
 
 	ConvertEnableUserRequest(r *api.EnableUserRequest) (*models.EnableUserParams, error)
 

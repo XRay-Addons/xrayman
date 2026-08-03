@@ -1,8 +1,9 @@
-package nodesync
+package node
 
 import (
 	"context"
 
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/clients/node/converter"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
@@ -67,6 +68,20 @@ func (c *NodeClient) UpdateUsers(ctx context.Context, update models.NodeUsersUpd
 	return nil
 }
 
+func (c *NodeClient) GetStats(ctx context.Context) (*models.NodeStats, error) {
+	if c == nil || c.client == nil {
+		return nil, errdefs.NilCall()
+	}
+
+	statsResponse, err := c.client.GetStats(ctx)
+	if err != nil {
+		return nil, wrapOgenErr(err)
+	}
+
+	stats := converter.ConvertNodeStats(statsResponse)
+	return stats, nil
+}
+
 func wrapOgenErr(err error) error {
-	return errdefs.OgenErr(err)
+	return xerr.Wrap(err, xerr.WithStack(), xerr.WithType(errdefs.ErrConnection))
 }

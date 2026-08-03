@@ -1,0 +1,96 @@
+---
+import Surface from "@xrayman/shared/astro/primitives/Surface.astro";
+import { ExtractPrefixed, type WithPrefix } from "@xrayman/shared/astro/props/props";
+import type { HTMLAttributes } from "astro/types";
+
+type HostProps = HTMLAttributes<"div">;
+type FormProps = WithPrefix<HTMLAttributes<"form">, "form">;
+type BtnProps = WithPrefix<HTMLAttributes<"button">, "btn">;
+type InputProps = WithPrefix<HTMLAttributes<"input">, "input">;
+
+interface Props extends HostProps, FormProps, BtnProps, InputProps {}
+
+const { ...props } = Astro.props;
+const { class: __form, ...formProps } = ExtractPrefixed(props, "form");
+const { class: __btn, ...btnProps } = ExtractPrefixed(props, "btn");
+const { class: __input, ...inputProps } = ExtractPrefixed(props, "input");
+const { ...hostProps } = props;
+---
+
+<input-group {...hostProps}>
+  <form data-group-form class="g-0 d-flex" {...formProps}>
+    <div class="group-input-wrap">
+      <Surface depth="var(--input-depth)" color="var(--input-color)" class="h-100">
+        <input
+          class="ui-reset-input group-input text text-md crt p-2 h-100 w-100"
+          data-group-input
+          {...inputProps}
+        />
+      </Surface>
+    </div>
+
+    <div class="group-btn-wrap">
+      <Surface
+        depth="var(--input-depth)"
+        color="var(--input-color)"
+        dynamic
+        class="group-btn-wrap h-100 w-100"
+      >
+        <button
+          class="ui-reset-button noselect group-btn text text-md crt p-2 h-100 w-100"
+          type="button"
+          data-group-btn
+          {...btnProps}></button>
+      </Surface>
+    </div>
+  </form>
+</input-group>
+
+<style lang="css">
+  .group-input-wrap {
+    width: 75%;
+  }
+  .group-btn-wrap {
+    width: calc(25% + var(--input-depth));
+    margin-left: calc(-1 * var(--input-depth));
+  }
+
+  .group-input {
+  }
+
+  .group-btn {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+</style>
+
+<script>
+  import { type InputGroupElement, type SubmitHandler } from "./InputGroup";
+  import { CustomElement, prop } from "@xrayman/shared/runtime/dom/custom-element";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
+
+  class InputGroup extends CustomElement implements InputGroupElement {
+    @prop({ default: () => {} }) submitfn!: SubmitHandler;
+
+    public connectedCallback() {
+      super.connectedCallback();
+
+      const inputEl = pt<HTMLInputElement>(this, "group-input");
+
+      const formEl = pt<HTMLFormElement>(this, "group-form");
+      formEl.addEventListener("submit", async (e: Event) => {
+        e.preventDefault();
+        await this.submitfn?.(inputEl.value);
+      });
+
+      const btnEl = pt<HTMLButtonElement>(this, "group-btn");
+      btnEl.addEventListener("click", (e) => {
+        e.preventDefault();
+        formEl.requestSubmit();
+      });
+    }
+  }
+
+  customElements.define("input-group", InputGroup);
+</script>

@@ -8,6 +8,7 @@ import (
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/caarlos0/env/v6"
 	"github.com/kr/text"
+	"go.uber.org/zap/zapcore"
 )
 
 func LoadConfig() (*RawConfig, error) {
@@ -24,7 +25,12 @@ func LoadConfig() (*RawConfig, error) {
 
 func defaultConfig() *RawConfig {
 	return &RawConfig{
-		Endpoint: "localhost:80",
+		Endpoint:           "localhost:80",
+		StateSyncInterval:  5,
+		StatsSyncInterval:  60,
+		StorageCallTimeout: 5,
+		NodeCallTimeout:    5,
+		LogLevel:           zapcore.InfoLevel.String(),
 	}
 }
 
@@ -37,6 +43,11 @@ func readCLIParams(c *RawConfig) error {
 		"postgress connection string, like postgresql://user@password/127.0.0.1:4321/dbname")
 	fs.StringVar(&c.JwtSecret, "jwt", c.JwtSecret,
 		"jwt secret")
+
+	fs.IntVar(&c.StateSyncInterval, "state", c.StateSyncInterval,
+		"state sync interval, s")
+	fs.IntVar(&c.StatsSyncInterval, "stats", c.StatsSyncInterval,
+		"stats sync interval, s")
 
 	fs.StringVar(&c.ApiServiceUrl, "apisrv", c.ApiServiceUrl,
 		`public base URL of the API as seen by browsers (used for CORS and SPAs config).
@@ -54,12 +65,23 @@ should be like /admin or https://adm.example.com (optional)`)
 	fs.StringVar(&c.AdminPassword, "admpass", c.AdminPassword,
 		`admin password to change (optional)`)
 
+	fs.IntVar(&c.StorageCallTimeout, "storage-timeout", c.StorageCallTimeout,
+		`storage call timeout, s (optional)`)
+	fs.IntVar(&c.NodeCallTimeout, "node-timeout", c.NodeCallTimeout,
+		`node call timeout, s (optional)`)
+
+	fs.StringVar(&c.LogLevel, "log-lvl", c.LogLevel,
+		`zap log level (optional)`)
+
 	fs.Usage = func() {
 		fmt.Printf("Usage:\n")
 		argGroups := [][]string{
 			{"a", "db", "jwt"},
+			{"state", "stats"},
 			{"apisrv", "userspa", "adminspa"},
 			{"admpass"},
+			{"storage-timeout", "node-timeout"},
+			{"log-lvl"},
 		}
 
 		for _, argGroup := range argGroups {
@@ -67,6 +89,9 @@ should be like /admin or https://adm.example.com (optional)`)
 				flag := fs.Lookup(arg)
 				fmt.Printf(" -%s\n", flag.Name)
 				fmt.Printf("%s\n", text.Indent(flag.Usage, "    "))
+				if len(flag.DefValue) > 0 {
+					fmt.Printf("    default: %s\n", flag.DefValue)
+				}
 			}
 			fmt.Printf("\n")
 		}

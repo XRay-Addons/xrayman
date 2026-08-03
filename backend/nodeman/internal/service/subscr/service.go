@@ -3,12 +3,11 @@ package subscr
 import (
 	"context"
 
-	"github.com/XRay-Addons/xrayman/common/jsonval"
+	"github.com/XRay-Addons/xrayman/common/xerr"
+	"github.com/XRay-Addons/xrayman/common/xerrgroup"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/template"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/go-faster/jx"
 	"go.uber.org/zap"
 )
 
@@ -45,109 +44,52 @@ func New(storage Storage, opts ...option) (*Service, error) {
 
 func (s *Service) GetUserSub(ctx context.Context,
 	p models.UserSubParams,
-) (*models.UserSubResult, bool, error) {
+) (*models.UserSubResult, error) {
 	if s == nil || s.storage == nil {
-		return nil, false, errdefs.NilCall()
+		return nil, errdefs.NilCall()
 	}
 
+	g, ctx := xerrgroup.WithContext(ctx)
 	// find user
-	user, exists, err := s.findUser(ctx, p)
-	if err != nil || !exists {
-		return nil, exists, err
-	}
+	var user *models.UserView
+	g.Go(func() (err error) {
+		user, err = s.storage.GetUserView(ctx, p.ID, p.Name)
+		return
+	})
 
 	// get active nodes for user
 	var userNodes []models.Node
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		userNodes, err = uowctx.GetUserNodes(ctx, user.Profile.ID)
+	g.Go(func() (err error) {
+		userNodes, err = s.storage.GetUserNodes(ctx, p.ID)
 		return
-	}); err != nil {
-		return nil, false, err
+	})
+
+	// get settings
+	var settings *models.Settings
+	g.Go(func() (err error) {
+		settings, err = s.storage.GetSettings(ctx)
+		return
+	})
+
+	if err := g.Wait(); err != nil {
+		return nil, err
+	}
+
+	// reply NotFound for disabled users
+	if user.User.TargetStatus != models.UserStatusEnabled {
+		return nil, xerr.WrapWithStack(errdefs.ErrNotFound)
 	}
 
 	// get subscription content
-	clientCfgs := s.makeClientConfigs(*user, userNodes)
+	clientCfgs := createClientCfgs(user, userNodes, s.log)
 
 	// get subscription headers
-	clientHeaders, err := s.makeClientHeaders(ctx, *user)
-	if err != nil {
-		return nil, false, err
-	}
+	clientHeaders := createClientHeaders(ctx, user, settings)
 
 	return &models.UserSubResult{
 		Headers:       clientHeaders,
 		ClientConfigs: clientCfgs,
-	}, true, nil
-}
-
-func (s *Service) findUser(ctx context.Context, p models.UserSubParams) (*models.User, bool, error) {
-	// find user with given id
-	var user *models.User
-	var exists bool
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		user, exists, err = uowctx.GetUser(ctx, p.ID)
-		return
-	}); err != nil {
-		return nil, false, err
-	}
-
-	// check user name
-	if !exists || user.Profile.Name != p.Name {
-		return nil, false, nil
-	}
-
-	return user, true, nil
-}
-
-func (s *Service) makeClientConfigs(user models.User,
-	userNodes []models.Node,
-) []models.ClientConfigItem {
-	var clientCfgs []models.ClientConfigItem
-	for _, node := range userNodes {
-		nodeClientConfigs, err := s.makeNodeClientConfigs(
-			user, node.Config.ClientConfigTemplate)
-		if err != nil {
-			// skip invalid node configs
-			s.log.Warn("node client config", zap.Error(err))
-			continue
-		}
-		clientCfgs = append(clientCfgs, nodeClientConfigs...)
-	}
-
-	return clientCfgs
-}
-
-func (s *Service) makeNodeClientConfigs(user models.User,
-	cfgTemplate models.ClientConfigTemplate,
-) ([]models.ClientConfigItem, error) {
-	nodeConfigs := make([]models.ClientConfigItem, 0, len(cfgTemplate.Template))
-	for _, item := range cfgTemplate.Template {
-		tmpl, err := template.RenderTemplate(item.String(), map[string]string{
-			cfgTemplate.VlessEmailField: user.Profile.VlessEmail(),
-			cfgTemplate.VlessUUIDField:  user.Profile.VlessUUID,
-		})
-		if err != nil {
-			return nil, err
-		}
-		nodeConfig := jx.Raw(tmpl)
-		if err = jsonval.ValidateJsonData(nodeConfig); err != nil {
-			return nil, err
-		}
-		nodeConfigs = append(nodeConfigs, nodeConfig)
-	}
-	return nodeConfigs, nil
-}
-
-func (s *Service) makeClientHeaders(ctx context.Context, u models.User) (models.Headers, error) {
-	var headers models.Headers
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		headers, err = uowctx.ListSubHeaders(ctx)
-		return
-	}); err != nil {
-		return nil, err
-	}
-	headers = replacePlaceholders(headers, u)
-	return headers, nil
+	}, nil
 }
 
 func (s Service) SubHeadersPlaceholders() []string {

@@ -1,0 +1,101 @@
+---
+import Info from "@xrayman/shared/astro/primitives/Info.astro";
+import InputGroup from "@xrayman/shared/astro/primitives/InputGroup/InputGroup.astro";
+import CopyGroup from "@xrayman/shared/astro/primitives/CopyGroup/CopyGroup.astro";
+import Card from "@xrayman/shared/astro/primitives/Card.astro";
+import Title from "@xrayman/shared/astro/primitives/Title.astro";
+import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
+
+const i18n = "add-user";
+const i18nReq = "add-user.request";
+const i18nResp = "add-user.response";
+---
+
+<add-user-page class="fluid-md">
+  <Card>
+    <Title class="mb-2">
+      <I18NText data-i18n=`${i18n}.title` />
+    </Title>
+
+    <Info>
+      <I18NText data-i18n=`${i18nReq}.name.info` />
+    </Info>
+
+    <InputGroup
+      data-input-group
+      input:data-i18n-placeholder=`${i18nReq}.name.placeholder`
+      input:data-name-input
+      btn:data-i18n=`${i18nReq}.name.button`
+    />
+
+    <div data-success-result class="mt-2" hidden>
+      <Info>
+        <I18NText data-i18n=`${i18nResp}.userpage.info` />
+      </Info>
+
+      <CopyGroup btn:data-i18n=`${i18nResp}.userpage.copy-button` data-result-userpage />
+    </div>
+  </Card>
+</add-user-page>
+
+<script>
+  import { type CopyGroupElement } from "@xrayman/shared/astro/primitives/CopyGroup/CopyGroup";
+  import type { Resettable } from "@xrayman/shared/astro/primitives/ButtonDialog/ButtonDialog";
+
+  import { newUser } from "@/services/api/client";
+  import { notifyApiError } from "@/runtime/notifications/use-notifications";
+  import { reloadUsers } from "@/actions/users";
+
+  import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
+  import { InputGroupElement } from "@xrayman/shared/astro/primitives/InputGroup/InputGroup";
+  import { MakeUserpageURL } from "@/runtime/utils/paths";
+
+  class AddUserPage extends CustomElement implements Resettable {
+    private nameInputEl!: HTMLInputElement;
+    private successResultEl!: HTMLElement;
+    private userpageOutputEl!: CopyGroupElement;
+
+    connectedCallback() {
+      super.connectedCallback();
+
+      const inputForm = pt<InputGroupElement>(this, "input-group");
+      inputForm.submitfn = async (val: string) => await this.onSubmitFn(val);
+
+      this.nameInputEl = pt<HTMLInputElement>(this, "name-input");
+      this.successResultEl = pt<HTMLElement>(this, "success-result");
+      this.userpageOutputEl = pt<CopyGroupElement>(this, "result-userpage");
+    }
+
+    private async onSubmitFn(displayName: string) {
+      if (displayName.length == 0) {
+        return;
+      }
+      // reset and hide
+      this.successResultEl.setAttribute("hidden", "true");
+      this.userpageOutputEl.value = "";
+
+      const response = await newUser(displayName);
+      if (!response.ok) {
+        notifyApiError("new_user", response.reason);
+        return;
+      }
+      reloadUsers({ quiet: true });
+
+      // show back
+      this.successResultEl.removeAttribute("hidden");
+      const profile = response.data.Profile;
+      this.userpageOutputEl.value = MakeUserpageURL(profile.ID, profile.Name);
+    }
+
+    disconnectedCallback() {}
+
+    reset() {
+      this.nameInputEl.value = "";
+      this.userpageOutputEl.value = "";
+      this.successResultEl.hidden = true;
+    }
+  }
+
+  customElements.define("add-user-page", AddUserPage);
+</script>

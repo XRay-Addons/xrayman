@@ -30,7 +30,7 @@ type Nodes interface {
 func ConvertAccessKey(s string) (models.AccessKey, error) {
 	var accessKey models.AccessKey
 	if err := accessKey.UnmarshalText([]byte(s)); err != nil {
-		return accessKey, errdefs.InvalidPayload(err.Error())
+		return accessKey, errdefs.PayloadErr(err)
 	}
 	return accessKey, nil
 }

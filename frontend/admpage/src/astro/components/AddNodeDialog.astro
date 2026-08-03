@@ -1,0 +1,12 @@
+---
+import AddNodePage from "./AddNodePage.astro";
+import ButtonDialog from "@xrayman/shared/astro/primitives/ButtonDialog/ButtonDialog.astro";
+import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
+---
+
+<div class="d-flex justify-content-end">
+  <ButtonDialog class="col-2">
+    <I18NText slot="button" data-i18n="add-node.button.text" />
+    <AddNodePage slot="page" />
+  </ButtonDialog>
+</div>

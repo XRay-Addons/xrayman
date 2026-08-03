@@ -1,0 +1,84 @@
+---
+import EqHeight from "@xrayman/shared/astro/primitives/EqHeight.astro";
+import Card from "@xrayman/shared/astro/primitives/Card.astro";
+import Info from "@xrayman/shared/astro/primitives/Info.astro";
+import Button from "@xrayman/shared/astro/primitives/Button.astro";
+
+import PLATFORM_BUTTONS from "@/data/platform-apps.json";
+const buttonsJson = JSON.stringify(PLATFORM_BUTTONS);
+---
+
+<install-app-card data-platform-buttons={buttonsJson}>
+  <Card class="mb-2">
+    <Info>
+      <strong>2.</strong>
+      <span data-i18n="installapp.info"></span>
+    </Info>
+
+    <div class="h-center w-100">
+      <EqHeight data-install-app-btns class="row h-center g-1 fluid-lg">
+        <template data-install-app-btn-template>
+          <div class="col-6">
+            <Button class="w-100 h-100" data-install-app-btn>
+              <span data-install-app-btn-text></span>
+            </Button>
+          </div>
+        </template>
+      </EqHeight>
+    </div>
+  </Card>
+
+  <script>
+    import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+    import { pt } from "@xrayman/shared/runtime/dom/pts";
+    import { config } from "@/config/config";
+    import {
+      detectPlatform,
+      checkPlatform,
+      type Platform,
+    } from "@xrayman/shared/runtime/platforms/platforms";
+
+    type InstallButton = {
+      url: string;
+      text: string;
+    };
+
+    class InstallAppCard extends CustomElement {
+      connectedCallback() {
+        super.connectedCallback();
+
+        const platform = detectPlatform();
+        const buttons = this.getPlatformLinks(platform);
+        this.renderButtons(buttons);
+      }
+
+      getPlatformLinks(platform: Platform): InstallButton[] {
+        return config().AppLinks.flatMap((app) => {
+          return checkPlatform(app.Platforms, platform) ? [{ url: app.URL, text: app.Name }] : [];
+        });
+      }
+
+      renderButtons(buttons: InstallButton[]) {
+        const btnTemplate = pt<HTMLTemplateElement>(this, "install-app-btn-template");
+        const btnsSection = pt<HTMLElement>(this, "install-app-btns");
+
+        const frag = document.createDocumentFragment();
+
+        buttons.forEach((data) => {
+          const fragment = btnTemplate.content.cloneNode(true) as HTMLElement;
+          const btn = pt<HTMLButtonElement>(fragment, "install-app-btn");
+          const text = pt<HTMLSpanElement>(fragment, "install-app-btn-text");
+
+          btn.addEventListener("click", () => window.open(data.url, "_blank", "noopener"));
+          text.innerText = data.text;
+
+          frag.appendChild(fragment);
+        });
+
+        btnsSection.replaceChildren(frag);
+      }
+    }
+
+    customElements.define("install-app-card", InstallAppCard);
+  </script>
+</install-app-card>

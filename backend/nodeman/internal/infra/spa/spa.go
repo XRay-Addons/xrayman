@@ -2,6 +2,7 @@ package spa
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io/fs"
 	"net/http"
@@ -14,7 +15,13 @@ import (
 	"go.uber.org/zap"
 )
 
-func Mount(r chi.Router, prefix string, content fs.FS, config any, log *zap.Logger) error {
+// return anything marshallable
+type CfgHandler = func(ctx context.Context) (any, error)
+
+// config is nillable for no config
+func Mount(r chi.Router, prefix string, content fs.FS, cfgHandler CfgHandler,
+	log *zap.Logger,
+) error {
 	if r == nil {
 		return errdefs.NilArg("r")
 	}
@@ -29,8 +36,8 @@ func Mount(r chi.Router, prefix string, content fs.FS, config any, log *zap.Logg
 	}
 
 	// host config on /config.js
-	if err := mountConfig(r, prefix, config, log); err != nil {
-		return err
+	if cfgHandler != nil {
+		mountConfig(r, prefix, cfgHandler, log)
 	}
 
 	// host content
@@ -48,29 +55,43 @@ func mountPrefixNormalizer(r chi.Router, prefix string) {
 
 const configPath = "config.js"
 
-func mountConfig(r chi.Router, prefix string, cfg any, log *zap.Logger) error {
-	// make config js
-	cfgData, err := json.Marshal(cfg)
-	if err != nil {
-		return xerr.WrapWithStack(err)
-	}
-
-	cfgScript := bytes.NewBuffer(nil)
-	cfgScript.WriteString("window.__CONFIG__ = ")
-	cfgScript.Write(cfgData)
-	cfgScript.WriteString(";\nObject.freeze(window.__CONFIG__);")
+func mountConfig(r chi.Router, prefix string, cfgHandler CfgHandler, log *zap.Logger) {
 
 	r.Get(prefix+configPath, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
 		w.Header().Set("Cache-Control", "no-store")
 
-		_, err := w.Write(cfgScript.Bytes()) // we have nothing to do with this error
+		// make config js
+		cfgData, err := getConfigData(r.Context(), cfgHandler)
 		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Warn("get config", zap.String("path", prefix+configPath), zap.Error(err))
+			return
+		}
+
+		cfgScript := bytes.NewBuffer(nil)
+		cfgScript.WriteString("window.__CONFIG__ = ")
+		cfgScript.Write(cfgData)
+		cfgScript.WriteString(";\nObject.freeze(window.__CONFIG__);")
+
+		_, err = w.Write(cfgScript.Bytes())
+		if err != nil {
+			// we have nothing to do with this error
 			log.Warn("response writing", zap.String("path", prefix+configPath), zap.Error(err))
 		}
 	})
+}
 
-	return nil
+func getConfigData(ctx context.Context, cfgHandler CfgHandler) ([]byte, error) {
+	cfg, err := cfgHandler(ctx)
+	if err != nil {
+		return nil, err
+	}
+	cfgData, err := json.Marshal(cfg)
+	if err != nil {
+		return nil, xerr.WrapWithStack(err)
+	}
+	return cfgData, nil
 }
 
 func mountContent(r chi.Router, prefix string, content fs.FS) error {

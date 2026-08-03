@@ -1,15 +1,26 @@
 {
   "include": ["src"],
+  "exclude": ["src/services/api/generated/**"],
   "compilerOptions": {
     "paths": {
       "@/*": ["./src/*"],
-      "@xrayman/shared/*": ["../shared/src/*"]
+      "@xrayman/shared/*": ["../shared/src/*"],
+      "@assets/*": ["./src/assets/*"]
     },
-    "moduleResolution": "bundler",
 
     "strict": true,
     "noUnusedLocals": true,
     "noImplicitAny": true,
-    "exactOptionalPropertyTypes": true
+    "exactOptionalPropertyTypes": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false
+  },
+  "astro": {
+    "check": {
+      "strict": true
+    }
   }
 }

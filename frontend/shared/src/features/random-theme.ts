@@ -7,8 +7,6 @@ export enum PaletteItem {
   Button = "Button",
   Input = "Input",
   Table = "Table",
-  Success = "Success",
-  Tag = "Tag",
 }
 
 export type Palette = Record<PaletteItem, string>;
@@ -25,8 +23,9 @@ export function UseRandomTheme(palettes: string[][], callback: OnSetPalette) {
 
   document.addEventListener("click", (e) => {
     const target = e.target as HTMLElement | null;
+
     if (!target) return;
-    if (target.closest("button, input, textarea, select, label")) {
+    if (target.closest("button, input, textarea, select, label, table")) {
       return;
     }
 
@@ -56,8 +55,6 @@ function getRandomPalette(palettes: string[][]): Palette | null {
     [PaletteItem.Button]: p[3 % n],
     [PaletteItem.Input]: p[4 % n],
     [PaletteItem.Table]: p[1 % n], // table color = card color
-    [PaletteItem.Success]: p[0 % n], // success color = card color
-    [PaletteItem.Tag]: p[0 % n], // tag color = card color
   };
 }
 
@@ -70,8 +67,6 @@ function getDOMPalette(): Palette {
     [PaletteItem.Button]: getComputedStyle(root).getPropertyValue("--button-color"),
     [PaletteItem.Input]: getComputedStyle(root).getPropertyValue("--input-color"),
     [PaletteItem.Table]: getComputedStyle(root).getPropertyValue("--table-color"),
-    [PaletteItem.Success]: getComputedStyle(root).getPropertyValue("--success-color"),
-    [PaletteItem.Tag]: getComputedStyle(root).getPropertyValue("--tag-color"),
   };
 }
 
@@ -83,6 +78,4 @@ export function setDOMPalette(p: Palette) {
   root.style.setProperty("--button-color", p[PaletteItem.Button]);
   root.style.setProperty("--input-color", p[PaletteItem.Input]);
   root.style.setProperty("--table-color", p[PaletteItem.Table]);
-  root.style.setProperty("--success-color", p[PaletteItem.Success]);
-  root.style.setProperty("--tag-color", p[PaletteItem.Tag]);
 }

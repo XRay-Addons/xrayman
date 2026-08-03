@@ -1,0 +1,46 @@
+---
+import Card from "@xrayman/shared/astro/primitives/Card.astro";
+import Info from "@xrayman/shared/astro/primitives/Info.astro";
+import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
+---
+
+<support-card hidden>
+  <Card class="mb-2">
+    <Info>
+      <strong>4.</strong>
+      <I18NText data-i18n="support.info" />
+      <span>: </span>
+      <div class="h-center p-2">
+        <a data-support-link data-i18n="runapp.link" target="_blank"></a>
+      </div>
+    </Info>
+  </Card>
+</support-card>
+
+<script>
+  import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
+  import { config } from "@/config/config";
+
+  class SupportCard extends CustomElement {
+    connectedCallback() {
+      const supportLink = config().SupportLink;
+      if (supportLink !== "") {
+        const supportLinkEl = pt<HTMLAnchorElement>(this, "support-link");
+        supportLinkEl.innerText = displayUrl(supportLink);
+        supportLinkEl.href = externalUrl(supportLink);
+        this.hidden = false;
+      }
+    }
+  }
+
+  function externalUrl(url: string): string {
+    return `https://${url.replace(/^https?:\/\//i, "")}`;
+  }
+
+  function displayUrl(url: string): string {
+    return url.replace(/^https?:\/\//i, "");
+  }
+
+  customElements.define("support-card", SupportCard);
+</script>

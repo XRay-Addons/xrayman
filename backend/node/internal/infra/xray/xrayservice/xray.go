@@ -58,7 +58,7 @@ func (s *XRayService) Close(ctx context.Context) error {
 
 func (s *XRayService) Start(ctx context.Context, config string) error {
 	if s == nil {
-		return errdefs.NilCall()
+		return xerr.NilCall()
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -73,7 +73,7 @@ func (s *XRayService) Start(ctx context.Context, config string) error {
 	err := xray.RunXrayFromJSON(s.datadir, "", config)
 	if err != nil {
 		return xerr.Wrap(err, xerr.WithStack(),
-			xerr.Withf("datadir: %s", s.datadir))
+			xerr.WithInfof("datadir: %s", s.datadir))
 	}
 
 	return nil
@@ -96,6 +96,7 @@ func (s *XRayService) Status(ctx context.Context) (models.ServiceStatus, error) 
 	if s == nil {
 		return models.ServiceStatusStopped, errdefs.NilCall()
 	}
+
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 

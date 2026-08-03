@@ -3,9 +3,11 @@ package poolsync
 import (
 	"context"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/uow"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/poolop"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
+
+type TxFn = func(context.Context) error
 
 type UsersStorage interface {
 	ListUsers(ctx context.Context) ([]models.User, error)
@@ -15,7 +17,7 @@ type StatesStorage interface {
 	ListNodes(ctx context.Context) (
 		[]models.Node, error)
 	GetNode(ctx context.Context, id models.NodeID) (
-		*models.Node, bool, error)
+		*models.Node, error)
 	SetClientConfig(ctx context.Context, id models.NodeID,
 		cfg models.ClientConfigTemplate) error
 	SetCurrentNodeStatus(ctx context.Context, id models.NodeID,
@@ -35,11 +37,12 @@ type SyncsStorage interface {
 		id models.UserID) error
 }
 
-type UoWContext interface {
+type Storage interface {
 	UsersStorage
 	StatesStorage
 	SyncsStorage
+	// call multiple operations as tx
+	DoTx(ctx context.Context, fn TxFn) error
 }
 
-type UoWFn = uow.Fn[UoWContext]
-type Storage = uow.Storage[UoWContext]
+var _ poolop.Storage = (Storage)(nil)

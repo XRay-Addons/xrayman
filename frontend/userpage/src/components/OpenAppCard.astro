@@ -1,0 +1,67 @@
+---
+import Card from "@xrayman/shared/astro/primitives/Card.astro";
+import Info from "@xrayman/shared/astro/primitives/Info.astro";
+import Button from "@xrayman/shared/astro/primitives/Button.astro";
+import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
+---
+
+<open-app-card>
+  <Card class="mb-2">
+    <Info>
+      <strong>3.</strong>
+      <I18NText data-i18n="runapp.info" />
+    </Info>
+
+    <div class="d-flex justify-content-center">
+      <div class="h-center fluid-lg">
+        <Button btn:data-run-app-btn class="col-6">
+          <I18NText data-i18n="runapp.button" />
+        </Button>
+      </div>
+    </div>
+  </Card>
+</open-app-card>
+
+<script>
+  import { MakeApiUrl } from "@/runtime/utils/paths";
+  import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
+  import { stateSignal } from "@/state/signals";
+  import { State } from "@/state/state";
+
+  class OpenAppCard extends CustomElement {
+    private unsub?: () => void;
+    private openHappFn?: () => void;
+
+    makeHappSubLink(subscriptionURL: string) {
+      const happIntent = "happ://add/";
+      return `${happIntent}${subscriptionURL}`;
+    }
+
+    connectedCallback() {
+      const btnEl = pt<HTMLButtonElement>(this, "run-app-btn");
+
+      this.unsub = stateSignal.subscribe((state) => {
+        if (state.status !== State.LoggedIn) {
+          this.openHappFn = () => {};
+          return;
+        }
+        const subscriptionURL = MakeApiUrl(state.data.Profile.SubscriptionPath);
+        const happSubLink = this.makeHappSubLink(subscriptionURL);
+        this.openHappFn = () => {
+          window.open(happSubLink, "_blank", "noopener");
+        };
+      });
+
+      btnEl.addEventListener("click", () => {
+        this.openHappFn?.();
+      });
+    }
+
+    disconnectedCallback() {
+      this.unsub?.();
+    }
+  }
+
+  customElements.define("open-app-card", OpenAppCard);
+</script>

@@ -2,6 +2,7 @@ package config
 
 import (
 	"net/url"
+	"time"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
 )
@@ -12,6 +13,9 @@ type Config struct {
 	AdminPassword string
 	JwtSecret     string
 
+	NodeCallTimeout    time.Duration
+	StorageCallTimeout time.Duration
+
 	ApiServicePath string
 	UserSpaPath    string
 	AdminSpaPath   string
@@ -20,22 +24,34 @@ type Config struct {
 	UserSpaUrl    string
 	AdminSpaUrl   string
 
+	StateSyncInterval time.Duration
+	StatsSyncInterval time.Duration
+
 	AllowedOrigins []string
 }
 
-const apiServicePath = "/api"
-const userSpaPath = "/u"
-const adminSpaPath = "/adm"
+const (
+	apiServicePath = "/api"
+	userSpaPath    = "/u"
+	adminSpaPath   = "/adm"
+)
 
 func Init(r RawConfig) (*Config, error) {
+
 	c := Config{
-		Endpoint:       r.Endpoint,
-		DBConn:         r.DBConn,
-		AdminPassword:  r.AdminPassword,
-		JwtSecret:      r.JwtSecret,
+		Endpoint:          r.Endpoint,
+		DBConn:            r.DBConn,
+		AdminPassword:     r.AdminPassword,
+		JwtSecret:         r.JwtSecret,
+		StateSyncInterval: time.Duration(r.StateSyncInterval) * time.Second,
+		StatsSyncInterval: time.Duration(r.StatsSyncInterval) * time.Second,
+
 		ApiServicePath: apiServicePath,
 		UserSpaPath:    userSpaPath,
 		AdminSpaPath:   adminSpaPath,
+
+		NodeCallTimeout:    time.Duration(r.NodeCallTimeout) * time.Second,
+		StorageCallTimeout: time.Duration(r.StorageCallTimeout) * time.Second,
 	}
 
 	c.ApiServiceUrl = or(r.ApiServiceUrl, c.ApiServicePath)

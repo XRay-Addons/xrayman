@@ -50,6 +50,21 @@ type NodeUsersUpdate struct {
 	Remove []UserProfile
 }
 
+type TrafficStats struct {
+	Upload   int64
+	Download int64
+}
+
+type UserTraffic struct {
+	Total     TrafficStats
+	LastMonth TrafficStats
+}
+
+type UserView struct {
+	User    User
+	Traffic UserTraffic
+}
+
 func (s UserStatus) String() string {
 	switch s {
 	case UserStatusEnabled:

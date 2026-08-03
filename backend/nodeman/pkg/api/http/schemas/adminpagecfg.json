@@ -3,34 +3,27 @@
   "title": "AdminPageConfig",
   "type": "object",
   "additionalProperties": false,
-  "required": ["routes", "sub_headers_placeholders"],
+  "required": ["ApiPrefix", "AdminPrefix", "UserPrefix", "SettingsTags"],
 
   "properties": {
-    "routes": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["api_prefix", "user_prefix", "admin_prefix"],
-
-      "properties": {
-        "api_prefix": {
-          "type": "string",
-          "description": "prefix for api requests"
-        },
-
-        "admin_prefix": {
-          "type": "string",
-          "description": "prefix for admin page spa"
-        },
-
-        "user_prefix": {
-          "type": "string",
-          "description": "prefix for user page spa"
-        }
-      }
+    "ApiPrefix": {
+      "type": "string",
+      "description": "prefix for api requests"
     },
-    "sub_headers_placeholders": {
+
+    "AdminPrefix": {
+      "type": "string",
+      "description": "prefix for admin page spa"
+    },
+
+    "UserPrefix": {
+      "type": "string",
+      "description": "prefix for user page spa"
+    },
+
+    "SettingsTags": {
       "type": "array",
-      "description": "List of allowed subscription header placeholders",
+      "description": "List of allowed settings placeholders",
       "items": {
         "type": "string"
       },

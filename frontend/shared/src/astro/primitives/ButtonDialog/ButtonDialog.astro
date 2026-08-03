@@ -1,0 +1,84 @@
+---
+import Button from "@xrayman/shared/astro/primitives/Button.astro";
+import type { ComponentProps, HTMLAttributes } from "astro/types";
+
+type Props = ComponentProps<typeof Button>;
+
+const { ...props } = Astro.props;
+---
+
+<btn-dialog>
+  <Button data-app-dialog-button {...props}>
+    <slot name="button" />
+  </Button>
+
+  <dialog class="app-dialog" data-app-dialog>
+    <div class="app-dialog-overlay" data-app-dialog-overlay></div>
+    <div class="app-dialog-page h-center" data-app-dialog-page>
+      <slot name="page" />
+    </div>
+  </dialog>
+</btn-dialog>
+
+<script>
+  import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
+  import type { Resettable } from "./ButtonDialog";
+
+  class BtnDialog extends CustomElement {
+    private button!: HTMLButtonElement;
+    private dialog!: HTMLDialogElement;
+    private page!: HTMLElement;
+
+    connectedCallback() {
+      this.button = pt<HTMLButtonElement>(this, "app-dialog-button");
+      this.dialog = pt<HTMLDialogElement>(this, "app-dialog");
+      this.page = pt<HTMLElement>(this, "app-dialog-page");
+
+      this.button.onclick = async () => {
+        this.dialog.showModal();
+      };
+
+      this.dialog.addEventListener("close", () => {
+        this.reset();
+      });
+
+      const overlay = pt<HTMLElement>(this, "app-dialog-overlay");
+      overlay.onclick = () => {
+        this.dialog.close();
+        this.reset();
+      };
+    }
+
+    private reset() {
+      Array.from(this.page.children).forEach((el) => {
+        (el as Partial<Resettable>).reset?.();
+      });
+    }
+  }
+
+  customElements.define("btn-dialog", BtnDialog);
+</script>
+
+<style>
+  btn-dialog {
+    display: contents;
+  }
+
+  .app-dialog {
+    background: transparent;
+    border: none;
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+  }
+
+  .app-dialog::backdrop {
+    background: transparent;
+  }
+  .app-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.5);
+  }
+</style>

@@ -12,14 +12,14 @@ import (
 func (h *Handler) NewNode(ctx context.Context, req *api.NewNodeRequest) (
 	*api.NewNodeResponse, error,
 ) {
-	if h == nil || h.ns == nil {
+	if h == nil || h.nodes == nil {
 		return nil, errdefs.NilCall()
 	}
 	p, err := converter.ConvertNewNodeRequest(req)
 	if err != nil {
 		return nil, err
 	}
-	res, err := h.ns.NewNode(ctx, *p)
+	res, err := h.nodes.NewNode(ctx, *p)
 	if err != nil {
 		return nil, err
 	}
@@ -27,14 +27,14 @@ func (h *Handler) NewNode(ctx context.Context, req *api.NewNodeRequest) (
 }
 
 func (h *Handler) StartNode(ctx context.Context, req *api.StartNodeRequest) error {
-	if h == nil || h.ns == nil {
+	if h == nil || h.nodes == nil {
 		return errdefs.NilCall()
 	}
 	p, err := converter.ConvertStartNodeRequest(req)
 	if err != nil {
 		return err
 	}
-	_, err = h.ns.StartNode(ctx, *p)
+	_, err = h.nodes.StartNode(ctx, *p)
 	if err != nil {
 		return err
 	}
@@ -42,14 +42,14 @@ func (h *Handler) StartNode(ctx context.Context, req *api.StartNodeRequest) erro
 }
 
 func (h *Handler) StopNode(ctx context.Context, req *api.StopNodeRequest) error {
-	if h == nil || h.ns == nil {
+	if h == nil || h.nodes == nil {
 		return errdefs.NilCall()
 	}
 	p, err := converter.ConvertStopNodeRequest(req)
 	if err != nil {
 		return err
 	}
-	_, err = h.ns.StopNode(ctx, *p)
+	_, err = h.nodes.StopNode(ctx, *p)
 	if err != nil {
 		return err
 	}
@@ -57,10 +57,10 @@ func (h *Handler) StopNode(ctx context.Context, req *api.StopNodeRequest) error 
 }
 
 func (h *Handler) ListNodes(ctx context.Context) (*api.ListNodeResponse, error) {
-	if h == nil || h.ns == nil {
+	if h == nil || h.nodes == nil {
 		return nil, errdefs.NilCall()
 	}
-	res, err := h.ns.ListNodes(ctx, models.ListNodeParams{})
+	res, err := h.nodes.ListNodes(ctx, models.ListNodeParams{})
 	if err != nil {
 		return nil, err
 	}
@@ -68,14 +68,14 @@ func (h *Handler) ListNodes(ctx context.Context) (*api.ListNodeResponse, error) 
 }
 
 func (h *Handler) DeleteNode(ctx context.Context, req *api.DeleteNodeRequest) error {
-	if h == nil || h.ns == nil {
+	if h == nil || h.nodes == nil {
 		return errdefs.NilCall()
 	}
 	p, err := converter.ConvertDeleteNodeRequest(req)
 	if err != nil {
 		return err
 	}
-	_, err = h.ns.DeleteNode(ctx, *p)
+	_, err = h.nodes.DeleteNode(ctx, *p)
 	if err != nil {
 		return err
 	}

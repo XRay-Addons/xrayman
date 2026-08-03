@@ -1,7 +1,9 @@
 {
+  "page": {
+    "title": "Ottepell-Adm"
+  },
   "title": {
-    "main": "Ottepell-Adm",
-    "main-page": "Smotri, Tablichki!"
+    "main": "Smotri, Tablichki!"
   },
 
   "cards": {

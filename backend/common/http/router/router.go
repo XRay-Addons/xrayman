@@ -82,9 +82,9 @@ func New(options ...Option) (http.Handler, error) {
 	// add middleware from chi
 	r := chi.NewRouter()
 	r.Use(chimw.RequestID)
-	r.Use(mw.Logger(ro.log))
 	r.Use(mw.Headers())
 	r.Use(chimw.Timeout(ro.requestTimeout))
+	r.Use(mw.Logger(ro.log))
 	r.Use(chimw.Recoverer)
 	r.Use(chimw.NewCompressor(ro.compressionLvl).Handler)
 

@@ -2,22 +2,31 @@ package nodes
 
 import (
 	"context"
+	"time"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/supervisor"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
+	"go.uber.org/zap"
 )
 
 type Service struct {
 	storage    Storage
-	poolSyncer poolsync.Syncer
+	poolSyncer Syncer
+
+	syncTimeout time.Duration
+	sv          *supervisor.Supervisor
+
+	logger *zap.Logger
 }
 
 var _ handler.NodesService = (*Service)(nil)
 
-func New(poolSyncer poolsync.Syncer,
+func New(poolSyncer Syncer,
 	storage Storage,
+	syncTimeout time.Duration,
+	logger *zap.Logger,
 ) (*Service, error) {
 	if poolSyncer == nil {
 		return nil, errdefs.NilArg("poolSyncer")
@@ -25,11 +34,32 @@ func New(poolSyncer poolsync.Syncer,
 	if storage == nil {
 		return nil, errdefs.NilArg("storage")
 	}
+	if logger == nil {
+		return nil, errdefs.NilArg("logger")
+	}
 
 	return &Service{
-		storage:    storage,
-		poolSyncer: poolSyncer,
+		storage:     storage,
+		poolSyncer:  poolSyncer,
+		syncTimeout: syncTimeout,
+		sv:          supervisor.New(),
+		logger:      logger,
 	}, nil
+}
+
+func (s *Service) Close() {
+	if s == nil || s.sv == nil {
+		return
+	}
+	s.sv.Close()
+}
+
+func (s *Service) requestNodeSync(id models.NodeID) {
+	s.sv.Go(func(ctx context.Context) {
+		if err := s.poolSyncer.SyncNodeState(ctx, id); err != nil {
+			s.logger.Warn("node sync request", zap.Error(err))
+		}
+	}, s.syncTimeout)
 }
 
 func (s *Service) NewNode(ctx context.Context, p models.NewNodeParams) (
@@ -44,14 +74,11 @@ func (s *Service) NewNode(ctx context.Context, p models.NewNodeParams) (
 
 	node.CurrentStatus = models.NodeStatusStopped
 	node.TargetStatus = models.NodeStatusRunning
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		err = uowctx.NewNode(ctx, &node)
-		return
-	}); err != nil {
+	if err := s.storage.NewNode(ctx, &node); err != nil {
 		return nil, err
 	}
 
-	_ = s.syncNode(ctx, node.ID)
+	s.requestNodeSync(node.ID)
 
 	return &models.NewNodeResult{
 		Node: node,
@@ -82,11 +109,8 @@ func (s *Service) ListNodes(ctx context.Context, p models.ListNodeParams) (
 	if s == nil {
 		return nil, errdefs.NilCall()
 	}
-	var nodes []models.Node
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		nodes, err = uowctx.ListNodes(ctx)
-		return
-	}); err != nil {
+	nodes, err := s.storage.ListNodes(ctx)
+	if err != nil {
 		return nil, err
 	}
 	return &models.ListNodeResult{
@@ -101,17 +125,22 @@ func (s *Service) DeleteNode(ctx context.Context, p models.DeleteNodeParams) (
 		return nil, errdefs.NilCall()
 	}
 
-	// stop node before deleting
-	if err := s.setNodeStatus(ctx, p.ID, models.NodeStatusStopped); err != nil {
-		return nil, err
-	}
-
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		err = uowctx.DeleteNode(ctx, p.ID)
-		return
+	// mark node stopped and deleting
+	if err := s.storage.DoTx(ctx, func(ctx context.Context) error {
+		if err := s.storage.SetTargetNodeStatus(ctx,
+			p.ID, models.NodeStatusStopped,
+		); err != nil {
+			return err
+		}
+		if err := s.storage.DeleteNode(ctx, p.ID); err != nil {
+			return err
+		}
+		return nil
 	}); err != nil {
 		return nil, err
 	}
+
+	s.requestNodeSync(p.ID)
 
 	return &models.DeleteNodeResult{}, nil
 }
@@ -123,24 +152,11 @@ func (s *Service) setNodeStatus(ctx context.Context,
 		return errdefs.NilCall()
 	}
 	// set target node state to storage
-	if err := s.storage.DoUoW(ctx, func(uowctx UoWContext) (err error) {
-		err = uowctx.SetTargetNodeStatus(ctx, id, status)
-		return
-	}); err != nil {
+	if err := s.storage.SetTargetNodeStatus(ctx, id, status); err != nil {
 		return err
 	}
 
-	_ = s.syncNode(ctx, id)
-	return nil
-}
+	s.requestNodeSync(id)
 
-func (s *Service) syncNode(ctx context.Context, id models.NodeID) error {
-	syncResults, err := s.poolSyncer.SyncPoolState(ctx)
-	if err != nil {
-		return err
-	}
-	if err = syncResults.GetNodeErr(id); err != nil {
-		return err
-	}
 	return nil
 }

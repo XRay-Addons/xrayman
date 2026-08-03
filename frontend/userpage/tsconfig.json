@@ -1,8 +1,12 @@
 {
-  "include": ["src"],
+  "include": ["src", "../shared/src/runtime/platforms"],
   "compilerOptions": {
     "module": "ESNext",
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "target": "ES2022",
     "moduleResolution": "Bundler",
+
     "paths": {
       "@/*": ["./src/*"],
       "@xrayman/shared/*": ["../shared/src/*"]
@@ -10,5 +14,6 @@
     "strict": true,
     "noUnusedLocals": true,
     "noImplicitAny": true
-  }
+  },
+  "extends": "astro/tsconfigs/strict"
 }

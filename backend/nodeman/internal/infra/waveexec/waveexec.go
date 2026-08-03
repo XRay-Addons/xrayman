@@ -2,7 +2,6 @@ package waveexec
 
 import (
 	"context"
-	"sync"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
 )
@@ -28,11 +27,16 @@ import (
 type Fn[T any] = func(ctx context.Context) (*T, error)
 
 type WaveExecutor[T any] struct {
-	fn       execFn[T]
-	nextWave []execWaveItem[T]
-	reqCh    chan struct{}
-	mu       sync.Mutex
-	done     chan struct{}
+	fn Fn[T]
+
+	// waves of execution requests
+	q queue[execWaveItem[T]]
+
+	// channel to cancel request
+	cancelled chan struct{}
+
+	// channel for notify all done
+	done chan struct{}
 }
 
 type execFn[T any] = func(context.Context) execResult[T]
@@ -49,106 +53,86 @@ type execWaveItem[T any] struct {
 
 func New[T any](fn Fn[T]) *WaveExecutor[T] {
 	we := &WaveExecutor[T]{
-		fn: func(ctx context.Context) execResult[T] {
-			res, err := fn(ctx)
-			return execResult[T]{result: res, err: err}
-		},
-		reqCh: make(chan struct{}, 1),
-		done:  make(chan struct{}),
+		fn:        fn,
+		q:         makeQueue[execWaveItem[T]](),
+		cancelled: make(chan struct{}),
+		done:      make(chan struct{}),
 	}
-	go we.runExecLoop()
+	go func() {
+		we.runExecLoop()
+		close(we.done)
+	}()
 	return we
 }
 
 func (we *WaveExecutor[T]) Close() {
-	close(we.reqCh)
+	close(we.cancelled)
 	<-we.done
 }
 
 func (we *WaveExecutor[T]) Invoke(ctx context.Context) (*T, error) {
-	waveItem := execWaveItem[T]{
+	item := execWaveItem[T]{
 		ctx:    ctx,
 		result: make(chan execResult[T], 1),
 	}
-
-	we.mu.Lock()
-	we.nextWave = append(we.nextWave, waveItem)
-	we.mu.Unlock()
+	we.q.Push(item)
 
 	select {
-	case <-ctx.Done():
-		return nil, xerr.WrapWithStack(ctx.Err())
-	case we.reqCh <- struct{}{}:
-		// schedule next wave, it contains current call
-	default:
-		// if reqCh is full, next wave is already
-		// scheduled, current call is already in the queue
-	}
-
-	select {
-	case res := <-waveItem.result:
+	case res := <-item.result:
 		return res.result, res.err
 	case <-ctx.Done():
 		return nil, xerr.WrapWithStack(ctx.Err())
+	case <-we.cancelled:
+		return nil, xerr.WrapWithStack(context.Canceled)
 	}
 }
 
 func (we *WaveExecutor[T]) runExecLoop() {
-	defer close(we.done)
-	for range we.reqCh {
-		we.mu.Lock()
-		currWave := we.nextWave
-		we.nextWave = nil
-		we.mu.Unlock()
-
-		if len(currWave) == 0 {
-			// nothing to execute
-			continue
-		}
-
-		// create merged ctx from all calls ctxs, which
-		// lasts till at least one ctx is alive. it's ok because
-		// Invoke waiting for result till its own passed ctx alive
-		ctx := we.anyAliveContext(currWave...)
-
-		res := we.fn(ctx)
-		for _, item := range currWave {
-			select {
-			case item.result <- res:
-			default:
+	for {
+		select {
+		case <-we.cancelled:
+			return
+		case <-we.q.Ready:
+			items := we.q.Next()
+			ctx := we.anyAliveContext(items)
+			res, err := we.safeFn(ctx)
+			for i := range items {
+				items[i].result <- execResult[T]{result: res, err: err}
 			}
-			close(item.result)
 		}
 	}
 }
 
-func (we *WaveExecutor[T]) anyAliveContext(items ...execWaveItem[T]) context.Context {
+func (we *WaveExecutor[T]) anyAliveContext(items []execWaveItem[T]) context.Context {
 	if len(items) == 0 {
 		return context.Background()
 	}
-	if len(items) == 1 {
-		return items[0].ctx
-	}
 
 	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		defer cancel()
 
-	var wg sync.WaitGroup
-	for _, item := range items {
-		wg.Add(1)
-		go func() {
+		for _, item := range items {
 			select {
 			case <-item.ctx.Done():
-				wg.Done()
-			case <-ctx.Done():
-				// merged ctx cancelled outside
+				continue
+			case <-we.cancelled:
+				return
 			}
-		}()
-	}
-
-	go func() {
-		wg.Wait()
-		cancel()
+		}
+		return
 	}()
 
 	return ctx
+}
+
+func (we *WaveExecutor[T]) safeFn(ctx context.Context) (res *T, err error) {
+	defer func() {
+		if p := recover(); p != nil {
+			res = nil
+			err = xerr.Panic(p)
+		}
+	}()
+	res, err = we.fn(ctx)
+	return
 }

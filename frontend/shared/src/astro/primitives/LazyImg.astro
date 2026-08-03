@@ -8,7 +8,7 @@ const { src, class: extraClass = "", ...rest } = Astro.props;
 ---
 
 <lazy-img>
-  <img class={extraClass} data-part="image" data-src={src} {...rest} />
+  <img class={extraClass} data-image data-src={src} {...rest} />
 </lazy-img>
 
 <style>
@@ -18,13 +18,16 @@ const { src, class: extraClass = "", ...rest } = Astro.props;
 </style>
 
 <script>
-  import { PartedElement } from "../../runtime/dom/parted-element";
+  import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
 
-  class LazyImg extends PartedElement {
+  class LazyImg extends CustomElement {
     obs?: IntersectionObserver;
 
     connectedCallback() {
-      const imageEl = this.pt<HTMLImageElement>("image");
+      super.connectedCallback();
+
+      const imageEl = pt<HTMLImageElement>(this, "image");
       this.obs = new IntersectionObserver(([entry], obs) => {
         if (entry.isIntersecting) {
           imageEl.src = imageEl.dataset.src!;

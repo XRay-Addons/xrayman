@@ -6,10 +6,12 @@ import (
 	"strings"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
+	"github.com/XRay-Addons/xrayman/node/internal/models"
 	handlerService "github.com/xtls/xray-core/app/proxyman/command"
 	statsService "github.com/xtls/xray-core/app/stats/command"
 	"github.com/xtls/xray-core/common/protocol"
 	"github.com/xtls/xray-core/common/serial"
+	"go.uber.org/zap"
 )
 
 func addUser(
@@ -59,4 +61,66 @@ func ping(
 	}
 
 	return nil
+}
+
+const (
+	userPattern = "user>>>"
+	splitTag    = ">>>"
+	userTag     = "user"
+	trafficTag  = "traffic"
+	uplinkTag   = "uplink"
+	downlinkTag = "downlink"
+)
+
+func getStats(
+	ctx context.Context,
+	ssClient statsService.StatsServiceClient,
+	log *zap.Logger,
+) (*models.StatsResult, error) {
+	resp, err := ssClient.QueryStats(context.Background(), &statsService.QueryStatsRequest{
+		Pattern: userPattern,
+		Reset_:  true,
+	})
+	if err != nil {
+		return nil, xerr.WrapWithStack(err)
+	}
+
+	// Get traffic data
+	stat := resp.GetStat()
+	userStatsMap := make(map[int]models.UserStats)
+	for _, s := range stat {
+		parts := strings.Split(s.Name, splitTag)
+		if len(parts) != 4 || parts[0] != userTag || parts[2] != trafficTag {
+			log.Warn("unparsed stat", zap.String("name", s.Name))
+			continue
+		}
+		userID, _, err := models.ParseVlessEmail(parts[1])
+		if err != nil {
+			log.Warn("unparsed user", zap.String("name", s.Name))
+			continue
+		}
+
+		userStat := userStatsMap[userID]
+		userStat.ID = userID
+
+		switch parts[3] {
+		case uplinkTag:
+			userStat.Uplink = s.Value
+		case downlinkTag:
+			userStat.Downlink = s.Value
+		default:
+			log.Warn("unparsed direction", zap.String("tag", parts[3]))
+		}
+
+		userStatsMap[userID] = userStat
+	}
+
+	usersStats := make([]models.UserStats, 0, len(userStatsMap))
+	for _, v := range userStatsMap {
+		usersStats = append(usersStats, v)
+	}
+
+	return &models.StatsResult{
+		Users: usersStats,
+	}, nil
 }

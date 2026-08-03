@@ -3,9 +3,10 @@ package nodesync
 import (
 	"context"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/uow"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
+
+type TxFn = func(context.Context) error
 
 type UsersStorage interface {
 	ListUsers(ctx context.Context) ([]models.User, error)
@@ -29,12 +30,10 @@ type SyncsStorage interface {
 		patch []models.UserStatusPatch) error
 }
 
-type UoWContext interface {
+type Storage interface {
 	UsersStorage
 	StateStorage
 	SyncsStorage
+	// call multiple operations as tx
+	DoTx(ctx context.Context, fn TxFn) error
 }
-
-type UoWFn = uow.Fn[UoWContext]
-
-type Storage = uow.Storage[UoWContext]

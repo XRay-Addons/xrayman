@@ -12,14 +12,14 @@ import (
 func (h *Handler) Auth(ctx context.Context, req *api.AuthRequest) (
 	*api.AuthResponse, error,
 ) {
-	if h == nil || h.ns == nil {
+	if h == nil || h.auth == nil {
 		return nil, errdefs.NilCall()
 	}
 	p, err := converter.ConvertAuthRequest(req)
 	if err != nil {
 		return nil, err
 	}
-	res, err := h.as.Auth(ctx, *p)
+	res, err := h.auth.Auth(ctx, *p)
 	if err != nil {
 		return nil, err
 	}

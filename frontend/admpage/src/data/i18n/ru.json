@@ -1,7 +1,9 @@
 {
+  "page": {
+    "title": "Оттепелль-Адм"
+  },
   "title": {
-    "main": "Оттепелль-Адм",
-    "main-page": "Смотри, Таблички!"
+    "main": "Смотри, Таблички!"
   },
 
   "cards": {
@@ -10,9 +12,6 @@
     },
     "nodes": {
       "title": "Ноды"
-    },
-    "sub-headers": {
-      "title": "Subscription Headers"
     }
   },
 
@@ -40,17 +39,16 @@
   "add-node": {
     "title": "Add new node",
     "request": {
-      "endpoint": {
-        "info": "Node endpoint",
-        "placeholder": "https://node.com:80"
-      },
-      "accesskey": {
-        "info": "Node access key",
-        "placeholder": "HexAccessKey..."
+      "fields": {
+        "endpoint": "Node endpoint",
+        "endpoint-placeholder": "https://node.com:80",
+        "accesskey": "Node access key",
+        "accesskey-placeholder": "HexAccessKey..."
       }
     },
     "submit-btn": {
-      "info": "Add!"
+      "info": "Add!",
+      "success": "Added!"
     },
     "response": {
       "info": "Node added successfully!",
@@ -61,26 +59,42 @@
     }
   },
 
-  "add-sub-header": {
-    "title": "Add new subsription header",
-    "request": {
-      "key": {
-        "info": "Header name",
-        "placeholder": "Header"
+  "settings": {
+    "button": {
+      "text": "⚙"
+    },
+    "title": "Настройки",
+    "fields": {
+      "subscr-title": "Title",
+      "users-message": "Message",
+      "user-page": "User Page",
+      "tg-page": "TG Group",
+      "update-interval": "Update Interval, h",
+      "routing": "Routing, like happ://routing/onadd/....",
+      "app-links": {
+        "title": "Application Links",
+        "columns": {
+          "Name": "Name",
+          "Platforms": "Platforms, regex????",
+          "URL": "URL"
+        }
       },
-      "value": {
-        "info": "Header value",
-        "placeholder": "value"
+      "custom-headers": {
+        "title": "Custom Headers",
+        "columns": {
+          "Key": "Key",
+          "Value": "Value"
+        }
       }
     },
+    "refresh": "Refresh",
     "submit-btn": {
-      "info": "Add!"
+      "info": "Submit",
+      "success": "Submitted!"
     },
-    "response": {
-      "info": "Subscription Header added successfully!"
-    },
-    "button": {
-      "text": "+"
+    "errors": {
+      "app-links": "App Links error",
+      "no-platform-apps": "No apps for platform"
     }
   },
 
@@ -131,6 +145,8 @@
         "display-name": "Display Name",
         "target-status": "Target Status",
         "name": "ИМЯ",
+        "traffic-total": "Total",
+        "traffic-last-month": "Last Month",
         "vless-uuid": "VLESS UUID",
         "subscription": "Subscription",
         "userpage": "User Page",

@@ -1,4 +1,4 @@
-package nodesync
+package node
 
 import (
 	"net/http"

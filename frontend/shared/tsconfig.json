@@ -2,7 +2,13 @@
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "strict": true
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "strict": true,
+    "paths": {
+      "@xrayman/shared/*": ["./src/*"]
+    }
   },
-  "include": ["src"]
+  "include": ["src"],
+  "extends": "astro/tsconfigs/strict"
 }

@@ -17,4 +17,5 @@ type Converter interface {
 	ConvertEditUsersRequest(source *api.EditUsersRequest) *models.EditUsersParams
 	ConvertStatusResult(source *models.StatusResult) *api.StatusResponse
 	ConvertStatus(source models.ServiceStatus) api.ServiceStatus
+	ConvertStatsResult(source *models.StatsResult) *api.StatsResponse
 }

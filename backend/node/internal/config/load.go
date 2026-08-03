@@ -8,6 +8,7 @@ import (
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/caarlos0/env/v6"
+	"go.uber.org/zap/zapcore"
 )
 
 func LoadConfig() (*Config, error) {
@@ -29,6 +30,7 @@ func defaultConfig() *Config {
 		XRayDataDir:   path.Join(defaultDir, "data"),
 		XRayConfigDir: path.Join(defaultDir, "config"),
 		PersistentDir: path.Join(defaultDir, "persistent"),
+		LogLevel:      zapcore.InfoLevel.String(),
 	}
 }
 
@@ -62,6 +64,9 @@ supported template params:
 	fs.StringVar(&c.PersistentDir, "p", c.PersistentDir,
 		`persistent config dir. persistent objects
 (certs, secrets, config to connect to node) should be generated on-demand`)
+
+	fs.StringVar(&c.LogLevel, "log-lvl", c.LogLevel,
+		`zap log level (optional)`)
 
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		return xerr.WrapWithStack(err)

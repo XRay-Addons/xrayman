@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/XRay-Addons/xrayman/common/http/httperr"
 	mw "github.com/XRay-Addons/xrayman/common/http/middleware"
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
@@ -17,83 +16,64 @@ import (
 )
 
 type Handler struct {
-	us  UsersService
-	ns  NodesService
-	ss  SubscrService
-	shs SubHeadersService
-	as  AuthService
-	log *zap.Logger
+	users    UsersService
+	nodes    NodesService
+	subscr   SubscrService
+	auth     AuthService
+	settings SettingsService
+	log      *zap.Logger
 }
-
-func WithLogger(log *zap.Logger) option {
-	return func(h *Handler) {
-		if log == nil {
-			return
-		}
-		h.log = log
-	}
-}
-
-type option = func(h *Handler)
 
 var _ api.Handler = (*Handler)(nil)
 
 func New(
-	us UsersService,
-	ns NodesService,
-	ss SubscrService,
-	shs SubHeadersService,
-	as AuthService,
-	opts ...option,
+	users UsersService,
+	nodes NodesService,
+	subscr SubscrService,
+	settings SettingsService,
+	auth AuthService,
+	logger *zap.Logger,
 ) (*Handler, error) {
-	if us == nil {
-		return nil, errdefs.NilArg("us")
+	if users == nil {
+		return nil, errdefs.NilArg("users")
 	}
-	if ns == nil {
-		return nil, errdefs.NilArg("ns")
+	if nodes == nil {
+		return nil, errdefs.NilArg("nodes")
 	}
-	if ss == nil {
-		return nil, errdefs.NilArg("ss")
+	if subscr == nil {
+		return nil, errdefs.NilArg("subscr")
 	}
-	if shs == nil {
-		return nil, errdefs.NilArg("shs")
+	if settings == nil {
+		return nil, errdefs.NilArg("settings")
 	}
-	if as == nil {
-		return nil, errdefs.NilArg("as")
+	if auth == nil {
+		return nil, errdefs.NilArg("auth")
 	}
-	handler := &Handler{
-		us:  us,
-		ns:  ns,
-		ss:  ss,
-		shs: shs,
-		as:  as,
-		log: zap.NewNop(),
+	if logger == nil {
+		return nil, errdefs.NilArg("logger")
 	}
-	for _, o := range opts {
-		o(handler)
-	}
-	return handler, nil
+	return &Handler{
+		users:    users,
+		nodes:    nodes,
+		subscr:   subscr,
+		settings: settings,
+		auth:     auth,
+		log:      logger,
+	}, nil
 }
 
 func (h *Handler) NewError(ctx context.Context, err error) *api.ErrorStatusCode {
-	// if err = pure status, return status, log error
-	var pureStatus api.ErrorStatusCode
-	if errors.Is(err, &pureStatus) {
-		h.logError(ctx, err)
-		return &pureStatus
-	}
+	// log error
+	h.logError(ctx, err)
 
-	// if err = error + status, return status, log error,
-	nestedErr, nestedStatus := httperr.ExtractStatus[api.ErrorStatusCode](err)
-	if nestedStatus != nil {
-		h.logError(ctx, nestedErr)
-		return nestedStatus
+	// if error contains status, return it
+	var statusError *api.ErrorStatusCode
+	if errors.As(err, &statusError) {
+		return statusError
 	}
 
 	// translate error to status
-	translatedStatus := h.translateError(err)
-	h.logError(ctx, err)
-	return translatedStatus
+	return h.translateError(err)
 }
 
 func (h *Handler) translateError(err error) *api.ErrorStatusCode {
@@ -131,12 +111,13 @@ func (h *Handler) logError(ctx context.Context, err error) {
 	)
 }
 
-func (h *Handler) writeHeaders(ctx context.Context, headers models.Headers) error {
+func (h *Handler) writeHeaders(ctx context.Context, headers models.SubHeaders) error {
 	headersResp := mw.GetHeaders(ctx)
 	if headersResp == nil {
 		return xerr.New("request context doesn't support headers")
 	}
 	for _, h := range headers {
+
 		headersResp.Set(h.Key, h.Value)
 	}
 	return nil

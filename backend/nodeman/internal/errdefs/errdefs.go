@@ -7,11 +7,11 @@ import (
 var (
 	ErrNilCall              = xerr.ErrNilArg
 	ErrNilArg               = xerr.ErrNilArg
-	ErrConnection           = xerr.New("connection")
-	ErrTemporaryUnavailable = xerr.New("temporary unavailable")
-	ErrAccessDenied         = xerr.New("access denied")
-	ErrInvaildPayload       = xerr.New("invalid payload")
-	ErrNotFound             = xerr.New("not found")
+	ErrConnection           = xerr.Define("connection")
+	ErrTemporaryUnavailable = xerr.Define("temporary unavailable")
+	ErrAccessDenied         = xerr.Define("access denied")
+	ErrInvaildPayload       = xerr.Define("invalid payload")
+	ErrNotFound             = xerr.Define("not found")
 )
 
 func NilCall() error {
@@ -23,13 +23,24 @@ func NilArg(name string) error {
 }
 
 func AccessDenied() error {
-	return xerr.WrapWithStack(ErrAccessDenied)
+	return xerr.Wrap(ErrAccessDenied,
+		xerr.WithStack())
 }
 
-func InvalidPayload(details string) error {
-	return xerr.WrapWith(ErrInvaildPayload, details)
+//func InvalidPayload(details string) error {
+//	return xerr.Wrap(ErrInvaildPayload,
+//		xerr.WithStack(),
+//		xerr.WithInfo(details))
+//}
+
+/*func NotFound(details string) error {
+	return xerr.Wrap(ErrNotFound,
+		xerr.WithStack(),
+		xerr.WithInfo(details))
 }
 
-func NotFound(details string) error {
-	return xerr.WrapWith(ErrNotFound, details)
-}
+func Connection(method, url string, code int) error {
+	return xerr.Wrap(ErrConnection,
+		xerr.WithStack(),
+		xerr.WithInfof("%s %s: status %d", method, url, code))
+}*/

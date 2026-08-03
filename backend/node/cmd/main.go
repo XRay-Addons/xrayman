@@ -7,6 +7,7 @@ import (
 	"github.com/XRay-Addons/xrayman/node/internal/app"
 	"github.com/XRay-Addons/xrayman/node/internal/config"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 func main() {
@@ -19,7 +20,12 @@ func main() {
 
 	// create log. use std log to log log errors,
 	// because who log the log
-	log, err := logging.New()
+	logLevel, err := zapcore.ParseLevel(cfg.LogLevel)
+	if err != nil {
+		stdlog.Print(err)
+		return
+	}
+	log, err := logging.New(logLevel)
 	if err != nil {
 		stdlog.Print(err)
 		return

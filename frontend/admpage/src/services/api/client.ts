@@ -12,11 +12,10 @@ import {
   stopNode as _stopNode,
   newNode as _newNode,
   deleteNode as _deleteNode,
-  listSubHeaders as _listSubHeaders,
-  deleteSubHeader as _deleteSubHeader,
-  newSubHeader as _newSubHeader,
+  getSettings as _getSettings,
+  setSettings as _setSettings,
 } from "./generated/sdk.gen";
-import type { User, Node, Header, AuthResponse } from "./generated/types.gen";
+import type { User, Node, AuthResponse, UserView, Settings } from "./generated/types.gen";
 
 export async function auth(pwd: string): Promise<ApiResult<AuthResponse>> {
   return handleAPI(
@@ -25,7 +24,7 @@ export async function auth(pwd: string): Promise<ApiResult<AuthResponse>> {
   );
 }
 
-export async function listUsers(): Promise<ApiResult<Array<User>>> {
+export async function listUsers(): Promise<ApiResult<Array<UserView>>> {
   return handleAPI(
     () => _listUsers(),
     (data) => data.Users,
@@ -95,23 +94,16 @@ export async function deleteNode(id: number): Promise<ApiResult<void>> {
   );
 }
 
-export async function listSubHeaders(): Promise<ApiResult<Array<Header>>> {
+export async function getSettings(): Promise<ApiResult<Settings>> {
   return handleAPI(
-    () => _listSubHeaders(),
-    (data) => data.Headers,
-  );
-}
-
-export async function newSubHeader(key: string, value: string): Promise<ApiResult<Header>> {
-  return handleAPI(
-    () => _newSubHeader({ body: { Key: key, Value: value } }),
+    () => _getSettings(),
     (data) => data,
   );
 }
 
-export async function deleteSubHeader(id: number): Promise<ApiResult<void>> {
+export async function setSettings(settings: Settings): Promise<ApiResult<void>> {
   return handleAPI(
-    () => _deleteSubHeader({ body: { ID: id } }),
+    () => _setSettings({ body: settings }),
     () => {},
   );
 }

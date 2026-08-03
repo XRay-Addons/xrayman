@@ -360,17 +360,17 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /sub/headers/list:
+  /settings/get:
     get:
-      summary: Get stored subscription headers
-      operationId: ListSubHeaders
+      summary: Get nodeman settings
+      operationId: GetSettings
       responses:
         "200":
-          description: Stored headers as list of key-value pairs
+          description: Settings
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListSubHeadersResponse"
+                $ref: "#/components/schemas/GetSettingsResponse"
         "default":
           description: General Error
           content:
@@ -382,52 +382,24 @@ paths:
       security:
         - BearerAuth: []
 
-  /sub/headers/new:
+  /settings/set:
     post:
-      summary: Create a new subscription header
-      operationId: NewSubHeader
+      summary: Set nodeman settings
+      operationId: SetSettings
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/NewSubHeaderRequest"
-      responses:
-        "200":
-          description: Created subscription header
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/NewSubHeaderResponse"
-        "default":
-          description: General Error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-      tags:
-        - admpage
-      security:
-        - BearerAuth: []
-
-  /sub/headers/delete:
-    post:
-      summary: Delete subscription header
-      operationId: DeleteSubHeader
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/DeleteSubHeaderRequest"
+              $ref: "#/components/schemas/SetSettingsRequest"
 
       responses:
         "200":
-          description: Delete result
+          description: Settings
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DeleteSubHeaderResponse"
+                $ref: "#/components/schemas/SetSettingsResponse"
         "default":
           description: General Error
           content:
@@ -684,7 +656,7 @@ components:
         - Name
 
     GetUserResponse:
-      $ref: "#/components/schemas/User"
+      $ref: "#/components/schemas/UserView"
 
     ListUsersResponse:
       type: object
@@ -692,9 +664,44 @@ components:
         Users:
           type: array
           items:
-            $ref: "#/components/schemas/User"
+            $ref: "#/components/schemas/UserView"
       required:
         - Users
+
+    UserView:
+      type: object
+      properties:
+        User:
+          $ref: "#/components/schemas/User"
+        Traffic:
+          $ref: "#/components/schemas/Traffic"
+      required:
+        - User
+        - Traffic
+
+    Traffic:
+      type: object
+      properties:
+        Total:
+          $ref: "#/components/schemas/TrafficStats"
+        LastMonth:
+          $ref: "#/components/schemas/TrafficStats"
+      required:
+        - Total
+        - LastMonth
+
+    TrafficStats:
+      type: object
+      properties:
+        Upload:
+          type: integer
+          format: int64
+        Download:
+          type: integer
+          format: int64
+      required:
+        - Upload
+        - Download
 
     EnableUserRequest:
       type: object
@@ -740,59 +747,6 @@ components:
       items:
         $ref: "#/components/schemas/ClientConfigItem"
 
-    HeaderID:
-      type: integer
-
-    Header:
-      type: object
-      properties:
-        ID:
-          $ref: "#/components/schemas/HeaderID"
-        Key:
-          type: string
-        Value:
-          type: string
-      required:
-        - ID
-        - Key
-        - Value
-
-    DeleteSubHeaderRequest:
-      type: object
-      properties:
-        ID:
-          $ref: "#/components/schemas/HeaderID"
-      required:
-        - ID
-
-    DeleteSubHeaderResponse:
-      type: object
-      properties: {}
-
-    NewSubHeaderRequest:
-      type: object
-      properties:
-        Key:
-          type: string
-        Value:
-          type: string
-      required:
-        - Key
-        - Value
-
-    NewSubHeaderResponse:
-      $ref: "#/components/schemas/Header"
-
-    ListSubHeadersResponse:
-      type: object
-      properties:
-        Headers:
-          type: array
-          items:
-            $ref: "#/components/schemas/Header"
-      required:
-        - Headers
-
     Error:
       type: object
       properties:
@@ -810,3 +764,71 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/UserSubContent"
+
+    SetSettingsRequest:
+      $ref: "#/components/schemas/Settings"
+
+    SetSettingsResponse:
+      type: object
+      properties: {}
+
+    GetSettingsResponse:
+      $ref: "#/components/schemas/Settings"
+
+    Settings:
+      type: object
+      properties:
+        SubscrTitle:
+          type: string
+        UpdateInterval:
+          type: integer
+        UserPage:
+          type: string
+        UsersMessage:
+          type: string
+        TgPage:
+          type: string
+        Routing:
+          type: string
+        AppLinks:
+          type: array
+          items:
+            $ref: "#/components/schemas/AppLink"
+        CustomHeaders:
+          type: array
+          items:
+            $ref: "#/components/schemas/Header"
+      required:
+        - SubscrTitle
+        - UpdateInterval
+        - UserPage
+        - UsersMessage
+        - TgPage
+        - Routing
+        - AppLinks
+        - CustomHeaders
+
+    AppLink:
+      type: object
+      properties:
+        Name:
+          type: string
+        Platforms:
+          type: string
+        URL:
+          type: string
+      required:
+        - Name
+        - Platforms
+        - URL
+
+    Header:
+      type: object
+      properties:
+        Key:
+          type: string
+        Value:
+          type: string
+      required:
+        - Key
+        - Value

@@ -2,21 +2,25 @@ import { setAuthToken } from "@/state/token";
 
 type RetryFn<T> = () => Promise<T>;
 
-type Pending<T> = {
-  resolve: (v: T) => void;
-  reject: (e: any) => void;
-  retry: RetryFn<T>;
+type PendingRequest = {
+  resolve: (v: unknown) => void;
+  reject: (e: unknown) => void;
+  retry: RetryFn<unknown>;
 };
 
 export const loginRequiredEvent = "auth:login-required";
 
 class AuthMan {
   private loginInProgress = false;
-  private queue: Pending<any>[] = [];
+  private queue: PendingRequest[] = [];
 
   handle401<T>(retry: RetryFn<T>): Promise<T> {
     return new Promise<T>((resolve, reject) => {
-      this.queue.push({ resolve, reject, retry });
+      this.queue.push({
+        resolve: resolve as (v: unknown) => void,
+        reject,
+        retry: retry as RetryFn<unknown>,
+      });
 
       if (!this.loginInProgress) {
         this.startLoginFlow();
@@ -48,7 +52,7 @@ class AuthMan {
     }
   }
 
-  onLoginFail(error?: any) {
+  onLoginFail(error?: unknown) {
     const queue = [...this.queue];
     this.queue = [];
 

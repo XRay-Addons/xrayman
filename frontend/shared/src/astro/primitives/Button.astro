@@ -1,16 +1,22 @@
 ---
-import Surface from "./Surface.astro";
+import type { ComponentProps, HTMLAttributes } from "astro/types";
+import Surface from "@xrayman/shared/astro/primitives/Surface.astro";
+import { ExtractPrefixed, type WithPrefix } from "@xrayman/shared/astro/props/props";
 
-interface Props {
-  class?: string;
-  styles?: string;
-}
+type BtnProps = WithPrefix<HTMLAttributes<"button">, "btn">;
+type HostProps = ComponentProps<typeof Surface>;
 
-const { class: extraClass, styles: __, ...rest } = Astro.props;
+interface Props extends BtnProps, HostProps {}
+
+const { ...props } = Astro.props;
+const { class: btnClass, ...btnProps } = ExtractPrefixed(props, "btn");
 ---
 
-<Surface depth="var(--button-depth)" color="var(--button-color)" class={extraClass} dynamic>
-  <button class="ui-reset-button noselect w-100 h-100 text text-md crt p-2" {...rest}>
+<Surface depth="var(--button-depth)" color="var(--button-color)" dynamic {...props}>
+  <button
+    class:list={["ui-reset-button noselect w-100 h-100 text text-md crt p-2", btnClass]}
+    {...btnProps}
+  >
     <slot />
   </button>
 </Surface>

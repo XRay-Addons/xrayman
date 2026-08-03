@@ -1,19 +1,25 @@
 ---
-interface Props {
-  class?: string;
-  "content-class"?: string;
+import type { HTMLAttributes } from "astro/types";
+import { ExtractPrefixed, type WithPrefix } from "@xrayman/shared/astro/props/props";
+
+type InProps = WithPrefix<HTMLAttributes<"div">, "in">;
+type HostProps = HTMLAttributes<"div">;
+
+interface Props extends InProps, HostProps {
   dynamic?: boolean;
   depth?: string;
   color?: string;
 }
 
+const { ...props } = Astro.props;
+const { class: inClass, ...inProps } = ExtractPrefixed(props, "in");
 const {
-  class: extraClass = "",
-  "content-class": contentClass = "",
   dynamic = false,
   depth = "0px",
   color = "transparent",
-} = Astro.props;
+  class: hostClass,
+  ...hostProps
+} = props;
 
 const styleVars = {
   ...(color && { "--surface-color": color }),
@@ -21,8 +27,8 @@ const styleVars = {
 };
 ---
 
-<div class:list={["surface-out", extraClass]} style={styleVars}>
-  <div class:list={["surface-in", contentClass, { "surface-dynamic": dynamic }]}>
+<div class:list={["surface-out", hostClass]} style={styleVars} {...hostProps}>
+  <div class:list={["surface-in", inClass, { "surface-dynamic": dynamic }]} {...inProps}>
     <slot />
   </div>
 </div>
@@ -32,15 +38,15 @@ const styleVars = {
 
   .surface-in {
     position: relative;
-    z-index: 1;
     height: 100%;
     width: 100%;
+  }
 
+  .surface-in {
     border-width: 1px;
     border-style: solid;
     border-color: dddarker(var(--surface-color));
     background-color: var(--surface-color);
-
     color: contrasted(var(--surface-color));
   }
 
@@ -48,23 +54,21 @@ const styleVars = {
     break-inside: avoid;
     page-break-inside: avoid;
     -webkit-column-break-inside: avoid;
+  }
 
-    isolation: isolate;
+  .surface-out {
     position: relative;
-
     padding-right: var(--surface-depth);
     padding-bottom: var(--surface-depth);
   }
 
-  .surface-out::after {
+  .surface-out::before {
     content: "";
     position: absolute;
 
     inset: 0;
     margin-left: var(--surface-depth);
     margin-top: var(--surface-depth);
-
-    z-index: 0;
 
     background-color: dddarker(var(--surface-color));
   }

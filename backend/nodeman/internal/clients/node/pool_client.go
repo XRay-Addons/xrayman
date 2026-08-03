@@ -1,4 +1,4 @@
-package nodesync
+package node
 
 import (
 	"net/http"
@@ -7,66 +7,52 @@ import (
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/stats/nodestats"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/stats/poolstats"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
-	pool "github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
+	"go.uber.org/zap"
 )
 
 type PoolClient struct {
 	sec        PoolSecurity
 	httpClient HTTPClientFactory
-}
-
-var _ pool.Client = (*PoolClient)(nil)
-
-type Option = func(pc *PoolClient)
-
-func WithSecIssuer(iss string) Option {
-	return func(s *PoolClient) {
-		s.sec.issuer = iss
-	}
-}
-
-func WithSecExpiration(exp time.Duration) Option {
-	return func(s *PoolClient) {
-		s.sec.expiration = exp
-	}
-}
-
-func WithHTTPClient(h HTTPClientFactory) Option {
-	return func(s *PoolClient) {
-		s.httpClient = h
-	}
+	log        *zap.Logger
 }
 
 const (
-	defaultCertExpiration = 10 * time.Minute
+	certExpiration = 10 * time.Minute
+	securityIssuer = "node manager"
 )
 
-func NewPoolClient(opts ...Option) (*PoolClient, error) {
+func NewPoolClient(h HTTPClientFactory, log *zap.Logger) (*PoolClient, error) {
+	if h == nil {
+		return nil, errdefs.NilArg("h")
+	}
+	if log == nil {
+		return nil, errdefs.NilArg("log")
+	}
 	pc := &PoolClient{
 		sec: PoolSecurity{
-			issuer:     "node manager",
-			expiration: defaultCertExpiration,
+			issuer:     securityIssuer,
+			expiration: certExpiration,
 		},
-	}
-	for _, o := range opts {
-		o(pc)
+		httpClient: h,
+		log:        log,
 	}
 	return pc, nil
 }
 
-func (c *PoolClient) GetNodeClient(cfg models.NodeConnectionInfo) (nodesync.Client, error) {
-	if c == nil {
+func (c *PoolClient) GetNodeClient(cfg models.NodeConnectionInfo) (*NodeClient, error) {
+	if c == nil || c.httpClient == nil {
 		return nil, errdefs.NilCall()
 	}
 
 	var err error
 	var httpClient *http.Client
-	if c.httpClient != nil {
-		if httpClient, err = c.httpClient.GetNodeClient(cfg.AccessKey.CertHash); err != nil {
-			return nil, xerr.WrapWithStack(err)
-		}
+	if httpClient, err = c.httpClient.GetNodeClient(cfg.AccessKey.CertHash); err != nil {
+		return nil, xerr.WrapWithStack(err)
 	}
 
 	nodeSec, err := c.sec.GetNodeSecurity(cfg.AccessKey.AccessSecret)
@@ -74,12 +60,42 @@ func (c *PoolClient) GetNodeClient(cfg models.NodeConnectionInfo) (nodesync.Clie
 		return nil, err
 	}
 
-	client, err := api.NewClient(cfg.Endpoint,
-		nodeSec, api.WithClient(httpClient))
+	client, err := api.NewClient(cfg.Endpoint, nodeSec,
+		api.WithClient(httpClient))
 	if err != nil {
 		return nil, xerr.WrapWithStack(err)
 	}
 	return &NodeClient{
 		client: client,
 	}, nil
+}
+
+// poolsync client impl
+type poolsyncClient struct {
+	c *PoolClient
+}
+
+var _ poolsync.Client = (*poolsyncClient)(nil)
+
+func (p *poolsyncClient) GetNodeClient(conn models.NodeConnectionInfo) (nodesync.Client, error) {
+	return p.c.GetNodeClient(conn)
+}
+
+func (c *PoolClient) PoolSyncClient() poolsync.Client {
+	return &poolsyncClient{c: c}
+}
+
+// poolstats client impl
+type poolstatsClient struct {
+	c *PoolClient
+}
+
+var _ poolstats.Client = (*poolstatsClient)(nil)
+
+func (p *poolstatsClient) GetNodeClient(conn models.NodeConnectionInfo) (nodestats.Client, error) {
+	return p.c.GetNodeClient(conn)
+}
+
+func (c *PoolClient) PoolStatsClient() poolstats.Client {
+	return &poolstatsClient{c: c}
 }

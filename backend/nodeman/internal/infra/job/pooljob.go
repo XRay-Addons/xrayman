@@ -1,0 +1,117 @@
+package job
+
+import (
+	"context"
+	"fmt"
+	"strconv"
+	"sync"
+	"time"
+
+	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
+	"go.uber.org/zap"
+)
+
+type PoolOp = func(ctx context.Context) (*models.PoolOpResult, error)
+
+type PoolJob struct {
+	op PoolOp
+
+	interval time.Duration
+	cancel   context.CancelFunc
+	wg       sync.WaitGroup
+
+	name string
+	log  *zap.Logger
+}
+
+func NewPoolJob(op PoolOp, jobInterval time.Duration, name string, log *zap.Logger) (*PoolJob, error) {
+	if op == nil {
+		return nil, errdefs.NilArg("op")
+	}
+	if jobInterval == 0 {
+		return nil, errdefs.NilArg("jobInterval")
+	}
+	if log == nil {
+		return nil, errdefs.NilArg("log")
+	}
+	// init default options
+	m := &PoolJob{
+		op:       op,
+		interval: jobInterval,
+		name:     fmt.Sprintf("background pool job %s", name),
+		log:      log,
+	}
+
+	return m, nil
+}
+
+func (j *PoolJob) Run() error {
+	if j == nil {
+		return errdefs.NilCall()
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	j.cancel = cancel
+
+	// run op loop
+	j.wg.Add(1)
+	defer j.wg.Done()
+	j.opLoop(ctx)
+
+	return nil
+}
+
+func (j *PoolJob) Stop() {
+	if j == nil {
+		return
+	}
+	if j.cancel != nil {
+		j.cancel()
+		j.cancel = nil
+	}
+	j.wg.Wait()
+	return
+}
+
+func (j *PoolJob) opLoop(ctx context.Context) {
+	for {
+		if ctx.Err() != nil {
+			return
+		}
+
+		startTime := time.Now()
+
+		jobCtx, cancel := context.WithTimeout(ctx, j.interval)
+		result, err := j.op(jobCtx)
+		cancel()
+		j.logJobResult(result, err)
+
+		timeLeft := j.interval - time.Since(startTime)
+
+		select {
+		case <-time.After(timeLeft): // immediate if time.left < 0
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+
+func (j *PoolJob) logJobResult(r *models.PoolOpResult, err error) {
+	if err != nil {
+		j.log.Error(j.name, zap.Error(err))
+		return
+	}
+	for _, n := range r.Nodes {
+		if n.Err == nil {
+			j.log.Info(fmt.Sprintf("%s OK", j.name),
+				zap.String("nodeID", strconv.Itoa(n.ID)),
+				zap.String("endpoint", n.Endpoint))
+		} else {
+			j.log.Error(j.name,
+				zap.Error(n.Err),
+				zap.String("nodeID", strconv.Itoa(n.ID)),
+				zap.String("endpoint", n.Endpoint))
+		}
+	}
+}

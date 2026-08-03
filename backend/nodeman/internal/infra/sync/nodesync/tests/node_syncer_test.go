@@ -16,7 +16,7 @@ func TestNodeSync(t *testing.T) {
 
 	// create node based on mocks
 	client := NewClientMock()
-	storage := NewStorageMock(nUsers)
+	storage := NewStorage(nUsers)
 
 	for range nRuns {
 		for range nRunOps {
@@ -37,7 +37,7 @@ func TestNodeSync_UnstableStorage(t *testing.T) {
 
 	// create node based on mocks
 	client := NewClientMock()
-	storage := NewUnstableStorageMock(nUsers)
+	storage := NewStorage(nUsers)
 
 	for range nRuns {
 		storage.Instability = instability
@@ -53,7 +53,7 @@ func TestNodeSync_UnstableStorage(t *testing.T) {
 		err := nodesync.SyncState(context.TODO(), client, storage)
 		require.NoError(t, err)
 
-		checkFullConsistency(t, client, storage.BaseStorage)
+		checkFullConsistency(t, client, storage)
 	}
 }
 
@@ -65,7 +65,7 @@ func TestNodeSync_UnstableStorage_UnstableNode(t *testing.T) {
 
 	// create node based on mocks
 	client := NewUnstableClientMock()
-	storage := NewUnstableStorageMock(nUsers)
+	storage := NewStorage(nUsers)
 
 	for range nRuns {
 		storage.Instability = instability
@@ -81,47 +81,47 @@ func TestNodeSync_UnstableStorage_UnstableNode(t *testing.T) {
 		storage.Instability = 0.
 		err := nodesync.SyncState(context.TODO(), client, storage)
 		if err != nil {
-			checkStorageConsistency(t, client.BaseClient, storage.BaseStorage)
+			checkStorageConsistency(t, client.BaseClient, storage)
 		} else {
-			checkFullConsistency(t, client.BaseClient, storage.BaseStorage)
+			checkFullConsistency(t, client.BaseClient, storage)
 		}
 
 		client.Instability = 0.
 		err = nodesync.SyncState(context.TODO(), client, storage)
 		require.NoError(t, err)
 
-		checkFullConsistency(t, client.BaseClient, storage.BaseStorage)
+		checkFullConsistency(t, client.BaseClient, storage)
 	}
 }
 
-func checkFullConsistency(t *testing.T, c *ClientMock, s *StorageMock) {
+func checkFullConsistency(t *testing.T, c *ClientMock, s *storage) {
 	// check state is ok. only node required to be running matters
-	if s.TargetStatus != models.NodeStatusRunning {
+	if s.targetStatus != models.NodeStatusRunning {
 		return
 	}
 
-	require.Equal(t, s.CurrentStatus, s.TargetStatus,
+	require.Equal(t, s.currentStatus, s.targetStatus,
 		"stored node state check")
-	require.Equal(t, s.CurrentStatus, c.Status,
+	require.Equal(t, s.currentStatus, c.Status,
 		"node state check")
 
-	for i, u := range s.Users {
-		require.Equal(t, u.TargetStatus, s.CurrentUserStatus[i],
-			"user %s check", u.Profile.Name)
+	for i, u := range s.users {
+		require.Equal(t, u.TargetStatus, s.currentUserStatus[i],
+			"user %s (%d) check", u.Profile.Name, u.Profile.ID)
 	}
 }
 
-func checkStorageConsistency(t *testing.T, c *ClientMock, s *StorageMock) {
-	if s.CurrentStatus != models.NodeStatusRunning {
+func checkStorageConsistency(t *testing.T, c *ClientMock, s *storage) {
+	if s.currentStatus != models.NodeStatusRunning {
 		return
 	}
-	require.Equal(t, s.CurrentStatus, s.TargetStatus,
+	require.Equal(t, s.currentStatus, s.targetStatus,
 		"stored node state check")
-	require.Equal(t, s.CurrentStatus, c.Status,
+	require.Equal(t, s.currentStatus, c.Status,
 		"node state check")
 
-	for i, u := range s.Users {
-		if s.CurrentUserStatus[i] == models.UserStatusEnabled {
+	for i, u := range s.users {
+		if s.currentUserStatus[i] == models.UserStatusEnabled {
 			_, ok := c.Users[u.Profile]
 			require.True(t, ok, "user %s check", u.Profile.Name)
 		}

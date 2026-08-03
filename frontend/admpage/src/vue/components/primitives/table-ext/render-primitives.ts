@@ -1,4 +1,4 @@
-import { h, type VNode } from "vue";
+import { type Component, h, type VNode } from "vue";
 import { Tag, Button, Popconfirm, Space, TypographyText } from "ant-design-vue";
 import {
   CheckCircleOutlined,
@@ -26,7 +26,16 @@ export function i18nateColumns<T>(
 }
 
 export function makeConfigLine(text: string, copyable: boolean = false): VNode {
-  const textItem = h(TypographyText, { style: { fontFamily: "monospace" } }, () => text);
+  const textItem = h(
+    TypographyText,
+    {
+      style: {
+        fontFamily: "monospace",
+        userSelect: "text",
+      },
+    },
+    () => text,
+  );
   if (!copyable) {
     return textItem;
   }
@@ -46,6 +55,7 @@ export function makeConfigText(text: string): VNode {
         overflowY: "auto",
         fontFamily: "monospace",
         margin: 0,
+        userSelect: "text",
       },
     },
     text,
@@ -63,7 +73,7 @@ export function unknownTag(i18n: string): VNode {
   return makeTag("warning", i18n, ExclamationCircleOutlined);
 }
 
-function makeTag(color: string, i18n: string, icon: any): VNode {
+function makeTag(color: string, i18n: string, icon: Component): VNode {
   return h(
     Tag,
     {
@@ -73,6 +83,7 @@ function makeTag(color: string, i18n: string, icon: any): VNode {
         display: "block",
         textAlign: "center",
       },
+      icon: h(icon),
     },
     () => t(i18n),
   );
@@ -86,7 +97,7 @@ export function enableBtn(i18n: string, onClick?: BtnAction): VNode {
       ghost: true,
       size: "small",
       type: "primary",
-      onClick: onClick,
+      ...(onClick ? { onClick } : {}),
     },
     () => t(i18n),
   );
@@ -100,7 +111,7 @@ export function disableBtn(i18n: string, onClick?: BtnAction): VNode {
       ghost: true,
       size: "small",
       type: "primary",
-      onClick: onClick,
+      ...(onClick ? { onClick } : {}),
     },
     () => t(i18n),
   );

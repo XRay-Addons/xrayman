@@ -4,44 +4,41 @@
 package converter
 
 import (
+	models "github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	pagecfg "github.com/XRay-Addons/xrayman/nodeman/internal/pages/pagecfg"
 	schemasgen "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/schemas-gen"
 )
 
-func ConvertAdminPageCfg(source *pagecfg.AdminPageCfg) *schemasgen.AdminpagecfgJson {
-	var pSchemeAdminpagecfgJson *schemasgen.AdminpagecfgJson
-	if source != nil {
-		var schemeAdminpagecfgJson schemasgen.AdminpagecfgJson
-		schemeAdminpagecfgJson.Routes = pagecfgAdminRoutesToSchemeAdminpagecfgJsonRoutes((*source).Routes)
-		if (*source).SubHeadersPlaceholders != nil {
-			schemeAdminpagecfgJson.SubHeadersPlaceholders = make([]string, len((*source).SubHeadersPlaceholders))
-			for i := 0; i < len((*source).SubHeadersPlaceholders); i++ {
-				schemeAdminpagecfgJson.SubHeadersPlaceholders[i] = (*source).SubHeadersPlaceholders[i]
-			}
+func ConvertAdminPageCfg(source pagecfg.AdminPageCfg) schemasgen.AdminpagecfgJson {
+	var schemeAdminpagecfgJson schemasgen.AdminpagecfgJson
+	schemeAdminpagecfgJson.AdminPrefix = source.AdminPrefix
+	schemeAdminpagecfgJson.ApiPrefix = source.ApiPrefix
+	if source.SettingsTags != nil {
+		schemeAdminpagecfgJson.SettingsTags = make([]string, len(source.SettingsTags))
+		for i := 0; i < len(source.SettingsTags); i++ {
+			schemeAdminpagecfgJson.SettingsTags[i] = source.SettingsTags[i]
 		}
-		pSchemeAdminpagecfgJson = &schemeAdminpagecfgJson
 	}
-	return pSchemeAdminpagecfgJson
+	schemeAdminpagecfgJson.UserPrefix = source.UserPrefix
+	return schemeAdminpagecfgJson
 }
-func ConvertUserPageCfg(source *pagecfg.UserPageCfg) *schemasgen.UserpagecfgJson {
-	var pSchemeUserpagecfgJson *schemasgen.UserpagecfgJson
-	if source != nil {
-		var schemeUserpagecfgJson schemasgen.UserpagecfgJson
-		schemeUserpagecfgJson.Routes = pagecfgUserRoutesToSchemeUserpagecfgJsonRoutes((*source).Routes)
-		pSchemeUserpagecfgJson = &schemeUserpagecfgJson
+func ConvertUserPageCfg(source pagecfg.UserPageCfg) schemasgen.UserpagecfgJson {
+	var schemeUserpagecfgJson schemasgen.UserpagecfgJson
+	schemeUserpagecfgJson.ApiPrefix = source.ApiPrefix
+	if source.AppLinks != nil {
+		schemeUserpagecfgJson.AppLinks = make([]schemasgen.UserpagecfgJsonAppLinksElem, len(source.AppLinks))
+		for i := 0; i < len(source.AppLinks); i++ {
+			schemeUserpagecfgJson.AppLinks[i] = modelsAppLinkToSchemeUserpagecfgJsonAppLinksElem(source.AppLinks[i])
+		}
 	}
-	return pSchemeUserpagecfgJson
+	schemeUserpagecfgJson.SupportLink = source.SupportLink
+	schemeUserpagecfgJson.UserPrefix = source.UserPrefix
+	return schemeUserpagecfgJson
 }
-func pagecfgAdminRoutesToSchemeAdminpagecfgJsonRoutes(source pagecfg.AdminRoutes) schemasgen.AdminpagecfgJsonRoutes {
-	var schemeAdminpagecfgJsonRoutes schemasgen.AdminpagecfgJsonRoutes
-	schemeAdminpagecfgJsonRoutes.AdminPrefix = source.AdminPrefix
-	schemeAdminpagecfgJsonRoutes.ApiPrefix = source.ApiPrefix
-	schemeAdminpagecfgJsonRoutes.UserPrefix = source.UserPrefix
-	return schemeAdminpagecfgJsonRoutes
-}
-func pagecfgUserRoutesToSchemeUserpagecfgJsonRoutes(source pagecfg.UserRoutes) schemasgen.UserpagecfgJsonRoutes {
-	var schemeUserpagecfgJsonRoutes schemasgen.UserpagecfgJsonRoutes
-	schemeUserpagecfgJsonRoutes.ApiPrefix = source.ApiPrefix
-	schemeUserpagecfgJsonRoutes.UserPrefix = source.UserPrefix
-	return schemeUserpagecfgJsonRoutes
+func modelsAppLinkToSchemeUserpagecfgJsonAppLinksElem(source models.AppLink) schemasgen.UserpagecfgJsonAppLinksElem {
+	var schemeUserpagecfgJsonAppLinksElem schemasgen.UserpagecfgJsonAppLinksElem
+	schemeUserpagecfgJsonAppLinksElem.Name = source.Name
+	schemeUserpagecfgJsonAppLinksElem.Platforms = source.Platforms
+	schemeUserpagecfgJsonAppLinksElem.URL = source.URL
+	return schemeUserpagecfgJsonAppLinksElem
 }
