@@ -68,52 +68,35 @@ func (s *Service) Start(ctx context.Context,
 	}, nil
 }
 
-func (s *Service) Stop(ctx context.Context,
-	params models.StopParams,
-) (*models.StopResult, error) {
-	if s == nil {
-		return nil, errdefs.NilCall()
-	}
+func (s *Service) Stop(ctx context.Context) error {
 	// stop server
 	if err := s.xrayService.Stop(ctx); err != nil {
-		return nil, err
+		return err
 	}
-	return &models.StopResult{}, nil
+	return nil
 }
 
-func (s *Service) Status(ctx context.Context,
-	params models.StatusParams,
+func (s *Service) Status(
+	ctx context.Context,
 ) (*models.StatusResult, error) {
-	if s == nil {
-		return nil, errdefs.NilCall()
-	}
 	status, err := s.xrayService.Status(ctx)
 	if err != nil {
 		return nil, err
 	}
-	s.xrayAPI.GetStats(ctx)
 
 	return &models.StatusResult{ServiceStatus: status}, nil
 }
 
 func (s *Service) EditUsers(ctx context.Context,
 	params models.EditUsersParams,
-) (*models.EditUsersResult, error) {
-	if s == nil {
-		return nil, errdefs.NilCall()
-	}
-
+) error {
 	if err := s.xrayAPI.EditUsers(ctx, params.Add, params.Remove); err != nil {
-		return nil, err
+		return err
 	}
-	return &models.EditUsersResult{}, nil
+	return nil
 }
 
 func (s *Service) GetStats(ctx context.Context) (*models.StatsResult, error) {
-	if s == nil {
-		return nil, errdefs.NilCall()
-	}
-
 	stats, err := s.xrayAPI.GetStats(ctx)
 	if err != nil {
 		return nil, err

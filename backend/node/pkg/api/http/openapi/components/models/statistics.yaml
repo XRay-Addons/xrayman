@@ -1,0 +1,16 @@
+UserStat:
+  type: object
+  description: User data usage statistics
+  required:
+    - ID
+    - Uplink
+    - Downlink
+  properties:
+    ID:
+      $ref: "./user.yaml#/UserID"
+    Uplink:
+      type: integer
+      format: int64
+    Downlink:
+      type: integer
+      format: int64

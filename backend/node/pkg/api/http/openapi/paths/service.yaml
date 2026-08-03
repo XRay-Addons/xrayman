@@ -1,0 +1,49 @@
+Start:
+  post:
+    summary: Start node with user list
+    operationId: Start
+    security:
+      - BearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "../components/requests/service.yaml#/StartRequest"
+    responses:
+      "200":
+        description: Successful start
+        content:
+          application/json:
+            schema:
+              $ref: "../components/requests/service.yaml#/StartResponse"
+      "default":
+        $ref: "../components/requests/error.yaml#/Error"
+
+Stop:
+  post:
+    summary: Stop node
+    operationId: Stop
+    security:
+      - BearerAuth: []
+    responses:
+      "200":
+        description: Successful stop
+      "default":
+        $ref: "../components/requests/error.yaml#/Error"
+
+Status:
+  get:
+    summary: Get current service status
+    operationId: GetStatus
+    security:
+      - BearerAuth: []
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: "../components/requests/service.yaml#/StatusResponse"
+      "default":
+        $ref: "../components/requests/error.yaml#/Error"

@@ -1,0 +1,10 @@
+Error:
+  type: object
+  properties:
+    Message:
+      type: string
+    Details:
+      type: string
+      nullable: true
+  required:
+    - Message

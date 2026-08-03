@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
-	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
+	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/openapi-gen"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/stats/nodestats"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/stats/poolstats"

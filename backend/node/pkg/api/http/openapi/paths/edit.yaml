@@ -1,0 +1,18 @@
+EditUsers:
+  post:
+    operationId: EditUsers
+    summary: Edit node users list
+    security:
+      - BearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "../components/requests/edit.yaml#/EditUsersRequest"
+
+    responses:
+      "200":
+        description: Successful response
+      "default":
+        $ref: "../components/requests/error.yaml#/Error"

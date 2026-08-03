@@ -8,8 +8,7 @@ import (
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/node/internal/http/handler/converter"
 	"github.com/XRay-Addons/xrayman/node/internal/http/httperrdefs"
-	"github.com/XRay-Addons/xrayman/node/internal/models"
-	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
+	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/openapi-gen"
 	chimw "github.com/go-chi/chi/v5/middleware"
 	"go.uber.org/zap"
 )
@@ -63,8 +62,7 @@ func (h *Handler) Stop(ctx context.Context) error {
 	if h == nil || h.service == nil {
 		return errdefs.NilCall()
 	}
-	_, err := h.service.Stop(ctx, models.StopParams{})
-	if err != nil {
+	if err := h.service.Stop(ctx); err != nil {
 		return err
 	}
 	return nil
@@ -74,7 +72,7 @@ func (h *Handler) GetStatus(ctx context.Context) (*api.StatusResponse, error) {
 	if h == nil || h.service == nil {
 		return nil, errdefs.NilCall()
 	}
-	status, err := h.service.Status(ctx, models.StatusParams{})
+	status, err := h.service.Status(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -86,8 +84,7 @@ func (h *Handler) EditUsers(ctx context.Context, req *api.EditUsersRequest) erro
 		return errdefs.NilCall()
 	}
 	p := converter.ConvertEditUsersRequest(req)
-	_, err := h.service.EditUsers(ctx, *p)
-	if err != nil {
+	if err := h.service.EditUsers(ctx, *p); err != nil {
 		return err
 	}
 	return nil

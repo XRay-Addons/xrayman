@@ -11,7 +11,7 @@ import (
 
 	"github.com/XRay-Addons/xrayman/node/internal/http/handler/mocks"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
-	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
+	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/openapi-gen"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -48,7 +48,7 @@ func TestHandler(t *testing.T) {
 			body:   nil,
 			mockSetup: func(m *mocks.MockService) {
 				m.EXPECT().
-					Status(gomock.Any(), gomock.Any()).
+					Status(gomock.Any()).
 					Return(&models.StatusResult{ServiceStatus: models.ServiceStatusRunning}, nil)
 			},
 			expectedCode: http.StatusOK,
@@ -61,7 +61,7 @@ func TestHandler(t *testing.T) {
 			body:   nil,
 			mockSetup: func(m *mocks.MockService) {
 				m.EXPECT().
-					Status(gomock.Any(), gomock.Any()).
+					Status(gomock.Any()).
 					Return(nil, fmt.Errorf("test error"))
 			},
 			expectedCode: http.StatusInternalServerError,

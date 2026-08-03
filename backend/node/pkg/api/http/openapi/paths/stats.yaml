@@ -1,0 +1,15 @@
+GetStats:
+  get:
+    summary: Statistic of server
+    operationId: GetStats
+    security:
+      - BearerAuth: []
+    responses:
+      "200":
+        description: Successful stats
+        content:
+          application/json:
+            schema:
+              $ref: "../components/requests/stats.yaml#/StatsResponse"
+      "default":
+        $ref: "../components/requests/error.yaml#/Error"

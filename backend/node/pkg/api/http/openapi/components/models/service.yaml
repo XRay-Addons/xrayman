@@ -1,0 +1,4 @@
+ServiceStatus:
+  type: string
+  description: Status of the service
+  enum: ["unknown", "stopped", "running"]

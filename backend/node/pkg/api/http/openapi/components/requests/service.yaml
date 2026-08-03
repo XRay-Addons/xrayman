@@ -1,0 +1,25 @@
+StartRequest:
+  type: object
+  required:
+    - users
+  properties:
+    users:
+      type: array
+      items:
+        $ref: "../models/user.yaml#/User"
+
+StartResponse:
+  type: object
+  required:
+    - clientConfigTemplate
+  properties:
+    clientConfigTemplate:
+      $ref: "../models/configs.yaml#/ClientConfigTemplate"
+
+StatusResponse:
+  type: object
+  required:
+    - serviceStatus
+  properties:
+    serviceStatus:
+      $ref: "../models/service.yaml#/ServiceStatus"

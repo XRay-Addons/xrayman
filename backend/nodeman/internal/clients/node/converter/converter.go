@@ -3,7 +3,7 @@ package converter
 import (
 	"fmt"
 
-	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
+	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/openapi-gen"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 

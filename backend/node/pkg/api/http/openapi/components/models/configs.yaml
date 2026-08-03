@@ -1,0 +1,19 @@
+ClientConfigTemplateItem:
+  description: "client config json template, no type for raw json"
+
+ClientConfigTemplate:
+  type: object
+  required:
+    - template
+    - vlessEmailField
+    - vlessUUIDField
+  properties:
+    template:
+      type: array
+      items:
+        $ref: "#/ClientConfigTemplateItem"
+
+    vlessEmailField:
+      type: string
+    vlessUUIDField:
+      type: string

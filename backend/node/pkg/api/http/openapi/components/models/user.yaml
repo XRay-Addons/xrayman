@@ -1,0 +1,16 @@
+UserID:
+  type: integer
+
+User:
+  type: object
+  required:
+    - ID
+    - name
+    - vlessUUID
+  properties:
+    ID:
+      $ref: "#/UserID"
+    name:
+      type: string
+    vlessUUID:
+      type: string

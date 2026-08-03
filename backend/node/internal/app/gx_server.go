@@ -11,7 +11,7 @@ import (
 	"github.com/XRay-Addons/xrayman/node/internal/http/handler"
 	"github.com/XRay-Addons/xrayman/node/internal/http/security"
 	"github.com/XRay-Addons/xrayman/node/internal/service"
-	genapi "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
+	genapi "github.com/XRay-Addons/xrayman/node/pkg/api/http/openapi-gen"
 	"go.uber.org/zap"
 )
 

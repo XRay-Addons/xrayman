@@ -28,7 +28,7 @@ var checkXRay = gx.Invoke(
 					return
 				}
 				defer func() {
-					_, closeErr := p.Service.Stop(ctx, models.StopParams{})
+					closeErr := p.Service.Stop(ctx)
 					err = xerr.Join(err, closeErr)
 				}()
 
