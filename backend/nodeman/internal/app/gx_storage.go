@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"time"
 
 	"github.com/XRay-Addons/xrayman/common/gx"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/config"
@@ -14,6 +15,8 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/settings"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/users"
+	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
 var db = gx.ProvideAnnotated(
@@ -33,8 +36,19 @@ var db = gx.ProvideAnnotated(
 	gx.As(new(dbstorage.DB)),
 )
 
+type StorageParams struct {
+	fx.In
+	DB      dbstorage.DB
+	Timeout time.Duration `name:"storage-call-timeout"`
+	Log     *zap.Logger
+}
+
 var storage = gx.ProvideAnnotated(
-	dbstorage.New,
+	func(p StorageParams) (*dbstorage.Storage, error) {
+		return dbstorage.New(p.DB,
+			dbstorage.WithTimeout(p.Timeout),
+			dbstorage.WithLogger(p.Log))
+	},
 	gx.As(new(users.Storage)),
 	gx.As(new(nodes.Storage)),
 	gx.As(new(subscr.Storage)),

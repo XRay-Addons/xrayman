@@ -17,6 +17,12 @@ var Config = gx.Module("config", gx.Provide(
 	),
 	gx.Named(
 		func(cfg *config.Config) time.Duration {
+			return cfg.StorageCallTimeout
+		},
+		"storage-call-timeout",
+	),
+	gx.Named(
+		func(cfg *config.Config) time.Duration {
 			return cfg.NodeCallTimeout + cfg.StorageCallTimeout
 		},
 		"service-sync-timeout",

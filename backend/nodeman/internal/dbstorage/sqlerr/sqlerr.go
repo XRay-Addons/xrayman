@@ -18,8 +18,8 @@ func TranslatePgErr(err error) error {
 		return nil
 	}
 
-	// context error
-	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+	// context cancelled error
+	if errors.Is(err, context.Canceled) {
 		return err
 	}
 

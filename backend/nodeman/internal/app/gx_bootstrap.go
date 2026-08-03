@@ -19,11 +19,11 @@ type MigrateParams struct {
 }
 
 var migrateDB = gx.Invoke(
-	func(lc gx.Lifecycle, p MigrateParams) {
+	func(lc gx.Lifecycle, s *dbstorage.Storage) {
 		lc.AppendBootstrap(gx.Bootstrap{
 			Name: "migrate db",
 			Fn: func(ctx context.Context) error {
-				return p.Storage.Migrate(ctx, dbstorage.WithLogger(p.Log))
+				return s.Migrate(ctx)
 			},
 			Retry: func(err error) bool {
 				return errors.Is(err, errdefs.ErrTemporaryUnavailable)
@@ -76,7 +76,7 @@ var ensureSettings = gx.Invoke(
 )
 
 var Bootstrap = gx.Module("bootstrap",
+	ensureSettings,
 	migrateDB,
 	setPassword,
-	ensureSettings,
 )

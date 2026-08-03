@@ -40,8 +40,9 @@ type DB interface {
 }
 
 type Storage struct {
-	db         DB
-	ExplainLog *zap.Logger
+	db      DB
+	timeout time.Duration
+	log     *zap.Logger
 }
 
 var _ users.Storage = (*Storage)(nil)
@@ -51,21 +52,17 @@ var _ auth.Storage = (*Storage)(nil)
 var _ poolsync.Storage = (*Storage)(nil)
 var _ settings.Storage = (*Storage)(nil)
 
-func New(db DB) (s *Storage, err error) {
-	if db == nil {
-		return nil, errdefs.NilArg("db")
-	}
-
-	return &Storage{
-		db: db,
-	}, nil
-}
-
 type option func(o *options)
 
 type options struct {
-	log     *zap.Logger
 	timeout time.Duration
+	log     *zap.Logger
+}
+
+func WithTimeout(t time.Duration) option {
+	return func(o *options) {
+		o.timeout = t
+	}
 }
 
 func WithLogger(l *zap.Logger) option {
@@ -76,24 +73,29 @@ func WithLogger(l *zap.Logger) option {
 	}
 }
 
-func WithTimeout(t time.Duration) option {
-	return func(o *options) {
-		o.timeout = t
+func New(db DB, opts ...option) (s *Storage, err error) {
+	if db == nil {
+		return nil, errdefs.NilArg("db")
 	}
+	o := options{
+		timeout: 5 * time.Second,
+		log:     zap.NewNop(),
+	}
+	for _, opt := range opts {
+		opt(&o)
+	}
+
+	return &Storage{
+		db:      db,
+		timeout: o.timeout,
+		log:     o.log,
+	}, nil
 }
 
-func (s *Storage) Migrate(ctx context.Context, opts ...option) error {
-	cfg := options{
-		log:     zap.NewNop(),
-		timeout: 5 * time.Second,
-	}
-	for _, o := range opts {
-		o(&cfg)
-	}
-
-	ctx, cancel := context.WithTimeout(ctx, cfg.timeout)
+func (s *Storage) Migrate(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, s.timeout)
 	defer cancel()
-	if err := migrations.ApplyMigrations(ctx, s.db.Raw(), cfg.log); err != nil {
+	if err := migrations.ApplyMigrations(ctx, s.db.Raw(), s.log); err != nil {
 		err = xerr.WrapWithStack(err)
 		err = sqlerr.TranslatePgErr(err)
 		return err
@@ -178,10 +180,17 @@ func (s *Storage) doSavepointTx(ctx context.Context, fn TxFn, tx TX) (err error)
 type voidFn = func(context.Context, *queries.Queries) error
 
 func doVoid(ctx context.Context, s *Storage, fn voidFn) error {
-	q := queries.New(s.db)
+
+	var q *queries.Queries
+
 	if tx, ok := ctx.Value(txCtxKey).(TX); ok {
 		q = queries.New(tx)
+	} else {
+		q = queries.New(s.db)
 	}
+
+	ctx, cancel := context.WithTimeout(ctx, s.timeout)
+	defer cancel()
 	if err := fn(ctx, q); err != nil {
 		err = xerr.WrapWithStack(err)
 		err = sqlerr.TranslatePgErr(err)
@@ -193,6 +202,9 @@ func doVoid(ctx context.Context, s *Storage, fn voidFn) error {
 type anyFn[T any] = func(context.Context, *queries.Queries) (T, error)
 
 func doAny[T any](ctx context.Context, s *Storage, fn anyFn[T]) (t T, err error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
 	err = doVoid(ctx, s, func(ctx context.Context, q *queries.Queries) (err error) {
 		t, err = fn(ctx, q)
 		return
