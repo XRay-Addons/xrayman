@@ -12,17 +12,13 @@ import ButtonDialog from "@xrayman/shared/astro/primitives/ButtonDialog/ButtonDi
 <style lang="scss">
   @use "@xrayman/shared/styles/shades.scss" as *;
 
-  .settings-btn-img {
-    width: 1.5rem;
-    height: 1.5rem;
-  }
   .settings-icon {
     width: 1.5rem;
     height: 1.5rem;
 
     background-color: contrasted(var(--button-color));
 
-    mask: url("./settings.svg") center / contain no-repeat;
-    -webkit-mask: url("./settings.svg") center / contain no-repeat;
+    mask: url("/settings.svg") center / contain no-repeat;
+    -webkit-mask: url("/settings.svg") center / contain no-repeat;
   }
 </style>

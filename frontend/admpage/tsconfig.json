@@ -4,7 +4,8 @@
   "compilerOptions": {
     "paths": {
       "@/*": ["./src/*"],
-      "@xrayman/shared/*": ["../shared/src/*"]
+      "@xrayman/shared/*": ["../shared/src/*"],
+      "@assets/*": ["./src/assets/*"]
     },
 
     "strict": true,
