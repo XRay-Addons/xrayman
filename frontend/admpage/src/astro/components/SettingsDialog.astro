@@ -1,22 +1,28 @@
 ---
 import SettingsPage from "./SettingsPage.astro";
 import ButtonDialog from "@xrayman/shared/astro/primitives/ButtonDialog/ButtonDialog.astro";
-import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 ---
 
-<ButtonDialog>
-  <div slot="button" class="settings-button">
-    <I18NText data-i18n="settings.button.text" />
-  </div>
+<ButtonDialog class="h-100 squared">
+  <div slot="button" class="settings-icon"></div>
+
   <SettingsPage slot="page" />
 </ButtonDialog>
 
-<style>
-  .settings-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    line-height: 1;
+<style lang="scss">
+  @use "@xrayman/shared/styles/shades.scss" as *;
+
+  .settings-btn-img {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+  .settings-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+
+    background-color: contrasted(var(--button-color));
+
+    mask: url("./settings.svg") center / contain no-repeat;
+    -webkit-mask: url("./settings.svg") center / contain no-repeat;
   }
 </style>

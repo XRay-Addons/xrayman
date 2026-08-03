@@ -15,14 +15,12 @@ import SettingsDialog from "./SettingsDialog.astro";
 
 <AuthDialog />
 
-<div class="col-12 d-flex p-2">
-  <div class="col-1"></div>
-  <div class="col-10">
-    <Title>
-      <I18NText data-i18n="title.main" />
-    </Title>
-  </div>
-  <div class="col-1">
+<div class="d-flex h-center align-items-stretch p-2">
+  <Title class="flex-grow-1">
+    <I18NText data-i18n="title.main" />
+  </Title>
+
+  <div class="settings-btn text-lg">
     <SettingsDialog />
   </div>
 </div>
@@ -37,7 +35,13 @@ import SettingsDialog from "./SettingsDialog.astro";
     </div>
   </div>
 </PageCenter>
+
 <style>
+  .settings-btn {
+    aspect-ratio: 1;
+    margin-left: calc(-1 * var(--input-depth));
+  }
+
   .page-columns {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(50ch, 1fr));

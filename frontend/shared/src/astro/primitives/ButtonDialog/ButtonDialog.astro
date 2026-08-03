@@ -1,19 +1,16 @@
 ---
 import Button from "@xrayman/shared/astro/primitives/Button.astro";
+import type { ComponentProps, HTMLAttributes } from "astro/types";
 
-interface Props {
-  class?: string;
-  "btn:class"?: string;
-}
-const { class: extraClass = "", "btn:class": btnClass = "" } = Astro.props;
+type Props = ComponentProps<typeof Button>;
+
+const { ...props } = Astro.props;
 ---
 
 <btn-dialog>
-  <div class={extraClass}>
-    <Button data-app-dialog-button class={btnClass}>
-      <slot name="button" />
-    </Button>
-  </div>
+  <Button data-app-dialog-button {...props}>
+    <slot name="button" />
+  </Button>
 
   <dialog class="app-dialog" data-app-dialog>
     <div class="app-dialog-overlay" data-app-dialog-overlay></div>

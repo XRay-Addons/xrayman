@@ -9,6 +9,10 @@
 .ui-reset-button {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .ui-reset-button:focus,
