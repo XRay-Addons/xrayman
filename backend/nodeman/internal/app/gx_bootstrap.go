@@ -59,15 +59,12 @@ var setPassword = gx.Invoke(
 )
 
 var ensurePassword = gx.Invoke(
-	func(lc gx.Lifecycle, p PasswordParams) {
+
+	func(lc gx.Lifecycle, s auth.Storage) {
 		lc.AppendBootstrap(gx.Bootstrap{
 			Name: "ensure password",
 			Fn: func(ctx context.Context) error {
-				// check empty password
-				_, err := p.Auth.Auth(ctx, models.AuthParams{Password: ""})
-				if err == nil {
-					return xerr.New("Empty password is not acceptable")
-				}
+				_, err := s.GetAuth(ctx)
 				return err
 			},
 			Retry: func(err error) bool {
