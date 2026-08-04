@@ -97,10 +97,6 @@ NODE_LDFLAGS := \
 	-X $(NODE_VERSION_PKG).Commit=$(COMMIT) \
 	-X $(NODE_VERSION_PKG).BuildTime=$(BUILD_TIME)
 
-cd $(BACKEND_ROOT)/node && \
-CGO_ENABLED=$(CGO_ENABLED) GOOS=$(GOOS) GOARCH=$(GOARCH) \
-$(GO) build -ldflags "$(NODE_LDFLAGS)" -o $(DST)/xray-node/xray-node ./cmd/main.go
-
 NODEMAN_VERSION_PKG := github.com/XRay-Addons/xrayman/nodeman/internal/version
 NODEMAN_LDFLAGS := \
 	-X $(NODEMAN_VERSION_PKG).Version=$(VERSION) \
@@ -127,6 +123,11 @@ build_backend: gen_backend embed_frontend
 
 	mkdir -p $(DST)/xray-node
 	mkdir -p $(DST)/xray-nodeman
+
+	cd $(BACKEND_ROOT)/node && \
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=$(GOOS) GOARCH=$(GOARCH) \
+	$(GO) build -ldflags "$(NODE_LDFLAGS)" -o $(DST)/xray-node/xray-node ./cmd/main.go
+
 
 	cd $(BACKEND_ROOT)/nodeman && \
 	CGO_ENABLED=$(CGO_ENABLED) GOOS=$(GOOS) GOARCH=$(GOARCH) \
