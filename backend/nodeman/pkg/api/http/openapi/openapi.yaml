@@ -49,6 +49,9 @@ paths:
   /settings/set:
     $ref: "./paths/settings.yaml#/SetSettings"
 
+  /version:
+    $ref: "./paths/version.yaml#/Version"
+
 components:
   securitySchemes:
     BearerAuth:

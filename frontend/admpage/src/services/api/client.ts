@@ -14,8 +14,9 @@ import {
   deleteNode as _deleteNode,
   getSettings as _getSettings,
   setSettings as _setSettings,
+  getVersion as _getVersion,
 } from "./generated/sdk.gen";
-import type { User, Node, AuthResponse, UserView, Settings } from "./generated/types.gen";
+import type { User, Node, AuthResponse, UserView, Settings, Version } from "./generated/types.gen";
 
 export async function auth(pwd: string): Promise<ApiResult<AuthResponse>> {
   return handleAPI(
@@ -105,5 +106,12 @@ export async function setSettings(settings: Settings): Promise<ApiResult<void>> 
   return handleAPI(
     () => _setSettings({ body: settings }),
     () => {},
+  );
+}
+
+export async function getVersion(): Promise<ApiResult<string>> {
+  return handleAPI(
+    () => _getVersion(),
+    (data) => data,
   );
 }

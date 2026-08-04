@@ -1,0 +1,19 @@
+Version:
+  get:
+    summary: Get NodeMan version
+    operationId: GetVersion
+    responses:
+      "200":
+        description: Version
+        content:
+          application/json:
+            schema:
+              type: string
+              example: "v1.2.3"
+      "default":
+        $ref: "../components/requests/error.yaml#/Error"
+
+    tags:
+      - admpage
+    security:
+      - BearerAuth: []
