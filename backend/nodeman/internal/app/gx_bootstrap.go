@@ -56,6 +56,21 @@ var setPassword = gx.Invoke(
 	},
 )
 
+var ensurePassword = gx.Invoke(
+	func(lc gx.Lifecycle, s auth.Storage) {
+		lc.AppendBootstrap(gx.Bootstrap{
+			Name: "ensure password",
+			Fn: func(ctx context.Context) error {
+				_, err := s.GetAuth(ctx)
+				return err
+			},
+			Retry: func(err error) bool {
+				return errors.Is(err, errdefs.ErrTemporaryUnavailable)
+			},
+		})
+	},
+)
+
 type SettingsParams struct {
 	gx.In
 	Settings *settings.Service
@@ -76,7 +91,8 @@ var ensureSettings = gx.Invoke(
 )
 
 var Bootstrap = gx.Module("bootstrap",
-	ensureSettings,
 	migrateDB,
+	ensureSettings,
 	setPassword,
+	ensurePassword,
 )
