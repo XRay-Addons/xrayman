@@ -88,17 +88,17 @@ func (s *Storage) SetCurrentNodeStatus(ctx context.Context,
 	})
 }
 
-func (s *Storage) SetClientConfig(ctx context.Context,
-	id models.NodeID, cfg models.ClientConfigTemplate,
+func (s *Storage) SetNodeSettings(ctx context.Context,
+	id models.NodeID, settings *models.NodeSettings,
 ) error {
 	// pre-convert
-	arg, err := convert.SetClientConfigReq(id, cfg)
+	arg, err := convert.SetNodeSettingsReq(id, settings)
 	if err != nil {
 		return err
 	}
 	// request
 	return doVoid(ctx, s, func(ctx context.Context, q *queries.Queries) error {
-		return q.SetClientConfig(ctx, *arg)
+		return q.SetNodeSettings(ctx, *arg)
 	})
 }
 

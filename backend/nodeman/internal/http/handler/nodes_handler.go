@@ -5,7 +5,6 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/converter"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/openapi-gen"
 )
 
@@ -34,8 +33,7 @@ func (h *Handler) StartNode(ctx context.Context, req *api.StartNodeRequest) erro
 	if err != nil {
 		return err
 	}
-	_, err = h.nodes.StartNode(ctx, *p)
-	if err != nil {
+	if err = h.nodes.StartNode(ctx, *p); err != nil {
 		return err
 	}
 	return nil
@@ -49,8 +47,7 @@ func (h *Handler) StopNode(ctx context.Context, req *api.StopNodeRequest) error 
 	if err != nil {
 		return err
 	}
-	_, err = h.nodes.StopNode(ctx, *p)
-	if err != nil {
+	if err = h.nodes.StopNode(ctx, *p); err != nil {
 		return err
 	}
 	return nil
@@ -60,7 +57,7 @@ func (h *Handler) ListNodes(ctx context.Context) (*api.ListNodeResponse, error) 
 	if h == nil || h.nodes == nil {
 		return nil, errdefs.NilCall()
 	}
-	res, err := h.nodes.ListNodes(ctx, models.ListNodeParams{})
+	res, err := h.nodes.ListNodes(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -75,8 +72,7 @@ func (h *Handler) DeleteNode(ctx context.Context, req *api.DeleteNodeRequest) er
 	if err != nil {
 		return err
 	}
-	_, err = h.nodes.DeleteNode(ctx, *p)
-	if err != nil {
+	if err = h.nodes.DeleteNode(ctx, *p); err != nil {
 		return err
 	}
 	return nil

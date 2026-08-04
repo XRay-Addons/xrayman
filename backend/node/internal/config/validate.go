@@ -8,26 +8,26 @@ import (
 	"github.com/XRay-Addons/xrayman/common/xerr"
 )
 
-func Validate(c Config) error {
+func Validate(c *Config) error {
 	if _, err := net.ResolveTCPAddr("tcp", c.Endpoint); err != nil {
 		return xerr.Wrap(err,
 			xerr.WithStack(),
 			xerr.WithInfof("invalid endpoint %s", c.Endpoint))
 	}
 	if err := checkDir(c.XRayDataDir); err != nil {
-		return err
+		return xerr.WrapWithInfof(err, "arg: %s", c.XRayDataDir)
 	}
 	if err := checkFile(c.XRayServer()); err != nil {
-		return err
+		return xerr.WrapWithInfo(err, "xray server cfg")
 	}
 	if err := checkJson(c.XRayServer()); err != nil {
-		return err
+		return xerr.WrapWithInfo(err, "xray server cfg")
 	}
 	if err := checkFile(c.XRayClient()); err != nil {
-		return err
+		return xerr.WrapWithInfo(err, "xray client cfg")
 	}
 	if err := checkJson(c.XRayClient()); err != nil {
-		return err
+		return xerr.WrapWithInfo(err, "xray client cfg")
 	}
 	// don't check c.PersistentDir, it could be created later
 

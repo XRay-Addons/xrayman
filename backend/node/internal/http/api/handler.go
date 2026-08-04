@@ -5,7 +5,7 @@ import (
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
-	genapi "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
+	genapi "github.com/XRay-Addons/xrayman/node/pkg/api/http/openapi-gen"
 )
 
 func NewHandler(h genapi.Handler, s genapi.SecurityHandler) (http.Handler, error) {

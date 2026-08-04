@@ -13,6 +13,7 @@ UNZIP := unzip
 FRONTEND_ROOT := $(ROOT)/frontend
 BACKEND_ROOT := $(ROOT)/backend
 
+
 # -----------------------------
 # DEFAULT
 # -----------------------------
@@ -85,7 +86,23 @@ GO_TOOLS := \
 	go.uber.org/mock/mockgen@latest \
 	github.com/atombender/go-jsonschema@latest \
 	github.com/sqlc-dev/sqlc/cmd/sqlc@latest
-	
+
+VERSION ?= dev
+COMMIT ?= unknown-commit
+BUILD_TIME ?= unknown-time
+
+NODE_VERSION_PKG := github.com/XRay-Addons/xrayman/node/internal/version
+NODE_LDFLAGS := \
+	-X $(NODE_VERSION_PKG).Version=$(VERSION) \
+	-X $(NODE_VERSION_PKG).Commit=$(COMMIT) \
+	-X $(NODE_VERSION_PKG).BuildTime=$(BUILD_TIME)
+
+NODEMAN_VERSION_PKG := github.com/XRay-Addons/xrayman/nodeman/internal/version
+NODEMAN_LDFLAGS := \
+	-X $(NODEMAN_VERSION_PKG).Version=$(VERSION) \
+	-X $(NODEMAN_VERSION_PKG).Commit=$(COMMIT) \
+	-X $(NODEMAN_VERSION_PKG).BuildTime=$(BUILD_TIME)	
+
 tools:
 	@echo "==> Installing Go tools"
 	@for tool in $(GO_TOOLS); do \
@@ -109,11 +126,12 @@ build_backend: gen_backend embed_frontend
 
 	cd $(BACKEND_ROOT)/node && \
 	CGO_ENABLED=$(CGO_ENABLED) GOOS=$(GOOS) GOARCH=$(GOARCH) \
-	$(GO) build -o $(DST)/xray-node/xray-node ./cmd/main.go
+	$(GO) build -ldflags "$(NODE_LDFLAGS)" -o $(DST)/xray-node/xray-node ./cmd/main.go
+
 
 	cd $(BACKEND_ROOT)/nodeman && \
 	CGO_ENABLED=$(CGO_ENABLED) GOOS=$(GOOS) GOARCH=$(GOARCH) \
-	$(GO) build -o $(DST)/xray-nodeman/xray-nodeman ./cmd/main.go
+	$(GO) build -ldflags "$(NODEMAN_LDFLAGS)" -o $(DST)/xray-nodeman/xray-nodeman ./cmd/main.go
 
 # -----------------------------
 # XRAY DOWNLOAD

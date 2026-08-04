@@ -1,0 +1,107 @@
+NewNode:
+  post:
+    summary: Create a new node
+    operationId: NewNode
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "../components/requests/nodes.yaml#/NewNodeRequest"
+    responses:
+      "200":
+        description: Created node
+        content:
+          application/json:
+            schema:
+              $ref: "../components/requests/nodes.yaml#/NewNodeResponse"
+      "default":
+        $ref: "../components/requests/error.yaml#/Error"
+
+    tags:
+      - admpage
+    security:
+      - BearerAuth: []
+
+StartNode:
+  post:
+    summary: Start a node
+    operationId: StartNode
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "../components/requests/nodes.yaml#/StartNodeRequest"
+    responses:
+      "200":
+        description: Start result
+      "default":
+        $ref: "../components/requests/error.yaml#/Error"
+
+    tags:
+      - admpage
+    security:
+      - BearerAuth: []
+
+StopNode:
+  post:
+    summary: Stop a node
+    operationId: StopNode
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "../components/requests/nodes.yaml#/StopNodeRequest"
+    responses:
+      "200":
+        description: Stop result
+      "default":
+        $ref: "../components/requests/error.yaml#/Error"
+
+    tags:
+      - admpage
+    security:
+      - BearerAuth: []
+
+DeleteNode:
+  post:
+    summary: Delete a node
+    operationId: DeleteNode
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "../components/requests/nodes.yaml#/DeleteNodeRequest"
+    responses:
+      "200":
+        description: Delete result
+      "default":
+        $ref: "../components/requests/error.yaml#/Error"
+
+    tags:
+      - admpage
+    security:
+      - BearerAuth: []
+
+ListNodes:
+  get:
+    summary: List all nodes
+    operationId: ListNodes
+    parameters: []
+    responses:
+      "200":
+        description: List of nodes
+        content:
+          application/json:
+            schema:
+              $ref: "../components/requests/nodes.yaml#/ListNodeResponse"
+      "default":
+        $ref: "../components/requests/error.yaml#/Error"
+
+    tags:
+      - admpage
+    security:
+      - BearerAuth: []

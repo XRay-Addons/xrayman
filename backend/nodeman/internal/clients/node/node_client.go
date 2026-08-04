@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
-	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
+	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/openapi-gen"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/clients/node/converter"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
@@ -18,7 +18,7 @@ type NodeClient struct {
 var _ nodesync.Client = (*NodeClient)(nil)
 
 func (c *NodeClient) Start(ctx context.Context, users []models.UserProfile) (
-	*models.ClientConfigTemplate, error,
+	*models.NodeSettings, error,
 ) {
 	if c == nil || c.client == nil {
 		return nil, errdefs.NilCall()
@@ -29,8 +29,8 @@ func (c *NodeClient) Start(ctx context.Context, users []models.UserProfile) (
 	if err != nil {
 		return nil, wrapOgenErr(err)
 	}
-	clientTemplate := converter.ConvertClientConfig(startResponse.GetClientConfigTemplate())
-	return &clientTemplate, nil
+	nodeSettings := converter.ConvertStartResponse(*startResponse)
+	return &nodeSettings, nil
 }
 
 func (c *NodeClient) Stop(ctx context.Context) error {

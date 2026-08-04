@@ -1,31 +1,35 @@
 package main
 
 import (
+	"fmt"
+	"log"
 	stdlog "log"
 
 	"github.com/XRay-Addons/xrayman/common/logging"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/app"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/config"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/version"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 func main() {
-	// load and validate config
-	cfg, err := loadConfig()
+	cli, err := config.LoadCLI()
 	if err != nil {
-		stdlog.Printf("config loading: %v", err)
+		log.Fatal(err)
+	}
+
+	if cli.Version {
+		fmt.Println(version.String())
 		return
 	}
 
-	// create log. use std log to log log errors,
-	// because who log the log
-	logLevel, err := zapcore.ParseLevel(cfg.LogLevel)
+	cfg, err := config.NewConfig(cli)
 	if err != nil {
-		stdlog.Print(err)
+		stdlog.Printf("config loading: %+v", err)
 		return
 	}
-	log, err := logging.New(logLevel)
+
+	log, err := logging.New(cfg.LogLevel)
 	if err != nil {
 		stdlog.Print(err)
 		return
@@ -36,8 +40,7 @@ func main() {
 		}
 	}()
 
-	// run app
-	app, err := app.New(*cfg, log)
+	app, err := app.New(cfg, log)
 	if err != nil {
 		log.Error("app init", zap.Error(err))
 		return
@@ -47,15 +50,4 @@ func main() {
 		log.Error("app run", zap.Error(err))
 		return
 	}
-}
-
-func loadConfig() (*config.RawConfig, error) {
-	cfg, err := config.LoadConfig()
-	if err != nil {
-		return nil, err
-	}
-	if err = config.Validate(*cfg); err != nil {
-		return nil, err
-	}
-	return cfg, nil
 }

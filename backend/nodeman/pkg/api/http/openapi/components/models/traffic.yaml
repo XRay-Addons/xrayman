@@ -1,0 +1,23 @@
+Traffic:
+  type: object
+  properties:
+    Total:
+      $ref: "#/TrafficStats"
+    LastMonth:
+      $ref: "#/TrafficStats"
+  required:
+    - Total
+    - LastMonth
+
+TrafficStats:
+  type: object
+  properties:
+    Upload:
+      type: integer
+      format: int64
+    Download:
+      type: integer
+      format: int64
+  required:
+    - Upload
+    - Download

@@ -6,15 +6,7 @@ type StartParams struct {
 
 type StartResult struct {
 	ClientConfigTemplate ClientConfigTemplate
-}
-
-type StopParams struct {
-}
-
-type StopResult struct {
-}
-
-type StatusParams struct {
+	Version              string
 }
 
 type StatusResult struct {
@@ -24,9 +16,6 @@ type StatusResult struct {
 type EditUsersParams struct {
 	Add    []User
 	Remove []User
-}
-
-type EditUsersResult struct {
 }
 
 type StatsResult struct {

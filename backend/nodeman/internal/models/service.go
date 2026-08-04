@@ -13,17 +13,8 @@ type StartNodeParams struct {
 	ID NodeID
 }
 
-type StartNodeResult struct {
-}
-
 type StopNodeParams struct {
 	ID NodeID
-}
-
-type StopNodeResult struct {
-}
-
-type ListNodeParams struct {
 }
 
 type ListNodeResult struct {
@@ -32,9 +23,6 @@ type ListNodeResult struct {
 
 type DeleteNodeParams struct {
 	ID NodeID
-}
-
-type DeleteNodeResult struct {
 }
 
 type NewUserParams struct {
@@ -50,17 +38,8 @@ type EnableUserParams struct {
 	ID UserID
 }
 
-type EnableUserResult struct {
-}
-
 type DisableUserParams struct {
 	ID UserID
-}
-
-type DisableUserResult struct {
-}
-
-type ListUserParams struct {
 }
 
 type ListUsersResult struct {
@@ -69,9 +48,6 @@ type ListUsersResult struct {
 
 type DeleteUserParams struct {
 	ID UserID
-}
-
-type DeleteUserResult struct {
 }
 
 type UserSubParams struct {

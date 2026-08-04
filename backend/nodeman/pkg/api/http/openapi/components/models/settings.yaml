@@ -1,0 +1,57 @@
+Settings:
+  type: object
+  properties:
+    SubscrTitle:
+      type: string
+    UpdateInterval:
+      type: integer
+    UserPage:
+      type: string
+    UsersMessage:
+      type: string
+    TgPage:
+      type: string
+    Routing:
+      type: string
+    AppLinks:
+      type: array
+      items:
+        $ref: "#/AppLink"
+    CustomHeaders:
+      type: array
+      items:
+        $ref: "#/Header"
+  required:
+    - SubscrTitle
+    - UpdateInterval
+    - UserPage
+    - UsersMessage
+    - TgPage
+    - Routing
+    - AppLinks
+    - CustomHeaders
+
+AppLink:
+  type: object
+  properties:
+    Name:
+      type: string
+    Platforms:
+      type: string
+    URL:
+      type: string
+  required:
+    - Name
+    - Platforms
+    - URL
+
+Header:
+  type: object
+  properties:
+    Key:
+      type: string
+    Value:
+      type: string
+  required:
+    - Key
+    - Value

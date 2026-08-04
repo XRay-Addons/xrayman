@@ -27,7 +27,7 @@ type Nodes interface {
 	ConvertDeleteNodeRequest(r *api.DeleteNodeRequest) (*models.DeleteNodeParams, error)
 }
 
-func ConvertAccessKey(s string) (models.AccessKey, error) {
+func ConvertAccessKey(s api.AccessKey) (models.AccessKey, error) {
 	var accessKey models.AccessKey
 	if err := accessKey.UnmarshalText([]byte(s)); err != nil {
 		return accessKey, errdefs.PayloadErr(err)

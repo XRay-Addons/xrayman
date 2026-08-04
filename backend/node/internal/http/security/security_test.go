@@ -1,5 +1,7 @@
 package security
 
+//go:generate mockgen -source=../../../pkg/api/http/openapi-gen/oas_server_gen.go -destination=./mocks/mock_handler.go -package=mocks
+
 /*import (
 	"context"
 	"mime"
@@ -19,7 +21,6 @@ package security
 	"go.uber.org/mock/gomock"
 )
 
-//go:generate mockgen -source=../../../pkg/api/http/gen/oas_server_gen.go -destination=./mocks/mock_handler.go -package=mocks
 
 func TestSecurity(t *testing.T) {
 	tests := []struct {

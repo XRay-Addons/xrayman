@@ -21,6 +21,7 @@ type Handler struct {
 	subscr   SubscrService
 	auth     AuthService
 	settings SettingsService
+	version  VersionService
 	log      *zap.Logger
 }
 
@@ -32,6 +33,7 @@ func New(
 	subscr SubscrService,
 	settings SettingsService,
 	auth AuthService,
+	version VersionService,
 	logger *zap.Logger,
 ) (*Handler, error) {
 	if users == nil {
@@ -49,6 +51,9 @@ func New(
 	if auth == nil {
 		return nil, errdefs.NilArg("auth")
 	}
+	if version == nil {
+		return nil, errdefs.NilArg("version")
+	}
 	if logger == nil {
 		return nil, errdefs.NilArg("logger")
 	}
@@ -58,6 +63,7 @@ func New(
 		subscr:   subscr,
 		settings: settings,
 		auth:     auth,
+		version:  version,
 		log:      logger,
 	}, nil
 }

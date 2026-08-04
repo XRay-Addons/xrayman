@@ -15,8 +15,8 @@ type UsersStorage interface {
 type StateStorage interface {
 	GetNodeStatus(ctx context.Context) (
 		target, current models.NodeStatus, err error)
-	SetClientConfig(ctx context.Context,
-		cfg models.ClientConfigTemplate) error
+	SetNodeSettings(ctx context.Context,
+		cfg *models.NodeSettings) error
 	SetCurrentNodeStatus(ctx context.Context,
 		s models.NodeStatus) error
 }

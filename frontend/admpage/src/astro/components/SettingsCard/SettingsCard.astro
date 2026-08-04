@@ -6,7 +6,7 @@ import Config from "@xrayman/shared/astro/primitives/Config/Config.astro";
 import Button from "@xrayman/shared/astro/primitives/Button.astro";
 import { fields } from "./SettingsFields";
 import ActiveSlot from "@xrayman/shared/astro/primitives/ActiveSlot/ActiveSlot.astro";
-
+import VersionTag from "./VersionTag.astro";
 const i18n = "settings";
 ---
 
@@ -30,6 +30,7 @@ const i18n = "settings";
         <I18NText data-i18n=`${i18n}.refresh` />
       </Button>
     </div>
+    <VersionTag />
   </Card>
 
   <script>

@@ -1,0 +1,23 @@
+Auth:
+  post:
+    summary: Authenticate and return JWT
+    operationId: Auth
+
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "../components/requests/auth.yaml#/AuthRequest"
+    responses:
+      "200":
+        description: Successfully authenticated
+        content:
+          application/json:
+            schema:
+              $ref: "../components/requests/auth.yaml#/AuthResponse"
+      "default":
+        $ref: "../components/requests/error.yaml#/Error"
+
+    tags:
+      - admpage

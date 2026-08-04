@@ -1,0 +1,52 @@
+NewNodeRequest:
+  type: object
+  properties:
+    Endpoint:
+      $ref: "../models/nodes.yaml#/Endpoint"
+    AccessKey:
+      $ref: "../models/nodes.yaml#/AccessKey"
+  required:
+    - Endpoint
+    - AccessKey
+
+NewNodeResponse:
+  type: object
+  properties:
+    Node:
+      $ref: "../models/nodes.yaml#/Node"
+  required:
+    - Node
+
+StartNodeRequest:
+  type: object
+  properties:
+    ID:
+      $ref: "../models/nodes.yaml#/NodeID"
+  required:
+    - ID
+
+StopNodeRequest:
+  type: object
+  properties:
+    ID:
+      $ref: "../models/nodes.yaml#/NodeID"
+  required:
+    - ID
+
+ListNodeResponse:
+  type: object
+  properties:
+    Nodes:
+      type: array
+      items:
+        $ref: "../models/nodes.yaml#/Node"
+  required:
+    - Nodes
+
+DeleteNodeRequest:
+  type: object
+  properties:
+    ID:
+      $ref: "../models/nodes.yaml#/NodeID"
+  required:
+    - ID

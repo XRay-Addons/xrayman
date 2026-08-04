@@ -14,7 +14,7 @@ func createClientCfgs(user *models.UserView, userNodes []models.Node,
 	var clientCfgs []models.ClientConfigItem
 	for _, node := range userNodes {
 		nodeClientConfigs, err := createNodeClientCfgs(
-			user.User, node.Config.ClientConfigTemplate)
+			user.User, node.Config.Settings.ClientConfigTemplate)
 		if err != nil {
 			// skip invalid node configs
 			log.Warn("node client config", zap.Error(err))

@@ -1,0 +1,14 @@
+EditUsersRequest:
+  type: object
+  required:
+    - add
+    - remove
+  properties:
+    add:
+      type: array
+      items:
+        $ref: "../models/user.yaml#/User"
+    remove:
+      type: array
+      items:
+        $ref: "../models/user.yaml#/User"

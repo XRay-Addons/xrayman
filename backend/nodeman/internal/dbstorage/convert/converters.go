@@ -11,9 +11,10 @@ func NewNodeReq(r *models.Node) (*queries.NewNodeParams, error) {
 			to.NodeEndpoint = from.Config.ConnectionInfo.Endpoint
 			to.NodeCurrentStatus = int16(from.CurrentStatus)
 			to.NodeTargetStatus = int16(from.TargetStatus)
+			to.Version = from.Config.Settings.Version
 		},
 		func(from *models.Node, to *queries.NewNodeParams) (err error) {
-			to.ClientCfgTemplate, err = from.Config.ClientConfigTemplate.Value()
+			to.ClientCfgTemplate, err = from.Config.Settings.ClientConfigTemplate.Value()
 			return
 		},
 		func(from *models.Node, to *queries.NewNodeParams) (err error) {
@@ -30,12 +31,13 @@ func GetNodeResp(r *queries.GetNodeRow) (*models.Node, error) {
 			to.CurrentStatus = models.NodeStatus(from.NodeCurrentStatus)
 			to.TargetStatus = models.NodeStatus(from.NodeTargetStatus)
 			to.Config.ConnectionInfo.Endpoint = from.NodeEndpoint
+			to.Config.Settings.Version = from.Version
 		},
 		func(from *queries.GetNodeRow, to *models.Node) error {
 			return to.Config.ConnectionInfo.AccessKey.Scan(from.NodeAccessKey)
 		},
 		func(from *queries.GetNodeRow, to *models.Node) error {
-			return to.Config.ClientConfigTemplate.Scan(from.ClientCfgTemplate)
+			return to.Config.Settings.ClientConfigTemplate.Scan(from.ClientCfgTemplate)
 		})
 }
 
@@ -46,25 +48,28 @@ func ListNodesResp(r []queries.ListNodesRow) ([]models.Node, error) {
 			to.CurrentStatus = models.NodeStatus(from.NodeCurrentStatus)
 			to.TargetStatus = models.NodeStatus(from.NodeTargetStatus)
 			to.Config.ConnectionInfo.Endpoint = from.NodeEndpoint
+			to.Config.Settings.Version = from.Version
+
 		},
 		func(from *queries.ListNodesRow, to *models.Node) error {
 			return to.Config.ConnectionInfo.AccessKey.Scan(from.NodeAccessKey)
 		},
 		func(from *queries.ListNodesRow, to *models.Node) error {
-			return to.Config.ClientConfigTemplate.Scan(from.ClientCfgTemplate)
+			return to.Config.Settings.ClientConfigTemplate.Scan(from.ClientCfgTemplate)
 		})
 }
 
-func SetClientConfigReq(id models.NodeID,
-	cfg models.ClientConfigTemplate,
-) (*queries.SetClientConfigParams, error) {
-	tmpl, err := cfg.Value()
+func SetNodeSettingsReq(id models.NodeID,
+	cfg *models.NodeSettings,
+) (*queries.SetNodeSettingsParams, error) {
+	tmpl, err := cfg.ClientConfigTemplate.Value()
 	if err != nil {
 		return nil, err
 	}
-	return &queries.SetClientConfigParams{
+	return &queries.SetNodeSettingsParams{
 		NodeID:            int64(id),
 		ClientCfgTemplate: tmpl,
+		Version:           cfg.Version,
 	}, nil
 }
 
@@ -157,9 +162,10 @@ func GetUserNodesResp(r []queries.GetUserNodesRow) ([]models.Node, error) {
 			to.CurrentStatus = models.NodeStatus(from.NodeCurrentStatus)
 			to.TargetStatus = models.NodeStatus(from.NodeTargetStatus)
 			to.Config.ConnectionInfo.Endpoint = from.NodeEndpoint
+			to.Config.Settings.Version = from.Version
 		},
 		func(from *queries.GetUserNodesRow, to *models.Node) (err error) {
-			err = to.Config.ClientConfigTemplate.Scan(from.ClientCfgTemplate)
+			err = to.Config.Settings.ClientConfigTemplate.Scan(from.ClientCfgTemplate)
 			return
 		},
 		func(from *queries.GetUserNodesRow, to *models.Node) (err error) {

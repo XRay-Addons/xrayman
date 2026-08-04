@@ -1,0 +1,39 @@
+GetSettings:
+  get:
+    summary: Get nodeman settings
+    operationId: GetSettings
+    responses:
+      "200":
+        description: Settings
+        content:
+          application/json:
+            schema:
+              $ref: "../components/requests/settings.yaml#/GetSettingsResponse"
+      "default":
+        $ref: "../components/requests/error.yaml#/Error"
+    tags:
+      - admpage
+    security:
+      - BearerAuth: []
+
+SetSettings:
+  post:
+    summary: Set nodeman settings
+    operationId: SetSettings
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "../components/requests/settings.yaml#/SetSettingsRequest"
+
+    responses:
+      "200":
+        description: Nodeman settings edited
+      "default":
+        $ref: "../components/requests/error.yaml#/Error"
+
+    tags:
+      - admpage
+    security:
+      - BearerAuth: []

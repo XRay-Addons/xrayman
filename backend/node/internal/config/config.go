@@ -2,14 +2,17 @@ package config
 
 import (
 	"path"
+
+	"github.com/XRay-Addons/xrayman/common/xerr"
+	"go.uber.org/zap/zapcore"
 )
 
 type Config struct {
-	Endpoint      string `env:"ENDPOINT"`
-	XRayDataDir   string `env:"XRAY_DATA_DIR"`
-	XRayConfigDir string `env:"XRAY_CONFIG_DIR"`
-	PersistentDir string `env:"PERSISTENT_DIR"`
-	LogLevel      string `env:"LOG_LEVEL"`
+	Endpoint      string
+	XRayDataDir   string
+	XRayConfigDir string
+	PersistentDir string
+	LogLevel      zapcore.Level
 }
 
 func (c *Config) XRayServer() string {
@@ -18,4 +21,20 @@ func (c *Config) XRayServer() string {
 
 func (c *Config) XRayClient() string {
 	return path.Join(c.XRayConfigDir, "xray_client.json")
+}
+
+func NewConfig(cli *CLI) (*Config, error) {
+	cfg := &Config{
+		Endpoint:      cli.Endpoint,
+		XRayDataDir:   cli.XRayDataDir,
+		XRayConfigDir: cli.XRayConfigDir,
+		PersistentDir: cli.PersistentDir,
+		LogLevel:      cli.LogLevel,
+	}
+
+	if err := Validate(cfg); err != nil {
+		return nil, xerr.WrapWithInfo(err, "validate config")
+	}
+
+	return cfg, nil
 }

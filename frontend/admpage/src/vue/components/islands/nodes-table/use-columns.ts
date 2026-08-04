@@ -35,6 +35,14 @@ export function useNodesTableColumns(i18nPrefix: string) {
         extended: true,
       },
       {
+        key: "version",
+        dataIndex: ["Config", "Settings", "Version"],
+        customRender: ({ text }) => {
+          return makeConfigLine(text);
+        },
+        extended: true,
+      },
+      {
         key: "access-key",
         dataIndex: ["Config", "ConnectionInfo", "AccessKey"],
         customRender: ({ text }) => makeConfigLine(text),
@@ -43,7 +51,7 @@ export function useNodesTableColumns(i18nPrefix: string) {
       },
       {
         key: "client-config",
-        dataIndex: ["Config", "ClientConfigTemplate"],
+        dataIndex: ["Config", "Settings", "ClientConfigTemplate"],
         customRender: ({ text }) => {
           return makeConfigText(JSON.stringify(text, null, 2));
         },

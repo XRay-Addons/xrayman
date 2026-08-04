@@ -42,6 +42,7 @@ type Node struct {
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
 	DeletedAt         sql.NullTime
+	Version           string
 }
 
 type Setting struct {

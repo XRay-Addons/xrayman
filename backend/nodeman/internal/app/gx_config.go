@@ -8,7 +8,6 @@ import (
 )
 
 var Config = gx.Module("config", gx.Provide(
-	config.Init,
 	gx.Named(
 		func(cfg *config.Config) time.Duration {
 			return cfg.NodeCallTimeout

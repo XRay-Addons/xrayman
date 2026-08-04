@@ -1,0 +1,9 @@
+StatsResponse:
+  type: object
+  required:
+    - users
+  properties:
+    users:
+      type: array
+      items:
+        $ref: "../models/statistics.yaml#/UserStat"

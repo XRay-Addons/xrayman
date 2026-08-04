@@ -1,0 +1,56 @@
+UserID:
+  type: integer
+
+UserName:
+  type: string
+  maxLength: 256
+
+DisplayName:
+  type: string
+  maxLength: 128
+
+UserStatus:
+  type: string
+  enum: [unknown, enabled, disabled]
+
+UserProfile:
+  type: object
+  properties:
+    ID:
+      $ref: "#/UserID"
+    Name:
+      $ref: "#/UserName"
+    DisplayName:
+      $ref: "#/DisplayName"
+    VlessUUID:
+      type: string
+    SubscriptionPath:
+      type: string
+  required:
+    - ID
+    - Name
+    - DisplayName
+    - VlessUUID
+    - SubscriptionPath
+
+User:
+  type: object
+  properties:
+    Profile:
+      $ref: "#/UserProfile"
+    TargetStatus:
+      $ref: "#/UserStatus"
+  required:
+    - Profile
+    - TargetStatus
+
+UserView:
+  type: object
+  properties:
+    User:
+      $ref: "#/User"
+    Traffic:
+      $ref: "./traffic.yaml#/Traffic"
+  required:
+    - User
+    - Traffic

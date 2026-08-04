@@ -1,0 +1,22 @@
+GetSubscription:
+  get:
+    summary: Get subscription by user
+    operationId: UserSub
+    parameters:
+      - name: ID
+        in: path
+        required: true
+        description: User ID
+        schema:
+          $ref: "../components/models/users.yaml#/UserID"
+      - name: Name
+        in: path
+        required: true
+        description: User name
+        schema:
+          type: string
+    responses:
+      "200":
+        $ref: "../components/requests/subscriptions.yaml#/UserSubResponse"
+      "default":
+        $ref: "../components/requests/error.yaml#/Error"

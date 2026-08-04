@@ -38,10 +38,10 @@ func (n *nodeStorage) ListUsers(ctx context.Context) (
 	return n.base.ListUsers(ctx)
 }
 
-func (n *nodeStorage) SetClientConfig(ctx context.Context,
-	cfg models.ClientConfigTemplate,
+func (n *nodeStorage) SetNodeSettings(ctx context.Context,
+	cfg *models.NodeSettings,
 ) error {
-	return n.base.SetClientConfig(ctx, n.nodeID, cfg)
+	return n.base.SetNodeSettings(ctx, n.nodeID, cfg)
 }
 
 func (n *nodeStorage) SetCurrentNodeStatus(ctx context.Context,

@@ -10,8 +10,8 @@ import (
 type UsersService interface {
 	NewUser(ctx context.Context, p models.NewUserParams) (*models.User, error)
 	GetUserView(ctx context.Context, p models.GetUserParams) (*models.UserView, error)
-	ListUsers(ctx context.Context, p models.ListUserParams) (*models.ListUsersResult, error)
-	DisableUser(ctx context.Context, p models.DisableUserParams) (*models.DisableUserResult, error)
-	EnableUser(ctx context.Context, p models.EnableUserParams) (*models.EnableUserResult, error)
-	DeleteUser(ctx context.Context, p models.DeleteUserParams) (*models.DeleteUserResult, error)
+	ListUsers(ctx context.Context) (*models.ListUsersResult, error)
+	DisableUser(ctx context.Context, p models.DisableUserParams) error
+	EnableUser(ctx context.Context, p models.EnableUserParams) error
+	DeleteUser(ctx context.Context, p models.DeleteUserParams) error
 }

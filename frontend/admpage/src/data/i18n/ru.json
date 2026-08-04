@@ -179,6 +179,7 @@
         "current-status": "Current Status",
         "target-status": "Target Status",
         "access-key": "Access Key",
+        "version": "Version",
         "client-config": "Client Config",
         "actions": "Actions"
       }

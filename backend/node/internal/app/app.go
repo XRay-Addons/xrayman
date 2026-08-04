@@ -12,17 +12,13 @@ type App struct {
 	core *gx.App
 }
 
-func New(cfg config.Config, log *zap.Logger) (app *App, err error) {
+func New(cfg *config.Config, log *zap.Logger) (app *App, err error) {
 	if log == nil {
 		return nil, errdefs.NilArg("log")
 	}
 
 	srcProvider := gx.Options(
-		gx.Provide(
-			func() *config.Config {
-				return &cfg
-			},
-		),
+		gx.Supply(cfg),
 		gx.WithLogger(log),
 	)
 

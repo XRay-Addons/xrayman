@@ -18,8 +18,8 @@ type StatesStorage interface {
 		[]models.Node, error)
 	GetNode(ctx context.Context, id models.NodeID) (
 		*models.Node, error)
-	SetClientConfig(ctx context.Context, id models.NodeID,
-		cfg models.ClientConfigTemplate) error
+	SetNodeSettings(ctx context.Context, id models.NodeID,
+		s *models.NodeSettings) error
 	SetCurrentNodeStatus(ctx context.Context, id models.NodeID,
 		s models.NodeStatus) error
 	DeleteNode(ctx context.Context,

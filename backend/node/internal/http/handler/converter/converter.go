@@ -2,7 +2,7 @@ package converter
 
 import (
 	"github.com/XRay-Addons/xrayman/node/internal/models"
-	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
+	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/openapi-gen"
 )
 
 // goverter:converter

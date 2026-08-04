@@ -1,0 +1,135 @@
+NewUser:
+  post:
+    summary: Create a new user
+    operationId: NewUser
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "../components/requests/users.yaml#/NewUserRequest"
+    responses:
+      "200":
+        description: Created user
+        content:
+          application/json:
+            schema:
+              $ref: "../components/requests/users.yaml#/NewUserResponse"
+      "default":
+        $ref: "../components/requests/error.yaml#/Error"
+
+    tags:
+      - userpage
+      - admpage
+
+EnableUser:
+  post:
+    summary: Enable a user on all nodes
+    operationId: EnableUser
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "../components/requests/users.yaml#/EnableUserRequest"
+    responses:
+      "200":
+        description: User enabled
+      "default":
+        $ref: "../components/requests/error.yaml#/Error"
+
+    tags:
+      - admpage
+    security:
+      - BearerAuth: []
+
+DisableUser:
+  post:
+    summary: Disable a user from all nodes
+    operationId: DisableUser
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "../components/requests/users.yaml#/DisableUserRequest"
+    responses:
+      "200":
+        description: User disabled
+      "default":
+        $ref: "../components/requests/error.yaml#/Error"
+
+    tags:
+      - admpage
+    security:
+      - BearerAuth: []
+
+DeleteUser:
+  post:
+    summary: Delete a user from all nodes
+    operationId: DeleteUser
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "../components/requests/users.yaml#/DeleteUserRequest"
+    responses:
+      "200":
+        description: User deleted
+      "default":
+        $ref: "../components/requests/error.yaml#/Error"
+
+    tags:
+      - admpage
+    security:
+      - BearerAuth: []
+
+GetUser:
+  get:
+    summary: Get user properties
+    operationId: GetUser
+    parameters:
+      - name: ID
+        in: path
+        required: true
+        description: User ID
+        schema:
+          $ref: "../components/models/users.yaml#/UserID"
+      - name: Name
+        in: path
+        required: true
+        description: User name
+        schema:
+          $ref: "../components/models/users.yaml#/UserName"
+    responses:
+      "200":
+        description: User properties
+        content:
+          application/json:
+            schema:
+              $ref: "../components/requests/users.yaml#/GetUserResponse"
+      "default":
+        $ref: "../components/requests/error.yaml#/Error"
+
+    tags:
+      - userpage
+
+ListUsers:
+  get:
+    summary: List all users
+    operationId: ListUsers
+    responses:
+      "200":
+        description: List of users
+        content:
+          application/json:
+            schema:
+              $ref: "../components/requests/users.yaml#/ListUsersResponse"
+      "default":
+        $ref: "../components/requests/error.yaml#/Error"
+
+    tags:
+      - admpage
+    security:
+      - BearerAuth: []

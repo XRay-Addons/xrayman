@@ -7,7 +7,7 @@ import (
 )
 
 type Client interface {
-	Start(ctx context.Context, users []models.UserProfile) (*models.ClientConfigTemplate, error)
+	Start(ctx context.Context, users []models.UserProfile) (*models.NodeSettings, error)
 	Stop(ctx context.Context) error
 	CheckStatus(ctx context.Context) (models.NodeStatus, error)
 	UpdateUsers(ctx context.Context, upd models.NodeUsersUpdate) error

@@ -1,0 +1,31 @@
+---
+import Info from "@xrayman/shared/astro/primitives/Info.astro";
+---
+
+<version-tag>
+  <Info>
+    <span class="h-center p-2" data-version></span>
+  </Info>
+</version-tag>
+
+<script>
+  import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
+  import { getVersion } from "@/services/api/client";
+  import { notifyApiError } from "@/runtime/notifications/use-notifications";
+
+  class VersionTag extends CustomElement {
+    async connectedCallback() {
+      super.connectedCallback();
+      const versionEl = pt<HTMLSpanElement>(this, "version");
+      const result = await getVersion();
+      if (result.ok) {
+        versionEl.innerText = result.data;
+      } else {
+        notifyApiError("get_version", result.reason);
+      }
+    }
+  }
+
+  customElements.define("version-tag", VersionTag);
+</script>

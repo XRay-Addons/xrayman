@@ -1,0 +1,5 @@
+SetSettingsRequest:
+  $ref: "../models/settings.yaml#/Settings"
+
+GetSettingsResponse:
+  $ref: "../models/settings.yaml#/Settings"

@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
+	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/openapi-gen"
 )
 
 var (
