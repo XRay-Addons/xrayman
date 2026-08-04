@@ -2,7 +2,6 @@ package models
 
 import (
 	"encoding/base64"
-	"fmt"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
 )
@@ -23,10 +22,7 @@ func (k *AccessKey) MarshalText() ([]byte, error) {
 }
 
 func (k *AccessKey) UnmarshalText(text []byte) error {
-	fmt.Println("byte text len:", len(text))
 	raw := make([]byte, base64.StdEncoding.DecodedLen(len(text)))
-	fmt.Println("raw text len:", len(raw))
-
 	realLen, err := base64.StdEncoding.Decode(raw, text)
 	if err != nil {
 		return xerr.WrapWithStack(err)
