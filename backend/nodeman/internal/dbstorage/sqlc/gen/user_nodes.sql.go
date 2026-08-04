@@ -91,6 +91,7 @@ const getUserNodes = `-- name: GetUserNodes :many
 SELECT
     n.node_id,
     n.client_cfg_template,
+    n.version,
     n.node_endpoint,
     n.node_access_key,
     n.node_current_status,
@@ -114,6 +115,7 @@ type GetUserNodesParams struct {
 type GetUserNodesRow struct {
 	NodeID            int64
 	ClientCfgTemplate string
+	Version           string
 	NodeEndpoint      string
 	NodeAccessKey     []byte
 	NodeCurrentStatus int16
@@ -132,6 +134,7 @@ func (q *Queries) GetUserNodes(ctx context.Context, arg GetUserNodesParams) ([]G
 		if err := rows.Scan(
 			&i.NodeID,
 			&i.ClientCfgTemplate,
+			&i.Version,
 			&i.NodeEndpoint,
 			&i.NodeAccessKey,
 			&i.NodeCurrentStatus,

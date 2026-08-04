@@ -26,15 +26,26 @@ NodeConnectionInfo:
     - Endpoint
     - AccessKey
 
-NodeConfig:
+NodeSettings:
   type: object
   properties:
     ClientConfigTemplate:
       $ref: "./configs.yaml#/ClientConfigTemplate"
+    Version:
+      type: string
+  required:
+    - ClientConfigTemplate
+    - Version
+
+NodeConfig:
+  type: object
+  properties:
+    Settings:
+      $ref: "#/NodeSettings"
     ConnectionInfo:
       $ref: "#/NodeConnectionInfo"
   required:
-    - ClientConfigTemplate
+    - Settings
     - ConnectionInfo
 
 Node:

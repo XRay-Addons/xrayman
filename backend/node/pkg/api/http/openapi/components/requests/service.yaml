@@ -12,9 +12,12 @@ StartResponse:
   type: object
   required:
     - clientConfigTemplate
+    - version
   properties:
     clientConfigTemplate:
       $ref: "../models/configs.yaml#/ClientConfigTemplate"
+    version:
+      type: string
 
 StatusResponse:
   type: object

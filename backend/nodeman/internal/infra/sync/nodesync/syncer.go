@@ -118,7 +118,7 @@ func (s *syncer) startNode(ctx context.Context) (err error) {
 
 	// start node
 	enabledUsers := s.getEnabledUsers(users)
-	clientConfig, err := s.client.Start(ctx, enabledUsers)
+	nodeSettings, err := s.client.Start(ctx, enabledUsers)
 	if err != nil {
 		return err
 	}
@@ -131,7 +131,7 @@ func (s *syncer) startNode(ctx context.Context) (err error) {
 		if err = s.storage.SetCurrentNodeStatus(ctx, models.NodeStatusRunning); err != nil {
 			return
 		}
-		if err = s.storage.SetClientConfig(ctx, *clientConfig); err != nil {
+		if err = s.storage.SetNodeSettings(ctx, nodeSettings); err != nil {
 			return
 		}
 		return

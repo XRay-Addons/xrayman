@@ -118,7 +118,7 @@ func (s *storage) UpdateNodeUsers(ctx context.Context, patch []models.UserStatus
 	})
 }
 
-func (s *storage) SetClientConfig(ctx context.Context, cfg models.ClientConfigTemplate) error {
+func (s *storage) SetNodeSettings(ctx context.Context, _ *models.NodeSettings) error {
 	return nil
 }
 

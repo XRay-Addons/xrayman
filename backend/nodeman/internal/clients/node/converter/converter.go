@@ -14,7 +14,7 @@ import (
 //go:generate goverter gen .
 type Converter interface {
 	ConvertUsers(users []models.UserProfile) []api.User
-	ConvertClientConfig(cfg api.ClientConfigTemplate) models.ClientConfigTemplate
+	ConvertStartResponse(cfg api.StartResponse) models.NodeSettings
 	ConvertUsersUpdate(users models.NodeUsersUpdate) api.EditUsersRequest
 	ConvertNodeStats(stats *api.StatsResponse) *models.NodeStats
 }

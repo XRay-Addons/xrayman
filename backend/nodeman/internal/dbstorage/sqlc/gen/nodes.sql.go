@@ -25,6 +25,7 @@ const getNode = `-- name: GetNode :one
 SELECT
     node_id,
     client_cfg_template,
+    version,
     node_endpoint,
     node_access_key,
     node_current_status,
@@ -37,6 +38,7 @@ WHERE node_id = $1
 type GetNodeRow struct {
 	NodeID            int64
 	ClientCfgTemplate string
+	Version           string
 	NodeEndpoint      string
 	NodeAccessKey     []byte
 	NodeCurrentStatus int16
@@ -49,6 +51,7 @@ func (q *Queries) GetNode(ctx context.Context, nodeID int64) (GetNodeRow, error)
 	err := row.Scan(
 		&i.NodeID,
 		&i.ClientCfgTemplate,
+		&i.Version,
 		&i.NodeEndpoint,
 		&i.NodeAccessKey,
 		&i.NodeCurrentStatus,
@@ -61,6 +64,7 @@ const listNodes = `-- name: ListNodes :many
 SELECT
     node_id,
     client_cfg_template,
+    version,
     node_endpoint,
     node_access_key,
     node_current_status,
@@ -73,6 +77,7 @@ ORDER BY node_id ASC
 type ListNodesRow struct {
 	NodeID            int64
 	ClientCfgTemplate string
+	Version           string
 	NodeEndpoint      string
 	NodeAccessKey     []byte
 	NodeCurrentStatus int16
@@ -91,6 +96,7 @@ func (q *Queries) ListNodes(ctx context.Context) ([]ListNodesRow, error) {
 		if err := rows.Scan(
 			&i.NodeID,
 			&i.ClientCfgTemplate,
+			&i.Version,
 			&i.NodeEndpoint,
 			&i.NodeAccessKey,
 			&i.NodeCurrentStatus,
@@ -112,16 +118,18 @@ func (q *Queries) ListNodes(ctx context.Context) ([]ListNodesRow, error) {
 const newNode = `-- name: NewNode :one
 INSERT INTO nodes (
     client_cfg_template,
+    version,
     node_endpoint,
     node_access_key,
     node_current_status,
     node_target_status
-) VALUES ($1, $2, $3, $4, $5)
+) VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING node_id
 `
 
 type NewNodeParams struct {
 	ClientCfgTemplate string
+	Version           string
 	NodeEndpoint      string
 	NodeAccessKey     []byte
 	NodeCurrentStatus int16
@@ -131,6 +139,7 @@ type NewNodeParams struct {
 func (q *Queries) NewNode(ctx context.Context, arg NewNodeParams) (int64, error) {
 	row := q.db.QueryRowContext(ctx, newNode,
 		arg.ClientCfgTemplate,
+		arg.Version,
 		arg.NodeEndpoint,
 		arg.NodeAccessKey,
 		arg.NodeCurrentStatus,
@@ -139,25 +148,6 @@ func (q *Queries) NewNode(ctx context.Context, arg NewNodeParams) (int64, error)
 	var node_id int64
 	err := row.Scan(&node_id)
 	return node_id, err
-}
-
-const setClientConfig = `-- name: SetClientConfig :exec
-UPDATE nodes
-SET
-    client_cfg_template = $1,
-    updated_at = now()
-WHERE node_id = $2
-    AND deleted_at IS NULL
-`
-
-type SetClientConfigParams struct {
-	ClientCfgTemplate string
-	NodeID            int64
-}
-
-func (q *Queries) SetClientConfig(ctx context.Context, arg SetClientConfigParams) error {
-	_, err := q.db.ExecContext(ctx, setClientConfig, arg.ClientCfgTemplate, arg.NodeID)
-	return err
 }
 
 const setCurrentNodeStatus = `-- name: SetCurrentNodeStatus :exec
@@ -176,6 +166,27 @@ type SetCurrentNodeStatusParams struct {
 
 func (q *Queries) SetCurrentNodeStatus(ctx context.Context, arg SetCurrentNodeStatusParams) error {
 	_, err := q.db.ExecContext(ctx, setCurrentNodeStatus, arg.NodeCurrentStatus, arg.NodeID)
+	return err
+}
+
+const setNodeSettings = `-- name: SetNodeSettings :exec
+UPDATE nodes
+SET
+    client_cfg_template = $1,
+    version = $2,
+    updated_at = now()
+WHERE node_id = $3
+    AND deleted_at IS NULL
+`
+
+type SetNodeSettingsParams struct {
+	ClientCfgTemplate string
+	Version           string
+	NodeID            int64
+}
+
+func (q *Queries) SetNodeSettings(ctx context.Context, arg SetNodeSettingsParams) error {
+	_, err := q.db.ExecContext(ctx, setNodeSettings, arg.ClientCfgTemplate, arg.Version, arg.NodeID)
 	return err
 }
 

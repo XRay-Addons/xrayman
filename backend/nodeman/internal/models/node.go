@@ -53,11 +53,18 @@ type NodeConnectionInfo struct {
 	AccessKey AccessKey
 }
 
+type Version = string
+
+type NodeSettings struct {
+	ClientConfigTemplate ClientConfigTemplate
+	Version              Version
+}
+
 type NodeID = int
 
 type NodeConfig struct {
-	ClientConfigTemplate ClientConfigTemplate
-	ConnectionInfo       NodeConnectionInfo
+	Settings       NodeSettings
+	ConnectionInfo NodeConnectionInfo
 }
 
 type Node struct {

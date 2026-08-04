@@ -41,6 +41,7 @@ DO UPDATE SET user_current_status = EXCLUDED.user_current_status;
 SELECT
     n.node_id,
     n.client_cfg_template,
+    n.version,
     n.node_endpoint,
     n.node_access_key,
     n.node_current_status,

@@ -29,7 +29,7 @@ func (c *ClientMock) CheckStatus(ctx context.Context) (models.NodeStatus, error)
 }
 
 func (c *ClientMock) Start(ctx context.Context, users []models.UserProfile) (
-	*models.ClientConfigTemplate, error,
+	*models.NodeSettings, error,
 ) {
 	for u := range c.Users {
 		delete(c.Users, u)
@@ -38,7 +38,7 @@ func (c *ClientMock) Start(ctx context.Context, users []models.UserProfile) (
 		c.Users[u] = struct{}{}
 	}
 	c.Status = models.NodeStatusRunning
-	return &models.ClientConfigTemplate{}, nil
+	return &models.NodeSettings{}, nil
 }
 
 func (c *ClientMock) Stop(ctx context.Context) error {
@@ -91,7 +91,7 @@ func (c *UnstableClientMock) CheckStatus(ctx context.Context) (models.NodeStatus
 }
 
 func (c *UnstableClientMock) Start(ctx context.Context, users []models.UserProfile) (
-	*models.ClientConfigTemplate, error,
+	*models.NodeSettings, error,
 ) {
 	if c.rand.Float32() < c.Instability {
 		return nil, xerr.New("random client fail")

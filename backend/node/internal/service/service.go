@@ -5,6 +5,7 @@ import (
 
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
+	"github.com/XRay-Addons/xrayman/node/internal/version"
 )
 
 type Service struct {
@@ -65,6 +66,7 @@ func (s *Service) Start(ctx context.Context,
 	// return node properties
 	return &models.StartResult{
 		ClientConfigTemplate: *clientCfg,
+		Version:              version.Version,
 	}, nil
 }
 

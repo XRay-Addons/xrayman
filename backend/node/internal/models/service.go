@@ -6,6 +6,7 @@ type StartParams struct {
 
 type StartResult struct {
 	ClientConfigTemplate ClientConfigTemplate
+	Version              string
 }
 
 type StatusResult struct {
