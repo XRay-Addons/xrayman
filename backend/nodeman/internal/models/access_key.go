@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/base64"
+	"fmt"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
 )
@@ -22,11 +23,15 @@ func (k *AccessKey) MarshalText() ([]byte, error) {
 }
 
 func (k *AccessKey) UnmarshalText(text []byte) error {
+	fmt.Println("byte text len:", len(text))
 	raw := make([]byte, base64.StdEncoding.DecodedLen(len(text)))
-	if _, err := base64.StdEncoding.Decode(raw, text); err != nil {
+	fmt.Println("raw text len:", len(raw))
+
+	realLen, err := base64.StdEncoding.Decode(raw, text)
+	if err != nil {
 		return xerr.WrapWithStack(err)
 	}
-	return k.setKeyData(raw)
+	return k.setKeyData(raw[:realLen])
 }
 
 func (k AccessKey) String() string {
@@ -50,7 +55,7 @@ func (k AccessKey) getKeyData() []byte {
 
 func (k *AccessKey) setKeyData(src []byte) error {
 	if len(src) != len(CertHash{})+len(AccessSecret{}) {
-		return xerr.New("invalid length for AccessKey")
+		return xerr.Newf("invalid length %d for AccessKey", len(src))
 	}
 	copy(k.CertHash[:], src[:len(k.CertHash)])
 	copy(k.AccessSecret[:], src[len(k.CertHash):])
