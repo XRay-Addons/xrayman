@@ -5,8 +5,10 @@ import (
 	"errors"
 
 	"github.com/XRay-Addons/xrayman/common/gx"
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/dbstorage"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/auth"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/settings"
 	"go.uber.org/zap"
@@ -56,6 +58,25 @@ var setPassword = gx.Invoke(
 	},
 )
 
+var ensurePassword = gx.Invoke(
+	func(lc gx.Lifecycle, p PasswordParams) {
+		lc.AppendBootstrap(gx.Bootstrap{
+			Name: "ensure password",
+			Fn: func(ctx context.Context) error {
+				// check empty password
+				_, err := p.Auth.Auth(ctx, models.AuthParams{Password: ""})
+				if err == nil {
+					return xerr.New("Empty password is not acceptable")
+				}
+				return err
+			},
+			Retry: func(err error) bool {
+				return errors.Is(err, errdefs.ErrTemporaryUnavailable)
+			},
+		})
+	},
+)
+
 type SettingsParams struct {
 	gx.In
 	Settings *settings.Service
@@ -76,7 +97,8 @@ var ensureSettings = gx.Invoke(
 )
 
 var Bootstrap = gx.Module("bootstrap",
-	ensureSettings,
 	migrateDB,
+	ensureSettings,
 	setPassword,
+	ensurePassword,
 )

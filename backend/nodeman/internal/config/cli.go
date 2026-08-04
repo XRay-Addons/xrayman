@@ -37,24 +37,25 @@ should be like /admin or https://adm.example.com (optional)`,
 }
 
 type CLI struct {
-	Version bool `short:"v" help:"Show version and exit."`
+	DBConn    string `name:"db" env:"DBCONN" help:"${dbHelp}"`
+	JwtSecret string `name:"jwt" env:"JWT_SECRET" help:"${jwtHelp}"`
 
-	Endpoint      string `short:"a" env:"ENDPOINT" default:"localhost:80" help:"${endpointHelp}"`
-	DBConn        string `name:"db" env:"DBCONN" help:"${dbHelp}"`
+	Endpoint      string `name:"endpoint" env:"ENDPOINT" default:"localhost:80" help:"${endpointHelp}"`
 	AdminPassword string `name:"admpass" env:"ADMIN_PASSWORD" default:"" help:"${admpassHelp}"`
-	JwtSecret     string `name:"jwt" env:"JWT_SECRET" help:"${jwtHelp}"`
 
-	ApiServiceUrl string `name:"apisrv" env:"API_SERVICE_URL" help:"${apisrvHelp}"`
-	UserSpaUrl    string `name:"userspa" env:"USER_SPA_URL" help:"${userspaHelp}"`
-	AdminSpaUrl   string `name:"adminspa" env:"ADMIN_SPA_URL" help:"${adminspaHelp}"`
+	ApiServiceUrl string `name:"apisrv" env:"API_SERVICE_URL" default:"" help:"${apisrvHelp}"`
+	UserSpaUrl    string `name:"userspa" env:"USER_SPA_URL" default:"" help:"${userspaHelp}"`
+	AdminSpaUrl   string `name:"adminspa" env:"ADMIN_SPA_URL" default:"" help:"${adminspaHelp}"`
 
-	StateSyncInterval int `name:"state" env:"STATE_SYNC_INTERVAL" defautl:"5" help:"${stateHelp}"`
+	StateSyncInterval int `name:"state" env:"STATE_SYNC_INTERVAL" default:"5" help:"${stateHelp}"`
 	StatsSyncInterval int `name:"stats" env:"STATS_SYNC_INTERVAL" default:"60" help:"${statsHelp}"`
 
 	NodeCallTimeout    int `name:"node-timeout" env:"NODE_CALL_TIMEOUT" default:"5" help:"${nodeTimeoutHelp}"`
 	StorageCallTimeout int `name:"storage-timeout" env:"STORAGE_CALL_TIMEOUT" default:"5" help:"${storageTimeoutHelp}"`
 
 	LogLevel zapcore.Level `name:"log-lvl" env:"LOG_LEVEL" default:"info" help:"zap log level"`
+
+	Version bool `short:"v" help:"Show version and exit."`
 }
 
 func LoadCLI() (*CLI, error) {
