@@ -7,7 +7,7 @@ import (
 	"github.com/XRay-Addons/xrayman/common/xerr"
 )
 
-func Validate(c RawConfig) error {
+func Validate(c *Config) error {
 	if _, err := net.ResolveTCPAddr("tcp", c.Endpoint); err != nil {
 		return xerr.Newf("invalid endpoint: %s", c.Endpoint)
 	}
@@ -27,14 +27,14 @@ func Validate(c RawConfig) error {
 	return nil
 }
 
-func checkDBConn(c RawConfig) error {
+func checkDBConn(c *Config) error {
 	if len(c.DBConn) == 0 {
 		return xerr.New("dbconn string invalid")
 	}
 	return nil
 }
 
-func checkBaseUrls(c RawConfig) error {
+func checkBaseUrls(c *Config) error {
 	if !checkBaseUrl(c.ApiServiceUrl) {
 		return xerr.New("api service invalid")
 	}
@@ -57,7 +57,7 @@ func checkBaseUrl(u string) bool {
 		(parsed.Scheme != "" && parsed.Host != "")
 }
 
-func checkSyncIntervals(c RawConfig) error {
+func checkSyncIntervals(c *Config) error {
 	if c.StateSyncInterval <= 0 {
 		return xerr.New("state sync interval invalid")
 	}
@@ -67,7 +67,7 @@ func checkSyncIntervals(c RawConfig) error {
 	return nil
 }
 
-func checkAuth(c RawConfig) error {
+func checkAuth(c *Config) error {
 	if c.JwtSecret == "" {
 		return xerr.New("jwt secret invalid")
 	}

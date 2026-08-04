@@ -15,16 +15,12 @@ type App struct {
 
 const JWTIssuer = "nodeman"
 
-func New(rawCfg config.RawConfig, log *zap.Logger) (*App, error) {
+func New(cfg *config.Config, log *zap.Logger) (*App, error) {
 	if log == nil {
 		return nil, errdefs.NilArg("log")
 	}
 	srcProvider := gx.Options(
-		gx.Provide(
-			func() config.RawConfig {
-				return rawCfg
-			},
-		),
+		gx.Supply(cfg),
 		gx.WithLogger(log),
 	)
 

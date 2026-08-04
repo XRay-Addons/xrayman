@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
+	"go.uber.org/zap/zapcore"
 )
 
 type Config struct {
@@ -28,6 +29,7 @@ type Config struct {
 	StatsSyncInterval time.Duration
 
 	AllowedOrigins []string
+	LogLevel       zapcore.Level
 }
 
 const (
@@ -36,39 +38,54 @@ const (
 	adminSpaPath   = "/adm"
 )
 
-func Init(r RawConfig) (*Config, error) {
+func NewConfig(cli *CLI) (*Config, error) {
+	cfg, err := loadConfig(cli)
+	if err != nil {
+		return nil, xerr.WrapWithInfo(err, "load config")
+	}
 
-	c := Config{
-		Endpoint:          r.Endpoint,
-		DBConn:            r.DBConn,
-		AdminPassword:     r.AdminPassword,
-		JwtSecret:         r.JwtSecret,
-		StateSyncInterval: time.Duration(r.StateSyncInterval) * time.Second,
-		StatsSyncInterval: time.Duration(r.StatsSyncInterval) * time.Second,
+	if err := Validate(cfg); err != nil {
+		return nil, xerr.WrapWithInfo(err, "validate config")
+	}
+
+	return cfg, nil
+}
+
+func loadConfig(cli *CLI) (*Config, error) {
+
+	cfg := Config{
+		Endpoint:          cli.Endpoint,
+		DBConn:            cli.DBConn,
+		AdminPassword:     cli.AdminPassword,
+		JwtSecret:         cli.JwtSecret,
+		StateSyncInterval: time.Duration(cli.StateSyncInterval) * time.Second,
+		StatsSyncInterval: time.Duration(cli.StatsSyncInterval) * time.Second,
 
 		ApiServicePath: apiServicePath,
 		UserSpaPath:    userSpaPath,
 		AdminSpaPath:   adminSpaPath,
 
-		NodeCallTimeout:    time.Duration(r.NodeCallTimeout) * time.Second,
-		StorageCallTimeout: time.Duration(r.StorageCallTimeout) * time.Second,
+		NodeCallTimeout:    time.Duration(cli.NodeCallTimeout) * time.Second,
+		StorageCallTimeout: time.Duration(cli.StorageCallTimeout) * time.Second,
+
+		LogLevel: cli.LogLevel,
 	}
 
-	c.ApiServiceUrl = or(r.ApiServiceUrl, c.ApiServicePath)
-	c.UserSpaUrl = or(r.UserSpaUrl, c.UserSpaPath)
-	c.AdminSpaUrl = or(r.AdminSpaUrl, c.AdminSpaPath)
+	cfg.ApiServiceUrl = or(cli.ApiServiceUrl, cfg.ApiServicePath)
+	cfg.UserSpaUrl = or(cli.UserSpaUrl, cfg.UserSpaPath)
+	cfg.AdminSpaUrl = or(cli.AdminSpaUrl, cfg.AdminSpaPath)
 
-	for _, u := range []string{r.ApiServiceUrl, r.UserSpaUrl, r.AdminSpaUrl} {
+	for _, u := range []string{cli.ApiServiceUrl, cli.UserSpaUrl, cli.AdminSpaUrl} {
 		o, err := getUrlOrigin(u)
 		if err != nil {
 			return nil, err
 		}
 		if o != "" {
-			c.AllowedOrigins = append(c.AllowedOrigins, o)
+			cfg.AllowedOrigins = append(cfg.AllowedOrigins, o)
 		}
 	}
 
-	return &c, nil
+	return &cfg, nil
 }
 
 func or(a string, b string) string {
