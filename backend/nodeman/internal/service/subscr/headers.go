@@ -3,6 +3,7 @@ package subscr
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
@@ -14,8 +15,8 @@ const (
 	WebPageHeader               = "profile-web-page-url"
 	AnnounceHeader              = "announce"
 	RoutingHeader               = "routing"
-	TrafficStatsHeader          = "subscription-userinfo" // upload=0; download=2153701362; total=0; expire=1790951622
-	TrafficStatsFmt             = "upload=%d; download=%d"
+	TrafficStatsHeader          = "subscription-userinfo"
+	TrafficStatsFmt             = "upload=%d; download=%d; total=0; expire=0"
 )
 
 func createClientHeaders(ctx context.Context,
@@ -34,7 +35,7 @@ func createClientHeaders(ctx context.Context,
 	if settings.UpdateInterval != 0 {
 		headers = append(headers, models.SubHeader{
 			Key:   ProfileUpdateIntervalHeader,
-			Value: string(settings.UpdateInterval),
+			Value: strconv.Itoa(settings.UpdateInterval),
 		})
 	}
 	// tg page
@@ -58,7 +59,7 @@ func createClientHeaders(ctx context.Context,
 			Value: replacePlaceholders(settings.UsersMessage, u),
 		})
 	}
-	// announce header
+	// routing header
 	if settings.Routing != "" {
 		headers = append(headers, models.SubHeader{
 			Key:   RoutingHeader,
