@@ -1,5 +1,5 @@
 import { computed } from "vue";
-import { type ExtendedColumn } from "@/vue/components/primitives/table-ext/table-types";
+import { sm, type ExtendedColumn } from "@/vue/components/primitives/table-ext/table-types";
 import { type UserView } from "@/services/api/generated/types.gen";
 import {
   makeConfigLine,
@@ -19,25 +19,23 @@ export function useUsersTableColumns(i18nPrefix: string) {
       {
         key: "display-name",
         dataIndex: ["User", "Profile", "DisplayName"],
-        width: "50%",
       },
       {
         key: "traffic-total",
         dataIndex: ["Traffic", "Total"],
         customRender: ({ value }) => renderTraffic(value),
-        width: "20%",
+        extended: sm,
       },
       {
         key: "traffic-last-month",
         dataIndex: ["Traffic", "LastMonth"],
         customRender: ({ value }) => renderTraffic(value),
-        width: "20%",
+        extended: sm,
       },
       {
         key: "target-status",
         dataIndex: ["User", "TargetStatus"],
         customRender: ({ value }) => renderTag(value),
-        width: "10%",
       },
       {
         key: "name",
