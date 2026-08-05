@@ -6,7 +6,9 @@ import { config } from "@/config/config";
 let initialized = false;
 
 export function ensureClient() {
-  if (initialized) return;
+  if (initialized) {
+    return;
+  }
 
   client.setConfig({
     auth: getToken,
@@ -18,34 +20,55 @@ export function ensureClient() {
 }
 
 function getToken(): string {
-  return getAuthToken() ?? "[no token]";
+  return getAuthToken() ?? "";
 }
 
 async function authFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
-  let response = await fetch(input, init);
-  while (isJwtIssue(input, response)) {
-    console.log("auth JWT issue");
-    await authMan.handle401(async () => {
-      console.log("auth 401, fetch again");
-      response = await fetch(input, withHeader(init, "Authorization", `Bearer ${getToken()}`));
-    });
+  const response = await fetch(input, init);
+  if (!isAuthError(response)) {
+    return response;
   }
-  return response;
+
+  const requestBearer = extractTokenBearer(input, init);
+  const actualBearer = makeTokenBearer(getAuthToken());
+  if (requestBearer !== actualBearer) {
+    return fetchWithTokenBearer(input, init, actualBearer);
+  }
+
+  const token = await authMan.waitForLogin();
+  return fetchWithTokenBearer(input, init, makeTokenBearer(token));
 }
 
-function isJwtIssue(request: RequestInfo | URL, response: Response): boolean {
-  return (
-    response.status == 401 && request instanceof Request && request.headers.has("Authorization")
+function isAuthError(response: Response): boolean {
+  return response.status === 401;
+}
+
+function extractTokenBearer(input: RequestInfo | URL, init?: RequestInit): string | null {
+  const headers = new Headers(
+    init?.headers ?? (input instanceof Request ? input.headers : undefined),
   );
+  return headers.get("Authorization");
 }
 
-function withHeader(init: RequestInit | undefined, key: string, value: string): RequestInit {
-  const headers = new Headers(init?.headers);
+function makeTokenBearer(token: string | null): string | null {
+  return token ? `Bearer ${token}` : null;
+}
 
-  headers.set(key, value);
+function fetchWithTokenBearer(
+  input: RequestInfo | URL,
+  init: RequestInit | undefined,
+  bearer: string | null,
+): Promise<Response> {
+  const headers = new Headers(
+    init?.headers ?? (input instanceof Request ? input.headers : undefined),
+  );
 
-  return {
+  if (bearer) {
+    headers.set("Authorization", bearer);
+  }
+
+  return fetch(input, {
     ...init,
     headers,
-  };
+  });
 }
