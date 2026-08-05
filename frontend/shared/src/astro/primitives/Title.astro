@@ -9,7 +9,7 @@ interface Props {
 const { class: extraClass = "", "in:class": inClass = "" } = Astro.props;
 ---
 
-<div class="d-flex justify-content-center">
+<div class="d-flex justify-content-center title">
   <Surface
     class={extraClass}
     in:class=`text-center text text-lg crt flicker p-2 noselect ${inClass}`
@@ -19,3 +19,11 @@ const { class: extraClass = "", "in:class": inClass = "" } = Astro.props;
     <slot />
   </Surface>
 </div>
+
+<style>
+  .title {
+    display: -webkit-box;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+  }
+</style>
