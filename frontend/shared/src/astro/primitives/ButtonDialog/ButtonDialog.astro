@@ -48,6 +48,12 @@ const { ...props } = Astro.props;
         this.dialog.close();
         this.reset();
       };
+      overlay.onwheel = (e) => {
+        e.preventDefault();
+      };
+      overlay.ontouchmove = (e) => {
+        e.preventDefault();
+      };
     }
 
     private reset() {
