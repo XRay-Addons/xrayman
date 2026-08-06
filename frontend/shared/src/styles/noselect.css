@@ -3,4 +3,6 @@
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  /* for safari */
+  -webkit-touch-callout: none;
 }
