@@ -1,0 +1,102 @@
+---
+import Button from "@xrayman/shared/astro/primitives/Button.astro";
+import type { ListInputProps } from "./ListInput";
+import NarrowListItem from "./NarrowListItem.astro";
+
+type Props = ListInputProps;
+
+const { name, i18n, fields, ...rest } = Astro.props;
+---
+
+<narrow-list-input name={name} {...rest}>
+  <div data-items></div>
+
+  <template data-item-template>
+    <NarrowListItem
+      i18n={i18n}
+      fields={fields}
+      input-pt="narrow-list-input"
+      btn-pt="remove-item-btn"
+      tagged-pt="tagged-item"
+    />
+  </template>
+
+  <Button btn:data-add-item-btn btn:type="button">+</Button>
+</narrow-list-input>
+
+<style>
+  narrow-list-input {
+    display: block;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+</style>
+
+<script>
+  import { CustomElement, prop } from "@xrayman/shared/runtime/dom/custom-element";
+  import { pt, pts } from "@xrayman/shared/runtime/dom/pts";
+  import type { TaggedInputElement } from "./../TaggedInput/TaggedInput";
+  import type { ListInputElement } from "./ListInput";
+
+  class NarrowListInput extends CustomElement implements ListInputElement {
+    @prop({ default: [] }) tags!: string[];
+    @prop({ default: [] }) data!: Record<string, string>[];
+
+    private items!: HTMLElement;
+    private itemTmpl!: HTMLTemplateElement;
+
+    connectedCallback() {
+      super.connectedCallback();
+
+      this.items = pt<HTMLElement>(this, "items");
+      this.itemTmpl = pt<HTMLTemplateElement>(this, "item-template");
+
+      const addBtn = pt<HTMLButtonElement>(this, "add-item-btn");
+      addBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        this.items.appendChild(this.makeItem({}));
+      });
+    }
+
+    protected render() {
+      const items = this.data.map((v) => {
+        return this.makeItem(v);
+      });
+      this.items.replaceChildren(...items);
+    }
+
+    private makeItem(data: Record<string, string>): HTMLElement {
+      const fragment = this.itemTmpl.content.cloneNode(true) as HTMLElement;
+      const item = pt<HTMLElement>(fragment, "item");
+      const taggedInputs = pts<TaggedInputElement>(item, "tagged-item");
+      taggedInputs.forEach((input) => {
+        input.tags = this.tags;
+      });
+
+      Object.entries(data).forEach(([key, value]) => {
+        const input = item.querySelector<HTMLInputElement>(`[name="${key}"]`);
+        if (input) input.value = value;
+      });
+
+      const removeBtn = pt<HTMLButtonElement>(fragment, "remove-item-btn");
+      removeBtn.onclick = () => {
+        item.remove();
+      };
+
+      return fragment;
+    }
+
+    get value(): Record<string, string>[] {
+      return pts<HTMLElement>(this, "item").map((item) => {
+        const record: Record<string, string> = {};
+        const items = pts<HTMLInputElement>(item, "narrow-list-input");
+        items.map((item) => {
+          record[item.name] = item.value;
+        });
+        return record;
+      });
+    }
+  }
+
+  customElements.define("narrow-list-input", NarrowListInput);
+</script>

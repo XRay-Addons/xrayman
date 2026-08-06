@@ -1,66 +1,45 @@
-import { setAuthToken } from "@/state/token";
+import { getAuthToken, setAuthToken } from "@/state/token";
 
-type RetryFn<T> = () => Promise<T>;
-
-type PendingRequest = {
-  resolve: (v: unknown) => void;
-  reject: (e: unknown) => void;
-  retry: RetryFn<unknown>;
-};
+type LoginPromise = Promise<string>;
 
 export const loginRequiredEvent = "auth:login-required";
 
 class AuthMan {
-  private loginInProgress = false;
-  private queue: PendingRequest[] = [];
+  private loginPromise: LoginPromise | null = null;
+  private resolveLogin: ((token: string) => void) | null = null;
+  private rejectLogin: ((error: unknown) => void) | null = null;
 
-  handle401<T>(retry: RetryFn<T>): Promise<T> {
-    return new Promise<T>((resolve, reject) => {
-      this.queue.push({
-        resolve: resolve as (v: unknown) => void,
-        reject,
-        retry: retry as RetryFn<unknown>,
-      });
+  waitForLogin(): Promise<string> {
+    if (this.loginPromise) {
+      return this.loginPromise;
+    }
 
-      if (!this.loginInProgress) {
-        this.startLoginFlow();
-      }
+    this.loginPromise = new Promise<string>((resolve, reject) => {
+      this.resolveLogin = resolve;
+      this.rejectLogin = reject;
+
+      window.dispatchEvent(new CustomEvent(loginRequiredEvent));
+    }).finally(() => {
+      this.loginPromise = null;
+      this.resolveLogin = null;
+      this.rejectLogin = null;
     });
+
+    return this.loginPromise;
   }
 
-  private startLoginFlow() {
-    this.loginInProgress = true;
-
-    window.dispatchEvent(new CustomEvent(loginRequiredEvent));
-  }
-
-  async onLoginSuccess(token: string) {
+  onLoginSuccess(token: string) {
     setAuthToken(token);
 
-    const queue = [...this.queue];
-    this.queue = [];
-
-    this.loginInProgress = false;
-
-    for (const req of queue) {
-      try {
-        const result = await req.retry();
-        req.resolve(result);
-      } catch (e) {
-        req.reject(e);
-      }
-    }
+    this.resolveLogin?.(token);
   }
 
   onLoginFail(error?: unknown) {
-    const queue = [...this.queue];
-    this.queue = [];
+    this.rejectLogin?.(error ?? new Error("auth failed"));
+  }
 
-    this.loginInProgress = false;
-
-    for (const req of queue) {
-      req.reject(error ?? new Error("auth failed"));
-    }
+  getToken() {
+    return getAuthToken();
   }
 }
 

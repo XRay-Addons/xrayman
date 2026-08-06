@@ -16,7 +16,7 @@ import {
   setSettings as _setSettings,
   getVersion as _getVersion,
 } from "./generated/sdk.gen";
-import type { User, Node, AuthResponse, UserView, Settings, Version } from "./generated/types.gen";
+import type { User, Node, AuthResponse, UserView, Settings } from "./generated/types.gen";
 
 export async function auth(pwd: string): Promise<ApiResult<AuthResponse>> {
   return handleAPI(

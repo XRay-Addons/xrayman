@@ -1,5 +1,5 @@
 import { computed } from "vue";
-import { type ExtendedColumn } from "@/vue/components/primitives/table-ext/table-types";
+import { sm, type ExtendedColumn } from "@/vue/components/primitives/table-ext/table-types";
 import { type Node } from "@/services/api/generated/types.gen";
 import {
   makeConfigLine,
@@ -14,19 +14,18 @@ export function useNodesTableColumns(i18nPrefix: string) {
       {
         key: "endpoint",
         dataIndex: ["Config", "ConnectionInfo", "Endpoint"],
-        width: "50%",
       },
       {
         key: "current-status",
         dataIndex: ["CurrentStatus"],
         customRender: ({ value }) => renderTag(value),
-        width: "25%",
+        extended: sm,
       },
       {
         key: "target-status",
         dataIndex: ["TargetStatus"],
         customRender: ({ value }) => renderTag(value),
-        width: "25%",
+        extended: sm,
       },
       {
         key: "id",
