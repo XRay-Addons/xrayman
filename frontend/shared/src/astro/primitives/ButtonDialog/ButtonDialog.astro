@@ -8,13 +8,18 @@ const { ...props } = Astro.props;
 ---
 
 <btn-dialog>
-  <Button data-app-dialog-button {...props}>
+  <Button data-dialog-button {...props}>
     <slot name="button" />
   </Button>
 
-  <dialog class="app-dialog" data-app-dialog>
-    <div class="app-dialog-overlay" data-app-dialog-overlay></div>
-    <div class="app-dialog-page h-center" data-app-dialog-page>
+  <dialog class="app-dialog" data-dialog>
+    <div class="app-dialog-overlay" data-overlay></div>
+
+    <div class="position-relative">
+      <button class="dialog-close-cross ui-reset-button" data-close-btn type="button"> ✖ </button>
+    </div>
+
+    <div class="app-dialog-page h-center" data-dialog-page>
       <slot name="page" />
     </div>
   </dialog>
@@ -31,9 +36,9 @@ const { ...props } = Astro.props;
     private page!: HTMLElement;
 
     connectedCallback() {
-      this.button = pt<HTMLButtonElement>(this, "app-dialog-button");
-      this.dialog = pt<HTMLDialogElement>(this, "app-dialog");
-      this.page = pt<HTMLElement>(this, "app-dialog-page");
+      this.button = pt<HTMLButtonElement>(this, "dialog-button");
+      this.dialog = pt<HTMLDialogElement>(this, "dialog");
+      this.page = pt<HTMLElement>(this, "dialog-page");
 
       this.button.onclick = async () => {
         this.dialog.showModal();
@@ -43,17 +48,23 @@ const { ...props } = Astro.props;
         this.reset();
       });
 
-      const overlay = pt<HTMLElement>(this, "app-dialog-overlay");
-      overlay.onclick = () => {
+      const close = () => {
         this.dialog.close();
         this.reset();
       };
+
+      const overlay = pt<HTMLElement>(this, "overlay");
+      overlay.onclick = close;
+
       overlay.onwheel = (e) => {
         e.preventDefault();
       };
       overlay.ontouchmove = (e) => {
         e.preventDefault();
       };
+
+      const closeBtn = pt<HTMLButtonElement>(this, "close-btn");
+      closeBtn.onclick = close;
     }
 
     private reset() {
@@ -77,6 +88,8 @@ const { ...props } = Astro.props;
     width: 100%;
     max-width: 100%;
     padding: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .app-dialog::backdrop {
@@ -86,5 +99,18 @@ const { ...props } = Astro.props;
     position: fixed;
     inset: 0;
     background: rgba(255, 255, 255, 0.5);
+  }
+
+  .dialog-close-cross {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 48;
+    height: 48;
+    padding-top: 8;
+    padding-right: 8;
+    text-align: end;
+    z-index: 9999;
+    font-size: 48;
   }
 </style>
