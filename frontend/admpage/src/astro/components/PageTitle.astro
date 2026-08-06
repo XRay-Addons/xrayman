@@ -4,18 +4,47 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 import SettingsDialog from "./SettingsDialog.astro";
 ---
 
-<div class="d-flex h-center align-items-stretch mb-2">
-  <Title class="flex-grow-1">
-    <I18NText data-i18n="title.main" />
-  </Title>
-
-  <div class="settings-btn text-lg">
-    <SettingsDialog />
+<div class="h-center w-100 mb-2">
+  <div class="centered-block">
+    <div class="block-text text text-lg">
+      <Title>
+        <I18NText data-i18n="title.main" />
+      </Title>
+    </div>
+    <div class="future-button">
+      <SettingsDialog />
+    </div>
   </div>
 </div>
 
 <style>
-  .settings-btn {
-    margin-left: calc(-1 * var(--input-depth));
+  .centered-block {
+    position: relative;
+    width: fit-content;
+    box-sizing: border-box;
+    overflow: hidden;
+
+    --btn-size: calc(1.4rem * 1.25 + 1rem + 2px + var(--title-depth));
+  }
+
+  .block-text {
+    text-align: center;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+
+    padding-right: calc(var(--btn-size) - var(--title-depth));
+  }
+
+  .future-button {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+
+    width: var(--btn-size);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 </style>
