@@ -1,0 +1,64 @@
+---
+import type { ListItemField } from "./ListInput";
+import Input from "@xrayman/shared/astro/primitives/Input.astro";
+import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
+import TaggedInput from "@xrayman/shared/astro/primitives/TaggedInput/TaggedInput.astro";
+import Button from "@xrayman/shared/astro/primitives/Button.astro";
+
+interface Props {
+  i18n: string;
+  fields: ListItemField[];
+  "btn-pt": string;
+  "tagged-pt": string;
+  "input-pt": string;
+}
+
+const { i18n, fields, "input-pt": inputPt, "btn-pt": btnPt, "tagged-pt": taggedPt } = Astro.props;
+---
+
+<div data-item class="narrow-list-item">
+  {
+    fields.map(({ name, type, inputProps = {} }) => {
+      const props = { "input:name": name, "input:data-pt": inputPt, input: inputProps };
+
+      let component;
+
+      switch (type) {
+        case "input":
+          component = <Input {...props} />;
+          break;
+        case "tagged-input":
+          component = <TaggedInput data-pt={taggedPt} {...props} />;
+          break;
+      }
+
+      return (
+        <div>
+          <div class="text text-xs crt noselect header-cell p-2">
+            <I18NText data-i18n={`${i18n}.columns.${name}`} />
+          </div>
+          <div class="field">{component}</div>
+        </div>
+      );
+    })
+  }
+
+  <div class="last-field">
+    <Button btn:type="button" btn:data-pt={btnPt}> - </Button>
+  </div>
+</div>
+
+<style>
+  .narrow-list-item {
+    margin-bottom: 0.5rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    background-color: rgba(0, 0, 0, 0.05);
+    border: 2px solid rgba(0, 0, 0, 0.25);
+  }
+
+  .last-field {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+</style>

@@ -1,9 +1,9 @@
 ---
 import Input from "@xrayman/shared/astro/primitives/Input.astro";
 import TaggedInput from "@xrayman/shared/astro/primitives/TaggedInput/TaggedInput.astro";
-import ListInput, {
-  type ListItemField,
-} from "@xrayman/shared/astro/primitives/ListInput/ListInput.astro";
+import { type ListItemField } from "@xrayman/shared/astro/primitives/ListInput/ListInput";
+import WideListInput from "@xrayman/shared/astro/primitives/ListInput/WideListInput.astro";
+import NarrowListInput from "@xrayman/shared/astro/primitives/ListInput/NarrowListInput.astro";
 import type { HTMLAttributes } from "astro/types";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 import Info from "@xrayman/shared/astro/primitives/Info.astro";
@@ -76,11 +76,19 @@ const { ...formProps } = ExtractPrefixed(props, "form");
             const p = field as ListField;
             component = (
               <div class="list-input">
-                <ListInput
+                <WideListInput
                   name={p.name}
-                  data-config-list-input
+                  data-config-wide-list-input
                   i18n={`${i18n}.fields.${p.name}`}
                   fields={p.listInputs}
+                  hidden
+                />
+                <NarrowListInput
+                  name={p.name}
+                  data-config-narrow-list-input
+                  i18n={`${i18n}.fields.${p.name}`}
+                  fields={p.listInputs}
+                  hidden
                 />
               </div>
             );
@@ -110,7 +118,8 @@ const { ...formProps } = ExtractPrefixed(props, "form");
     display: block;
   }
 
-  .list-input {
+  .list-input,
+  .narrow-list-input {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
     background-color: rgba(0, 0, 0, 0.05);
@@ -138,7 +147,17 @@ const { ...formProps } = ExtractPrefixed(props, "form");
 
       this.inputs = pts<HTMLInputElement>(this, "config-input");
       this.taggedInputs = pts<TaggedInputElement>(this, "config-tagged-input");
-      this.listInputs = pts<ListInputElement>(this, "config-list-input");
+
+      // select list inputs type - ordinary or narrow
+      const narrowScreenSize = 768; // Bootstrap MD
+      const listInputsType =
+        window.innerWidth > narrowScreenSize
+          ? "config-wide-list-input"
+          : "config-narrow-list-input";
+      this.listInputs = pts<ListInputElement>(this, listInputsType);
+      this.listInputs.forEach((element) => {
+        element.hidden = false;
+      });
     }
 
     protected render() {
