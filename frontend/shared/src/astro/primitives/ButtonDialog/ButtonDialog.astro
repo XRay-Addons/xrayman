@@ -11,7 +11,7 @@ type DlgProps = WithPrefix<HTMLAttributes<"div">, "dlg">;
 interface Props extends DlgProps, BtnProps {}
 
 const { ...props } = Astro.props;
-const { dlgClass, ...dlgProps } = ExtractPrefixed(props, "dlg");
+const { class: dlgClass, ...dlgProps } = ExtractPrefixed(props, "dlg");
 ---
 
 <btn-dialog>
@@ -23,7 +23,7 @@ const { dlgClass, ...dlgProps } = ExtractPrefixed(props, "dlg");
     <div class="app-dialog-overlay" data-overlay></div>
 
     <div class="app-dialog-page h-center" data-dialog-page>
-      <div {...dlgProps}>
+      <div class:list={[dlgClass]} {...dlgProps}>
         <slot name="page" />
       </div>
     </div>
