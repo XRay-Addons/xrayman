@@ -1,17 +1,10 @@
 ---
 import Button from "@xrayman/shared/astro/primitives/Button.astro";
-import type { HTMLAttributes } from "astro/types";
 import type { ComponentProps } from "astro/types";
-import { ExtractPrefixed, type WithPrefix } from "@xrayman/shared/astro/props/props";
-import Card from "@xrayman/shared/astro/primitives/Card.astro";
 
-type BtnProps = ComponentProps<typeof Button>;
-type DlgProps = WithPrefix<HTMLAttributes<"div">, "dlg">;
-
-interface Props extends DlgProps, BtnProps {}
+type Props = ComponentProps<typeof Button>;
 
 const { ...props } = Astro.props;
-const { class: dlgClass, ...dlgProps } = ExtractPrefixed(props, "dlg");
 ---
 
 <btn-dialog>
@@ -20,12 +13,8 @@ const { class: dlgClass, ...dlgProps } = ExtractPrefixed(props, "dlg");
   </Button>
 
   <dialog class="app-dialog" data-dialog>
-    <div class="app-dialog-overlay" data-overlay></div>
-
     <div class="app-dialog-page h-center" data-dialog-page>
-      <div class:list={[dlgClass]} {...dlgProps}>
-        <slot name="page" />
-      </div>
+      <slot name="page" />
     </div>
   </dialog>
 </btn-dialog>
@@ -58,14 +47,10 @@ const { class: dlgClass, ...dlgProps } = ExtractPrefixed(props, "dlg");
         this.reset();
       };
 
-      const overlay = pt<HTMLElement>(this, "overlay");
-      overlay.onclick = close;
-
-      overlay.onwheel = (e) => {
-        e.preventDefault();
-      };
-      overlay.ontouchmove = (e) => {
-        e.preventDefault();
+      this.page.onmousedown = (e) => {
+        if (e.target === this.page) {
+          close();
+        }
       };
     }
 
@@ -85,21 +70,37 @@ const { class: dlgClass, ...dlgProps } = ExtractPrefixed(props, "dlg");
   }
 
   .app-dialog {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.5);
     border: none;
-    width: 100%;
-    max-width: 100%;
     padding: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
+    margin: 0;
+
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
   }
 
   .app-dialog::backdrop {
     background: transparent;
   }
-  .app-dialog-overlay {
-    position: fixed;
+
+  .app-dialog-page {
+    position: absolute;
     inset: 0;
-    background: rgba(255, 255, 255, 0.5);
+
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: safe center;
+
+    box-sizing: border-box;
   }
 </style>
