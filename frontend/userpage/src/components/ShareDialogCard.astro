@@ -5,7 +5,7 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 ---
 
 <div class="invisible-card h-center m-2">
-  <ButtonDialog class="fluid-lg h-center" content-class="col-6">
+  <ButtonDialog class="fluid-lg h-center" dlg:class="fluid-sm p-1 justify-content-center">
     <I18NText slot="button" data-i18n="share.button-text" />
     <SharePage slot="page" />
   </ButtonDialog>

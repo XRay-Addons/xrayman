@@ -5,7 +5,7 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 ---
 
 <div class="d-flex justify-content-end">
-  <ButtonDialog class="col-2">
+  <ButtonDialog class="col-2" dlg:class="fluid-md">
     <I18NText slot="button" data-i18n="add-user.button.text" />
     <AddUserPage slot="page" />
   </ButtonDialog>
