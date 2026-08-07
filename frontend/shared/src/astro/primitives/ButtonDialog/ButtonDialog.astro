@@ -15,10 +15,6 @@ const { ...props } = Astro.props;
   <dialog class="app-dialog" data-dialog>
     <div class="app-dialog-overlay" data-overlay></div>
 
-    <div class="position-relative">
-      <button class="dialog-close-cross ui-reset-button" data-close-btn type="button"> ✖ </button>
-    </div>
-
     <div class="app-dialog-page h-center" data-dialog-page>
       <slot name="page" />
     </div>
@@ -62,9 +58,6 @@ const { ...props } = Astro.props;
       overlay.ontouchmove = (e) => {
         e.preventDefault();
       };
-
-      const closeBtn = pt<HTMLButtonElement>(this, "close-btn");
-      closeBtn.onclick = close;
     }
 
     private reset() {
@@ -99,18 +92,5 @@ const { ...props } = Astro.props;
     position: fixed;
     inset: 0;
     background: rgba(255, 255, 255, 0.5);
-  }
-
-  .dialog-close-cross {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 48;
-    height: 48;
-    padding-top: 8;
-    padding-right: 8;
-    text-align: end;
-    z-index: 9999;
-    font-size: 48;
   }
 </style>
