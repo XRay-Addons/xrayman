@@ -13,7 +13,7 @@ const { ...props } = Astro.props;
   </Button>
 
   <dialog class="app-dialog" data-dialog>
-    <div class="app-dialog-page h-center" data-dialog-page>
+    <div class="app-dialog-page hv-center" data-dialog-page>
       <slot name="page" />
     </div>
   </dialog>
@@ -72,16 +72,11 @@ const { ...props } = Astro.props;
   .app-dialog {
     background: rgba(255, 255, 255, 0.5);
     border: none;
-    padding: 0;
-    margin: 0;
 
-    position: fixed;
-    inset: 0;
     width: 100vw;
     max-width: 100vw;
     height: 100vh;
     max-height: 100vh;
-    overflow: hidden;
   }
 
   .app-dialog::backdrop {
@@ -96,11 +91,7 @@ const { ...props } = Astro.props;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
 
-    display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: safe center;
-
-    box-sizing: border-box;
   }
 </style>
