@@ -1,10 +1,14 @@
 ---
 import Button from "@xrayman/shared/astro/primitives/Button.astro";
+import type { HTMLAttributes } from "astro/types";
+import { ExtractPrefixed, type WithPrefix } from "@xrayman/shared/astro/props/props";
 import type { ComponentProps } from "astro/types";
 
-type Props = ComponentProps<typeof Button>;
+type BtnProps = ComponentProps<typeof Button>;
+type PageProps = WithPrefix<HTMLAttributes<"div">, "page">;
 
 const { ...props } = Astro.props;
+const { ...pageProps } = ExtractPrefixed(props, "page");
 ---
 
 <btn-dialog>
@@ -14,7 +18,9 @@ const { ...props } = Astro.props;
 
   <dialog class="app-dialog" data-dialog>
     <div class="app-dialog-page hv-center" data-dialog-page>
-      <slot name="page" />
+      <div {...pageProps}>
+        <slot name="page" />
+      </div>
     </div>
   </dialog>
 </btn-dialog>
