@@ -1,6 +1,5 @@
 ---
 import Title from "@xrayman/shared/astro/primitives/Title.astro";
-import Card from "@xrayman/shared/astro/primitives/Card.astro";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 import Config from "@xrayman/shared/astro/primitives/Config/Config.astro";
 import Button from "@xrayman/shared/astro/primitives/Button.astro";
@@ -11,27 +10,25 @@ const i18n = "settings";
 ---
 
 <settings-page>
-  <Card>
-    <Title class="col-6 mb-2">
-      <I18NText data-i18n=`${i18n}.title` />
-    </Title>
+  <Title class="col-6 mb-2">
+    <I18NText data-i18n=`${i18n}.title` />
+  </Title>
 
-    <Config i18n={i18n} fields={fields} class="mb-2" data-config form:data-config-form />
+  <Config i18n={i18n} fields={fields} class="mb-2" data-config form:data-config-form />
 
-    <div class="d-flex justify-content-center">
-      <Button btn:type="submit" class="mb-2 col-8" btn:data-submit-btn>
-        <ActiveSlot data-submit-btn-content>
-          <I18NText data-i18n=`${i18n}.submit-btn.info` />
-        </ActiveSlot>
-      </Button>
-    </div>
-    <div class="d-flex justify-content-center">
-      <Button btn:type="button" class="mb-2 col-8" btn:data-refresh-btn>
-        <I18NText data-i18n=`${i18n}.refresh` />
-      </Button>
-    </div>
-    <VersionTag />
-  </Card>
+  <div class="d-flex justify-content-center">
+    <Button btn:type="submit" class="mb-2 col-8" btn:data-submit-btn>
+      <ActiveSlot data-submit-btn-content>
+        <I18NText data-i18n=`${i18n}.submit-btn.info` />
+      </ActiveSlot>
+    </Button>
+  </div>
+  <div class="d-flex justify-content-center">
+    <Button btn:type="button" class="mb-2 col-8" btn:data-refresh-btn>
+      <I18NText data-i18n=`${i18n}.refresh` />
+    </Button>
+  </div>
+  <VersionTag />
 </settings-page>
 
 <script>

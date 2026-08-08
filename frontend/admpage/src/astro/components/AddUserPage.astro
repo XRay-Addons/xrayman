@@ -2,7 +2,6 @@
 import Info from "@xrayman/shared/astro/primitives/Info.astro";
 import InputGroup from "@xrayman/shared/astro/primitives/InputGroup/InputGroup.astro";
 import CopyGroup from "@xrayman/shared/astro/primitives/CopyGroup/CopyGroup.astro";
-import Card from "@xrayman/shared/astro/primitives/Card.astro";
 import Title from "@xrayman/shared/astro/primitives/Title.astro";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 
@@ -12,30 +11,28 @@ const i18nResp = "add-user.response";
 ---
 
 <add-user-page>
-  <Card>
-    <Title class="mb-2">
-      <I18NText data-i18n=`${i18n}.title` />
-    </Title>
+  <Title class="mb-2">
+    <I18NText data-i18n=`${i18n}.title` />
+  </Title>
 
+  <Info>
+    <I18NText data-i18n=`${i18nReq}.name.info` />
+  </Info>
+
+  <InputGroup
+    data-input-group
+    input:data-i18n-placeholder=`${i18nReq}.name.placeholder`
+    input:data-name-input
+    btn:data-i18n=`${i18nReq}.name.button`
+  />
+
+  <div data-success-result class="mt-2" hidden>
     <Info>
-      <I18NText data-i18n=`${i18nReq}.name.info` />
+      <I18NText data-i18n=`${i18nResp}.userpage.info` />
     </Info>
 
-    <InputGroup
-      data-input-group
-      input:data-i18n-placeholder=`${i18nReq}.name.placeholder`
-      input:data-name-input
-      btn:data-i18n=`${i18nReq}.name.button`
-    />
-
-    <div data-success-result class="mt-2" hidden>
-      <Info>
-        <I18NText data-i18n=`${i18nResp}.userpage.info` />
-      </Info>
-
-      <CopyGroup btn:data-i18n=`${i18nResp}.userpage.copy-button` data-result-userpage />
-    </div>
-  </Card>
+    <CopyGroup btn:data-i18n=`${i18nResp}.userpage.copy-button` data-result-userpage />
+  </div>
 </add-user-page>
 
 <script>
