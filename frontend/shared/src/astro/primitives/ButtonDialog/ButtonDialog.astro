@@ -4,6 +4,7 @@ import Card from "@xrayman/shared/astro/primitives/Card.astro";
 import type { HTMLAttributes } from "astro/types";
 import { ExtractPrefixed, type WithPrefix } from "@xrayman/shared/astro/props/props";
 import type { ComponentProps } from "astro/types";
+import Surface from "../Surface.astro";
 
 type BtnProps = ComponentProps<typeof Button>;
 type PageProps = WithPrefix<HTMLAttributes<"div">, "page">;
@@ -20,9 +21,9 @@ const { ...pageProps } = ExtractPrefixed(props, "page");
   <dialog class="app-dialog" data-dialog>
     <div class="app-dialog-page hv-center" data-dialog-page>
       <div {...pageProps}>
-        <Card>
+        <Surface class="m-2" in:class="p-2" depth="var(--card-depth)" color="var(--bg-color)">
           <slot name="page" />
-        </Card>
+        </Surface>
       </div>
     </div>
   </dialog>
