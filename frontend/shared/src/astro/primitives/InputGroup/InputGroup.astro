@@ -1,12 +1,13 @@
 ---
 import Surface from "@xrayman/shared/astro/primitives/Surface.astro";
 import { ExtractPrefixed, type WithPrefix } from "@xrayman/shared/astro/props/props";
-import type { HTMLAttributes } from "astro/types";
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import TextInput from "@xrayman/shared/astro/primitives/TextInput.astro";
 
 type HostProps = HTMLAttributes<"div">;
 type FormProps = WithPrefix<HTMLAttributes<"form">, "form">;
 type BtnProps = WithPrefix<HTMLAttributes<"button">, "btn">;
-type InputProps = WithPrefix<HTMLAttributes<"input">, "input">;
+type InputProps = WithPrefix<ComponentProps<typeof TextInput>, "input">;
 
 interface Props extends HostProps, FormProps, BtnProps, InputProps {}
 
@@ -21,7 +22,7 @@ const { ...hostProps } = props;
   <form data-group-form class="g-0 d-flex" {...formProps}>
     <div class="group-input-wrap">
       <Surface depth="var(--input-depth)" color="var(--input-color)" class="h-100">
-        <input
+        <TextInput
           class="ui-reset-input group-input text text-md crt p-2 h-100 w-100"
           data-group-input
           {...inputProps}

@@ -1,10 +1,11 @@
 ---
 import InputGroup from "@xrayman/shared/astro/primitives/InputGroup/InputGroup.astro";
-import type { HTMLAttributes } from "astro/types";
+import TextInput from "@xrayman/shared/astro/primitives/TextInput.astro";
+import type { HTMLAttributes, ComponentProps } from "astro/types";
 import { ExtractPrefixed, type WithPrefix } from "@xrayman/shared/astro/props/props";
 
 type BtnProps = WithPrefix<HTMLAttributes<"button">, "btn">;
-type InputProps = WithPrefix<HTMLAttributes<"input">, "input">;
+type InputProps = WithPrefix<ComponentProps<typeof TextInput>, "input">;
 type HostProps = HTMLAttributes<"div">;
 
 interface Props extends HostProps, BtnProps, InputProps {}

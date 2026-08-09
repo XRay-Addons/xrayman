@@ -1,0 +1,44 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+type InputProps = HTMLAttributes<"input">;
+
+interface Props extends InputProps {
+  nowrap?: boolean;
+}
+
+const { ...props } = Astro.props;
+const { class: inputClass, type = "text", nowrap = true, ...inputProps } = Astro.props;
+
+const whiteSpace = nowrap ? "nowrap" : "pre-wrap";
+
+/*
+  TODO: props like... + pattern
+  data-text-area
+  autocomplete="off"
+  autocorrect="off"
+  autocapitalize="off"
+  spellcheck="false"
+*/
+---
+
+{type !== "text" ? <input {...props} /> : <textarea {...props} />}
+
+<style define:vars={{ whiteSpace }}>
+  textarea {
+    display: block;
+
+    resize: none;
+
+    white-space: var(--whiteSpace);
+    field-sizing: content;
+
+    word-break: break-all;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  textarea::-webkit-scrollbar {
+    display: none;
+  }
+</style>

@@ -1,16 +1,17 @@
 ---
 import Input from "@xrayman/shared/astro/primitives/Input.astro";
+import TextInput from "@xrayman/shared/astro/primitives/TextInput.astro";
 import TaggedInput from "@xrayman/shared/astro/primitives/TaggedInput/TaggedInput.astro";
 import { type ListItemField } from "@xrayman/shared/astro/primitives/ListInput/ListInput";
 import WideListInput from "@xrayman/shared/astro/primitives/ListInput/WideListInput.astro";
 import NarrowListInput from "@xrayman/shared/astro/primitives/ListInput/NarrowListInput.astro";
-import type { HTMLAttributes } from "astro/types";
+import type { HTMLAttributes, ComponentProps } from "astro/types";
 import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 import Info from "@xrayman/shared/astro/primitives/Info.astro";
 import { ExtractPrefixed, type WithPrefix } from "@xrayman/shared/astro/props/props";
 
 type FieldType = "input" | "tagged-input" | "list-input";
-type InputAttrs = Omit<HTMLAttributes<"input">, "name">;
+type InputAttrs = Omit<ComponentProps<typeof TextInput>, "name">;
 
 interface Field {
   name: string;
@@ -67,7 +68,7 @@ const { ...formProps } = ExtractPrefixed(props, "form");
                 data-config-tagged-input
                 input:name={p.name}
                 input:data-config-input
-                input={{ ...(p.inputProps || {}) }}
+                input={{ ...(p.inputProps ?? {}) }}
               />
             );
             break;
