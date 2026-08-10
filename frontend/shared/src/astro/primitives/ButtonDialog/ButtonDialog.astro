@@ -12,7 +12,6 @@ interface Props extends BtnProps, PageProps {}
 
 const { ...props } = Astro.props;
 const { class: pageClass, ...pageProps } = ExtractPrefixed(props, "page");
-console.log(props, pageProps);
 ---
 
 <btn-dialog>

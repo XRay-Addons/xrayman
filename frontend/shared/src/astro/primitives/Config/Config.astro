@@ -65,7 +65,7 @@ const { ...formProps } = ExtractPrefixed(props, "form");
             const p = field as InputField;
             component = (
               <TaggedInput
-                data-config-tagged-input
+                tagged:data-config-tagged-input
                 input:name={p.name}
                 input:data-config-input
                 input={{ ...(p.inputProps ?? {}) }}

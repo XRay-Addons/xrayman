@@ -5,17 +5,17 @@ import Input from "@xrayman/shared/astro/primitives/Input.astro";
 import TextInput from "@xrayman/shared/astro/primitives/TextInput.astro";
 import Surface from "@xrayman/shared/astro/primitives/Surface.astro";
 
-type InputProps = WithPrefix<ComponentProps<typeof TextInput>, "input">;
-type HostProps = HTMLAttributes<"div">;
+type InputProps = ComponentProps<typeof Input>;
+type HostProps = WithPrefix<HTMLAttributes<"div">, "tagged">;
 
 interface Props extends InputProps, HostProps {}
 
 const { ...props } = Astro.props;
-const { ...inputProps } = ExtractPrefixed(props, "input");
+const { ...taggedProps } = ExtractPrefixed(props, "tagged");
 ---
 
-<tagged-input {...props}>
-  <Input data-input-container input:data-tagged-input input={{ ...inputProps }} />
+<tagged-input {...taggedProps}>
+  <Input data-input-container input:data-tagged-input {...props} />
 
   <div data-tags-container class="tags-container" hidden>
     <Surface depth="var(--input-depth)" color="var(--input-color)">
@@ -109,6 +109,7 @@ const { ...inputProps } = ExtractPrefixed(props, "input");
   tagged-input {
     display: block;
     position: relative;
+    height: 100%;
   }
 
   .tags-container {
