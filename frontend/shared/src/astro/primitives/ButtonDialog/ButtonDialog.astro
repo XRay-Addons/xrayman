@@ -4,6 +4,7 @@ import type { HTMLAttributes } from "astro/types";
 import { ExtractPrefixed, type WithPrefix } from "@xrayman/shared/astro/props/props";
 import type { ComponentProps } from "astro/types";
 import Surface from "../Surface.astro";
+import CloseIcon from "./CloseIcon.astro";
 
 type BtnProps = ComponentProps<typeof Button>;
 type PageProps = WithPrefix<HTMLAttributes<"div">, "page">;
@@ -26,7 +27,7 @@ const { class: pageClass, ...pageProps } = ExtractPrefixed(props, "page");
           <slot name="page" />
         </Surface>
         <button type="button" class="app-dialog-close" data-dialog-close>
-          <div class="close-icon"></div>
+          <CloseIcon />
         </button>
       </div>
     </div>
@@ -87,7 +88,9 @@ const { class: pageClass, ...pageProps } = ExtractPrefixed(props, "page");
   customElements.define("btn-dialog", BtnDialog);
 </script>
 
-<style>
+<style lang="scss">
+  @use "@xrayman/shared/styles/shades.scss" as *;
+
   btn-dialog {
     display: contents;
   }
@@ -134,11 +137,8 @@ const { class: pageClass, ...pageProps } = ExtractPrefixed(props, "page");
     border: none;
     cursor: pointer;
     padding: 0px;
-  }
 
-  .close-icon {
-    width: calc(1rem + var(--card-depth));
-    height: calc(1rem + var(--card-depth));
-    background-color: #ff0000;
+    display: flex;
+    background: transparent;
   }
 </style>
