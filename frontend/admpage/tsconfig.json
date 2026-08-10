@@ -8,6 +8,10 @@
       "@assets/*": ["./src/assets/*"]
     },
 
+    /* allow import astro to ts */
+    "jsx": "react-jsx",
+    "jsxImportSource": "astro",
+
     "strict": true,
     "noUnusedLocals": true,
     "noImplicitAny": true,

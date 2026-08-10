@@ -2,7 +2,6 @@
 import type { HTMLAttributes, ComponentProps } from "astro/types";
 import { ExtractPrefixed, type WithPrefix } from "@xrayman/shared/astro/props/props";
 import Input from "@xrayman/shared/astro/primitives/Input.astro";
-import TextInput from "@xrayman/shared/astro/primitives/TextInput.astro";
 import Surface from "@xrayman/shared/astro/primitives/Surface.astro";
 
 type InputProps = ComponentProps<typeof Input>;
@@ -53,7 +52,6 @@ const { ...taggedProps } = ExtractPrefixed(props, "tagged");
       this.tagTmpl = pt<HTMLTemplateElement>(this, "tag-template");
 
       const tagsContainerEl = pt<HTMLElement>(this, "tags-container");
-      const inputContainerEl = pt<HTMLElement>(this, "input-container");
 
       this.inputEl.addEventListener("focus", () => {
         tagsContainerEl.removeAttribute("hidden");

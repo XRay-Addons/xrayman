@@ -8,7 +8,7 @@ interface Props extends InputProps {
 }
 
 const { ...props } = Astro.props;
-const { class: inputClass, type = "text", nowrap = true, ...inputProps } = Astro.props;
+const { type = "text", nowrap = true } = Astro.props;
 
 const whiteSpace = nowrap ? "nowrap" : "pre-wrap";
 

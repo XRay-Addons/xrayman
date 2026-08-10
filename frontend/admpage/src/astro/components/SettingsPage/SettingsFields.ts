@@ -1,5 +1,5 @@
-import type { ListItemField } from "@xrayman/shared/astro/primitives/ListInput/ListInput.astro";
-import type { TextInput } from "@xrayman/shared/astro/primitives/TextInput.astro";
+import { ListItemField } from "@xrayman/shared/astro/primitives/ListInput/ListInput";
+import TextInput from "@xrayman/shared/astro/primitives/TextInput.astro";
 import type { InputField, ListField } from "@xrayman/shared/astro/primitives/Config/Config.astro";
 import type { ComponentProps } from "astro/types";
 
