@@ -13,17 +13,10 @@ interface Props extends InProps, HostProps {
 
 const { ...props } = Astro.props;
 const { class: inClass, ...inProps } = ExtractPrefixed(props, "in");
-const {
-  dynamic = false,
-  depth = "0px",
-  color = "transparent",
-  class: hostClass,
-  ...hostProps
-} = props;
+const { dynamic = false, color = "transparent", class: hostClass, ...hostProps } = props;
 
 const styleVars = {
   ...(color && { "--surface-color": color }),
-  ...(depth && { "--surface-depth": depth }),
 };
 ---
 

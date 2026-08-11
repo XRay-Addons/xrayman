@@ -17,7 +17,7 @@ const { class: pageClass, ...pageProps } = props;
   <dialog class:list={["app-dialog", dlgClass]} data-app-desktop-dialog {...dlgProps}>
     <div class="app-dialog-page p-2" data-dialog-page>
       <div class:list={["dialog-surface-wrapper", pageClass]} {...pageProps}>
-        <Surface in:class="p-2" depth="var(--card-depth)" color="var(--bg-color)">
+        <Surface in:class="p-2" color="var(--bg-color)">
           <slot name="page" />
         </Surface>
       </div>

@@ -21,7 +21,7 @@ const { ...hostProps } = props;
 <input-group {...hostProps}>
   <form data-group-form class="g-0 d-flex" {...formProps}>
     <div class="group-input-wrap">
-      <Surface depth="var(--input-depth)" color="var(--input-color)" class="h-100">
+      <Surface color="var(--input-color)" class="h-100">
         <TextInput
           class="ui-reset-input group-input text text-md crt p-2 h-100 w-100"
           data-group-input
@@ -31,7 +31,7 @@ const { ...hostProps } = props;
     </div>
 
     <div class="group-btn-wrap">
-      <Surface depth="var(--input-depth)" color="var(--input-color)" dynamic class="h-100 w-100">
+      <Surface color="var(--input-color)" dynamic class="h-100 w-100">
         <button
           class="ui-reset-button noselect group-btn text text-md crt p-2 h-100 w-100"
           type="button"
@@ -47,8 +47,8 @@ const { ...hostProps } = props;
     width: 75%;
   }
   .group-btn-wrap {
-    width: calc(25% + var(--input-depth));
-    margin-left: calc(-1 * var(--input-depth));
+    width: calc(25% + var(--surface-depth));
+    margin-left: calc(-1 * var(--surface-depth));
   }
 
   .group-input {
