@@ -1,166 +1,54 @@
 ---
 import Button from "@xrayman/shared/astro/primitives/Button.astro";
-import type { HTMLAttributes } from "astro/types";
-import { ExtractPrefixed, type WithPrefix } from "@xrayman/shared/astro/props/props";
-import type { ComponentProps } from "astro/types";
+import MobileDialog from "./MobileDialog.astro";
+import DesktopDialog from "./DesktopDialog.astro";
+import { ExtractPrefixed } from "@xrayman/shared/astro/props/props";
+import type { ButtonDialogProps } from "./types";
 
-type BtnProps = ComponentProps<typeof Button>;
-type PageProps = WithPrefix<HTMLAttributes<"div">, "page">;
-
-interface Props extends BtnProps, PageProps {}
+type Props = ButtonDialogProps;
 
 const { ...props } = Astro.props;
 const { ...pageProps } = ExtractPrefixed(props, "page");
 ---
 
-<btn-dialog>
+<button-dialog data-breakpoint="768">
   <Button data-dialog-button {...props}>
     <slot name="button" />
   </Button>
 
-  <dialog class="app-dialog" data-dialog>
-    <div class="p-2 app-dialog-page" data-dialog-page>
-      <div {...pageProps}>
-        <slot name="page" />
-      </div>
-    </div>
+  <MobileDialog {...pageProps} dlg:data-mobile-dialog>
+    <slot name="page" slot="page" />
+  </MobileDialog>
 
-    <div class="p-2 app-dialog-footer">
-      <Button btn:data-dialog-close>Close</Button>
-    </div>
-  </dialog>
-</btn-dialog>
+  <DesktopDialog {...pageProps} dlg:data-desktop-dialog>
+    <slot name="page" slot="page" />
+  </DesktopDialog>
+</button-dialog>
 
 <script>
   import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
   import { pt } from "@xrayman/shared/runtime/dom/pts";
-  import type { Resettable } from "./ButtonDialog";
 
-  class BtnDialog extends CustomElement {
-    private page!: HTMLElement;
-    private dialog!: HTMLDialogElement;
-    private isClosing: boolean = false;
-
+  class ButtonDialog extends CustomElement {
     connectedCallback() {
-      this.page = pt<HTMLElement>(this, "dialog-page");
-      this.dialog = pt<HTMLDialogElement>(this, "dialog");
+      const btn = pt<HTMLButtonElement>(this, "dialog-button");
 
-      const button = pt<HTMLButtonElement>(this, "dialog-button");
-      const closeButton = pt<HTMLButtonElement>(this, "dialog-close");
+      btn.onclick = async () => {
+        const breakpoint = Number(this.dataset.breakpoint ?? 768);
+        const isDesktop = window.matchMedia(`(min-width: ${breakpoint}px)`).matches;
 
-      button.onclick = () => {
-        this.lockScroll();
-        this.dialog.showModal();
+        const variant = isDesktop ? "desktop" : "mobile";
+        const dlg = pt<HTMLDialogElement>(this, `${variant}-dialog`);
+        dlg.showModal();
       };
-
-      this.dialog.addEventListener("close", () => {
-        this.unlockScroll();
-        this.reset();
-      });
-
-      closeButton.addEventListener(
-        "pointerdown",
-        (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          this.closeWithGuard();
-        },
-        { passive: false },
-      );
-    }
-
-    private lockScroll() {
-      document.body.style.position = "fixed";
-    }
-
-    private unlockScroll() {
-      document.body.style.position = "";
-    }
-    private closeWithGuard() {
-      this.isClosing = true;
-      this.dialog.close();
-
-      // lock clicks for closing to avoid fantom bg clicks
-      document.addEventListener(
-        "click",
-        (e) => {
-          if (this.isClosing) {
-            e.preventDefault();
-            e.stopPropagation();
-            this.isClosing = false;
-          }
-        },
-        { capture: true, once: true },
-      );
-    }
-
-    private reset() {
-      Array.from(this.page.children).forEach((el) => {
-        (el as Partial<Resettable>).reset?.();
-      });
     }
   }
 
-  customElements.define("btn-dialog", BtnDialog);
+  customElements.define("button-dialog", ButtonDialog);
 </script>
 
-<style lang="scss">
-  @use "@xrayman/shared/styles/shades.scss" as *;
-
-  btn-dialog {
+<style>
+  button-dialog {
     display: contents;
-  }
-
-  .app-dialog {
-    position: fixed;
-    inset: 0;
-    margin: 0;
-    padding: 0;
-    border: none;
-
-    width: 100dvw;
-    max-width: 100dvw;
-    height: 100dvh;
-    max-height: 100dvh;
-
-    background-color: var(--bg-color);
-
-    touch-action: none;
-    overscroll-behavior: none;
-
-    display: none;
-    flex-direction: column;
-
-    &[open] {
-      display: flex;
-    }
-  }
-
-  .app-dialog-page {
-    flex: 1 1 auto;
-    min-height: 0;
-
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-y;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: safe center;
-
-    padding-top: env(safe-area-inset-top);
-
-    outline: none;
-  }
-
-  .app-dialog-footer {
-    flex-shrink: 0;
-    width: 100%;
-
-    padding-bottom: env(safe-area-inset-bottom);
-
-    background-color: var(--bg-color);
   }
 </style>
