@@ -3,8 +3,6 @@ import Button from "@xrayman/shared/astro/primitives/Button.astro";
 import type { HTMLAttributes } from "astro/types";
 import { ExtractPrefixed, type WithPrefix } from "@xrayman/shared/astro/props/props";
 import type { ComponentProps } from "astro/types";
-import Surface from "../Surface.astro";
-import CloseIcon from "./CloseIcon.astro";
 
 type BtnProps = ComponentProps<typeof Button>;
 type PageProps = WithPrefix<HTMLAttributes<"div">, "page">;
@@ -12,7 +10,7 @@ type PageProps = WithPrefix<HTMLAttributes<"div">, "page">;
 interface Props extends BtnProps, PageProps {}
 
 const { ...props } = Astro.props;
-const { class: pageClass, ...pageProps } = ExtractPrefixed(props, "page");
+const { ...pageProps } = ExtractPrefixed(props, "page");
 ---
 
 <btn-dialog>
@@ -21,15 +19,14 @@ const { class: pageClass, ...pageProps } = ExtractPrefixed(props, "page");
   </Button>
 
   <dialog class="app-dialog" data-dialog>
-    <div class="app-dialog-page" data-dialog-page>
-      <div class:list={["dialog-surface-wrapper", pageClass]} {...pageProps}>
-        <Surface class="m-2" in:class="p-2" depth="var(--card-depth)" color="var(--bg-color)">
-          <slot name="page" />
-        </Surface>
-        <button type="button" class="app-dialog-close" data-dialog-close>
-          <CloseIcon />
-        </button>
+    <div class="p-2 app-dialog-page" data-dialog-page>
+      <div {...pageProps}>
+        <slot name="page" />
       </div>
+    </div>
+
+    <div class="p-2 app-dialog-footer">
+      <Button btn:data-dialog-close>Close</Button>
     </div>
   </dialog>
 </btn-dialog>
@@ -40,46 +37,65 @@ const { class: pageClass, ...pageProps } = ExtractPrefixed(props, "page");
   import type { Resettable } from "./ButtonDialog";
 
   class BtnDialog extends CustomElement {
-    private button!: HTMLButtonElement;
-    private dialog!: HTMLDialogElement;
     private page!: HTMLElement;
-    private closeBtn!: HTMLButtonElement;
+    private dialog!: HTMLDialogElement;
+    private isClosing: boolean = false;
 
     connectedCallback() {
-      this.button = pt<HTMLButtonElement>(this, "dialog-button");
-      this.dialog = pt<HTMLDialogElement>(this, "dialog");
       this.page = pt<HTMLElement>(this, "dialog-page");
-      this.closeBtn = pt<HTMLButtonElement>(this, "dialog-close");
+      this.dialog = pt<HTMLDialogElement>(this, "dialog");
 
-      this.button.onclick = async () => {
+      const button = pt<HTMLButtonElement>(this, "dialog-button");
+      const closeButton = pt<HTMLButtonElement>(this, "dialog-close");
+
+      button.onclick = () => {
+        this.lockScroll();
         this.dialog.showModal();
       };
 
       this.dialog.addEventListener("close", () => {
+        this.unlockScroll();
         this.reset();
       });
 
-      const close = () => {
-        this.dialog.close();
-      };
+      closeButton.addEventListener(
+        "pointerdown",
+        (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          this.closeWithGuard();
+        },
+        { passive: false },
+      );
+    }
 
-      this.closeBtn.onclick = () => {
-        close();
-      };
+    private lockScroll() {
+      document.body.style.position = "fixed";
+    }
 
-      this.page.onmousedown = (e) => {
-        if (e.target === this.page) {
-          close();
-        }
-      };
+    private unlockScroll() {
+      document.body.style.position = "";
+    }
+    private closeWithGuard() {
+      this.isClosing = true;
+      this.dialog.close();
+
+      // lock clicks for closing to avoid fantom bg clicks
+      document.addEventListener(
+        "click",
+        (e) => {
+          if (this.isClosing) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.isClosing = false;
+          }
+        },
+        { capture: true, once: true },
+      );
     }
 
     private reset() {
-      const wrapper = this.page.querySelector(".dialog-surface-wrapper");
-      const target = wrapper || this.page;
-
-      Array.from(target.children).forEach((el) => {
-        if (el === this.closeBtn) return;
+      Array.from(this.page.children).forEach((el) => {
         (el as Partial<Resettable>).reset?.();
       });
     }
@@ -96,49 +112,55 @@ const { class: pageClass, ...pageProps } = ExtractPrefixed(props, "page");
   }
 
   .app-dialog {
-    background: rgba(255, 255, 255, 0.5);
+    position: fixed;
+    inset: 0;
+    margin: 0;
+    padding: 0;
     border: none;
 
     width: 100dvw;
     max-width: 100dvw;
     height: 100dvh;
     max-height: 100dvh;
-  }
 
-  .app-dialog::backdrop {
-    background: transparent;
+    background-color: var(--bg-color);
+
+    touch-action: none;
+    overscroll-behavior: none;
+
+    display: none;
+    flex-direction: column;
+
+    &[open] {
+      display: flex;
+    }
   }
 
   .app-dialog-page {
-    position: absolute;
-    inset: 0;
+    flex: 1 1 auto;
+    min-height: 0;
 
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
 
+    display: flex;
     flex-direction: column;
-
-    display: flex;
     align-items: center;
+    justify-content: safe center;
 
-    justify-content: safe center; /* Desktop only */
+    padding-top: env(safe-area-inset-top);
+
+    outline: none;
   }
 
-  .dialog-surface-wrapper {
-    position: relative;
-  }
+  .app-dialog-footer {
+    flex-shrink: 0;
+    width: 100%;
 
-  .app-dialog-close {
-    position: absolute;
-    top: 0;
-    right: 0;
+    padding-bottom: env(safe-area-inset-bottom);
 
-    border: none;
-    cursor: pointer;
-    padding: 0px;
-
-    display: flex;
-    background: transparent;
+    background-color: var(--bg-color);
   }
 </style>
