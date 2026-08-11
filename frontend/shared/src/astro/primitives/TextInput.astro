@@ -8,7 +8,14 @@ interface Props extends InputProps {
 }
 
 const { ...props } = Astro.props;
-const { type = "text", nowrap = true } = Astro.props;
+const { type = "text", readonly = false, nowrap = true } = Astro.props;
+
+// - use input for non-text types (numbers etc);
+// - use input for single-line editable text (it looks native but
+// unfortunately didn't scrollable on ios safari)
+// - use textarea for multiline and non-editable text
+
+const useInput = type != "text" || (nowrap && !readonly);
 
 const whiteSpace = nowrap ? "nowrap" : "pre-wrap";
 
@@ -22,7 +29,7 @@ const whiteSpace = nowrap ? "nowrap" : "pre-wrap";
 */
 ---
 
-{type !== "text" ? <input {...props} /> : <textarea {...props} />}
+{useInput ? <input {...props} /> : <textarea {...props} />}
 
 <style define:vars={{ whiteSpace }}>
   textarea {
