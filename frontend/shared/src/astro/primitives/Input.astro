@@ -13,9 +13,9 @@ const { ...props } = Astro.props;
 const { class: inputClass, ...inputProps } = ExtractPrefixed(props, "input");
 ---
 
-<Surface color="var(--input-color)" {...props}>
+<Surface color="var(--input-color)" {...props} light>
   <TextInput
-    class:list={["ui-reset-input h-100 w-100 text text-md crt p-2", inputClass]}
+    class:list={["ui-reset-input w-100 text text-md crt p-2", inputClass]}
     {...inputProps}
   />
 </Surface>
