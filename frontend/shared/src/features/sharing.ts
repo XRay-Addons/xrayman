@@ -22,6 +22,7 @@ function openShareWindow(url: string) {
 }
 
 export function ShareViaTG(url: string, text: string) {
-  const tgLink = `//telegram.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+  const message = `${text}\n\n${url}`;
+  const tgLink = `//telegram.me/share/url?url=${encodeURIComponent(message)}`;
   openShareWindow(tgLink);
 }
