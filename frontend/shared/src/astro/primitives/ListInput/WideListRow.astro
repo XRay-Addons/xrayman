@@ -17,7 +17,12 @@ const { fields, "input-pt": inputPt, "btn-pt": btnPt, "tagged-pt": taggedPt } = 
 <tr data-row>
   {
     fields.map(({ name, type, inputProps = {} }) => {
-      const props = { "input:name": name, "input:data-pt": inputPt, input: inputProps };
+      const props = {
+        class: "h-100",
+        "input:name": name,
+        "input:data-pt": inputPt,
+        input: inputProps,
+      };
 
       let component;
 
@@ -26,7 +31,7 @@ const { fields, "input-pt": inputPt, "btn-pt": btnPt, "tagged-pt": taggedPt } = 
           component = <Input {...props} />;
           break;
         case "tagged-input":
-          component = <TaggedInput data-pt={taggedPt} {...props} />;
+          component = <TaggedInput tagged:data-pt={taggedPt} {...props} />;
           break;
       }
 
@@ -40,23 +45,39 @@ const { fields, "input-pt": inputPt, "btn-pt": btnPt, "tagged-pt": taggedPt } = 
 
   <td>
     <div class="last-cell">
-      <Button btn:type="button" btn:data-pt={btnPt}> - </Button>
+      <Button btn:type="button" btn:data-pt={btnPt} class="h-100"> - </Button>
     </div>
   </td>
 </tr>
 
 <style>
+  /* weird stuff to make all cells equal-heights */
+  tr {
+    height: 1px;
+  }
+
   td {
     padding: 0;
     border-collapse: collapse;
+    vertical-align: top;
+    height: inherit;
   }
 
   .cell,
   .last-cell {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-sizing: border-box;
     padding-bottom: 0.25rem;
   }
 
   .cell {
     margin-right: calc(-1 * var(--surface-depth));
+  }
+
+  .cell {
+    background-color: llllighter(var(--input-color));
+    color: ddddarker(var(--input-color));
   }
 </style>

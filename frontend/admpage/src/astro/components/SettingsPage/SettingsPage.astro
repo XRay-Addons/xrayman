@@ -1,0 +1,107 @@
+---
+import Title from "@xrayman/shared/astro/primitives/Title.astro";
+import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
+import Config from "@xrayman/shared/astro/primitives/Config/Config.astro";
+import Button from "@xrayman/shared/astro/primitives/Button.astro";
+import { fields } from "./SettingsFields";
+import ActiveSlot from "@xrayman/shared/astro/primitives/ActiveSlot/ActiveSlot.astro";
+import VersionTag from "./VersionTag.astro";
+const i18n = "settings";
+---
+
+<settings-page>
+  <Title class="col-6 mb-2">
+    <I18NText data-i18n=`${i18n}.title` />
+  </Title>
+
+  <Config i18n={i18n} fields={fields} class="mb-2" data-config form:data-config-form />
+
+  <div class="d-flex justify-content-center">
+    <Button btn:type="submit" class="mb-2 col-8" btn:data-submit-btn>
+      <ActiveSlot data-submit-btn-content>
+        <I18NText data-i18n=`${i18n}.submit-btn.info` />
+      </ActiveSlot>
+    </Button>
+  </div>
+  <div class="d-flex justify-content-center">
+    <Button btn:type="button" class="mb-2 col-8" btn:data-refresh-btn>
+      <I18NText data-i18n=`${i18n}.refresh` />
+    </Button>
+  </div>
+  <VersionTag />
+</settings-page>
+
+<script>
+  import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
+  import type { ConfigEditorElement } from "@xrayman/shared/astro/primitives/Config/Config";
+  import { getSettings, setSettings } from "@/services/api/client";
+  import { notifyApiError, notifyError } from "@/runtime/notifications/use-notifications";
+  import { fromRawData, toRawData } from "./DataConverter";
+  import { config } from "@/config/config";
+  import { ActiveSlotElement } from "@xrayman/shared/astro/primitives/ActiveSlot/ActiveSlot";
+  import { t } from "@/runtime/i18n";
+  import { checkSettings } from "./SettingsCheck";
+
+  class SettingsPage extends CustomElement {
+    private configEl!: ConfigEditorElement;
+
+    async connectedCallback() {
+      super.connectedCallback();
+
+      this.configEl = pt<ConfigEditorElement>(this, "config");
+      const form = pt<HTMLFormElement>(this, "config-form");
+      this.configEl.tags = config().SettingsTags;
+
+      const submitBtn = pt<HTMLButtonElement>(this, "submit-btn");
+      const submitBtnContent = pt<ActiveSlotElement>(this, "submit-btn-content");
+
+      const refresh = async () => {
+        const result = await getSettings();
+        if (!result.ok) {
+          notifyApiError("get_settings", result.reason);
+          return;
+        }
+        this.configEl.data = toRawData(result.data);
+      };
+
+      const update = async () => {
+        const value = fromRawData(this.configEl.value);
+        const err = checkSettings(value);
+        if (err) {
+          notifyError(err.name, err.message);
+          return;
+        }
+        const result = await setSettings(value);
+        if (!result.ok) {
+          notifyApiError("set_settings", result.reason);
+          return;
+        }
+        // show back
+        submitBtnContent.value = t("settings.submit-btn.success");
+        setTimeout(() => {
+          submitBtnContent.value = undefined;
+        }, 2000);
+      };
+
+      submitBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        form.requestSubmit();
+      });
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        await update();
+      });
+
+      const refreshBtn = pt<HTMLButtonElement>(this, "refresh-btn");
+      refreshBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        await refresh();
+      });
+
+      await refresh();
+    }
+  }
+
+  customElements.define("settings-page", SettingsPage);
+</script>

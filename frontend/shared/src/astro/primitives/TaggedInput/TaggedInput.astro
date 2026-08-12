@@ -1,23 +1,23 @@
 ---
-import type { HTMLAttributes } from "astro/types";
+import type { HTMLAttributes, ComponentProps } from "astro/types";
 import { ExtractPrefixed, type WithPrefix } from "@xrayman/shared/astro/props/props";
 import Input from "@xrayman/shared/astro/primitives/Input.astro";
 import Surface from "@xrayman/shared/astro/primitives/Surface.astro";
 
-type InputProps = WithPrefix<HTMLAttributes<"input">, "input">;
-type HostProps = HTMLAttributes<"div">;
+type InputProps = ComponentProps<typeof Input>;
+type HostProps = WithPrefix<HTMLAttributes<"div">, "tagged">;
 
 interface Props extends InputProps, HostProps {}
 
 const { ...props } = Astro.props;
-const { ...inputProps } = ExtractPrefixed(props, "input");
+const { ...taggedProps } = ExtractPrefixed(props, "tagged");
 ---
 
-<tagged-input {...props}>
-  <Input input:data-tagged-input input:autocomplete="off" input={{ ...inputProps }} />
+<tagged-input {...taggedProps}>
+  <Input data-input-container input:data-tagged-input {...props} />
 
   <div data-tags-container class="tags-container" hidden>
-    <Surface depth="var(--input-depth)" color="var(--input-color)">
+    <Surface color="var(--input-color)">
       <div data-tags class="d-flex flex-wrap gap-2 m-1 h-center"></div>
 
       <template data-tag-template>
@@ -107,6 +107,7 @@ const { ...inputProps } = ExtractPrefixed(props, "input");
   tagged-input {
     display: block;
     position: relative;
+    height: 100%;
   }
 
   .tags-container {
@@ -115,7 +116,7 @@ const { ...inputProps } = ExtractPrefixed(props, "input");
     top: 100%;
     width: 100%;
 
-    margin-top: calc(-1 * var(--input-depth));
+    margin-top: calc(-1 * var(--surface-depth));
   }
 
   .tag {

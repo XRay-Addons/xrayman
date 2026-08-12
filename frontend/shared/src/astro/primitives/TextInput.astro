@@ -1,0 +1,94 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+type InputProps = HTMLAttributes<"input">;
+
+interface Props extends InputProps {
+  nowrap?: boolean;
+}
+
+const { type = "text", readonly = false, nowrap = true, ...restProps } = Astro.props;
+
+const input = type !== "text" || (nowrap && !readonly);
+const row = !input && nowrap;
+const whitespace = nowrap ? "nowrap" : "pre-wrap";
+---
+
+{
+  input ? (
+    <input {...restProps} type={type} readonly={readonly} />
+  ) : row ? (
+    <textarea {...restProps} rows={1} />
+  ) : (
+    <legacy-text-field>
+      <textarea data-textarea {...restProps} rows={1} />
+    </legacy-text-field>
+  )
+}
+
+<script>
+  import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
+
+  class LegacyTextField extends CustomElement {
+    private textarea!: HTMLTextAreaElement;
+
+    connectedCallback() {
+      const modernBrowser = CSS.supports("field-sizing", "content");
+      if (modernBrowser) return;
+
+      this.textarea = pt<HTMLTextAreaElement>(this, "textarea");
+      this.textarea.classList.add("legacy-textarea");
+
+      this.textarea.addEventListener("focus", this.onFocus);
+      this.textarea.addEventListener("blur", this.onBlur);
+      this.textarea.addEventListener("input", this.onInput);
+    }
+
+    disconnectedCallback() {
+      this.textarea.removeEventListener("focus", this.onFocus);
+      this.textarea.removeEventListener("blur", this.onBlur);
+      this.textarea.removeEventListener("input", this.onInput);
+    }
+
+    private onFocus = () => this.expand();
+    private onInput = () => this.expand();
+
+    private onBlur = () => {
+      this.textarea.style.height = "";
+    };
+
+    private expand() {
+      this.textarea.style.height = "auto";
+      this.textarea.style.height = `${this.textarea.scrollHeight}px`;
+    }
+  }
+
+  customElements.define("legacy-text-field", LegacyTextField);
+</script>
+
+<style define:vars={{ whitespace }}>
+  text-field {
+    display: contents;
+  }
+
+  textarea {
+    display: block;
+    resize: none;
+
+    white-space: var(--whitespace);
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    word-break: break-all;
+    -webkit-overflow-scrolling: touch;
+
+    field-sizing: content; /* modern browsers only */
+
+    transition: height 0.15s ease; /* legacy */
+  }
+
+  textarea::-webkit-scrollbar {
+    display: none;
+  }
+</style>

@@ -23,8 +23,8 @@ import SettingsDialog from "./SettingsDialog.astro";
     width: fit-content;
     box-sizing: border-box;
     overflow: hidden;
-
-    --btn-size: calc(1.4rem * 1.25 + 1rem + 2px + var(--title-depth));
+    /* dirty hack to calc height of single-line title to make button squared */
+    --btn-size: calc(1.4rem * 1.25 + 1rem + 2px + var(--surface-depth));
   }
 
   .block-text {
@@ -32,7 +32,7 @@ import SettingsDialog from "./SettingsDialog.astro";
     overflow-wrap: anywhere;
     word-break: break-word;
 
-    padding-right: calc(var(--btn-size) - var(--title-depth));
+    padding-right: calc(var(--btn-size) - var(--surface-depth));
   }
 
   .future-button {

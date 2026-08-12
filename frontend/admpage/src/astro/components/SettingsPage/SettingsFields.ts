@@ -1,24 +1,27 @@
-import type { ListItemField } from "@xrayman/shared/astro/primitives/ListInput/ListInput.astro";
+import { ListItemField } from "@xrayman/shared/astro/primitives/ListInput/ListInput";
+import TextInput from "@xrayman/shared/astro/primitives/TextInput.astro";
 import type { InputField, ListField } from "@xrayman/shared/astro/primitives/Config/Config.astro";
-import type { HTMLAttributes } from "astro/types";
+import type { ComponentProps } from "astro/types";
 
 // -------------------------------------------------------------------------
 // input attributes set for common inputs: integer, string, number
-export const strInput = { type: "text" } satisfies HTMLAttributes<"input">;
+export const strInput = {
+  type: "text",
+} satisfies ComponentProps<typeof TextInput>;
 
 export const intInput = {
   type: "number",
   inputmode: "numeric",
   step: "1",
   pattern: "[0-9]*",
-} satisfies HTMLAttributes<"input">;
+} satisfies ComponentProps<typeof TextInput>;
 
 export const numInput = {
   type: "number",
   inputmode: "decimal",
   step: "any",
   pattern: "[0-9]*([\\.,][0-9]+)?",
-} satisfies HTMLAttributes<"input">;
+} satisfies ComponentProps<typeof TextInput>;
 
 // -------------------------------------------------------------------------
 // field names
@@ -48,7 +51,7 @@ const platformAppFields: ListItemField[] = [
   {
     name: "URL",
     type: "input",
-    inputProps: { required: true },
+    inputProps: { required: true, nowrap: false },
     width: "60%",
   },
 ];
@@ -75,7 +78,7 @@ export const fields: (InputField | ListField)[] = [
   {
     name: UsersMessage,
     type: "tagged-input",
-    inputProps: { required: false },
+    inputProps: { required: false, nowrap: false },
   },
   {
     name: UserPage,
@@ -95,7 +98,7 @@ export const fields: (InputField | ListField)[] = [
   {
     name: Routing,
     type: "input",
-    inputProps: { required: false },
+    inputProps: { required: false, nowrap: false },
   },
   {
     name: AppLinks,

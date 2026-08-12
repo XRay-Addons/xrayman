@@ -16,15 +16,17 @@ const buttonsJson = JSON.stringify(PLATFORM_BUTTONS);
     </Info>
 
     <div class="h-center w-100">
-      <EqHeight data-install-app-btns class="row h-center g-1 fluid-lg">
-        <template data-install-app-btn-template>
-          <div class="col-6">
-            <Button class="w-100 h-100" data-install-app-btn>
-              <span data-install-app-btn-text></span>
-            </Button>
-          </div>
-        </template>
-      </EqHeight>
+      <div class="fluid-lg">
+        <EqHeight data-install-app-btns class="row h-center g-1">
+          <template data-install-app-btn-template>
+            <div class="col-6">
+              <Button class="w-100 h-100" data-install-app-btn>
+                <span data-install-app-btn-text></span>
+              </Button>
+            </div>
+          </template>
+        </EqHeight>
+      </div>
     </div>
   </Card>
 

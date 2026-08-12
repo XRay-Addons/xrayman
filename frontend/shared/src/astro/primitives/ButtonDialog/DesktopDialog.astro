@@ -1,0 +1,119 @@
+---
+import { ExtractPrefixed, type WithPrefix } from "@xrayman/shared/astro/props/props";
+import Surface from "@xrayman/shared/astro/primitives/Surface.astro";
+import type { HTMLAttributes } from "astro/types";
+
+type PageProps = HTMLAttributes<"div">;
+type DlgProps = WithPrefix<HTMLAttributes<"dialog">, "dlg">;
+
+interface Props extends PageProps, DlgProps {}
+
+const { ...props } = Astro.props;
+const { class: dlgClass, ...dlgProps } = ExtractPrefixed(props, "dlg");
+const { class: pageClass, ...pageProps } = props;
+---
+
+<desktop-dialog>
+  <dialog class:list={["app-dialog", dlgClass]} data-app-desktop-dialog {...dlgProps}>
+    <div class="app-dialog-page p-2" data-dialog-page>
+      <div class:list={["dialog-surface-wrapper", pageClass]} {...pageProps}>
+        <Surface in:class="p-2" color="var(--bg-color)">
+          <slot name="page" />
+        </Surface>
+      </div>
+    </div>
+  </dialog>
+</desktop-dialog>
+
+<script>
+  import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
+  import type { Resettable } from "./ButtonDialog";
+
+  class DesktopDialog extends CustomElement {
+    private dialog!: HTMLDialogElement;
+    private page!: HTMLElement;
+    private closeBtn!: HTMLButtonElement;
+
+    connectedCallback() {
+      this.dialog = pt<HTMLDialogElement>(this, "app-desktop-dialog");
+      this.page = pt<HTMLElement>(this, "dialog-page");
+
+      this.dialog.addEventListener("close", () => {
+        this.reset();
+      });
+
+      const close = () => {
+        this.dialog.close();
+      };
+
+      this.page.onmousedown = (e) => {
+        if (e.target === this.page) {
+          close();
+        }
+      };
+    }
+
+    private reset() {
+      const wrapper = this.page.querySelector(".dialog-surface-wrapper");
+      const target = wrapper || this.page;
+
+      Array.from(target.children).forEach((el) => {
+        if (el === this.closeBtn) return;
+        (el as Partial<Resettable>).reset?.();
+      });
+    }
+  }
+
+  customElements.define("desktop-dialog", DesktopDialog);
+</script>
+
+<style>
+  desktop-dialog {
+    display: contents;
+  }
+
+  .app-dialog {
+    background: rgba(255, 255, 255, 0.5);
+    border: none;
+
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+  }
+
+  .app-dialog::backdrop {
+    background: transparent;
+  }
+
+  .app-dialog-page {
+    position: absolute;
+    inset: 0;
+
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+
+    flex-direction: column;
+
+    display: flex;
+    align-items: center;
+
+    justify-content: safe center; /* Desktop only */
+  }
+
+  .dialog-surface-wrapper {
+    position: relative;
+  }
+
+  .app-dialog-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+
+    border: none;
+    cursor: pointer;
+    padding: 0px;
+  }
+</style>

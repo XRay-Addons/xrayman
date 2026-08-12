@@ -12,8 +12,3 @@ Version:
               example: "v1.2.3"
       "default":
         $ref: "../components/requests/error.yaml#/Error"
-
-    tags:
-      - admpage
-    security:
-      - BearerAuth: []

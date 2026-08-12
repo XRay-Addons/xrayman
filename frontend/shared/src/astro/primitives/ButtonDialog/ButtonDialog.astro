@@ -1,116 +1,54 @@
 ---
 import Button from "@xrayman/shared/astro/primitives/Button.astro";
-import type { ComponentProps } from "astro/types";
+import MobileDialog from "./MobileDialog.astro";
+import DesktopDialog from "./DesktopDialog.astro";
+import { ExtractPrefixed } from "@xrayman/shared/astro/props/props";
+import type { ButtonDialogProps } from "./types";
 
-type Props = ComponentProps<typeof Button>;
+type Props = ButtonDialogProps;
 
 const { ...props } = Astro.props;
+const { ...pageProps } = ExtractPrefixed(props, "page");
 ---
 
-<btn-dialog>
+<button-dialog data-breakpoint="768">
   <Button data-dialog-button {...props}>
     <slot name="button" />
   </Button>
 
-  <dialog class="app-dialog" data-dialog>
-    <div class="app-dialog-overlay" data-overlay></div>
+  <MobileDialog {...pageProps} dlg:data-mobile-dialog>
+    <slot name="page" slot="page" />
+  </MobileDialog>
 
-    <div class="position-relative">
-      <button class="dialog-close-cross ui-reset-button" data-close-btn type="button"> ✖ </button>
-    </div>
-
-    <div class="app-dialog-page h-center" data-dialog-page>
-      <slot name="page" />
-    </div>
-  </dialog>
-</btn-dialog>
+  <DesktopDialog {...pageProps} dlg:data-desktop-dialog>
+    <slot name="page" slot="page" />
+  </DesktopDialog>
+</button-dialog>
 
 <script>
   import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
   import { pt } from "@xrayman/shared/runtime/dom/pts";
-  import type { Resettable } from "./ButtonDialog";
 
-  class BtnDialog extends CustomElement {
-    private button!: HTMLButtonElement;
-    private dialog!: HTMLDialogElement;
-    private page!: HTMLElement;
-
+  class ButtonDialog extends CustomElement {
     connectedCallback() {
-      this.button = pt<HTMLButtonElement>(this, "dialog-button");
-      this.dialog = pt<HTMLDialogElement>(this, "dialog");
-      this.page = pt<HTMLElement>(this, "dialog-page");
+      const btn = pt<HTMLButtonElement>(this, "dialog-button");
 
-      this.button.onclick = async () => {
-        this.dialog.showModal();
+      btn.onclick = async () => {
+        const breakpoint = Number(this.dataset.breakpoint ?? 768);
+        const isDesktop = window.matchMedia(`(min-width: ${breakpoint}px)`).matches;
+
+        const variant = isDesktop ? "desktop" : "mobile";
+        const dlg = pt<HTMLDialogElement>(this, `${variant}-dialog`);
+        dlg.showModal();
       };
-
-      this.dialog.addEventListener("close", () => {
-        this.reset();
-      });
-
-      const close = () => {
-        this.dialog.close();
-        this.reset();
-      };
-
-      const overlay = pt<HTMLElement>(this, "overlay");
-      overlay.onclick = close;
-
-      overlay.onwheel = (e) => {
-        e.preventDefault();
-      };
-      overlay.ontouchmove = (e) => {
-        e.preventDefault();
-      };
-
-      const closeBtn = pt<HTMLButtonElement>(this, "close-btn");
-      closeBtn.onclick = close;
-    }
-
-    private reset() {
-      Array.from(this.page.children).forEach((el) => {
-        (el as Partial<Resettable>).reset?.();
-      });
     }
   }
 
-  customElements.define("btn-dialog", BtnDialog);
+  customElements.define("button-dialog", ButtonDialog);
 </script>
 
 <style>
-  btn-dialog {
+  button-dialog {
     display: contents;
-  }
-
-  .app-dialog {
-    background: transparent;
-    border: none;
-    width: 100%;
-    max-width: 100%;
-    padding: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-  }
-
-  .app-dialog::backdrop {
-    background: transparent;
-  }
-  .app-dialog-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(255, 255, 255, 0.5);
-  }
-
-  .dialog-close-cross {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 48;
-    height: 48;
-    padding-top: 8;
-    padding-right: 8;
-    text-align: end;
-    z-index: 9999;
-    font-size: 48;
   }
 </style>

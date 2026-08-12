@@ -1,7 +1,8 @@
-import type { HTMLAttributes } from "astro/types";
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import TextInput from "@xrayman/shared/astro/primitives/TextInput.astro";
 
 export type FieldType = "input" | "tagged-input";
-export type InputAttrs = Omit<HTMLAttributes<"input">, "name">;
+export type InputAttrs = Omit<ComponentProps<typeof TextInput>, "name">;
 
 export interface ListItemField {
   name: string;

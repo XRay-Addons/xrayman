@@ -11,7 +11,7 @@ const fluidWidths = {
 
 function interpolate(width: number, values: readonly number[]) {
   // TODO: binary search
-  if (width <= values[0]) {
+  if (width <= breakpoints[0]) {
     return values[0];
   }
 

@@ -19,7 +19,7 @@ const { i18n, fields, "input-pt": inputPt, "btn-pt": btnPt, "tagged-pt": taggedP
 <div data-item class="narrow-list-item">
   {
     fields.map(({ name, type, inputProps = {} }) => {
-      const props = { "input:name": name, "input:data-pt": inputPt, input: inputProps };
+      const props = { "input:name": name, "input:data-pt": inputPt, input: { inputProps } };
 
       let component;
 
@@ -28,7 +28,7 @@ const { i18n, fields, "input-pt": inputPt, "btn-pt": btnPt, "tagged-pt": taggedP
           component = <Input {...props} />;
           break;
         case "tagged-input":
-          component = <TaggedInput data-pt={taggedPt} {...props} />;
+          component = <TaggedInput tagged:data-pt={taggedPt} {...props} />;
           break;
       }
 

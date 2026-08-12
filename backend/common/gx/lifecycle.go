@@ -71,7 +71,14 @@ func (lc *lifecycle) Run(ctx context.Context) error {
 	for idx, job := range lc.jobs {
 		wg.Add(1)
 		go func() {
-			defer wg.Done()
+			defer func() {
+				// panic to error
+				if p := recover(); p != nil {
+					runErrs[idx] = xerr.Panic(p)
+				}
+				wg.Done()
+			}()
+
 			if err := lc.invokeJobRunner(ctx, job); err != nil {
 				runErrs[idx] = err
 				select {

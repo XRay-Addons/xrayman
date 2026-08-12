@@ -9,13 +9,14 @@ interface Props extends InProps, HostProps {
   dynamic?: boolean;
   depth?: string;
   color?: string;
+  light?: boolean; // for lighter color inside //
 }
 
 const { ...props } = Astro.props;
 const { class: inClass, ...inProps } = ExtractPrefixed(props, "in");
 const {
   dynamic = false,
-  depth = "0px",
+  light = false,
   color = "transparent",
   class: hostClass,
   ...hostProps
@@ -23,12 +24,11 @@ const {
 
 const styleVars = {
   ...(color && { "--surface-color": color }),
-  ...(depth && { "--surface-depth": depth }),
 };
 ---
 
 <div class:list={["surface-out", hostClass]} style={styleVars} {...hostProps}>
-  <div class:list={["surface-in", inClass, { "surface-dynamic": dynamic }]} {...inProps}>
+  <div class:list={["surface-in", inClass, { dynamic }, { light }]} {...inProps}>
     <slot />
   </div>
 </div>
@@ -73,29 +73,29 @@ const styleVars = {
     background-color: dddarker(var(--surface-color));
   }
 
-  .surface-dynamic {
+  .dynamic {
     transition: transform 200ms ease;
   }
 
   @media (any-hover: hover) {
-    .surface-dynamic:hover {
+    .dynamic:hover {
       background-color: darker(var(--surface-color));
       transform: translate(calc(var(--surface-depth) / 2), calc(var(--surface-depth) / 2));
     }
   }
 
-  .surface-dynamic:active {
+  .dynamic:active {
     background-color: ddarker(var(--surface-color));
     transform: translate(var(--surface-depth), var(--surface-depth));
   }
 
-  :global(.surface-out input) {
-    background-color: llllighter(var(--surface-color));
-    color: ddddarker(var(--surface-color));
+  .surface-in.light {
+    background-color: llllighter(var(--surface-color)) !important;
+    color: ddddarker(var(--surface-color)) !important;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .surface-dynamic {
+    .dynamic {
       transition: none;
     }
   }
