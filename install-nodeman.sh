@@ -187,7 +187,7 @@ if [ -n "$LINKS_DIR" ]; then
   ln -sf "$SERVICE_FILE" "$LINKS_DIR/$APP.service"
 
   log "Symlinks created in $LINKS_DIR:"
-  log "  $LINKS_DIR/$APP        -> $BIN_PATH"
+  log "  $LINKS_DIR/$APP         -> $BIN_PATH"
   log "  $LINKS_DIR/$APP.env     -> $ENV_FILE"
   log "  $LINKS_DIR/$APP.service -> $SERVICE_FILE"
 fi
