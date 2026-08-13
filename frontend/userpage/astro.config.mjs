@@ -76,7 +76,7 @@ export default defineConfig({
           secure: false,
         },
         "/u/": {
-          target: "http://localhost:4322",
+          target: "http://localhost:4321",
           changeOrigin: true,
           rewrite: () => "",
         },
@@ -84,7 +84,7 @@ export default defineConfig({
     },
   },
   server: {
-    port: 4322,
+    port: 4321,
     strictPort: true,
   },
 });

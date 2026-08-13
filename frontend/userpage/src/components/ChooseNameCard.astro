@@ -15,6 +15,7 @@ const i18n = "choosename";
 
     <div class="h-center g-0 w-100">
       <InputGroup
+        input:data-input
         input:data-i18n-placeholder=`${i18n}.placeholder`
         btn:data-i18n=`${i18n}.btntext`
         data-name-input
@@ -32,6 +33,7 @@ const i18n = "choosename";
   import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
   import { type InputGroupElement } from "@xrayman/shared/astro/primitives/InputGroup/InputGroup";
   import { pt } from "@xrayman/shared/runtime/dom/pts";
+  import { t, tlist } from "@/runtime/i18n";
 
   class ChooseNameCard extends CustomElement {
     connectedCallback() {
@@ -51,6 +53,13 @@ const i18n = "choosename";
           notifyApiError("new_user", response.reason);
         }
       };
+
+      const inputEl = pt<HTMLInputElement>(this, "input");
+
+      const prefix = t("choosename.placeholder.prefix");
+      const names = tlist("choosename.placeholder.name");
+      const name = names[Math.floor(Math.random() * names.length)];
+      inputEl.placeholder = `${prefix} ${name}`;
     }
   }
 
