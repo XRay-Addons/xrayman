@@ -5,11 +5,11 @@ APP=xray-nodeman
 BIN_DIR=/opt
 BIN_PATH=$BIN_DIR/$APP
 ENV_DIR=/etc/$APP
-PACKAGE_BIN_PATH="$APP/$APP"
+
 EXEC_CMD=$(cat <<EOF
 $BIN_PATH \
-  --endpoint 127.0.0.1:5002 \
-  --log-lvl info
+--endpoint 127.0.0.1:5002 \
+--log-lvl info
 EOF
 )
 
@@ -187,7 +187,7 @@ if [ -n "$LINKS_DIR" ]; then
   ln -sf "$SERVICE_FILE" "$LINKS_DIR/$APP.service"
 
   log "Symlinks created in $LINKS_DIR:"
-  log "  $LINKS_DIR/$APP         -> $BIN_PATH"
+  log "  $LINKS_DIR/$APP        -> $BIN_PATH"
   log "  $LINKS_DIR/$APP.env     -> $ENV_FILE"
   log "  $LINKS_DIR/$APP.service -> $SERVICE_FILE"
 fi
@@ -198,4 +198,4 @@ echo "$VERSION_OUTPUT"
 echo "Edit $ENV_FILE config file and run service"
 echo "	via 'sudo systemctl restart $APP'"
 echo "View service logs"
-echo "	via 'journalctl -u $APP -f -n 50'"
+echo "	via journalctl -u $APP -f -n 50'"
