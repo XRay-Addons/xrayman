@@ -44,7 +44,7 @@ func (h *logHandler) translate(msg xlog.Message) (zapcore.Level, string) {
 	case strings.HasPrefix(text, "[Debug]"):
 		return zapcore.DebugLevel, tag + text[len("[Debug]")+1:]
 	default:
-		return zapcore.InfoLevel, text
+		return zapcore.InfoLevel, tag + text
 	}
 }
 
