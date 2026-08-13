@@ -3,26 +3,28 @@ set -euo pipefail
 
 APP=xray-node
 BIN_DIR=/opt/$APP/bin
-DATA_PATH="/opt/$APP/data"
 CONFIG_DIR="/etc/$APP"
 PERSIST_DIR="/var/lib/$APP"
 BIN_PATH=$BIN_DIR/$APP
+DATA_PATH="/opt/$APP/data"
 ENV_DIR=/etc/$APP
 PACKAGE_BIN_PATH="$APP/$APP"
 PACKAGE_DATA_PATH="$APP/data"
 
 EXEC_CMD=$(cat <<EOF
 $BIN_PATH \
-  --endpoint 127.0.0.1:5001 \
-  --x-ray-data-dir $DATA_PATH \
-  --x-ray-config-dir $CONFIG_DIR \
-  --persistent-dir $PERSIST_DIR \
-  --log-lvl info
+--x-ray-data-dir $DATA_PATH \
+--x-ray-config-dir $CONFIG_DIR \
+--persistent-dir $PERSIST_DIR \
+--log-lvl info
 EOF
 )
 
 # default env content shipped with this installer
-DEFAULT_ENV_CONTENT=""
+DEFAULT_ENV_CONTENT=$(cat <<'EOF'
+ENDPOINT=0.0.0.0:5001
+EOF
+)
 
 ENV_FILE=$ENV_DIR/$APP.env
 SERVICE_FILE=/etc/systemd/system/$APP.service
@@ -37,7 +39,7 @@ case "$(uname -s)" in
     exit 1
     ;;
 esac
- 
+
 # detect architecture and map it to the naming used in release assets
 case "$(uname -m)" in
   x86_64)  ARCH=amd64 ;;
@@ -49,7 +51,7 @@ case "$(uname -m)" in
     exit 1
     ;;
 esac
- 
+
 DOWNLOAD_URL="https://github.com/XRay-Addons/xrayman/releases/latest/download/xrayman-$OS-$ARCH.tar.gz"
 
 log() {
@@ -118,7 +120,13 @@ mkdir -p "$DATA_PATH"
 rsync -a --chmod=D755,F755 --chown=root:root "$NEW_DATA/" "$DATA_PATH/"
 log "Data installed to $DATA_PATH"
 
-# --- 7. build the env file ---
+# --- 7. make CONFIG_DIR and PERSIST_DIR with correct access rights
+mkdir -p "$CONFIG_DIR" "$PERSIST_DIR"
+chown -R root:$APP "$CONFIG_DIR" "$PERSIST_DIR"
+chmod 750 "$CONFIG_DIR"  # read-only folder
+chmod 770 "$PERSIST_DIR" # rw - folder
+
+# --- 8. build the env file ---
 mkdir -p "$ENV_DIR"
 
 ENV_EXISTED=false
@@ -165,7 +173,7 @@ chown root:"$APP" "$ENV_FILE"
 chmod 640 "$ENV_FILE"
 log "Env file written to $ENV_FILE"
 
-# --- 8. write systemd unit file ---
+# --- 9. write systemd unit file ---
 cat > "$SERVICE_FILE" <<EOF
 [Unit]
 Description=$APP service
@@ -191,18 +199,129 @@ log "systemd daemon reloaded"
 systemctl enable "$APP"
 log "Service '$APP' enabled (autostart on boot)"
 
-# --- 9. ask for a folder to hold symlinks to the key files ---
+# --- 10. add config examples to config dir ---
+cat > "$CONFIG_DIR/xray_server.example.json" <<EOF
+/*
+   XRay server config example.
+   Place the real config to $CONFIG_DIR/xray_server.json.
+   For real config set access rights:
+     sudo chown root:$APP "$CONFIG_DIR/xray_server.json"
+     sudo chmod 640 "$CONFIG_DIR/xray_server.json"
+ */
+{
+  /* log file paths ignored, logs redirected to xray-node main log */
+  "log": {...},
+  "dns": {...},
+
+  /* mandatory config part for stats and api access from xray-node */
+  "api": {
+    "tag": "api",
+    "listen": "127.0.0.1:32998",
+    "services": ["HandlerService", "LoggerService", "StatsService", "ReflectionService"]
+  },
+  "stats": {},
+  "policy": {
+    "levels": {
+      "0": {
+        "statsUserUplink": true,
+        "statsUserDownlink": true,
+        "statsUserOnline": true
+      }
+    },
+    "system": {
+      "statsInboundUplink": true,
+      "statsInboundDownlink": true,
+      "statsOutboundUplink": true,
+      "statsOutboundDownlink": true
+    }
+  },
+  /* end of mandatory config part */
+
+  "inbounds": [...],
+  "outbounds": [...],
+  "routing": {
+    "rules": [...],
+    "domainStrategy": "IPIfNonMatch"
+  }
+}
+EOF
+chown root:"$APP" "$CONFIG_DIR/xray_server.example.json"
+chmod 640 "$CONFIG_DIR/xray_server.example.json"
+log "Server config example file written to '$CONFIG_DIR/xray_server.example.json'"
+
+cat > "$CONFIG_DIR/xray_client.example.json" <<EOF
+/*
+   XRay client config example.
+   list of xray-core json client profiles,
+   allowed placeholders:
+     - {{ .VlessEmail }}
+     - {{ .VlessUUID }}
+   Place the real config to $CONFIG_DIR/xray_client.json.
+   For real config set access rights:
+     sudo chown root:$APP "$CONFIG_DIR/xray_client.json"
+     sudo chmod 640 "$CONFIG_DIR/xray_client.json"
+ */
+[
+  {
+    "remarks": "Protocol-Name",
+    "log": {},
+    "inbounds": [...]
+    "outbounds": [
+      {
+        "protocol": "vless",
+        "settings": {
+          "vnext": [
+            {
+              ...
+              "users": [
+                {
+                  "email": "{{ .VlessEmail }}",
+                  "id": "{{ .VlessUUID }}"
+                  ...
+                }
+              ]
+            }
+          ]
+        },
+        "streamSettings": {...},
+        "tag": "proxy"
+      },
+      {
+        "tag": "direct",
+        "protocol": "freedom"
+      }
+    ],
+    "dns": {...},
+    "routing": {
+      "rules": [...],
+      "DomainStrategy": "IPIfNonMatch"
+    }
+  }
+]
+EOF
+chown root:"$APP" "$CONFIG_DIR/xray_client.example.json"
+chmod 640 "$CONFIG_DIR/xray_client.example.json"
+log "Client config example file written to '$CONFIG_DIR/xray_client.example.json'"
+
+
+# --- 11. ask for a folder to hold symlinks to the key files ---
 read -rp "Enter folder path to store shortcut symlinks (optional): " LINKS_DIR
 
 if [ -n "$LINKS_DIR" ]; then
   mkdir -p "$LINKS_DIR"
 
   ln -sf "$BIN_PATH" "$LINKS_DIR/$APP"
+  ln -sf "$DATA_PATH" "$LINKS_DIR/$APP.data"
+  ln -sf "$CONFIG_DIR" "$LINKS_DIR/$APP.config"
+  ln -sf "$PERSIST_DIR" "$LINKS_DIR/$APP.persist"
   ln -sf "$ENV_FILE" "$LINKS_DIR/$APP.env"
   ln -sf "$SERVICE_FILE" "$LINKS_DIR/$APP.service"
 
   log "Symlinks created in $LINKS_DIR:"
-  log "  $LINKS_DIR/$APP        -> $BIN_PATH"
+  log "  $LINKS_DIR/$APP         -> $BIN_PATH"
+  log "  $LINKS_DIR/$APP.data    -> $DATA_PATH"
+  log "  $LINKS_DIR/$APP.config  -> $CONFIG_DIR"
+  log "  $LINKS_DIR/$APP.persist -> $PERSIST_DIR"
   log "  $LINKS_DIR/$APP.env     -> $ENV_FILE"
   log "  $LINKS_DIR/$APP.service -> $SERVICE_FILE"
 fi
