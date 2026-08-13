@@ -31,18 +31,18 @@ xray log levels:
 */
 func (h *logHandler) translate(msg xlog.Message) (zapcore.Level, string) {
 	text := msg.String()
-
+	const tag = "[xray] "
 	switch {
 	case strings.HasPrefix(text, "[Unknown]"):
-		return zapcore.InfoLevel, text[len("[Unknown]")+1:]
+		return zapcore.InfoLevel, tag + text[len("[Unknown]")+1:]
 	case strings.HasPrefix(text, "[Error]"):
-		return zapcore.ErrorLevel, text[len("[Error]")+1:]
+		return zapcore.ErrorLevel, tag + text[len("[Error]")+1:]
 	case strings.HasPrefix(text, "[Warning]"):
-		return zapcore.WarnLevel, text[len("[Warning]")+1:]
+		return zapcore.WarnLevel, tag + text[len("[Warning]")+1:]
 	case strings.HasPrefix(text, "[Info]"):
-		return zapcore.InfoLevel, text[len("[Info]")+1:]
+		return zapcore.InfoLevel, tag + text[len("[Info]")+1:]
 	case strings.HasPrefix(text, "[Debug]"):
-		return zapcore.DebugLevel, text[len("[Debug]")+1:]
+		return zapcore.DebugLevel, tag + text[len("[Debug]")+1:]
 	default:
 		return zapcore.InfoLevel, text
 	}
