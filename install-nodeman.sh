@@ -2,9 +2,25 @@
 set -euo pipefail
 
 APP=xray-nodeman
-BIN_DIR=/usr/local/bin
+BIN_DIR=/opt
 BIN_PATH=$BIN_DIR/$APP
 ENV_DIR=/etc/$APP
+
+EXEC_CMD=$(cat <<EOF
+$BIN_PATH \
+--endpoint 127.0.0.1:5002 \
+--log-lvl info
+EOF
+)
+
+# default env content shipped with this installer
+DEFAULT_ENV_CONTENT=$(cat <<'EOF'
+DBCONN=postgresql://user:password@host:5432/dbname
+JWT_SECRET=Secret***
+ADMIN_PASSWORD=****
+EOF
+)
+
 ENV_FILE=$ENV_DIR/$APP.env
 SERVICE_FILE=/etc/systemd/system/$APP.service
 
@@ -92,16 +108,6 @@ log "Binary installed to $BIN_PATH (version $VERSION_OUTPUT)"
 # --- 7. build the env file ---
 mkdir -p "$ENV_DIR"
 
-# default env content shipped with this installer
-DEFAULT_ENV_CONTENT=$(cat <<'EOF'
-DBCONN=postgresql://user:password@host:5432/dbname
-ENDPOINT=127.0.0.1:5002
-JWT_SECRET=Secret***
-ADMIN_PASSWORD=****
-LOG_LEVEL=info
-EOF
-)
-
 ENV_EXISTED=false
 OLD_ENV_CONTENT=""
 if [ -f "$ENV_FILE" ]; then
@@ -120,6 +126,8 @@ fi
   fi
 
   echo "# ============================================================"
+  echo "# ============================================================"
+  echo "# ============================================================"
   echo "# Updated by install.sh"
   echo "# Installed at: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
   echo "#"
@@ -132,16 +140,12 @@ fi
   echo "$HELP_OUTPUT" | sed 's/^/# /'
   echo "#"
   echo "# ============================================================"
-  echo ""
-
-  # default content from install.sh: commented out if an env file already
-  # existed (so we don't silently override the user's live settings),
-  # left active if this is a brand new env file
-  if [ "$ENV_EXISTED" = true ]; then
-    echo "$DEFAULT_ENV_CONTENT" | sed 's/^/# /'
-  else
-    echo "$DEFAULT_ENV_CONTENT"
-  fi
+  echo "#"
+  echo "# --- Systemd service command ---"
+  echo "$EXEC_CMD" | sed 's/^/# /'
+  echo "#"
+  echo "# --- Env options example ---"
+  echo "$DEFAULT_ENV_CONTENT" | sed 's/^/# /'
 } > "$ENV_FILE"
 
 chown root:"$APP" "$ENV_FILE"
@@ -159,7 +163,7 @@ Type=simple
 User=$APP
 Group=$APP
 EnvironmentFile=$ENV_FILE
-ExecStart=$BIN_PATH
+ExecStart=$EXEC_CMD
 Restart=on-failure
 RestartSec=5
 
@@ -175,21 +179,25 @@ systemctl enable "$APP"
 log "Service '$APP' enabled (autostart on boot)"
 
 # --- 9. ask for a folder to hold symlinks to the key files ---
-read -rp "Enter folder path to store shortcut symlinks: " LINKS_DIR
+read -rp "Enter folder path to store shortcut symlinks (optional): " LINKS_DIR
 
-mkdir -p "$LINKS_DIR"
+if [ -n "$LINKS_DIR" ]; then
+  mkdir -p "$LINKS_DIR"
 
-ln -sf "$BIN_PATH" "$LINKS_DIR/$APP"
-ln -sf "$ENV_FILE" "$LINKS_DIR/$APP.env"
-ln -sf "$SERVICE_FILE" "$LINKS_DIR/$APP.service"
+  ln -sf "$BIN_PATH" "$LINKS_DIR/$APP"
+  ln -sf "$ENV_FILE" "$LINKS_DIR/$APP.env"
+  ln -sf "$SERVICE_FILE" "$LINKS_DIR/$APP.service"
 
-log "Symlinks created in $LINKS_DIR:"
-log "  $LINKS_DIR/$APP        -> $BIN_PATH"
-log "  $LINKS_DIR/$APP.env     -> $ENV_FILE"
-log "  $LINKS_DIR/$APP.service -> $SERVICE_FILE"
+  log "Symlinks created in $LINKS_DIR:"
+  log "  $LINKS_DIR/$APP        -> $BIN_PATH"
+  log "  $LINKS_DIR/$APP.env     -> $ENV_FILE"
+  log "  $LINKS_DIR/$APP.service -> $SERVICE_FILE"
+fi
 
 echo ""
 echo "Done: $APP installed:"
 echo "$VERSION_OUTPUT"
-echo "Edit $LINKS_DIR/$APP.env config file and run"
-echo "	service via 'systemctl restart $APP'"
+echo "Edit $ENV_FILE config file and run service"
+echo "	via 'sudo systemctl restart $APP'"
+echo "View service logs"
+echo "	via journalctl -u $APP -f -n 50'"
