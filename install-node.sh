@@ -18,6 +18,7 @@ $BIN_PATH \
 --persistent-dir $PERSIST_DIR \
 --log-lvl info
 EOF
+)
 
 # default env content shipped with this installer
 DEFAULT_ENV_CONTENT=$(cat <<'EOF'
