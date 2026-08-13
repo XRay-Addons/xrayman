@@ -5,11 +5,11 @@ APP=xray-nodeman
 BIN_DIR=/opt
 BIN_PATH=$BIN_DIR/$APP
 ENV_DIR=/etc/$APP
-
+PACKAGE_BIN_PATH="$APP/$APP"
 EXEC_CMD=$(cat <<EOF
 $BIN_PATH \
---endpoint 127.0.0.1:5002 \
---log-lvl info
+  --endpoint 127.0.0.1:5002 \
+  --log-lvl info
 EOF
 )
 
@@ -75,9 +75,7 @@ log "Extracting archive"
 mkdir -p "$WORKDIR/extracted"
 tar -xzf "$WORKDIR/$APP.tar.gz" -C "$WORKDIR/extracted"
 
-# adjust this path if the binary is not at the archive root, e.g.
-# NEW_BIN="$WORKDIR/extracted/xray-nodeman/$APP"
-NEW_BIN="$WORKDIR/extracted/xray-nodeman/$APP"
+NEW_BIN="$WORKDIR/extracted/$PACKAGE_BIN_PATH"
 
 if [ ! -f "$NEW_BIN" ]; then
   echo "ERROR: binary not found at $NEW_BIN after extraction" >&2
@@ -200,4 +198,4 @@ echo "$VERSION_OUTPUT"
 echo "Edit $ENV_FILE config file and run service"
 echo "	via 'sudo systemctl restart $APP'"
 echo "View service logs"
-echo "	via journalctl -u $APP -f -n 50'"
+echo "	via 'journalctl -u $APP -f -n 50'"
