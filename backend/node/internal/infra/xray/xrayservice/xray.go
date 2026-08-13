@@ -37,10 +37,15 @@ func New(dataDir string, opts ...option) (*XRayService, error) {
 		opt(o)
 	}
 
-	return &XRayService{
+	service := &XRayService{
 		datadir: dataDir,
 		log:     o.log,
-	}, nil
+	}
+
+	// redirect xray logs to service logger
+	redirectXRayLogs(service.log)
+
+	return service, nil
 }
 
 func (s *XRayService) Close(ctx context.Context) error {
