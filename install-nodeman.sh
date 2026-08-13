@@ -8,13 +8,13 @@ ENV_DIR=/etc/$APP
 PACKAGE_BIN_PATH="$APP/$APP"
 EXEC_CMD=$(cat <<EOF
 $BIN_PATH \
---endpoint 127.0.0.1:5002 \
 --log-lvl info
 EOF
 )
 
 # default env content shipped with this installer
 DEFAULT_ENV_CONTENT=$(cat <<'EOF'
+ENDPOINT=127.0.0.1:5002
 DBCONN=postgresql://user:password@host:5432/dbname
 JWT_SECRET=Secret***
 ADMIN_PASSWORD=****

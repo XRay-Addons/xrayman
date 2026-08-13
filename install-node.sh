@@ -18,7 +18,6 @@ $BIN_PATH \
 --persistent-dir $PERSIST_DIR \
 --log-lvl info
 EOF
-log "Server config example file written to '$CONFIG_DIR/xray_server.example.json'"
 
 # default env content shipped with this installer
 DEFAULT_ENV_CONTENT=$(cat <<'EOF'
