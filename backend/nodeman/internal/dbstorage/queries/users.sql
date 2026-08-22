@@ -3,9 +3,15 @@ INSERT INTO users (
     display_name,
     user_name,
     vless_uuid,
-    user_target_status
-) VALUES ($1, $2, $3, $4)
-RETURNING user_id;
+    user_target_status,
+    revision
+) VALUES (
+    $1,
+    $2,
+    $3,
+    $4,
+    nextval('global_revision_seq')
+) RETURNING user_id;
 
 -- name: GetUserView :one
 SELECT
@@ -109,6 +115,7 @@ ORDER BY u.user_id ASC;
 UPDATE users
 SET
     user_target_status = $1,
+    revision = nextval('global_revision_seq'),
     updated_at = now()
 WHERE user_id = $2
     AND deleted_at IS NULL;
