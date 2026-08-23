@@ -2,7 +2,6 @@ package nodesync
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
@@ -115,7 +114,7 @@ func (s *syncer) startNode(ctx context.Context) (err error) {
 		if err = s.storage.SetNodeRev(ctx, InitialRevision); err != nil {
 			return
 		}
-		if users, err = s.storage.FindPendingSyncs(ctx, InitialRevision); err != nil {
+		if users, err = s.storage.FindPendingSyncs(ctx); err != nil {
 			return
 		}
 		if err = s.storage.SetCurrentNodeStatus(ctx, models.NodeStatusUnknown); err != nil {
@@ -149,7 +148,6 @@ func (s *syncer) startNode(ctx context.Context) (err error) {
 		if err = s.storage.SetNodeSettings(ctx, nodeSettings); err != nil {
 			return
 		}
-		fmt.Println("start, node rev:", rev)
 		if err = s.storage.SetNodeRev(ctx, rev); err != nil {
 			return
 		}
@@ -193,10 +191,7 @@ func (s *syncer) syncNodeUsers(ctx context.Context, updateNodeStatus bool) (err 
 	var users []models.UserSyncStatus
 	rev := InitialRevision
 	if err = s.storage.DoTx(ctx, func(ctx context.Context) (err error) {
-		if rev, err = s.storage.GetNodeRev(ctx); err != nil {
-			return
-		}
-		if users, err = s.storage.FindPendingSyncs(ctx, rev); err != nil {
+		if users, err = s.storage.FindPendingSyncs(ctx); err != nil {
 			return
 		}
 		return
@@ -235,9 +230,10 @@ func (s *syncer) syncNodeUsers(ctx context.Context, updateNodeStatus bool) (err 
 				return
 			}
 		}
-		fmt.Println("edit, node rev:", rev)
-		if err = s.storage.SetNodeRev(ctx, rev); err != nil {
-			return
+		if len(users) > 0 {
+			if err = s.storage.SetNodeRev(ctx, rev); err != nil {
+				return
+			}
 		}
 		return
 	}); err != nil {
@@ -245,45 +241,4 @@ func (s *syncer) syncNodeUsers(ctx context.Context, updateNodeStatus bool) (err 
 	}
 
 	return nil
-}
-
-func (s *syncer) buildUserUpdate(syncs []models.UserSyncStatus) (
-	update models.NodeUsersUpdate, prePatch, postPatch []models.UserStatusPatch,
-) {
-	prePatch = make([]models.UserStatusPatch, 0, len(syncs))
-	postPatch = make([]models.UserStatusPatch, 0, len(syncs))
-	update.Add = make([]models.UserProfile, 0, len(syncs))
-	update.Remove = make([]models.UserProfile, 0, len(syncs))
-
-	for _, u := range syncs {
-		switch u.User.TargetStatus {
-		case models.UserStatusEnabled:
-			update.Add = append(update.Add, u.User.Profile)
-		case models.UserStatusDisabled:
-			update.Remove = append(update.Remove, u.User.Profile)
-		}
-		prePatch = append(prePatch, models.UserStatusPatch{
-			UserID: u.User.Profile.ID,
-			Status: models.UserStatusUnknown,
-		})
-		postPatch = append(postPatch, models.UserStatusPatch{
-			UserID: u.User.Profile.ID,
-			Status: u.User.TargetStatus,
-		})
-	}
-	return
-}
-
-func (s *syncer) applyNodeStatePatch(ctx context.Context,
-	patch []models.UserStatusPatch,
-) error {
-	return s.storage.DoTx(ctx, func(ctx context.Context) error {
-		if err := s.storage.UpdateNodeUsers(ctx, patch); err != nil {
-			return err
-		}
-		if err := s.storage.SetCurrentNodeStatus(ctx, models.NodeStatusRunning); err != nil {
-			return err
-		}
-		return nil
-	})
 }

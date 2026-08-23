@@ -104,19 +104,13 @@ func (s *storage) SetNodeRev(ctx context.Context, id models.NodeID, rev models.R
 	return
 }
 
-func (s *storage) FindPendingSyncs(ctx context.Context, id models.NodeID, rev models.Revision) (
+func (s *storage) FindPendingSyncs(ctx context.Context, id models.NodeID) (
 	pending []models.UserSyncStatus, err error,
 ) {
 	pending = make([]models.UserSyncStatus, 0, len(s.users))
 	err = s.do(ctx, func(s *storage) error {
-		//nodeRev, err := s.GetNodeRev(ctx, s.node.ID)
-		//if err != nil {
-		//	return err
-		//}
-
-		//fmt.Println("aAAAAAAAAA", rev, s.nodeRev)
 		for i, u := range s.users {
-			if s.usersRev[i] <= rev {
+			if s.usersRev[i] <= s.nodeRev {
 				continue
 			}
 			pending = append(pending, models.UserSyncStatus{

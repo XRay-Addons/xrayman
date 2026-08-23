@@ -2,7 +2,6 @@ package tests
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
@@ -140,15 +139,8 @@ func checkFullConsistency(t *testing.T, c *ClientMock, s *UnstableStorage) {
 	require.NoError(t, err)
 	target, current, err := s.GetNodeStatus(context.TODO())
 	require.NoError(t, err)
-	rev, err := s.s.GetNodeRev(context.TODO(), s.nodeID)
+	pending, err := s.s.FindPendingSyncs(context.TODO(), s.nodeID)
 	require.NoError(t, err)
-	fmt.Println("node rev", rev)
-	pending, err := s.s.FindPendingSyncs(context.TODO(), s.nodeID, rev)
-	require.NoError(t, err)
-	for _, p := range pending {
-		fmt.Println("pending user rev", p.Revision)
-	}
-	fmt.Println("target", target, "current", current)
 
 	// check state is ok. only node required to be running matters
 	if target != models.NodeStatusRunning {
@@ -182,9 +174,7 @@ func checkStorageConsistency(t *testing.T, c *ClientMock, s *UnstableStorage) {
 	require.NoError(t, err)
 	target, current, err := s.GetNodeStatus(context.TODO())
 	require.NoError(t, err)
-	rev, err := s.s.GetNodeRev(context.TODO(), s.nodeID)
-	require.NoError(t, err)
-	pending, err := s.s.FindPendingSyncs(context.TODO(), s.nodeID, rev)
+	pending, err := s.s.FindPendingSyncs(context.TODO(), s.nodeID)
 	require.NoError(t, err)
 
 	if current != models.NodeStatusRunning {

@@ -14,10 +14,10 @@ type nodeStorage struct {
 
 var _ node.Storage = (*nodeStorage)(nil)
 
-func (n *nodeStorage) FindPendingSyncs(ctx context.Context, rev models.Revision) (
+func (n *nodeStorage) FindPendingSyncs(ctx context.Context) (
 	[]models.UserSyncStatus, error,
 ) {
-	return n.base.FindPendingSyncs(ctx, n.nodeID, rev)
+	return n.base.FindPendingSyncs(ctx, n.nodeID)
 }
 
 func (n *nodeStorage) GetNodeStatus(ctx context.Context) (
@@ -62,10 +62,6 @@ func (n *nodeStorage) UpdateNodeUsers(ctx context.Context,
 	return n.base.UpdateNodeUsers(ctx, n.nodeID, patch)
 }
 
-func (n *nodeStorage) GetNodeRev(ctx context.Context) (models.Revision, error) {
-	return n.base.GetNodeRev(ctx, n.nodeID)
-}
-
 func (n *nodeStorage) SetNodeRev(ctx context.Context, rev models.Revision) error {
 	return n.base.SetNodeRev(ctx, n.nodeID, rev)
 }
@@ -73,69 +69,3 @@ func (n *nodeStorage) SetNodeRev(ctx context.Context, rev models.Revision) error
 func (n *nodeStorage) DoTx(ctx context.Context, fn node.TxFn) error {
 	return n.base.DoTx(ctx, fn)
 }
-
-/*func (s *nodeStorage) DoUoW(ctx context.Context, fn node.UoWFn) error {
-	return s.base.DoUoW(ctx, func(uowctx UoWContext) error {
-		nodeUoWCtx := &PoolNodeUoWContext{
-			base:   uowctx,
-			nodeID: s.nodeID,
-		}
-		if err := fn(nodeUoWCtx); err != nil {
-			return xerr.WrapWithInfof(err, "node: %v", s.nodeID)
-		}
-		return nil
-	})
-}
-
-type PoolNodeUoWContext struct {
-	base   UoWContext
-	nodeID models.NodeID
-}
-
-var _ node.UoWContext = (*PoolNodeUoWContext)(nil)
-
-func (c *PoolNodeUoWContext) GetNodeStatus(ctx context.Context) (
-	target models.NodeStatus, current models.NodeStatus, err error,
-) {
-	node, err := c.base.GetNode(ctx, c.nodeID)
-	if err != nil {
-		return
-	}
-	target = node.TargetStatus
-	current = node.CurrentStatus
-	return
-}
-
-func (c *PoolNodeUoWContext) FindPendingSyncs(ctx context.Context) (
-	[]models.UserSyncStatus, error,
-) {
-	return c.base.FindPendingSyncs(ctx, c.nodeID)
-}
-
-func (c *PoolNodeUoWContext) ListUsers(ctx context.Context) ([]models.User, error) {
-	return c.base.ListUsers(ctx)
-}
-
-func (c *PoolNodeUoWContext) UpdateNodeUsers(ctx context.Context,
-	patch []models.UserStatusPatch,
-) error {
-	return c.base.UpdateNodeUsers(ctx, c.nodeID, patch)
-}
-
-func (c *PoolNodeUoWContext) SetNodeUsers(ctx context.Context,
-	patch []models.UserStatusPatch,
-) error {
-	return c.base.SetNodeUsers(ctx, c.nodeID, patch)
-}
-
-func (c *PoolNodeUoWContext) SetClientConfig(ctx context.Context,
-	cfg models.ClientConfigTemplate,
-) error {
-	return c.base.SetClientConfig(ctx, c.nodeID, cfg)
-}
-
-func (c *PoolNodeUoWContext) SetCurrentNodeStatus(ctx context.Context,
-	s models.NodeStatus,
-) error {
-	return c.base.SetCurrentNodeStatus(ctx, c.nodeID, s)
-}*/

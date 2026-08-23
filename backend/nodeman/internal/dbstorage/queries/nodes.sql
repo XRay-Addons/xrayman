@@ -72,10 +72,3 @@ SET
     revision = $1,
     updated_at = now()
 WHERE node_id = $2;
-
--- name: GetNodeRev :one
-SELECT
-   revision
-FROM nodes
-WHERE node_id = $1
-    AND deleted_at IS NULL;
