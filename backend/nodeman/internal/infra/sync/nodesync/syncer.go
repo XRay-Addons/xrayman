@@ -71,11 +71,7 @@ func (s *syncer) SyncNodeState(ctx context.Context) (err error) {
 		err = s.syncNodeUsers(ctx, curr != prev)
 	}
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (s *syncer) fetchNodeStatus(ctx context.Context) (

@@ -139,22 +139,6 @@ func FindPendingSyncsResp(r []queries.FindPendingSyncsRow) []models.UserSyncStat
 	)
 }
 
-func UpdateNodeUsersReq(id models.NodeID,
-	patch []models.UserStatusPatch,
-) queries.InsertNodeUsersParams {
-	n := len(patch)
-	arg := queries.InsertNodeUsersParams{
-		NodeID:            int64(id),
-		UserID:            make([]int64, n, n),
-		UserCurrentStatus: make([]int16, n, n),
-	}
-	for i, p := range patch {
-		arg.UserID[i] = int64(p.UserID)
-		arg.UserCurrentStatus[i] = int16(p.Status)
-	}
-	return arg
-}
-
 func GetUserNodesResp(r []queries.GetUserNodesRow) ([]models.Node, error) {
 	return cnvArr(r,
 		func(from *queries.GetUserNodesRow, to *models.Node) {

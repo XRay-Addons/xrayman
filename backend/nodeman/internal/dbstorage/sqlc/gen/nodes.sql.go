@@ -60,21 +60,6 @@ func (q *Queries) GetNode(ctx context.Context, nodeID int64) (GetNodeRow, error)
 	return i, err
 }
 
-const getNodeRev = `-- name: GetNodeRev :one
-SELECT
-   revision
-FROM nodes
-WHERE node_id = $1
-    AND deleted_at IS NULL
-`
-
-func (q *Queries) GetNodeRev(ctx context.Context, nodeID int64) (int64, error) {
-	row := q.db.QueryRowContext(ctx, getNodeRev, nodeID)
-	var revision int64
-	err := row.Scan(&revision)
-	return revision, err
-}
-
 const listNodes = `-- name: ListNodes :many
 SELECT
     node_id,

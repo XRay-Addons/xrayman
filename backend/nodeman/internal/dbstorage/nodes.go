@@ -109,3 +109,14 @@ func (s *Storage) DeleteNode(ctx context.Context,
 		return q.DeleteNode(ctx, int64(id))
 	})
 }
+
+func (s *Storage) SetNodeRev(ctx context.Context,
+	id models.NodeID, rev models.Revision,
+) error {
+	return doVoid(ctx, s, func(ctx context.Context, q *queries.Queries) error {
+		return q.SetNodeRev(ctx, queries.SetNodeRevParams{
+			Revision: int64(rev),
+			NodeID:   int64(id),
+		})
+	})
+}

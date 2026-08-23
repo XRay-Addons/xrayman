@@ -7,39 +7,7 @@ package queries
 
 import (
 	"context"
-
-	"github.com/lib/pq"
 )
-
-const deleteNodeUsers = `-- name: DeleteNodeUsers :exec
-/*SELECT
-    u.user_id,
-    u.user_name,
-    u.display_name,
-    u.vless_uuid,
-    u.user_target_status,
-    COALESCE(
-        s.user_current_status,
-        sqlc.arg(default_user_status)::smallint
-    ) AS user_current_status
-FROM users u
-LEFT JOIN syncs s
-    ON s.user_id = u.user_id
-   AND s.node_id = $1
-WHERE
-    COALESCE(
-        s.user_current_status,
-        sqlc.arg(default_user_status)::smallint
-    ) IS DISTINCT FROM u.user_target_status;*/
-
-DELETE FROM syncs
-WHERE node_id = $1
-`
-
-func (q *Queries) DeleteNodeUsers(ctx context.Context, nodeID int64) error {
-	_, err := q.db.ExecContext(ctx, deleteNodeUsers, nodeID)
-	return err
-}
 
 const findPendingSyncs = `-- name: FindPendingSyncs :many
 SELECT
@@ -49,8 +17,11 @@ SELECT
     u.vless_uuid,
     u.user_target_status,
     u.revision
-FROM users u
-WHERE u.revision > $1
+FROM users AS u
+JOIN nodes AS n
+    ON n.node_id = $1
+WHERE n.deleted_at IS NULL
+  AND u.revision > n.revision
 `
 
 type FindPendingSyncsRow struct {
@@ -62,8 +33,8 @@ type FindPendingSyncsRow struct {
 	Revision         int64
 }
 
-func (q *Queries) FindPendingSyncs(ctx context.Context, revision int64) ([]FindPendingSyncsRow, error) {
-	rows, err := q.db.QueryContext(ctx, findPendingSyncs, revision)
+func (q *Queries) FindPendingSyncs(ctx context.Context, nodeID int64) ([]FindPendingSyncsRow, error) {
+	rows, err := q.db.QueryContext(ctx, findPendingSyncs, nodeID)
 	if err != nil {
 		return nil, err
 	}
@@ -147,29 +118,4 @@ func (q *Queries) GetUserNodes(ctx context.Context, userID int64) ([]GetUserNode
 		return nil, err
 	}
 	return items, nil
-}
-
-const insertNodeUsers = `-- name: InsertNodeUsers :exec
-INSERT INTO syncs (user_id, node_id, user_current_status)
-SELECT
-    t.user_id,
-    $1::bigint,
-    t.user_current_status
-FROM ROWS FROM (
-    unnest($2::bigint[]),
-    unnest($3::smallint[])
-) AS t(user_id, user_current_status)
-ON CONFLICT (user_id, node_id)
-DO UPDATE SET user_current_status = EXCLUDED.user_current_status
-`
-
-type InsertNodeUsersParams struct {
-	NodeID            int64
-	UserID            []int64
-	UserCurrentStatus []int16
-}
-
-func (q *Queries) InsertNodeUsers(ctx context.Context, arg InsertNodeUsersParams) error {
-	_, err := q.db.ExecContext(ctx, insertNodeUsers, arg.NodeID, pq.Array(arg.UserID), pq.Array(arg.UserCurrentStatus))
-	return err
 }

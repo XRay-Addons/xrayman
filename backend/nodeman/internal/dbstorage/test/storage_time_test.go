@@ -154,14 +154,14 @@ func TestStorage_Time_Syncs(t *testing.T) {
 	require.Less(t, nNodes*metrics.ExecutionTime, 10*time.Second)
 	require.Less(t, nUsers/2, len(pendingSyncs))
 
-	updatePatch := make([]models.UserStatusPatch, nUsers, nUsers)
+	//updatePatch := make([]models.UserStatusPatch, nUsers, nUsers)
 	for i := range nUsers {
-		updatePatch[i].UserID = models.UserID(i + 1)
-		updatePatch[i].Status = models.UserStatusDisabled
+		err = s.SetTargetUserStatus(ctx, models.UserID(i+1), models.UserStatusDisabled)
+		require.NoError(t, err)
 	}
-	expl = db.WithExplanations("UpdateNodeUsers", ExplainAnalyze)
-	err = s.UpdateNodeUsers(ctx, models.NodeID(nNodes/3), updatePatch)
-	require.NoError(t, err)
+	/*expl = db.WithExplanations("UpdateNodeUsers", ExplainAnalyze)
+	//err = s.UpdateNodeUsers(ctx, models.NodeID(nNodes/3), updatePatch)
+	//require.NoError(t, err)
 	metrics, err = expl.Metrics()
 	require.NoError(t, err)
 	metrics.Print(logger)
@@ -182,7 +182,7 @@ func TestStorage_Time_Syncs(t *testing.T) {
 	metrics.Print(logger)
 	// update syncs x nodes count <= 10 seconds
 	require.Less(t, nNodes*metrics.ExecutionTime, 10*time.Second)
-	require.Less(t, nUsers/2, len(pendingSyncs))
+	require.Less(t, nUsers/2, len(pendingSyncs))*/
 
 	expl = db.WithExplanations("FindPendingSyncs Again", ExplainAnalyze)
 	pendingSyncs, err = s.FindPendingSyncs(ctx, models.NodeID(nNodes/2))

@@ -92,10 +92,6 @@ func (s *storage) DeleteUser(ctx context.Context, id models.UserID) error {
 }
 
 /* usernode ops */
-func (s *storage) GetNodeRev(ctx context.Context, id models.NodeID) (models.Revision, error) {
-	return s.nodeRev, nil
-}
-
 func (s *storage) SetNodeRev(ctx context.Context, id models.NodeID, rev models.Revision) (err error) {
 	err = s.do(ctx, func(s *storage) error {
 		s.nodeRev = rev
@@ -122,32 +118,6 @@ func (s *storage) FindPendingSyncs(ctx context.Context, id models.NodeID) (
 	})
 
 	return
-}
-
-func (s *storage) SetNodeUsers(ctx context.Context, id models.NodeID, patch []models.UserStatusPatch) error {
-	panic("unimplemented")
-
-	/*return s.do(ctx, func(s *storage) error {
-		for i := range s.currentUserStatus {
-			s.currentUserStatus[i] = models.UserStatusUnknown
-		}
-		for _, p := range patch {
-			s.currentUserStatus[p.UserID] = p.Status
-		}
-
-		return nil
-	})*/
-}
-
-func (s *storage) UpdateNodeUsers(ctx context.Context, id models.NodeID, patch []models.UserStatusPatch) error {
-	panic("unimplemented")
-
-	/*return s.do(ctx, func(s *storage) error {
-		for _, u := range patch {
-			s.currentUserStatus[u.UserID] = u.Status
-		}
-		return nil
-	})*/
 }
 
 var _ StableStorage = (*storage)(nil)

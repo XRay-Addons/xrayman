@@ -50,18 +50,6 @@ func (n *nodeStorage) SetCurrentNodeStatus(ctx context.Context,
 	return n.base.SetCurrentNodeStatus(ctx, n.nodeID, s)
 }
 
-func (n *nodeStorage) SetNodeUsers(ctx context.Context,
-	patch []models.UserStatusPatch,
-) error {
-	return n.base.SetNodeUsers(ctx, n.nodeID, patch)
-}
-
-func (n *nodeStorage) UpdateNodeUsers(ctx context.Context,
-	patch []models.UserStatusPatch,
-) error {
-	return n.base.UpdateNodeUsers(ctx, n.nodeID, patch)
-}
-
 func (n *nodeStorage) SetNodeRev(ctx context.Context, rev models.Revision) error {
 	return n.base.SetNodeRev(ctx, n.nodeID, rev)
 }

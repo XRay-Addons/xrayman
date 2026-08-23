@@ -7,6 +7,7 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 )
 
 func TestNodeSync(t *testing.T) {
@@ -16,30 +17,30 @@ func TestNodeSync(t *testing.T) {
 		testNodeSync(t, s)
 	})
 
-	//t.Run("db stable", func(t *testing.T) {
-	//	s, _ := setupTestDB(t, zap.NewNop())
-	//	testNodeSync(t, s)
-	//})
+	t.Run("db stable", func(t *testing.T) {
+		s, _ := setupTestDB(t, zap.NewNop())
+		testNodeSync(t, s)
+	})
 
 	t.Run("memory unstable storage", func(t *testing.T) {
 		s := NewMemoryMockStorage()
 		testNodeSync_UnstableStorage(t, s)
 	})
 
-	//t.Run("db unstable storage", func(t *testing.T) {
-	//	s, _ := setupTestDB(t, zap.NewNop())
-	//	testNodeSync_UnstableStorage(t, s)
-	//})
+	t.Run("db unstable storage", func(t *testing.T) {
+		s, _ := setupTestDB(t, zap.NewNop())
+		testNodeSync_UnstableStorage(t, s)
+	})
 
 	t.Run("memory unstable storage unstable node", func(t *testing.T) {
 		s := NewMemoryMockStorage()
 		testNodeSync_UnstableStorage_UnstableNode(t, s)
 	})
 
-	//t.Run("db unstable storage unstable node", func(t *testing.T) {
-	//	s, _ := setupTestDB(t, zap.NewNop())
-	//	testNodeSync_UnstableStorage_UnstableNode(t, s)
-	//})
+	t.Run("db unstable storage unstable node", func(t *testing.T) {
+		s, _ := setupTestDB(t, zap.NewNop())
+		testNodeSync_UnstableStorage_UnstableNode(t, s)
+	})
 }
 
 func testNodeSync(t *testing.T, s StableStorage) {

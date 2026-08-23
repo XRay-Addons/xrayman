@@ -1,10 +1,21 @@
 package tests
 
 import (
+	"context"
+	"database/sql"
+	"fmt"
+	"testing"
+	"time"
+
+	"github.com/XRay-Addons/xrayman/common/xerr"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/dbstorage"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/stretchr/testify/require"
+	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/wait"
+	"go.uber.org/zap"
 )
 
-/*
 // //////////////////////////////////////////////////////////////////////////////
 // stub logger for testcontainers
 type noopLogConsumer struct{}
@@ -176,4 +187,4 @@ func setupTestDB(t *testing.T, logger *zap.Logger) (
 	})
 
 	return
-}*/
+}

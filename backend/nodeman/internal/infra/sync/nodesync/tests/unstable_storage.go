@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/rand/v2"
+	"time"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
@@ -69,7 +70,9 @@ func (s *UnstableStorage) RandomExternalOperation(context.Context) error {
 }
 
 func (s *UnstableStorage) randomOp() error {
-	ctx := context.TODO()
+	ctx, cancel := context.WithTimeout(context.TODO(), 100*time.Millisecond)
+	defer cancel()
+
 	// some times this method returns error
 	if s.rand.Float32() < s.Instability {
 		return xerr.New("unstable storage")
@@ -151,20 +154,6 @@ func (s *UnstableStorage) SetNodeSettings(ctx context.Context, cfg *models.NodeS
 		return err
 	}
 	return s.s.SetNodeSettings(ctx, s.nodeID, cfg)
-}
-
-func (s *UnstableStorage) SetNodeUsers(ctx context.Context, patch []models.UserStatusPatch) error {
-	if err := s.randomOp(); err != nil {
-		return err
-	}
-	return s.s.SetNodeUsers(ctx, s.nodeID, patch)
-}
-
-func (s *UnstableStorage) UpdateNodeUsers(ctx context.Context, patch []models.UserStatusPatch) error {
-	if err := s.randomOp(); err != nil {
-		return err
-	}
-	return s.s.UpdateNodeUsers(ctx, s.nodeID, patch)
 }
 
 func (s *UnstableStorage) GetNodeStatus(ctx context.Context) (target models.NodeStatus, current models.NodeStatus, err error) {
