@@ -65,10 +65,3 @@ UPDATE nodes
 SET deleted_at = now()
 WHERE node_id = $1
     AND deleted_at IS NULL;
-
--- name: SetNodeRev :exec
-UPDATE nodes
-SET
-    revision = $1,
-    updated_at = now()
-WHERE node_id = $2;
