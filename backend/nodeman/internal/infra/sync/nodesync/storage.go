@@ -26,10 +26,10 @@ type SyncsStorage interface {
 		[]models.UserSyncStatus, error)
 	SetNodeRev(ctx context.Context,
 		rev models.Revision) error
-	UpdateNodeUsers(ctx context.Context,
-		patch []models.UserStatusPatch) error
-	SetNodeUsers(ctx context.Context,
-		patch []models.UserStatusPatch) error
+	//UpdateNodeUsers(ctx context.Context,
+	//	patch []models.UserStatusPatch) error
+	//SetNodeUsers(ctx context.Context,
+	//	patch []models.UserStatusPatch) error
 }
 
 type Storage interface {
