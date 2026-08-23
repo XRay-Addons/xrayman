@@ -1,3 +1,9 @@
+-- name: SetNodeRev :exec
+UPDATE nodes
+SET
+    revision = $1,
+    updated_at = now()
+WHERE node_id = $2;
 
 -- name: FindPendingSyncs :many
 SELECT
@@ -11,8 +17,7 @@ FROM users AS u
 JOIN nodes AS n
     ON n.node_id = $1
 WHERE n.deleted_at IS NULL
-  AND u.revision > n.revision;
-
+    AND u.revision > n.revision;
 
 -- name: GetUserNodes :many
 SELECT
