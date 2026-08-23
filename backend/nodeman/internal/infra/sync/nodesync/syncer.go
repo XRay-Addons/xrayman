@@ -107,13 +107,10 @@ func (s *syncer) startNode(ctx context.Context) (err error) {
 	// pre-edit state
 	var users []models.UserSyncStatus
 	if err = s.storage.DoTx(ctx, func(ctx context.Context) (err error) {
-		if err = s.storage.SetNodeRev(ctx, InitialRevision); err != nil {
+		if err = s.setCurrentNodeState(ctx, models.NodeStatusUnknown, InitialRevision); err != nil {
 			return
 		}
 		if users, err = s.storage.FindPendingSyncs(ctx); err != nil {
-			return
-		}
-		if err = s.storage.SetCurrentNodeStatus(ctx, models.NodeStatusUnknown); err != nil {
 			return
 		}
 		return
@@ -138,13 +135,10 @@ func (s *syncer) startNode(ctx context.Context) (err error) {
 
 	// post-edit state
 	if err := s.storage.DoTx(ctx, func(ctx context.Context) (err error) {
-		if err = s.storage.SetCurrentNodeStatus(ctx, models.NodeStatusRunning); err != nil {
+		if err = s.setCurrentNodeState(ctx, models.NodeStatusRunning, rev); err != nil {
 			return
 		}
 		if err = s.storage.SetNodeSettings(ctx, nodeSettings); err != nil {
-			return
-		}
-		if err = s.storage.SetNodeRev(ctx, rev); err != nil {
 			return
 		}
 		return
@@ -157,22 +151,15 @@ func (s *syncer) startNode(ctx context.Context) (err error) {
 
 func (s *syncer) stopNode(ctx context.Context) (err error) {
 	// pre-edit state
-	if err = s.storage.DoTx(ctx, func(ctx context.Context) (err error) {
-		if err = s.storage.SetCurrentNodeStatus(ctx, models.NodeStatusUnknown); err != nil {
-			return
-		}
-		if err = s.storage.SetNodeRev(ctx, InitialRevision); err != nil {
-			return
-		}
-		return
+	if err = s.storage.DoTx(ctx, func(ctx context.Context) error {
+		return s.setCurrentNodeState(ctx, models.NodeStatusUnknown, InitialRevision)
 	}); err != nil {
 		return
 	}
 
 	// stop node
-	err = s.client.Stop(ctx)
-	if err != nil {
-		return err
+	if err = s.client.Stop(ctx); err != nil {
+		return
 	}
 
 	// post-edit state
@@ -184,26 +171,17 @@ func (s *syncer) stopNode(ctx context.Context) (err error) {
 }
 
 func (s *syncer) syncNodeUsers(ctx context.Context, updateNodeStatus bool) (err error) {
-	var users []models.UserSyncStatus
-	rev := InitialRevision
-	if err = s.storage.DoTx(ctx, func(ctx context.Context) (err error) {
-		if users, err = s.storage.FindPendingSyncs(ctx); err != nil {
-			return
-		}
-		return
-	}); err != nil {
+	users, err := s.storage.FindPendingSyncs(ctx)
+	if err != nil {
 		return
 	}
 
-	if len(users) == 0 && !updateNodeStatus {
-		return nil
-	}
-
-	// edit users node
+	// collect users to update
 	update := models.NodeUsersUpdate{
 		Add:    make([]models.UserProfile, 0, len(users)),
 		Remove: make([]models.UserProfile, 0, len(users)),
 	}
+	rev := InitialRevision
 
 	for _, u := range users {
 		switch u.User.TargetStatus {
@@ -215,11 +193,17 @@ func (s *syncer) syncNodeUsers(ctx context.Context, updateNodeStatus bool) (err 
 		rev = max(rev, u.Revision)
 	}
 
+	// shortcut for empty updates
+	if len(update.Add)+len(update.Remove) == 0 && !updateNodeStatus {
+		return nil
+	}
+
+	// update node
 	if err := s.client.UpdateUsers(ctx, update); err != nil {
 		return err
 	}
 
-	// update node state
+	// update saved node state
 	if err := s.storage.DoTx(ctx, func(ctx context.Context) (err error) {
 		if updateNodeStatus {
 			if err = s.storage.SetCurrentNodeStatus(ctx, models.NodeStatusRunning); err != nil {
@@ -236,5 +220,17 @@ func (s *syncer) syncNodeUsers(ctx context.Context, updateNodeStatus bool) (err 
 		return err
 	}
 
+	return nil
+}
+
+func (s *syncer) setCurrentNodeState(ctx context.Context,
+	status models.NodeStatus, rev models.Revision,
+) error {
+	if err := s.storage.SetCurrentNodeStatus(ctx, status); err != nil {
+		return err
+	}
+	if err := s.storage.SetNodeRev(ctx, rev); err != nil {
+		return err
+	}
 	return nil
 }
