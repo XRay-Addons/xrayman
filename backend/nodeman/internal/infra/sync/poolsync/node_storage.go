@@ -14,10 +14,10 @@ type nodeStorage struct {
 
 var _ node.Storage = (*nodeStorage)(nil)
 
-func (n *nodeStorage) FindPendingSyncs(ctx context.Context) (
+func (n *nodeStorage) FindPendingSyncs(ctx context.Context, rev models.Revision) (
 	[]models.UserSyncStatus, error,
 ) {
-	return n.base.FindPendingSyncs(ctx, n.nodeID)
+	return n.base.FindPendingSyncs(ctx, n.nodeID, rev)
 }
 
 func (n *nodeStorage) GetNodeStatus(ctx context.Context) (
@@ -60,6 +60,14 @@ func (n *nodeStorage) UpdateNodeUsers(ctx context.Context,
 	patch []models.UserStatusPatch,
 ) error {
 	return n.base.UpdateNodeUsers(ctx, n.nodeID, patch)
+}
+
+func (n *nodeStorage) GetNodeRev(ctx context.Context) (models.Revision, error) {
+	return n.base.GetNodeRev(ctx, n.nodeID)
+}
+
+func (n *nodeStorage) SetNodeRev(ctx context.Context, rev models.Revision) error {
+	return n.base.SetNodeRev(ctx, n.nodeID, rev)
 }
 
 func (n *nodeStorage) DoTx(ctx context.Context, fn node.TxFn) error {

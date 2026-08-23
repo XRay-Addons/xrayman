@@ -7,11 +7,15 @@ import (
 )
 
 type storage struct {
-	currentStatus     models.NodeStatus
-	targetStatus      models.NodeStatus
-	users             []models.User
-	currentUserStatus []models.UserStatus
-	node              models.Node
+	globalRev models.Revision
+
+	users    []models.User
+	usersRev []models.Revision
+
+	currentStatus models.NodeStatus
+	targetStatus  models.NodeStatus
+	node          models.Node
+	nodeRev       models.Revision
 }
 
 /* node ops: only one node */
@@ -22,22 +26,29 @@ func (s *storage) NewNode(ctx context.Context, node *models.Node) error {
 }
 
 func (s *storage) SetCurrentNodeStatus(ctx context.Context, id models.NodeID, st models.NodeStatus) error {
-	s.node.CurrentStatus = st
-	return nil
+	return s.do(ctx, func(s *storage) error {
+		s.node.CurrentStatus = st
+		return nil
+	})
 }
 
 func (s *storage) SetTargetNodeStatus(ctx context.Context, id models.NodeID, st models.NodeStatus) error {
-	s.node.TargetStatus = st
-	return nil
+	return s.do(ctx, func(s *storage) error {
+		s.node.TargetStatus = st
+		return nil
+	})
 }
 
 func (*storage) SetNodeSettings(ctx context.Context, id models.NodeID, s *models.NodeSettings) error {
 	return nil
 }
 
-func (s *storage) GetNode(ctx context.Context, id models.NodeID) (*models.Node, error) {
-	node := s.node
-	return &node, nil
+func (s *storage) GetNode(ctx context.Context, id models.NodeID) (node *models.Node, err error) {
+	err = s.do(ctx, func(s *storage) error {
+		node = &s.node
+		return nil
+	})
+	return
 }
 
 func (s *storage) ListNodes(ctx context.Context) ([]models.Node, error) {
@@ -53,7 +64,8 @@ func (s *storage) NewUser(ctx context.Context, u *models.User) error {
 	return s.do(ctx, func(s *storage) error {
 		u.Profile.ID = len(s.users)
 		s.users = append(s.users, *u)
-		s.currentUserStatus = append(s.currentUserStatus, models.UserStatusUnknown)
+		s.globalRev++
+		s.usersRev = append(s.usersRev, s.globalRev)
 		return nil
 	})
 }
@@ -61,6 +73,8 @@ func (s *storage) NewUser(ctx context.Context, u *models.User) error {
 func (s *storage) SetTargetUserStatus(ctx context.Context, id models.UserID, st models.UserStatus) error {
 	return s.do(ctx, func(s *storage) error {
 		s.users[id].TargetStatus = st
+		s.globalRev++
+		s.usersRev[id] = s.globalRev
 		return nil
 	})
 }
@@ -78,18 +92,36 @@ func (s *storage) DeleteUser(ctx context.Context, id models.UserID) error {
 }
 
 /* usernode ops */
-func (s *storage) FindPendingSyncs(ctx context.Context, id models.NodeID) (
+func (s *storage) GetNodeRev(ctx context.Context, id models.NodeID) (models.Revision, error) {
+	return s.nodeRev, nil
+}
+
+func (s *storage) SetNodeRev(ctx context.Context, id models.NodeID, rev models.Revision) (err error) {
+	err = s.do(ctx, func(s *storage) error {
+		s.nodeRev = rev
+		return nil
+	})
+	return
+}
+
+func (s *storage) FindPendingSyncs(ctx context.Context, id models.NodeID, rev models.Revision) (
 	pending []models.UserSyncStatus, err error,
 ) {
 	pending = make([]models.UserSyncStatus, 0, len(s.users))
 	err = s.do(ctx, func(s *storage) error {
+		//nodeRev, err := s.GetNodeRev(ctx, s.node.ID)
+		//if err != nil {
+		//	return err
+		//}
+
+		//fmt.Println("aAAAAAAAAA", rev, s.nodeRev)
 		for i, u := range s.users {
-			if u.TargetStatus == s.currentUserStatus[i] {
+			if s.usersRev[i] <= rev {
 				continue
 			}
 			pending = append(pending, models.UserSyncStatus{
-				User:          u,
-				CurrentStatus: s.currentUserStatus[i],
+				User:     u,
+				Revision: s.usersRev[i],
 			})
 		}
 		return nil
@@ -99,7 +131,9 @@ func (s *storage) FindPendingSyncs(ctx context.Context, id models.NodeID) (
 }
 
 func (s *storage) SetNodeUsers(ctx context.Context, id models.NodeID, patch []models.UserStatusPatch) error {
-	return s.do(ctx, func(s *storage) error {
+	panic("unimplemented")
+
+	/*return s.do(ctx, func(s *storage) error {
 		for i := range s.currentUserStatus {
 			s.currentUserStatus[i] = models.UserStatusUnknown
 		}
@@ -108,16 +142,18 @@ func (s *storage) SetNodeUsers(ctx context.Context, id models.NodeID, patch []mo
 		}
 
 		return nil
-	})
+	})*/
 }
 
 func (s *storage) UpdateNodeUsers(ctx context.Context, id models.NodeID, patch []models.UserStatusPatch) error {
-	return s.do(ctx, func(s *storage) error {
+	panic("unimplemented")
+
+	/*return s.do(ctx, func(s *storage) error {
 		for _, u := range patch {
 			s.currentUserStatus[u.UserID] = u.Status
 		}
 		return nil
-	})
+	})*/
 }
 
 var _ StableStorage = (*storage)(nil)
@@ -152,11 +188,27 @@ func (s *storage) DoTx(ctx context.Context, fn TxFn) (err error) {
 	return fn(ctx)
 }
 
+/*
+globalRev models.Revision
+
+users    []models.User
+usersRev []models.Revision
+
+currentStatus models.NodeStatus
+targetStatus  models.NodeStatus
+node          models.Node
+nodeRev       models.Revision
+*/
 func copyStorage(from *storage, to *storage) {
+	to.globalRev = from.globalRev
+
+	to.users = append([]models.User{}, from.users...)
+	to.usersRev = append([]models.Revision{}, from.usersRev...)
+
 	to.currentStatus = from.currentStatus
 	to.targetStatus = from.targetStatus
-	to.users = append([]models.User{}, from.users...)
-	to.currentUserStatus = append([]models.UserStatus{}, from.currentUserStatus...)
+	to.node = from.node
+	to.nodeRev = from.nodeRev
 }
 
 func (s *storage) do(ctx context.Context, fn func(*storage) error) error {

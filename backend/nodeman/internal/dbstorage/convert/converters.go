@@ -129,12 +129,12 @@ func ListUserViewsResp(r []queries.ListUserViewsRow) []models.UserView {
 func FindPendingSyncsResp(r []queries.FindPendingSyncsRow) []models.UserSyncStatus {
 	return cnvArrNoErr(r,
 		func(from *queries.FindPendingSyncsRow, to *models.UserSyncStatus) {
-			to.CurrentStatus = models.UserStatus(from.UserCurrentStatus)
 			to.User.TargetStatus = models.UserStatus(from.UserTargetStatus)
 			to.User.Profile.DisplayName = from.DisplayName
 			to.User.Profile.ID = models.UserID(from.UserID)
 			to.User.Profile.Name = from.UserName
 			to.User.Profile.VlessUUID = from.VlessUuid
+			to.Revision = models.Revision(from.Revision)
 		},
 	)
 }

@@ -132,11 +132,11 @@ func (s *UnstableStorage) DoTx(ctx context.Context, fn nodesync.TxFn) error {
 	return s.s.DoTx(ctx, fn)
 }
 
-func (s *UnstableStorage) FindPendingSyncs(ctx context.Context) ([]models.UserSyncStatus, error) {
+func (s *UnstableStorage) FindPendingSyncs(ctx context.Context, rev models.Revision) ([]models.UserSyncStatus, error) {
 	if err := s.randomOp(); err != nil {
 		return nil, err
 	}
-	return s.s.FindPendingSyncs(ctx, s.nodeID)
+	return s.s.FindPendingSyncs(ctx, s.nodeID, rev)
 }
 
 func (s *UnstableStorage) SetCurrentNodeStatus(ctx context.Context, cs models.NodeStatus) error {
@@ -183,4 +183,26 @@ func (s *UnstableStorage) ListUsers(ctx context.Context) ([]models.User, error) 
 		return nil, err
 	}
 	return s.s.ListUsers(ctx)
+}
+
+func (s *UnstableStorage) GetNodeRev(ctx context.Context) (rev models.Revision, err error) {
+	if err = s.randomOp(); err != nil {
+		return
+	}
+	rev, err = s.s.GetNodeRev(ctx, s.nodeID)
+	if err != nil {
+		return
+	}
+	return
+}
+
+func (s *UnstableStorage) SetNodeRev(ctx context.Context, rev models.Revision) (err error) {
+	if err = s.randomOp(); err != nil {
+		return
+	}
+	err = s.s.SetNodeRev(ctx, s.nodeID, rev)
+	if err != nil {
+		return
+	}
+	return
 }

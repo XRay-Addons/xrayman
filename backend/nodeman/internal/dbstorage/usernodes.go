@@ -9,19 +9,13 @@ import (
 )
 
 func (s *Storage) FindPendingSyncs(ctx context.Context,
-	id models.NodeID,
+	rev models.Revision,
 ) ([]models.UserSyncStatus, error) {
-	// pre-convert
-	arg := queries.FindPendingSyncsParams{
-		NodeID:            int64(id),
-		DefaultUserStatus: int16(models.UserStatusUnknown),
-	}
-
 	// request
 	resp, err := doAny(ctx, s, func(ctx context.Context,
 		q *queries.Queries,
 	) ([]queries.FindPendingSyncsRow, error) {
-		return q.FindPendingSyncs(ctx, arg)
+		return q.FindPendingSyncs(ctx, int64(rev))
 	})
 	if err != nil {
 		return nil, err
@@ -81,11 +75,7 @@ func (s *Storage) GetUserNodes(ctx context.Context, id models.UserID) (
 	resp, err := doAny(ctx, s, func(ctx context.Context,
 		q *queries.Queries,
 	) ([]queries.GetUserNodesRow, error) {
-		return q.GetUserNodes(ctx, queries.GetUserNodesParams{
-			UserID:            int64(id),
-			UserStatusEnabled: int16(models.UserStatusEnabled),
-			NodeStatusRunning: int16(models.NodeStatusRunning),
-		})
+		return q.GetUserNodes(ctx, int64(id))
 	})
 	if err != nil {
 		return nil, err

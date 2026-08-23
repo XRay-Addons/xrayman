@@ -36,8 +36,8 @@ type User struct {
 }
 
 type UserSyncStatus struct {
-	User          User
-	CurrentStatus UserStatus
+	User     User
+	Revision Revision
 }
 
 type UserStatusPatch struct {

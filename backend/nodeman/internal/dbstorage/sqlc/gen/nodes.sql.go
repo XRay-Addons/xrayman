@@ -60,6 +60,21 @@ func (q *Queries) GetNode(ctx context.Context, nodeID int64) (GetNodeRow, error)
 	return i, err
 }
 
+const getNodeRev = `-- name: GetNodeRev :one
+SELECT
+   revision
+FROM nodes
+WHERE node_id = $1
+    AND deleted_at IS NULL
+`
+
+func (q *Queries) GetNodeRev(ctx context.Context, nodeID int64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getNodeRev, nodeID)
+	var revision int64
+	err := row.Scan(&revision)
+	return revision, err
+}
+
 const listNodes = `-- name: ListNodes :many
 SELECT
     node_id,
@@ -166,6 +181,24 @@ type SetCurrentNodeStatusParams struct {
 
 func (q *Queries) SetCurrentNodeStatus(ctx context.Context, arg SetCurrentNodeStatusParams) error {
 	_, err := q.db.ExecContext(ctx, setCurrentNodeStatus, arg.NodeCurrentStatus, arg.NodeID)
+	return err
+}
+
+const setNodeRev = `-- name: SetNodeRev :exec
+UPDATE nodes
+SET
+    revision = $1,
+    updated_at = now()
+WHERE node_id = $2
+`
+
+type SetNodeRevParams struct {
+	Revision int64
+	NodeID   int64
+}
+
+func (q *Queries) SetNodeRev(ctx context.Context, arg SetNodeRevParams) error {
+	_, err := q.db.ExecContext(ctx, setNodeRev, arg.Revision, arg.NodeID)
 	return err
 }
 

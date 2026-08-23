@@ -35,13 +35,6 @@ FROM nodes
 WHERE deleted_at IS NULL
 ORDER BY node_id ASC;
 
--- name: SetNodeRev :exec
-UPDATE nodes
-SET
-    revision = $1,
-    updated_at = now()
-WHERE node_id = $2;
-
 -- name: SetTargetNodeStatus :exec
 UPDATE nodes
 SET
@@ -70,5 +63,19 @@ WHERE node_id = $3
 -- name: DeleteNode :exec
 UPDATE nodes
 SET deleted_at = now()
+WHERE node_id = $1
+    AND deleted_at IS NULL;
+
+-- name: SetNodeRev :exec
+UPDATE nodes
+SET
+    revision = $1,
+    updated_at = now()
+WHERE node_id = $2;
+
+-- name: GetNodeRev :one
+SELECT
+   revision
+FROM nodes
 WHERE node_id = $1
     AND deleted_at IS NULL;

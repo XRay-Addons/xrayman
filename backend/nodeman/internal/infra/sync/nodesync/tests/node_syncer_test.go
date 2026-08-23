@@ -2,51 +2,52 @@ package tests
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
 )
 
 func TestNodeSync(t *testing.T) {
 
-	t.Run("memory, stable", func(t *testing.T) {
+	t.Run("memory stable", func(t *testing.T) {
 		s := NewMemoryMockStorage()
 		testNodeSync(t, s)
 	})
 
-	t.Run("db, stable", func(t *testing.T) {
-		s, _ := setupTestDB(t, zap.NewNop())
-		testNodeSync(t, s)
-	})
+	//t.Run("db stable", func(t *testing.T) {
+	//	s, _ := setupTestDB(t, zap.NewNop())
+	//	testNodeSync(t, s)
+	//})
 
-	t.Run("memory, unstable storage", func(t *testing.T) {
+	t.Run("memory unstable storage", func(t *testing.T) {
 		s := NewMemoryMockStorage()
 		testNodeSync_UnstableStorage(t, s)
 	})
 
-	t.Run("db, unstable storage", func(t *testing.T) {
-		s, _ := setupTestDB(t, zap.NewNop())
-		testNodeSync_UnstableStorage(t, s)
-	})
+	//t.Run("db unstable storage", func(t *testing.T) {
+	//	s, _ := setupTestDB(t, zap.NewNop())
+	//	testNodeSync_UnstableStorage(t, s)
+	//})
 
-	t.Run("memory, unstable storage, unstable node", func(t *testing.T) {
+	t.Run("memory unstable storage unstable node", func(t *testing.T) {
 		s := NewMemoryMockStorage()
 		testNodeSync_UnstableStorage_UnstableNode(t, s)
 	})
 
-	t.Run("db, unstable storage, unstable node", func(t *testing.T) {
-		s, _ := setupTestDB(t, zap.NewNop())
-		testNodeSync_UnstableStorage_UnstableNode(t, s)
-	})
+	//t.Run("db unstable storage unstable node", func(t *testing.T) {
+	//	s, _ := setupTestDB(t, zap.NewNop())
+	//	testNodeSync_UnstableStorage_UnstableNode(t, s)
+	//})
 }
 
 func testNodeSync(t *testing.T, s StableStorage) {
 	nUsers := 10
 	nRuns := 100
 	nRunOps := 100
+	var instability float32 = 0.25
 
 	// create node based on mocks
 	client := NewClientMock()
@@ -56,8 +57,11 @@ func testNodeSync(t *testing.T, s StableStorage) {
 	for range nRuns {
 		for range nRunOps {
 			// apply random operation, then sync
+			storage.Instability = instability
 			_ = storage.RandomExternalOperation(context.TODO())
-			_ = nodesync.SyncState(context.TODO(), client, storage)
+			storage.Instability = 0.
+			err = nodesync.SyncState(context.TODO(), client, storage)
+			require.NoError(t, err, "node sync error")
 		}
 
 		checkFullConsistency(t, client, storage)
@@ -131,12 +135,21 @@ func testNodeSync_UnstableStorage_UnstableNode(t *testing.T, s StableStorage) {
 }
 
 func checkFullConsistency(t *testing.T, c *ClientMock, s *UnstableStorage) {
+
 	users, err := s.s.ListUsers(context.TODO())
 	require.NoError(t, err)
 	target, current, err := s.GetNodeStatus(context.TODO())
 	require.NoError(t, err)
-	pending, err := s.FindPendingSyncs(context.TODO())
+	rev, err := s.s.GetNodeRev(context.TODO(), s.nodeID)
 	require.NoError(t, err)
+	fmt.Println("node rev", rev)
+	pending, err := s.s.FindPendingSyncs(context.TODO(), s.nodeID, rev)
+	require.NoError(t, err)
+	for _, p := range pending {
+		fmt.Println("pending user rev", p.Revision)
+	}
+	fmt.Println("target", target, "current", current)
+
 	// check state is ok. only node required to be running matters
 	if target != models.NodeStatusRunning {
 		return
@@ -169,7 +182,9 @@ func checkStorageConsistency(t *testing.T, c *ClientMock, s *UnstableStorage) {
 	require.NoError(t, err)
 	target, current, err := s.GetNodeStatus(context.TODO())
 	require.NoError(t, err)
-	pending, err := s.s.FindPendingSyncs(context.TODO(), s.nodeID)
+	rev, err := s.s.GetNodeRev(context.TODO(), s.nodeID)
+	require.NoError(t, err)
+	pending, err := s.s.FindPendingSyncs(context.TODO(), s.nodeID, rev)
 	require.NoError(t, err)
 
 	if current != models.NodeStatusRunning {

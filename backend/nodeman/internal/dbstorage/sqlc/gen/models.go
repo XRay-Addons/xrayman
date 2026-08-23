@@ -43,6 +43,7 @@ type Node struct {
 	UpdatedAt         time.Time
 	DeletedAt         sql.NullTime
 	Version           string
+	Revision          int64
 }
 
 type Setting struct {
@@ -87,4 +88,5 @@ type User struct {
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
 	DeletedAt        sql.NullTime
+	Revision         int64
 }

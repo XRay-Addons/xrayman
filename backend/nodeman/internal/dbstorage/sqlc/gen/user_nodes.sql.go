@@ -12,6 +12,26 @@ import (
 )
 
 const deleteNodeUsers = `-- name: DeleteNodeUsers :exec
+/*SELECT
+    u.user_id,
+    u.user_name,
+    u.display_name,
+    u.vless_uuid,
+    u.user_target_status,
+    COALESCE(
+        s.user_current_status,
+        sqlc.arg(default_user_status)::smallint
+    ) AS user_current_status
+FROM users u
+LEFT JOIN syncs s
+    ON s.user_id = u.user_id
+   AND s.node_id = $1
+WHERE
+    COALESCE(
+        s.user_current_status,
+        sqlc.arg(default_user_status)::smallint
+    ) IS DISTINCT FROM u.user_target_status;*/
+
 DELETE FROM syncs
 WHERE node_id = $1
 `
@@ -28,37 +48,22 @@ SELECT
     u.display_name,
     u.vless_uuid,
     u.user_target_status,
-    COALESCE(
-        s.user_current_status,
-        $2::smallint
-    ) AS user_current_status
+    u.revision
 FROM users u
-LEFT JOIN syncs s
-    ON s.user_id = u.user_id
-   AND s.node_id = $1
-WHERE
-    COALESCE(
-        s.user_current_status,
-        $2::smallint
-    ) IS DISTINCT FROM u.user_target_status
+WHERE u.revision > $1
 `
 
-type FindPendingSyncsParams struct {
-	NodeID            int64
-	DefaultUserStatus int16
-}
-
 type FindPendingSyncsRow struct {
-	UserID            int64
-	UserName          string
-	DisplayName       string
-	VlessUuid         string
-	UserTargetStatus  int16
-	UserCurrentStatus int16
+	UserID           int64
+	UserName         string
+	DisplayName      string
+	VlessUuid        string
+	UserTargetStatus int16
+	Revision         int64
 }
 
-func (q *Queries) FindPendingSyncs(ctx context.Context, arg FindPendingSyncsParams) ([]FindPendingSyncsRow, error) {
-	rows, err := q.db.QueryContext(ctx, findPendingSyncs, arg.NodeID, arg.DefaultUserStatus)
+func (q *Queries) FindPendingSyncs(ctx context.Context, revision int64) ([]FindPendingSyncsRow, error) {
+	rows, err := q.db.QueryContext(ctx, findPendingSyncs, revision)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +77,7 @@ func (q *Queries) FindPendingSyncs(ctx context.Context, arg FindPendingSyncsPara
 			&i.DisplayName,
 			&i.VlessUuid,
 			&i.UserTargetStatus,
-			&i.UserCurrentStatus,
+			&i.Revision,
 		); err != nil {
 			return nil, err
 		}
@@ -97,20 +102,11 @@ SELECT
     n.node_current_status,
     n.node_target_status
 FROM nodes n
-INNER JOIN syncs s
-    ON s.node_id = n.node_id
-WHERE s.user_id = $1
-    AND s.user_current_status = $2::smallint
-    AND n.node_target_status = $3::smallint
-    AND n.node_current_status = $3::smallint
+INNER JOIN users u
+    ON u.user_id = $1
+WHERE n.revision >= u.revision
     AND n.deleted_at IS NULL
 `
-
-type GetUserNodesParams struct {
-	UserID            int64
-	UserStatusEnabled int16
-	NodeStatusRunning int16
-}
 
 type GetUserNodesRow struct {
 	NodeID            int64
@@ -122,8 +118,8 @@ type GetUserNodesRow struct {
 	NodeTargetStatus  int16
 }
 
-func (q *Queries) GetUserNodes(ctx context.Context, arg GetUserNodesParams) ([]GetUserNodesRow, error) {
-	rows, err := q.db.QueryContext(ctx, getUserNodes, arg.UserID, arg.UserStatusEnabled, arg.NodeStatusRunning)
+func (q *Queries) GetUserNodes(ctx context.Context, userID int64) ([]GetUserNodesRow, error) {
+	rows, err := q.db.QueryContext(ctx, getUserNodes, userID)
 	if err != nil {
 		return nil, err
 	}
