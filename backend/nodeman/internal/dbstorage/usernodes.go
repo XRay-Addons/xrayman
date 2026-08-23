@@ -14,7 +14,7 @@ func (s *Storage) FindPendingSyncs(ctx context.Context,
 	// pre-convert
 	arg := queries.FindPendingSyncsParams{
 		NodeID:            int64(id),
-		DefaultUserStatus: int16(models.UserStatusDisabled),
+		DefaultUserStatus: int16(models.UserStatusUnknown),
 	}
 
 	// request

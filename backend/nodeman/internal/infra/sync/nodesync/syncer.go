@@ -107,8 +107,8 @@ func (s *syncer) markAsUnavailable(ctx context.Context) (err error) {
 
 func (s *syncer) startNode(ctx context.Context) (err error) {
 	// safe state-changing stuff
-	if err = s.updateStoredStatus(ctx, models.NodeStatusUnknown); err != nil {
-		return err
+	if err = s.storage.SetCurrentNodeStatus(ctx, models.NodeStatusUnknown); err != nil {
+		return
 	}
 
 	users, err := s.getUsers(ctx)
@@ -118,6 +118,11 @@ func (s *syncer) startNode(ctx context.Context) (err error) {
 
 	// start node
 	enabledUsers := s.getEnabledUsers(users)
+	ids := make([]models.UserID, 0, 0)
+	for _, u := range enabledUsers {
+		ids = append(ids, u.ID)
+	}
+
 	nodeSettings, err := s.client.Start(ctx, enabledUsers)
 	if err != nil {
 		return err
@@ -169,8 +174,8 @@ func (s *syncer) getUsersPatch(users []models.User) []models.UserStatusPatch {
 
 func (s *syncer) stopNode(ctx context.Context) (err error) {
 	// safe state-changing stuff
-	if err = s.updateStoredStatus(ctx, models.NodeStatusUnknown); err != nil {
-		return err
+	if err = s.storage.SetCurrentNodeStatus(ctx, models.NodeStatusUnknown); err != nil {
+		return
 	}
 
 	if err = s.client.Stop(ctx); err != nil {
