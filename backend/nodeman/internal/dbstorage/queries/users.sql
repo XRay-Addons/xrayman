@@ -118,7 +118,8 @@ SET
     revision = nextval('global_revision_seq'),
     updated_at = now()
 WHERE user_id = $2
-    AND deleted_at IS NULL;
+    AND deleted_at IS NULL
+    AND user_target_status IS DISTINCT FROM $1;
 
 -- name: DeleteUser :exec
 UPDATE users

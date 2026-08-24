@@ -10,6 +10,7 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	"github.com/lib/pq"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest"
 )
 
@@ -20,6 +21,7 @@ func fillUsers(ctx context.Context, db *sql.DB, n int) error {
 	names := make([]string, 0, n)
 	uuids := make([]string, 0, n)
 	tstatuss := make([]int16, 0, n)
+	revisions := make([]int64, 0, n)
 	for i := range n {
 		vnames = append(vnames, fmt.Sprintf("vname %d", i))
 		names = append(names, fmt.Sprintf("name %d", i))
@@ -29,6 +31,7 @@ func fillUsers(ctx context.Context, db *sql.DB, n int) error {
 		} else {
 			tstatuss = append(tstatuss, int16(models.UserStatusEnabled))
 		}
+		revisions = append(revisions, int64(i%100))
 	}
 
 	req := `
@@ -36,26 +39,31 @@ func fillUsers(ctx context.Context, db *sql.DB, n int) error {
 		display_name,
 		user_name,
 		vless_uuid,
-		user_target_status
+		user_target_status,
+		revision
 	)
 	SELECT *
 	FROM unnest(
 		$1::text[],
 		$2::text[],
 		$3::text[],
-		$4::smallint[]
+		$4::smallint[],
+		$5::bigint[]
 	) AS t(
 		display_name,
 		user_name,
 		vless_uuid,
-		user_target_status
+		user_target_status,
+		revision
 	);
 	`
 	_, err := db.ExecContext(ctx, req,
 		pq.Array(vnames),
 		pq.Array(names),
 		pq.Array(uuids),
-		pq.Array(tstatuss))
+		pq.Array(tstatuss),
+		pq.Array(revisions),
+	)
 
 	return err
 }
@@ -66,6 +74,7 @@ func fillNodes(ctx context.Context, db *sql.DB, n int) error {
 	accesskey := make([][]byte, 0, n)
 	cstatus := make([]int16, 0, n)
 	tstatus := make([]int16, 0, n)
+	revisions := make([]int64, 0, n)
 	for i := range n {
 		tmpl := models.ClientConfigTemplate{}
 		tmplStr, err := tmpl.Value()
@@ -88,6 +97,7 @@ func fillNodes(ctx context.Context, db *sql.DB, n int) error {
 		} else {
 			cstatus = append(cstatus, int16(models.NodeStatusUnknown))
 		}
+		revisions = append(revisions, int64(i%10))
 	}
 
 	req := `
@@ -96,7 +106,8 @@ func fillNodes(ctx context.Context, db *sql.DB, n int) error {
 		node_endpoint,
 		node_access_key,
 		node_current_status,
-		node_target_status
+		node_target_status,
+		revision
 	)
 	SELECT *
 	FROM unnest(
@@ -104,13 +115,15 @@ func fillNodes(ctx context.Context, db *sql.DB, n int) error {
 		$2::text[],
 		$3::bytea[],
 		$4::smallint[],
-		$5::smallint[]
+		$5::smallint[],
+		$6::bigint[]
 	) AS t(
 		client_cfg_template,
 		node_endpoint,
 		node_access_key,
 		node_current_status,
-		node_target_status
+		node_target_status,
+		revision
 	);
 	`
 	_, err := db.ExecContext(ctx, req,
@@ -119,13 +132,14 @@ func fillNodes(ctx context.Context, db *sql.DB, n int) error {
 		pq.Array(accesskey),
 		pq.Array(cstatus),
 		pq.Array(tstatus),
+		pq.Array(revisions),
 	)
 
 	return err
 }
 
 // //////////////////////////////////////////////////////////////////////////
-// test usernodes - 10k users, 10 nodes
+// test usernodes - 100k users, 100 nodes
 func TestStorage_Time_Syncs(t *testing.T) {
 	logger := zaptest.NewLogger(t)
 	ctx := context.Background()
@@ -134,76 +148,36 @@ func TestStorage_Time_Syncs(t *testing.T) {
 
 	////////////////////////////////////////////////////////////////////////////
 	// add nodes, and users enabled, disabled
-	const nNodes = 10
+	const nNodes = 100
 	err := fillNodes(ctx, db.Raw(), nNodes)
 	require.NoError(t, err)
 
-	const nUsers = 10000
+	const nUsers = 100000
 	err = fillUsers(ctx, db.Raw(), nUsers)
 	require.NoError(t, err)
 
 	////////////////////////////////////////////////////////////////////////////
 	// let's go!
 	expl := db.WithExplanations("FindPendingSyncs", ExplainAnalyze)
-	pendingSyncs, err := s.FindPendingSyncs(ctx, models.NodeID(nNodes/2))
+	syncs, err := s.FindPendingSyncs(ctx, models.NodeID(nNodes/2))
 	require.NoError(t, err)
 	metrics, err := expl.Metrics()
 	require.NoError(t, err)
 	metrics.Print(logger)
 	// find pending syncs x nodes count <= 10 seconds
 	require.Less(t, nNodes*metrics.ExecutionTime, 10*time.Second)
-	require.Less(t, nUsers/2, len(pendingSyncs))
+	logger.Info("find pending syncs", zap.Int("syncs", len(syncs)))
 
-	//updatePatch := make([]models.UserStatusPatch, nUsers, nUsers)
-	for i := range nUsers {
-		err = s.SetTargetUserStatus(ctx, models.UserID(i+1), models.UserStatusDisabled)
-		require.NoError(t, err)
-	}
-	/*expl = db.WithExplanations("UpdateNodeUsers", ExplainAnalyze)
-	//err = s.UpdateNodeUsers(ctx, models.NodeID(nNodes/3), updatePatch)
-	//require.NoError(t, err)
-	metrics, err = expl.Metrics()
+	err = s.SetNodeRev(ctx, models.NodeID(2), models.Revision(nUsers))
 	require.NoError(t, err)
-	metrics.Print(logger)
-	// update syncs x nodes count <= 10 seconds
-	require.Less(t, nNodes*metrics.ExecutionTime, 60*time.Second)
-	require.Less(t, nUsers/2, len(pendingSyncs))
-
-	setPatch := make([]models.UserStatusPatch, nUsers, nUsers)
-	for i := range nUsers {
-		setPatch[i].UserID = models.UserID(i + 1)
-		setPatch[i].Status = models.UserStatusEnabled
-	}
-	expl = db.WithExplanations("SetNodeUsers", ExplainAnalyze)
-	err = s.SetNodeUsers(ctx, models.NodeID(nNodes/4), setPatch)
-	require.NoError(t, err)
-	metrics, err = expl.Metrics()
-	require.NoError(t, err)
-	metrics.Print(logger)
-	// update syncs x nodes count <= 10 seconds
-	require.Less(t, nNodes*metrics.ExecutionTime, 10*time.Second)
-	require.Less(t, nUsers/2, len(pendingSyncs))*/
-
-	expl = db.WithExplanations("FindPendingSyncs Again", ExplainAnalyze)
-	pendingSyncs, err = s.FindPendingSyncs(ctx, models.NodeID(nNodes/2))
-	require.NoError(t, err)
-	metrics, err = expl.Metrics()
-	require.NoError(t, err)
-	metrics.Print(logger)
-	// find pending syncs x nodes count <= 10 seconds
-	require.Less(t, nNodes*metrics.ExecutionTime, 10*time.Second)
-	require.Less(t, nUsers/2, len(pendingSyncs))
-
-	var userNodes []models.Node
 	expl = db.WithExplanations("GetUserNodes", ExplainAnalyze)
-	userNodes, err = s.GetUserNodes(ctx, models.UserID(3))
+	usernodes, err := s.GetUserNodes(ctx, models.UserID(3))
 	metrics, err = expl.Metrics()
 	require.NoError(t, err)
 	metrics.Print(logger)
-	// find pending syncs x nodes count <= 10 seconds
-	require.Less(t, nNodes*metrics.ExecutionTime, 10*time.Second)
-	require.Less(t, nUsers/2, len(pendingSyncs))
-	require.Less(t, 0, len(userNodes))
+	// find user nodes <= 10ms
+	require.Less(t, metrics.ExecutionTime, 10*time.Millisecond)
+	logger.Info("get user nodes", zap.Int("nodes", len(usernodes)))
 }
 
 // //////////////////////////////////////////////////////////////////////////

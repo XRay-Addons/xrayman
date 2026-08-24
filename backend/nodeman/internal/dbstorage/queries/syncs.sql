@@ -16,8 +16,8 @@ SELECT
 FROM users AS u
 JOIN nodes AS n
     ON n.node_id = $1
-WHERE n.deleted_at IS NULL
-    AND u.revision > n.revision;
+WHERE u.revision > n.revision
+ORDER BY u.user_id ASC; 
 
 -- name: GetUserNodes :many
 SELECT
@@ -32,4 +32,5 @@ FROM nodes n
 INNER JOIN users u
     ON u.user_id = $1
 WHERE n.revision >= u.revision
-    AND n.deleted_at IS NULL;
+    AND n.deleted_at IS NULL
+ORDER BY n.node_id ASC; 
