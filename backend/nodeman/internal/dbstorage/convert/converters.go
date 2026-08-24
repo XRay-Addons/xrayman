@@ -129,30 +129,14 @@ func ListUserViewsResp(r []queries.ListUserViewsRow) []models.UserView {
 func FindPendingSyncsResp(r []queries.FindPendingSyncsRow) []models.UserSyncStatus {
 	return cnvArrNoErr(r,
 		func(from *queries.FindPendingSyncsRow, to *models.UserSyncStatus) {
-			to.CurrentStatus = models.UserStatus(from.UserCurrentStatus)
 			to.User.TargetStatus = models.UserStatus(from.UserTargetStatus)
 			to.User.Profile.DisplayName = from.DisplayName
 			to.User.Profile.ID = models.UserID(from.UserID)
 			to.User.Profile.Name = from.UserName
 			to.User.Profile.VlessUUID = from.VlessUuid
+			to.Revision = models.Revision(from.Revision)
 		},
 	)
-}
-
-func UpdateNodeUsersReq(id models.NodeID,
-	patch []models.UserStatusPatch,
-) queries.InsertNodeUsersParams {
-	n := len(patch)
-	arg := queries.InsertNodeUsersParams{
-		NodeID:            int64(id),
-		UserID:            make([]int64, n, n),
-		UserCurrentStatus: make([]int16, n, n),
-	}
-	for i, p := range patch {
-		arg.UserID[i] = int64(p.UserID)
-		arg.UserCurrentStatus[i] = int16(p.Status)
-	}
-	return arg
 }
 
 func GetUserNodesResp(r []queries.GetUserNodesRow) ([]models.Node, error) {

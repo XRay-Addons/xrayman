@@ -24,10 +24,8 @@ type StateStorage interface {
 type SyncsStorage interface {
 	FindPendingSyncs(ctx context.Context) (
 		[]models.UserSyncStatus, error)
-	UpdateNodeUsers(ctx context.Context,
-		patch []models.UserStatusPatch) error
-	SetNodeUsers(ctx context.Context,
-		patch []models.UserStatusPatch) error
+	SetNodeRev(ctx context.Context,
+		rev models.Revision) error
 }
 
 type Storage interface {

@@ -156,33 +156,25 @@ func TestStorage_UserNodes(t *testing.T) {
 
 	pendingSyncs, err := s.FindPendingSyncs(ctx, node1.ID)
 	require.NoError(t, err)
-	require.Equal(t, 1, len(pendingSyncs))
+	require.Equal(t, 3, len(pendingSyncs))
 	require.Equal(t, user1.Profile.ID, pendingSyncs[0].User.Profile.ID)
-	require.Equal(t, models.UserStatusDisabled, pendingSyncs[0].CurrentStatus)
+	require.Equal(t, user2.Profile.ID, pendingSyncs[1].User.Profile.ID)
+	require.Equal(t, user3.Profile.ID, pendingSyncs[2].User.Profile.ID)
+
 	require.Equal(t, models.UserStatusEnabled, pendingSyncs[0].User.TargetStatus)
+	require.Equal(t, models.UserStatusDisabled, pendingSyncs[1].User.TargetStatus)
+	require.Equal(t, models.UserStatusDisabled, pendingSyncs[2].User.TargetStatus)
 
-	syncsPath := []models.UserStatusPatch{
-		{UserID: user1.Profile.ID, Status: models.UserStatusEnabled},
-		{UserID: user2.Profile.ID, Status: models.UserStatusEnabled},
-	}
-	err = s.UpdateNodeUsers(ctx, node1.ID, syncsPath)
+	err = s.SetTargetUserStatus(ctx, user1.Profile.ID, models.UserStatusEnabled)
+	require.NoError(t, err)
+	err = s.SetTargetUserStatus(ctx, user2.Profile.ID, models.UserStatusEnabled)
 	require.NoError(t, err)
 
 	pendingSyncs, err = s.FindPendingSyncs(ctx, node1.ID)
 	require.NoError(t, err)
-	require.Equal(t, 1, len(pendingSyncs))
-	require.Equal(t, user2.Profile.ID, pendingSyncs[0].User.Profile.ID)
-	require.Equal(t, models.UserStatusEnabled, pendingSyncs[0].CurrentStatus)
-	require.Equal(t, models.UserStatusDisabled, pendingSyncs[0].User.TargetStatus)
-
-	syncsPath = []models.UserStatusPatch{
-		{UserID: user2.Profile.ID, Status: models.UserStatusEnabled},
-	}
-	err = s.SetNodeUsers(ctx, node1.ID, syncsPath)
-	require.NoError(t, err)
-	pendingSyncs, err = s.FindPendingSyncs(ctx, node1.ID)
-	require.NoError(t, err)
-	require.Equal(t, 2, len(pendingSyncs))
+	require.Equal(t, 3, len(pendingSyncs))
+	require.Equal(t, user2.Profile.ID, pendingSyncs[1].User.Profile.ID)
+	require.Equal(t, models.UserStatusEnabled, pendingSyncs[1].User.TargetStatus)
 }
 
 func TestStorage_Stats(t *testing.T) {
