@@ -34,6 +34,8 @@ should be like /admin or https://adm.example.com (optional)`,
 	"storageTimeoutHelp": `storage call timeout, s (optional)`,
 
 	"nodeTimeoutHelp": `node call timeout, s (optional)`,
+
+	"metricsHelp": `prometheus metrics endpoint (optional)`,
 }
 
 type CLI struct {
@@ -53,7 +55,8 @@ type CLI struct {
 	NodeCallTimeout    int `name:"node-timeout" env:"NODE_CALL_TIMEOUT" default:"5" help:"${nodeTimeoutHelp}"`
 	StorageCallTimeout int `name:"storage-timeout" env:"STORAGE_CALL_TIMEOUT" default:"5" help:"${storageTimeoutHelp}"`
 
-	LogLevel zapcore.Level `name:"log-lvl" env:"LOG_LEVEL" default:"info" help:"zap log level"`
+	MetricsEndpoint string        `name:"metrics-endpoint" env:"METRICS_ENDPOINT" default:"" help:"${metricsHelp}"`
+	LogLevel        zapcore.Level `name:"log-lvl" env:"LOG_LEVEL" default:"info" help:"zap log level"`
 
 	Version bool `short:"v" help:"Show version and exit."`
 }
