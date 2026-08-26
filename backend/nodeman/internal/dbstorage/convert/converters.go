@@ -171,7 +171,7 @@ func UpdateStatsReq(nodeID models.NodeID,
 		Download: make([]int64, n, n),
 
 		CpuLoad:         stats.Performance.CpuLoad,
-		MemLoad:         0.25, //stats.Performance.MemLoad,
+		MemLoad:         stats.Performance.MemLoad,
 		RamLoad:         stats.Performance.RamLoad,
 		OpenConnections: stats.Performance.OpenConnections,
 	}
