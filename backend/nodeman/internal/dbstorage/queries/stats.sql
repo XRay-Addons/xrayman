@@ -25,17 +25,30 @@ update_users AS (
         download = total_users_traffic.download + EXCLUDED.download
     RETURNING 1 -- sqlc require to return something
 )
--- 3. update nodes stats
-INSERT INTO nodes_stats (node_id, upload, download)
+-- 3. update nodes stats // 
+INSERT INTO nodes_stats (
+    node_id,
+    upload,
+    download,
+    open_connections,
+    cpu_load,
+    ram_load,
+    mem_load
+)
 SELECT 
     sqlc.arg(node_id)::bigint,
     COALESCE(SUM(upload), 0)::bigint, 
-    COALESCE(SUM(download), 0)::bigint
+    COALESCE(SUM(download), 0)::bigint,
+    sqlc.arg(open_connections)::integer,
+    sqlc.arg(cpu_load)::real,
+    sqlc.arg(ram_load)::real,
+    sqlc.arg(mem_load)::real
 FROM input_data
 ON CONFLICT (node_id) DO UPDATE
 SET
     upload   = nodes_stats.upload   + EXCLUDED.upload,
     download = nodes_stats.download + EXCLUDED.download;
+
 
 -- name: RefreshDailyStats :exec
 WITH

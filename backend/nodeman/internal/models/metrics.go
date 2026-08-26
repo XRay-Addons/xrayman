@@ -6,8 +6,8 @@ type NodeTraffic struct {
 }
 
 type NodeMetrics struct {
-	ID       NodeID
-	Endpoint string
-	Traffic  NodeTraffic
-	Perf     NodePerformance
+	ID          NodeID
+	Endpoint    string
+	Traffic     NodeTraffic
+	Performance NodePerformance
 }

@@ -104,12 +104,18 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 		id := strconv.Itoa(nm.ID)
 		endpoint := nm.Endpoint
 
-		c.sendConstMetric(ch, uplinkDesc, prometheus.CounterValue, float64(nm.Traffic.Upload), id, endpoint)
-		c.sendConstMetric(ch, downlinkDesc, prometheus.CounterValue, float64(nm.Traffic.Download), id, endpoint)
-		c.sendConstMetric(ch, openConnectionsDesc, prometheus.GaugeValue, float64(nm.Perf.OpenConnections), id, endpoint)
-		c.sendConstMetric(ch, cpuLoadDesc, prometheus.GaugeValue, float64(nm.Perf.CpuLoad), id, endpoint)
-		c.sendConstMetric(ch, ramLoadDesc, prometheus.GaugeValue, float64(nm.Perf.RamLoad), id, endpoint)
-		c.sendConstMetric(ch, memLoadDesc, prometheus.GaugeValue, float64(nm.Perf.MemLoad), id, endpoint)
+		c.sendConstMetric(ch, uplinkDesc, prometheus.CounterValue,
+			float64(nm.Traffic.Upload), id, endpoint)
+		c.sendConstMetric(ch, downlinkDesc, prometheus.CounterValue,
+			float64(nm.Traffic.Download), id, endpoint)
+		c.sendConstMetric(ch, openConnectionsDesc, prometheus.GaugeValue,
+			float64(nm.Performance.OpenConnections), id, endpoint)
+		c.sendConstMetric(ch, cpuLoadDesc, prometheus.GaugeValue,
+			float64(nm.Performance.CpuLoad), id, endpoint)
+		c.sendConstMetric(ch, ramLoadDesc, prometheus.GaugeValue,
+			float64(nm.Performance.RamLoad), id, endpoint)
+		c.sendConstMetric(ch, memLoadDesc, prometheus.GaugeValue,
+			float64(nm.Performance.MemLoad), id, endpoint)
 	}
 }
 
