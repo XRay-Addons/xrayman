@@ -76,7 +76,7 @@ func getStats(
 	ctx context.Context,
 	ssClient statsService.StatsServiceClient,
 	log *zap.Logger,
-) (*models.StatsResult, error) {
+) ([]models.UserStats, error) {
 	resp, err := ssClient.QueryStats(context.Background(), &statsService.QueryStatsRequest{
 		Pattern: userPattern,
 		Reset_:  true,
@@ -120,7 +120,5 @@ func getStats(
 		usersStats = append(usersStats, v)
 	}
 
-	return &models.StatsResult{
-		Users: usersStats,
-	}, nil
+	return usersStats, nil
 }
