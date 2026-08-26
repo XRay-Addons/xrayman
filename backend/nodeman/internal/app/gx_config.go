@@ -46,7 +46,7 @@ var Config = gx.Module("config", gx.Provide(
 	),
 	gx.Named(
 		func(cfg *config.Config) string {
-			return "127.0.0.1:9090"
+			return cfg.MetricsEndpoint
 		},
 		"metrics-endpoint",
 	),

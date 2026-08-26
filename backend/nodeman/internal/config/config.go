@@ -28,8 +28,9 @@ type Config struct {
 	StateSyncInterval time.Duration
 	StatsSyncInterval time.Duration
 
-	AllowedOrigins []string
-	LogLevel       zapcore.Level
+	AllowedOrigins  []string
+	MetricsEndpoint string
+	LogLevel        zapcore.Level
 }
 
 const (
@@ -68,7 +69,8 @@ func loadConfig(cli *CLI) (*Config, error) {
 		NodeCallTimeout:    time.Duration(cli.NodeCallTimeout) * time.Second,
 		StorageCallTimeout: time.Duration(cli.StorageCallTimeout) * time.Second,
 
-		LogLevel: cli.LogLevel,
+		MetricsEndpoint: cli.MetricsEndpoint,
+		LogLevel:        cli.LogLevel,
 	}
 
 	cfg.ApiServiceUrl = or(cli.ApiServiceUrl, cfg.ApiServicePath)
