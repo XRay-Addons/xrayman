@@ -2,14 +2,15 @@ package performance
 
 import (
 	"context"
+	"os"
+	"sync"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 	"github.com/XRay-Addons/xrayman/node/internal/service"
 
-	"os"
-	"sync"
-
+	"github.com/shirou/gopsutil/v4/cpu"
+	"github.com/shirou/gopsutil/v4/disk"
 	"github.com/shirou/gopsutil/v4/mem"
 	"github.com/shirou/gopsutil/v4/net"
 	"github.com/shirou/gopsutil/v4/process"
@@ -38,23 +39,25 @@ func (p *Performance) GetPerformance(ctx context.Context) (*models.NodePerforman
 
 	var result models.NodePerformance
 
-	cpuPercent, err := p.proc.CPUPercentWithContext(ctx)
+	cpuPercents, err := cpu.PercentWithContext(ctx, 0, false)
 	if err != nil {
 		return nil, xerr.WrapWithStack(err)
 	}
-	result.CpuLoad = float32(cpuPercent)
-
-	ramPercent, err := p.proc.MemoryPercentWithContext(ctx)
-	if err != nil {
-		return nil, xerr.WrapWithStack(err)
+	if len(cpuPercents) > 0 {
+		result.CpuLoad = float32(cpuPercents[0])
 	}
-	result.RamLoad = ramPercent
 
 	vm, err := mem.VirtualMemoryWithContext(ctx)
 	if err != nil {
 		return nil, xerr.WrapWithStack(err)
 	}
-	result.MemLoad = float32(vm.UsedPercent)
+	result.RamLoad = float32(vm.UsedPercent)
+
+	diskStat, err := disk.UsageWithContext(ctx, "/")
+	if err != nil {
+		return nil, xerr.WrapWithStack(err)
+	}
+	result.MemLoad = float32(diskStat.UsedPercent)
 
 	conns, err := net.ConnectionsPidWithContext(ctx, "all", p.proc.Pid)
 	if err != nil {
