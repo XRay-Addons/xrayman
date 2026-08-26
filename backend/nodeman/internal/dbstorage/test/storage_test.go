@@ -222,7 +222,7 @@ func TestStorage_Stats(t *testing.T) {
 
 	// update stats
 	err = s.DoTx(ctx, func(ctx context.Context) error {
-		if err := s.UpdateNodeStats(ctx, node1.ID, models.NodeStats{
+		if err := s.UpdateStats(ctx, node1.ID, models.NodeStats{
 			Users: []models.UserStats{
 				{ID: user1.Profile.ID, Uplink: 1, Downlink: 2},
 				{ID: user2.Profile.ID, Uplink: 3, Downlink: 4},
@@ -230,17 +230,17 @@ func TestStorage_Stats(t *testing.T) {
 		}); err != nil {
 			return err
 		}
-		if err := s.UpdateNodeStats(ctx, node2.ID, models.NodeStats{
+		if err := s.UpdateStats(ctx, node2.ID, models.NodeStats{
 			Users: []models.UserStats{
 				{ID: user1.Profile.ID, Uplink: 5, Downlink: 6},
 			},
 		}); err != nil {
 			return err
 		}
-		if err := s.UpdateDailyStats(ctx, time.Now().Add(-60*24*time.Hour)); err != nil {
+		if err := s.RefreshDailyStats(ctx, time.Now().Add(-60*24*time.Hour)); err != nil {
 			return err
 		}
-		if err := s.UpdateNodeStats(ctx, node2.ID, models.NodeStats{
+		if err := s.UpdateStats(ctx, node2.ID, models.NodeStats{
 			Users: []models.UserStats{
 				{ID: user2.Profile.ID, Uplink: 11, Downlink: 12},
 			},

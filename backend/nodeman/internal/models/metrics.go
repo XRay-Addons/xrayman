@@ -1,9 +1,13 @@
 package models
 
+type NodeTraffic struct {
+	Upload   int64
+	Download int64
+}
+
 type NodeMetrics struct {
-	TotalInbount  int64
-	TotalOutbound int64
-	CpuLoad       float32
-	RamLoad       float32
-	MemLoad       float32
+	ID       NodeID
+	Endpoint string
+	Traffic  NodeTraffic
+	Perf     NodePerformance
 }

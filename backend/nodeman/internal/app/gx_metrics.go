@@ -4,51 +4,13 @@ import (
 	"context"
 	"net/http"
 
-	"math/rand/v2"
-
 	"github.com/XRay-Addons/xrayman/common/gx"
+	"github.com/XRay-Addons/xrayman/common/http/router"
 	"github.com/XRay-Addons/xrayman/common/http/server"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/metrics"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-)
-
-type MetricsStorage struct {
-}
-
-var _ metrics.Storage = (*MetricsStorage)(nil)
-
-func (m *MetricsStorage) GetNodeMetrics(ctx context.Context) ([]models.NodeMetrics, error) {
-	return []models.NodeMetrics{
-		models.NodeMetrics{
-			ID:            models.NodeID(1),
-			Endpoint:      "xo.stepka.co.uk",
-			TotalInbount:  int64(rand.IntN(100)),
-			TotalOutbound: int64(rand.IntN(100)),
-			CpuLoad:       rand.Float32(),
-			MemLoad:       rand.Float32(),
-			RamLoad:       rand.Float32(),
-		},
-		models.NodeMetrics{
-			ID:            models.NodeID(2),
-			Endpoint:      "ox.stepka.co.uk",
-			TotalInbount:  int64(rand.IntN(100)),
-			TotalOutbound: int64(rand.IntN(100)),
-			CpuLoad:       rand.Float32(),
-			MemLoad:       rand.Float32(),
-			RamLoad:       rand.Float32(),
-		},
-	}, nil
-}
-
-func NewMetricsStorage() *MetricsStorage {
-	return &MetricsStorage{}
-}
-
-var metricsStorage = gx.ProvideAnnotated(
-	NewMetricsStorage,
-	gx.As(new(metrics.Storage)),
+	"go.uber.org/zap"
 )
 
 var metricsCollector = gx.ProvideAnnotated(
@@ -56,23 +18,35 @@ var metricsCollector = gx.ProvideAnnotated(
 	gx.As(new(prometheus.Collector)),
 )
 
-type MetricsServerParams struct {
+type MetricsRouterParams struct {
 	gx.In
-	PC       prometheus.Collector
-	Endpoint string `name:"metrics-endpoint"`
+	PC  prometheus.Collector
+	Log *zap.Logger
 }
 
-var metricsServer = gx.ProvideNamed(
-	func(p MetricsServerParams) (*server.HttpServer, error) {
+var metricsRouter = gx.ProvideNamed(
+	func(p MetricsRouterParams) (http.Handler, error) {
 		reg := prometheus.NewRegistry()
 		if err := reg.Register(p.PC); err != nil {
 			return nil, err
 		}
 
-		h := http.NewServeMux()
-		h.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
+		return router.New(
+			router.WithHandler("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{})),
+			router.WithLogger(p.Log))
+	},
+	"metrics-router",
+)
 
-		return server.New(p.Endpoint, h)
+type MetricsServerParams struct {
+	gx.In
+	Router   http.Handler `name:"metrics-router"`
+	Endpoint string       `name:"metrics-endpoint"`
+}
+
+var metricsServer = gx.ProvideNamed(
+	func(p MetricsServerParams) (*server.HttpServer, error) {
+		return server.New(p.Endpoint, p.Router)
 	},
 	"metrics-server",
 )
@@ -102,8 +76,8 @@ var metricsServerJob = gx.Invoke(
 )
 
 var MetricsServer = gx.Module("metrics",
-	metricsStorage,
 	metricsCollector,
+	metricsRouter,
 	metricsServer,
 	metricsServerJob,
 )

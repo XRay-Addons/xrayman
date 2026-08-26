@@ -218,14 +218,14 @@ func TestStorage_Time_Stats(t *testing.T) {
 					Uplink:   int64(2*u - i),
 				})
 			}
-			if err := s.UpdateNodeStats(ctx, i, models.NodeStats{
+			if err := s.UpdateStats(ctx, i, models.NodeStats{
 				Users: stats,
 			}); err != nil {
 				return err
 			}
 			if i%10 == 0 {
 				var randomDayOffset time.Duration = time.Duration(nNodes-i) * 7 * 24 * time.Hour
-				if err := s.UpdateDailyStats(ctx,
+				if err := s.RefreshDailyStats(ctx,
 					time.Now().Add(-randomDayOffset),
 				); err != nil {
 					return err
@@ -239,7 +239,7 @@ func TestStorage_Time_Stats(t *testing.T) {
 
 	////////////////////////////////////////////////////////////////////////////
 	// update stats
-	expl := db.WithExplanations("UpdateNodeStats", ExplainAnalyze)
+	expl := db.WithExplanations("UpdateStats", ExplainAnalyze)
 	stats := make([]models.UserStats, 0, nUsers/100)
 	for u := range nUsers {
 		if u%100 != 0 {
@@ -251,7 +251,7 @@ func TestStorage_Time_Stats(t *testing.T) {
 			Uplink:   int64(2 * u),
 		})
 	}
-	err = s.UpdateNodeStats(ctx, models.NodeID(nNodes/2), models.NodeStats{
+	err = s.UpdateStats(ctx, models.NodeID(nNodes/2), models.NodeStats{
 		Users: stats,
 	})
 	require.NoError(t, err)
@@ -262,8 +262,8 @@ func TestStorage_Time_Stats(t *testing.T) {
 
 	////////////////////////////////////////////////////////////////////////////
 	// update daily sync
-	expl = db.WithExplanations("UpdateDailyStats", ExplainAnalyze)
-	err = s.UpdateDailyStats(ctx, time.Now())
+	expl = db.WithExplanations("RefreshDailyStats", ExplainAnalyze)
+	err = s.RefreshDailyStats(ctx, time.Now())
 	require.NoError(t, err)
 	metrics, err = expl.Metrics()
 	require.NoError(t, err)

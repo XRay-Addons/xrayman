@@ -6,6 +6,14 @@ type UserStats struct {
 	Downlink int64
 }
 
+type NodePerformance struct {
+	OpenConnections int32
+	CpuLoad         float32
+	RamLoad         float32
+	MemLoad         float32
+}
+
 type NodeStats struct {
-	Users []UserStats
+	Users       []UserStats
+	Performance NodePerformance
 }

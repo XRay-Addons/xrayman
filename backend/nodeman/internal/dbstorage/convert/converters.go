@@ -159,11 +159,11 @@ func GetUserNodesResp(r []queries.GetUserNodesRow) ([]models.Node, error) {
 	)
 }
 
-func UpdateNodeStatsReq(nodeID models.NodeID,
+func UpdateStatsReq(nodeID models.NodeID,
 	stats models.NodeStats,
-) queries.UpdateTotalStatsParams {
+) queries.UpdateStatsParams {
 	n := len(stats.Users)
-	req := queries.UpdateTotalStatsParams{
+	req := queries.UpdateStatsParams{
 		NodeID:   int64(nodeID),
 		UserID:   make([]int64, n, n),
 		Upload:   make([]int64, n, n),
@@ -175,4 +175,19 @@ func UpdateNodeStatsReq(nodeID models.NodeID,
 		req.Download[i] = u.Downlink
 	}
 	return req
+}
+
+func GetNodeMetricsResp(r []queries.GetMetricsRow) ([]models.NodeMetrics, error) {
+	return cnvArr(r,
+		func(from *queries.GetMetricsRow, to *models.NodeMetrics) {
+			to.ID = models.NodeID(from.NodeID)
+			to.Endpoint = from.NodeEndpoint
+			to.Traffic.Upload = from.Upload
+			to.Traffic.Download = from.Download
+			to.Perf.CpuLoad = from.CpuLoad
+			to.Perf.MemLoad = from.MemLoad
+			to.Perf.RamLoad = from.RamLoad
+			to.Perf.OpenConnections = from.OpenConnections
+		},
+	)
 }

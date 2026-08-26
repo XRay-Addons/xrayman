@@ -3,6 +3,7 @@ package metrics
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
@@ -37,31 +38,38 @@ func (c *Collector) Close() {
 
 const namespace = "nodeman"
 
+var labelNames = []string{"node_id", "endpoint"}
+
 var (
-	totalInboundDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "node", "total_inbound"),
-		"Total inbound traffic/connections for the node",
-		[]string{"endpoint"}, nil,
+	uplinkDesc = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "node", "upload"),
+		"Total outbound traffic for the node",
+		labelNames, nil,
 	)
-	totalOutboundDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "node", "total_outbound"),
-		"Total outbound traffic/connections for the node",
-		[]string{"endpoint"}, nil,
+	downlinkDesc = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "node", "download"),
+		"Total inbound traffic for the node",
+		labelNames, nil,
+	)
+	openConnectionsDesc = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "node", "open_connections"),
+		"Open connections on node",
+		labelNames, nil,
 	)
 	cpuLoadDesc = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "node", "cpu_load"),
 		"CPU load of the node",
-		[]string{"endpoint"}, nil,
+		labelNames, nil,
 	)
 	ramLoadDesc = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "node", "ram_load"),
 		"RAM load of the node",
-		[]string{"endpoint"}, nil,
+		labelNames, nil,
 	)
 	memLoadDesc = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "node", "mem_load"),
 		"Memory load of the node",
-		[]string{"endpoint"}, nil,
+		labelNames, nil,
 	)
 	scrapeErrorDesc = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "node", "scrape_error"),
@@ -71,8 +79,9 @@ var (
 )
 
 func (c *Collector) Describe(ch chan<- *prometheus.Desc) {
-	ch <- totalInboundDesc
-	ch <- totalOutboundDesc
+	ch <- uplinkDesc
+	ch <- downlinkDesc
+	ch <- openConnectionsDesc
 	ch <- cpuLoadDesc
 	ch <- ramLoadDesc
 	ch <- memLoadDesc
@@ -92,12 +101,15 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 	c.sendConstMetric(ch, scrapeErrorDesc, prometheus.GaugeValue, 0)
 
 	for _, nm := range m {
+		id := strconv.Itoa(nm.ID)
 		endpoint := nm.Endpoint
-		c.sendConstMetric(ch, totalInboundDesc, prometheus.CounterValue, float64(nm.TotalInbount), endpoint)
-		c.sendConstMetric(ch, totalOutboundDesc, prometheus.CounterValue, float64(nm.TotalOutbound), endpoint)
-		c.sendConstMetric(ch, cpuLoadDesc, prometheus.GaugeValue, float64(nm.CpuLoad), endpoint)
-		c.sendConstMetric(ch, ramLoadDesc, prometheus.GaugeValue, float64(nm.RamLoad), endpoint)
-		c.sendConstMetric(ch, memLoadDesc, prometheus.GaugeValue, float64(nm.MemLoad), endpoint)
+
+		c.sendConstMetric(ch, uplinkDesc, prometheus.CounterValue, float64(nm.Traffic.Upload), id, endpoint)
+		c.sendConstMetric(ch, downlinkDesc, prometheus.CounterValue, float64(nm.Traffic.Download), id, endpoint)
+		c.sendConstMetric(ch, openConnectionsDesc, prometheus.GaugeValue, float64(nm.Perf.OpenConnections), id, endpoint)
+		c.sendConstMetric(ch, cpuLoadDesc, prometheus.GaugeValue, float64(nm.Perf.CpuLoad), id, endpoint)
+		c.sendConstMetric(ch, ramLoadDesc, prometheus.GaugeValue, float64(nm.Perf.RamLoad), id, endpoint)
+		c.sendConstMetric(ch, memLoadDesc, prometheus.GaugeValue, float64(nm.Perf.MemLoad), id, endpoint)
 	}
 }
 

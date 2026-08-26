@@ -7,5 +7,5 @@ import (
 )
 
 type Storage interface {
-	UpdateNodeStats(ctx context.Context, s models.NodeStats) error
+	UpdateStats(ctx context.Context, s models.NodeStats) error
 }

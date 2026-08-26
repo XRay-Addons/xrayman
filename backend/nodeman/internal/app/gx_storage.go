@@ -11,6 +11,7 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/stats/poolstats"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/auth"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service/metrics"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/settings"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
@@ -56,6 +57,7 @@ var storage = gx.ProvideAnnotated(
 	gx.As(new(poolstats.Storage)),
 	gx.As(new(settings.Storage)),
 	gx.As(new(auth.Storage)),
+	gx.As(new(metrics.Storage)),
 	gx.As(gx.Self()),
 )
 

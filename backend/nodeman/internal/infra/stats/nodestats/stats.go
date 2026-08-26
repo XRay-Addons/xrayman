@@ -12,7 +12,7 @@ type stats struct {
 	client  Client
 }
 
-func UpdateNodeStats(ctx context.Context, client Client, storage Storage, log *zap.Logger) error {
+func UpdateStats(ctx context.Context, client Client, storage Storage, log *zap.Logger) error {
 	if client == nil {
 		return errdefs.NilArg("client")
 	}
@@ -25,7 +25,7 @@ func UpdateNodeStats(ctx context.Context, client Client, storage Storage, log *z
 		return err
 	}
 
-	if err := storage.UpdateNodeStats(ctx, *stats); err != nil {
+	if err := storage.UpdateStats(ctx, *stats); err != nil {
 		return err
 	}
 

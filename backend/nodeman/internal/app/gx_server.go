@@ -68,7 +68,7 @@ var adminPage = gx.ProvideNamed(
 	"admin-page",
 )
 
-type RouterParams struct {
+type HttpRouterParams struct {
 	gx.In
 	Cfg        *config.Config
 	Log        *zap.Logger
@@ -78,7 +78,7 @@ type RouterParams struct {
 }
 
 var httpRouter = gx.ProvideNamed(
-	func(p RouterParams) (http.Handler, error) {
+	func(p HttpRouterParams) (http.Handler, error) {
 		return router.New(
 			router.WithHandler(p.Cfg.ApiServicePath, p.ApiHandler),
 			router.WithSPA(p.Cfg.UserSpaPath, p.UserPage),
@@ -86,29 +86,29 @@ var httpRouter = gx.ProvideNamed(
 			router.WithCrossOrigin(p.Cfg.AllowedOrigins),
 			router.WithLogger(p.Log))
 	},
-	"router",
+	"http-router",
 )
 
-type ServerParams struct {
+type HttpServerParams struct {
 	gx.In
 	Cfg    *config.Config
-	Router http.Handler `name:"router"`
+	Router http.Handler `name:"http-router"`
 }
 
 var httpServer = gx.ProvideNamed(
-	func(p ServerParams) (*server.HttpServer, error) {
+	func(p HttpServerParams) (*server.HttpServer, error) {
 		return server.New(p.Cfg.Endpoint, p.Router)
 	},
 	"http-server",
 )
 
-type HttpServerParams struct {
+type HttpServerJobParams struct {
 	gx.In
 	S *server.HttpServer `name:"http-server"`
 }
 
 var httpServerJob = gx.Invoke(
-	func(p HttpServerParams, lc gx.Lifecycle) {
+	func(p HttpServerJobParams, lc gx.Lifecycle) {
 		lc.AppendJob(gx.Job{
 			Name: "http server",
 			OnStart: func(context.Context) error {

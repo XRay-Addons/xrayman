@@ -31,7 +31,7 @@ func (op *nodeOp) Exec(ctx context.Context, node models.Node, log *zap.Logger) e
 	if err != nil {
 		return err
 	}
-	if err := nodestats.UpdateNodeStats(ctx, nodeClient, nodeStorage, log); err != nil {
+	if err := nodestats.UpdateStats(ctx, nodeClient, nodeStorage, log); err != nil {
 		return err
 	}
 	return nil

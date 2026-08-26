@@ -10,8 +10,10 @@ import (
 	queries "github.com/XRay-Addons/xrayman/nodeman/internal/dbstorage/sqlc/gen"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/dbstorage/sqlerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/stats/poolstats"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/auth"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/service/metrics"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/settings"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
@@ -50,7 +52,9 @@ var _ nodes.Storage = (*Storage)(nil)
 var _ subscr.Storage = (*Storage)(nil)
 var _ auth.Storage = (*Storage)(nil)
 var _ poolsync.Storage = (*Storage)(nil)
+var _ poolstats.Storage = (*Storage)(nil)
 var _ settings.Storage = (*Storage)(nil)
+var _ metrics.Storage = (*Storage)(nil)
 
 type option func(o *options)
 
