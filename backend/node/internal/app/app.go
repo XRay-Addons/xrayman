@@ -29,6 +29,7 @@ func New(cfg *config.Config, log *zap.Logger) (app *App, err error) {
 		Security,
 		Services,
 		XRay,
+		Performance,
 		Server,
 		Bootstrap,
 		Startup,
