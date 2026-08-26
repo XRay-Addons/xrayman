@@ -178,7 +178,7 @@ func (api *XRayApi) Ping(ctx context.Context) error {
 	return ping(ctx, api.ssClient)
 }
 
-func (api *XRayApi) GetStats(ctx context.Context) (*models.StatsResult, error) {
+func (api *XRayApi) GetStats(ctx context.Context) ([]models.UserStats, error) {
 	if api == nil || api.ssClient == nil {
 		return nil, errdefs.NilCall()
 	}
