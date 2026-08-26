@@ -32,5 +32,7 @@ FROM nodes n
 INNER JOIN users u
     ON u.user_id = $1
 WHERE n.revision >= u.revision
+    AND n.node_current_status = sqlc.arg(node_status_running)
+    AND n.node_target_status = sqlc.arg(node_status_running)
     AND n.deleted_at IS NULL
 ORDER BY n.node_id ASC; 

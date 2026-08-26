@@ -43,7 +43,10 @@ func (s *Storage) GetUserNodes(ctx context.Context, id models.UserID) (
 	resp, err := doAny(ctx, s, func(ctx context.Context,
 		q *queries.Queries,
 	) ([]queries.GetUserNodesRow, error) {
-		return q.GetUserNodes(ctx, int64(id))
+		return q.GetUserNodes(ctx, queries.GetUserNodesParams{
+			UserID:            int64(id),
+			NodeStatusRunning: int16(models.NodeStatusRunning),
+		})
 	})
 	if err != nil {
 		return nil, err
