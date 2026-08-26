@@ -77,7 +77,7 @@ type RouterParams struct {
 	AdminPage  *pages.Page  `name:"admin-page"`
 }
 
-var r = gx.ProvideNamed(
+var httpRouter = gx.ProvideNamed(
 	func(p RouterParams) (http.Handler, error) {
 		return router.New(
 			router.WithHandler(p.Cfg.ApiServicePath, p.ApiHandler),
@@ -95,16 +95,37 @@ type ServerParams struct {
 	Router http.Handler `name:"router"`
 }
 
-var s = gx.Provide(
+var httpServer = gx.ProvideNamed(
 	func(p ServerParams) (*server.HttpServer, error) {
 		return server.New(p.Cfg.Endpoint, p.Router)
 	},
+	"http-server",
 )
 
-var Server = gx.Module("server",
+type HttpServerParams struct {
+	gx.In
+	S *server.HttpServer `name:"http-server"`
+}
+
+var httpServerJob = gx.Invoke(
+	func(p HttpServerParams, lc gx.Lifecycle) {
+		lc.AppendJob(gx.Job{
+			Name: "http server",
+			OnStart: func(context.Context) error {
+				return p.S.Listen()
+			},
+			OnStop: func(ctx context.Context) error {
+				return p.S.Shutdown(ctx)
+			},
+		})
+	},
+)
+
+var HttpServer = gx.Module("server",
 	apiHandler,
 	userPage,
 	adminPage,
-	r,
-	s,
+	httpRouter,
+	httpServer,
+	httpServerJob,
 )

@@ -44,4 +44,10 @@ var Config = gx.Module("config", gx.Provide(
 		},
 		"jwt-issuer",
 	),
+	gx.Named(
+		func(cfg *config.Config) string {
+			return "127.0.0.1:9090"
+		},
+		"metrics-endpoint",
+	),
 ))
