@@ -50,6 +50,6 @@ func (s *Stats) UpdatePoolStats(ctx context.Context) (*models.PoolOpResult, erro
 	return s.op.ExecAll(ctx)
 }
 
-func (s *Stats) UpdateDailyStats(ctx context.Context) error {
-	return s.storage.UpdateDailyStats(ctx, time.Now())
+func (s *Stats) RefreshDailyStats(ctx context.Context) error {
+	return s.storage.RefreshDailyStats(ctx, time.Now())
 }

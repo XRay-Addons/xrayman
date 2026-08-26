@@ -1,4 +1,4 @@
-package nodestats
+package metrics
 
 import (
 	"context"
@@ -7,5 +7,5 @@ import (
 )
 
 type Storage interface {
-	UpdateStats(ctx context.Context, s models.NodeStats) error
+	GetNodeMetrics(ctx context.Context) ([]models.NodeMetrics, error)
 }

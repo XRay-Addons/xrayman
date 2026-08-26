@@ -4,25 +4,10 @@ import (
 	"context"
 
 	"github.com/XRay-Addons/xrayman/common/gx"
-	"github.com/XRay-Addons/xrayman/common/http/server"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/config"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/jobs/statsman"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/jobs/syncman"
 	"go.uber.org/zap"
-)
-
-var httpServerJob = gx.Invoke(
-	func(s *server.HttpServer, lc gx.Lifecycle) {
-		lc.AppendJob(gx.Job{
-			Name: "http server",
-			OnStart: func(context.Context) error {
-				return s.Listen()
-			},
-			OnStop: func(ctx context.Context) error {
-				return s.Shutdown(ctx)
-			},
-		})
-	},
 )
 
 var backgroundSyncJob = gx.Options(
@@ -70,7 +55,6 @@ var backgroundStatsJob = gx.Options(
 )
 
 var Jobs = gx.Module("jobs",
-	httpServerJob,
 	backgroundSyncJob,
 	backgroundStatsJob,
 )

@@ -18,6 +18,14 @@ type EditUsersParams struct {
 	Remove []User
 }
 
+type NodePerformance struct {
+	OpenConnections int32
+	CpuLoad         float32
+	RamLoad         float32
+	MemLoad         float32
+}
+
 type StatsResult struct {
-	Users []UserStats
+	Users       []UserStats
+	Performance NodePerformance
 }

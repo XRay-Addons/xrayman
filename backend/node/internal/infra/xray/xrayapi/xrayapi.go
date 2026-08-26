@@ -10,6 +10,7 @@ import (
 	"github.com/XRay-Addons/xrayman/node/internal/infra/grpcconn"
 	"github.com/XRay-Addons/xrayman/node/internal/infra/tx"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
+	"github.com/XRay-Addons/xrayman/node/internal/service"
 	handlerService "github.com/xtls/xray-core/app/proxyman/command"
 	statsService "github.com/xtls/xray-core/app/stats/command"
 	"github.com/xtls/xray-core/common/protocol"
@@ -26,6 +27,8 @@ type XRayApi struct {
 	timeout time.Duration
 	log     *zap.Logger
 }
+
+var _ service.XRayAPI = (*XRayApi)(nil)
 
 func WithLogger(logger *zap.Logger) option {
 	return func(o *options) {
@@ -175,7 +178,7 @@ func (api *XRayApi) Ping(ctx context.Context) error {
 	return ping(ctx, api.ssClient)
 }
 
-func (api *XRayApi) GetStats(ctx context.Context) (*models.StatsResult, error) {
+func (api *XRayApi) GetStats(ctx context.Context) ([]models.UserStats, error) {
 	if api == nil || api.ssClient == nil {
 		return nil, errdefs.NilCall()
 	}

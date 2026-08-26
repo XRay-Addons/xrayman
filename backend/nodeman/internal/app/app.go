@@ -32,7 +32,8 @@ func New(cfg *config.Config, log *zap.Logger) (*App, error) {
 		Storage,
 		Nodes,
 		Services,
-		Server,
+		HttpServer,
+		MetricsServer,
 
 		Bootstrap,
 		Jobs,

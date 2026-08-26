@@ -181,7 +181,7 @@ func TestStorage_Time_Syncs(t *testing.T) {
 }
 
 // //////////////////////////////////////////////////////////////////////////
-// test stats - 10k users, 10 nodes
+// test stats - 1M users, 100 nodes
 func TestStorage_Time_Stats(t *testing.T) {
 	logger := zaptest.NewLogger(t)
 	ctx := context.Background()
@@ -191,14 +191,14 @@ func TestStorage_Time_Stats(t *testing.T) {
 
 	////////////////////////////////////////////////////////////////////////////
 	// add nodes, enabled, disabled
-	const nNodes = 10
+	const nNodes = 100
 	err := fillNodes(ctx, db.Raw(), nNodes)
 	require.NoError(t, err)
 	logger.Info("nodes added")
 
 	////////////////////////////////////////////////////////////////////////////
 	// add users, enabled, disabled
-	const nUsers = 10000
+	const nUsers = 1000000
 	err = fillUsers(ctx, db.Raw(), nUsers)
 	require.NoError(t, err)
 	logger.Info("users added")
@@ -207,20 +207,25 @@ func TestStorage_Time_Stats(t *testing.T) {
 	// add stats, periodically update daily stats
 	for i := range nNodes {
 		err = s.DoTx(ctx, func(ctx context.Context) error {
-			stats := make([]models.UserStats, nUsers, nUsers)
+			stats := make([]models.UserStats, 0, nUsers/100)
 			for u := range nUsers {
-				stats[u].ID = u
-				stats[u].Downlink = int64(u - i)
-				stats[u].Uplink = int64(2*u - i)
+				if u%100 != 0 {
+					continue
+				}
+				stats = append(stats, models.UserStats{
+					ID:       u,
+					Downlink: int64(u - i),
+					Uplink:   int64(2*u - i),
+				})
 			}
-			if err := s.UpdateNodeStats(ctx, i, models.NodeStats{
+			if err := s.UpdateStats(ctx, i, models.NodeStats{
 				Users: stats,
 			}); err != nil {
 				return err
 			}
 			if i%10 == 0 {
 				var randomDayOffset time.Duration = time.Duration(nNodes-i) * 7 * 24 * time.Hour
-				if err := s.UpdateDailyStats(ctx,
+				if err := s.RefreshDailyStats(ctx,
 					time.Now().Add(-randomDayOffset),
 				); err != nil {
 					return err
@@ -234,26 +239,31 @@ func TestStorage_Time_Stats(t *testing.T) {
 
 	////////////////////////////////////////////////////////////////////////////
 	// update stats
-	expl := db.WithExplanations("UpdateNodeStats", ExplainAnalyze)
-	stats := make([]models.UserStats, nUsers, nUsers)
+	expl := db.WithExplanations("UpdateStats", ExplainAnalyze)
+	stats := make([]models.UserStats, 0, nUsers/100)
 	for u := range nUsers {
-		stats[u].ID = u
-		stats[u].Downlink = int64(u)
-		stats[u].Uplink = int64(2 * u)
+		if u%100 != 0 {
+			continue
+		}
+		stats = append(stats, models.UserStats{
+			ID:       u,
+			Downlink: int64(u),
+			Uplink:   int64(2 * u),
+		})
 	}
-	err = s.UpdateNodeStats(ctx, models.NodeID(nNodes/2), models.NodeStats{
+	err = s.UpdateStats(ctx, models.NodeID(nNodes/2), models.NodeStats{
 		Users: stats,
 	})
 	require.NoError(t, err)
 	metrics, err := expl.Metrics()
 	require.NoError(t, err)
 	metrics.Print(logger)
-	require.Less(t, nNodes*metrics.ExecutionTime, 1*time.Second)
+	require.Less(t, nNodes*metrics.ExecutionTime, 10*time.Second)
 
 	////////////////////////////////////////////////////////////////////////////
 	// update daily sync
-	expl = db.WithExplanations("UpdateDailyStats", ExplainAnalyze)
-	err = s.UpdateDailyStats(ctx, time.Now())
+	expl = db.WithExplanations("RefreshDailyStats", ExplainAnalyze)
+	err = s.RefreshDailyStats(ctx, time.Now())
 	require.NoError(t, err)
 	metrics, err = expl.Metrics()
 	require.NoError(t, err)
@@ -268,7 +278,7 @@ func TestStorage_Time_Stats(t *testing.T) {
 	metrics, err = expl.Metrics()
 	require.NoError(t, err)
 	metrics.Print(logger)
-	require.Less(t, nUsers*metrics.ExecutionTime, 1*time.Second)
+	require.Less(t, metrics.ExecutionTime, 10*time.Millisecond)
 
 	////////////////////////////////////////////////////////////////////////////
 	// list users

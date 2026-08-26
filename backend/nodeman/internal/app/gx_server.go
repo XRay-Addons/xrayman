@@ -68,7 +68,7 @@ var adminPage = gx.ProvideNamed(
 	"admin-page",
 )
 
-type RouterParams struct {
+type HttpRouterParams struct {
 	gx.In
 	Cfg        *config.Config
 	Log        *zap.Logger
@@ -77,8 +77,8 @@ type RouterParams struct {
 	AdminPage  *pages.Page  `name:"admin-page"`
 }
 
-var r = gx.ProvideNamed(
-	func(p RouterParams) (http.Handler, error) {
+var httpRouter = gx.ProvideNamed(
+	func(p HttpRouterParams) (http.Handler, error) {
 		return router.New(
 			router.WithHandler(p.Cfg.ApiServicePath, p.ApiHandler),
 			router.WithSPA(p.Cfg.UserSpaPath, p.UserPage),
@@ -86,25 +86,46 @@ var r = gx.ProvideNamed(
 			router.WithCrossOrigin(p.Cfg.AllowedOrigins),
 			router.WithLogger(p.Log))
 	},
-	"router",
+	"http-router",
 )
 
-type ServerParams struct {
+type HttpServerParams struct {
 	gx.In
 	Cfg    *config.Config
-	Router http.Handler `name:"router"`
+	Router http.Handler `name:"http-router"`
 }
 
-var s = gx.Provide(
-	func(p ServerParams) (*server.HttpServer, error) {
+var httpServer = gx.ProvideNamed(
+	func(p HttpServerParams) (*server.HttpServer, error) {
 		return server.New(p.Cfg.Endpoint, p.Router)
+	},
+	"http-server",
+)
+
+type HttpServerJobParams struct {
+	gx.In
+	S *server.HttpServer `name:"http-server"`
+}
+
+var httpServerJob = gx.Invoke(
+	func(p HttpServerJobParams, lc gx.Lifecycle) {
+		lc.AppendJob(gx.Job{
+			Name: "http server",
+			OnStart: func(context.Context) error {
+				return p.S.Listen()
+			},
+			OnStop: func(ctx context.Context) error {
+				return p.S.Shutdown(ctx)
+			},
+		})
 	},
 )
 
-var Server = gx.Module("server",
+var HttpServer = gx.Module("server",
 	apiHandler,
 	userPage,
 	adminPage,
-	r,
-	s,
+	httpRouter,
+	httpServer,
+	httpServerJob,
 )

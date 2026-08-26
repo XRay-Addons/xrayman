@@ -14,3 +14,25 @@ UserStat:
     Downlink:
       type: integer
       format: int64
+
+Performance:
+  type: object
+  description: Node performance
+  required:
+    - CpuLoad
+    - RamLoad
+    - MemLoad
+    - OpenConnections
+  properties:
+    CpuLoad:
+      type: number
+      format: float
+    RamLoad:
+      type: number
+      format: float
+    MemLoad:
+      type: number
+      format: float
+    OpenConnections:
+      type: integer
+      format: int32

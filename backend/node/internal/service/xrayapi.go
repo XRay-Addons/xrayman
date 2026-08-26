@@ -8,5 +8,5 @@ import (
 
 type XRayAPI interface {
 	EditUsers(ctx context.Context, add, remove []models.User) error
-	GetStats(ctx context.Context) (*models.StatsResult, error)
+	GetStats(ctx context.Context) ([]models.UserStats, error)
 }

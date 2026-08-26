@@ -1,7 +1,7 @@
 -- name: SetLocalTxFastMode :exec
 SET LOCAL synchronous_commit = OFF;
 
--- name: UpdateTotalStats :exec
+-- name: UpdateStats :exec
 WITH 
 -- 1. input -> flat table
 input_data AS (
@@ -26,20 +26,36 @@ update_users AS (
     RETURNING 1 -- sqlc require to return something
 )
 -- 3. update nodes stats
-INSERT INTO total_nodes_traffic (node_id, upload, download)
+INSERT INTO nodes_stats (
+    node_id,
+    upload,
+    download,
+    open_connections,
+    cpu_load,
+    ram_load,
+    mem_load
+)
 SELECT 
     sqlc.arg(node_id)::bigint,
     COALESCE(SUM(upload), 0)::bigint, 
-    COALESCE(SUM(download), 0)::bigint
+    COALESCE(SUM(download), 0)::bigint,
+    sqlc.arg(open_connections)::integer,
+    sqlc.arg(cpu_load)::real,
+    sqlc.arg(ram_load)::real,
+    sqlc.arg(mem_load)::real
 FROM input_data
 ON CONFLICT (node_id) DO UPDATE
 SET
-    upload   = total_nodes_traffic.upload   + EXCLUDED.upload,
-    download = total_nodes_traffic.download + EXCLUDED.download;
+    upload           = nodes_stats.upload   + EXCLUDED.upload,
+    download         = nodes_stats.download + EXCLUDED.download,
+    open_connections = EXCLUDED.open_connections,
+    cpu_load         = EXCLUDED.cpu_load,
+    ram_load         = EXCLUDED.ram_load,
+    mem_load         = EXCLUDED.mem_load;
 
--- name: UpdateDailyStats :exec
+-- name: RefreshDailyStats :exec
 WITH
-    -- update users daily stats
+    -- update users daily traffic stats
     snapshot_users AS (
         INSERT INTO daily_users_traffic (day, user_id, upload, download)
         SELECT
@@ -54,7 +70,7 @@ WITH
             download = GREATEST(daily_users_traffic.download, EXCLUDED.download)
         RETURNING 1
     ),
-    -- update nodes daily stats
+    -- update nodes daily traffic stats
     snapshot_nodes AS (
         INSERT INTO daily_nodes_traffic (day, node_id, upload, download)
     SELECT
@@ -62,7 +78,7 @@ WITH
         t.node_id,
         t.upload,
         t.download
-    FROM total_nodes_traffic t
+    FROM nodes_stats t
     ON CONFLICT (day, node_id) DO UPDATE
     SET
         upload   = GREATEST(daily_nodes_traffic.upload, EXCLUDED.upload),

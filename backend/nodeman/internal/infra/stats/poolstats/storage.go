@@ -13,9 +13,9 @@ type Storage interface {
 		[]models.Node, error)
 	GetNode(ctx context.Context, id models.NodeID) (
 		*models.Node, error)
-	UpdateNodeStats(ctx context.Context, id models.NodeID,
+	UpdateStats(ctx context.Context, id models.NodeID,
 		stats models.NodeStats) error
-	UpdateDailyStats(ctx context.Context,
+	RefreshDailyStats(ctx context.Context,
 		day time.Time) error
 }
 
