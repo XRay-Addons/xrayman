@@ -2,6 +2,7 @@ package node
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/openapi-gen"
@@ -78,6 +79,7 @@ func (c *NodeClient) GetStats(ctx context.Context) (*models.NodeStats, error) {
 		return nil, wrapOgenErr(err)
 	}
 
+	fmt.Println(statsResponse)
 	stats := converter.ConvertNodeStats(statsResponse)
 	return stats, nil
 }

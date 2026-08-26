@@ -13,6 +13,7 @@ type Service struct {
 	clientCfg   ClientConfig
 	xrayService XRayService
 	xrayAPI     XRayAPI
+	perf        Performance
 }
 
 func New(
@@ -20,6 +21,7 @@ func New(
 	clientCfg ClientConfig,
 	xrayService XRayService,
 	xrayAPI XRayAPI,
+	perf Performance,
 ) (*Service, error) {
 	if serverCfg == nil {
 		return nil, errdefs.NilArg("serverCfg")
@@ -33,12 +35,16 @@ func New(
 	if xrayAPI == nil {
 		return nil, errdefs.NilArg("xrayAPI")
 	}
+	if perf == nil {
+		return nil, errdefs.NilArg("perf")
+	}
 
 	return &Service{
 		serverCfg:   serverCfg,
 		clientCfg:   clientCfg,
 		xrayService: xrayService,
 		xrayAPI:     xrayAPI,
+		perf:        perf,
 	}, nil
 }
 
@@ -99,9 +105,16 @@ func (s *Service) EditUsers(ctx context.Context,
 }
 
 func (s *Service) GetStats(ctx context.Context) (*models.StatsResult, error) {
-	stats, err := s.xrayAPI.GetStats(ctx)
+	usersStats, err := s.xrayAPI.GetStats(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return stats, nil
+	perf, err := s.perf.GetPerformance(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &models.StatsResult{
+		Users:       usersStats,
+		Performance: *perf,
+	}, nil
 }
