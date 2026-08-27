@@ -84,7 +84,7 @@ require (
 require (
 	github.com/alecthomas/kong v1.16.0
 	github.com/sethvargo/go-retry v0.3.0
-	github.com/xtls/libxray v1.0.2
+	github.com/xtls/libxray v1.260327.0
 	github.com/xtls/xray-core v1.260327.0
 )
 
