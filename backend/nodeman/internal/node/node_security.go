@@ -6,8 +6,8 @@ import (
 
 	jwtools "github.com/XRay-Addons/xrayman/common/http/jwt"
 	"github.com/XRay-Addons/xrayman/common/xerr"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/clients/node/ogenclient"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/node/ogenclient"
 )
 
 type NodeSecurity struct {

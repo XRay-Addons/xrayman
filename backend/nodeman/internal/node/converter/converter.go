@@ -3,8 +3,8 @@ package converter
 import (
 	"fmt"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/clients/node/ogenclient"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/node/ogenclient"
 )
 
 // goverter:converter

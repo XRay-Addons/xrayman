@@ -4,11 +4,11 @@ import (
 	"context"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/clients/node/converter"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/clients/node/ogenclient"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/node/converter"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/node/ogenclient"
 )
 
 type NodeClient struct {

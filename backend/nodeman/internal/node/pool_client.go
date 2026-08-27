@@ -5,13 +5,13 @@ import (
 	"time"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/clients/node/ogenclient"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/stats/nodestats"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/stats/poolstats"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/node/ogenclient"
 	"go.uber.org/zap"
 )
 
