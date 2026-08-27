@@ -4,15 +4,15 @@ import (
 	"context"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
-	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/openapi-gen"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/clients/node/converter"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/clients/node/ogenclient"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
 type NodeClient struct {
-	client *api.Client
+	client *ogenclient.Client
 }
 
 var _ nodesync.Client = (*NodeClient)(nil)
@@ -24,7 +24,7 @@ func (c *NodeClient) Start(ctx context.Context, users []models.UserProfile) (
 		return nil, errdefs.NilCall()
 	}
 
-	startRequest := api.StartRequest{Users: converter.ConvertUsers(users)}
+	startRequest := ogenclient.StartRequest{Users: converter.ConvertUsers(users)}
 	startResponse, err := c.client.Start(ctx, &startRequest)
 	if err != nil {
 		return nil, wrapOgenErr(err)

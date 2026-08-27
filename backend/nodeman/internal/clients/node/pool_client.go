@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
-	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/openapi-gen"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/clients/node/ogenclient"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/stats/nodestats"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/stats/poolstats"
@@ -60,8 +60,8 @@ func (c *PoolClient) GetNodeClient(cfg models.NodeConnectionInfo) (*NodeClient, 
 		return nil, err
 	}
 
-	client, err := api.NewClient(cfg.Endpoint, nodeSec,
-		api.WithClient(httpClient))
+	client, err := ogenclient.NewClient(cfg.Endpoint, nodeSec,
+		ogenclient.WithClient(httpClient))
 	if err != nil {
 		return nil, xerr.WrapWithStack(err)
 	}

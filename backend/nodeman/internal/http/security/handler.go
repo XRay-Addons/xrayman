@@ -5,15 +5,15 @@ import (
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/ogenserver"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/httperrdefs"
-	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/openapi-gen"
 )
 
 type Handler struct {
 	jwt JWT
 }
 
-var _ api.SecurityHandler = (*Handler)(nil)
+var _ ogenserver.SecurityHandler = (*Handler)(nil)
 
 func New(jwt JWT) (*Handler, error) {
 	if jwt == nil {
@@ -23,7 +23,7 @@ func New(jwt JWT) (*Handler, error) {
 }
 
 func (h *Handler) HandleBearerAuth(ctx context.Context,
-	operationName api.OperationName, t api.BearerAuth,
+	operationName ogenserver.OperationName, t ogenserver.BearerAuth,
 ) (context.Context, error) {
 	if h == nil || h.jwt == nil {
 		return ctx, errdefs.NilCall()

@@ -2,7 +2,7 @@ package converter
 
 import (
 	cfgs "github.com/XRay-Addons/xrayman/nodeman/internal/pages/pagecfg"
-	schemas "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/schemas-gen"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/pages/schemas"
 )
 
 // goverter:converter

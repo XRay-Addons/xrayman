@@ -1,0 +1,9 @@
+parser:
+  allow_remote: true
+
+generator:
+  features:
+    enable:
+      - paths/client
+      - webhooks/client
+    disable_all: true

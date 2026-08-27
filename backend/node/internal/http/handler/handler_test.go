@@ -10,8 +10,9 @@ import (
 	"testing"
 
 	"github.com/XRay-Addons/xrayman/node/internal/http/handler/mocks"
+	"github.com/XRay-Addons/xrayman/node/internal/http/handler/ogenserver"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
-	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/openapi-gen"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -23,13 +24,13 @@ type testSecurity struct{}
 
 func (s *testSecurity) HandleBearerAuth(
 	ctx context.Context,
-	o api.OperationName,
-	b api.BearerAuth,
+	o ogenserver.OperationName,
+	b ogenserver.BearerAuth,
 ) (context.Context, error) {
 	return ctx, nil
 }
 
-var _ api.SecurityHandler = (*testSecurity)(nil)
+var _ ogenserver.SecurityHandler = (*testSecurity)(nil)
 
 func TestHandler(t *testing.T) {
 	tests := []struct {
@@ -103,7 +104,7 @@ func TestHandler(t *testing.T) {
 			h, err := New(mockService, WithLogger(log))
 			require.NoError(t, err)
 
-			srv, err := api.NewServer(h, &testSecurity{})
+			srv, err := ogenserver.NewServer(h, &testSecurity{})
 			require.NoError(t, err)
 
 			req, err := http.NewRequestWithContext(context.TODO(), tt.method, tt.path, bytes.NewReader(tt.body))

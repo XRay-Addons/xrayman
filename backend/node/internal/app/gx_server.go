@@ -9,9 +9,10 @@ import (
 	"github.com/XRay-Addons/xrayman/common/http/server"
 	"github.com/XRay-Addons/xrayman/node/internal/http/api"
 	"github.com/XRay-Addons/xrayman/node/internal/http/handler"
+	"github.com/XRay-Addons/xrayman/node/internal/http/handler/ogenserver"
 	"github.com/XRay-Addons/xrayman/node/internal/http/security"
 	"github.com/XRay-Addons/xrayman/node/internal/service"
-	genapi "github.com/XRay-Addons/xrayman/node/pkg/api/http/openapi-gen"
+
 	"go.uber.org/zap"
 )
 
@@ -19,22 +20,22 @@ var httpHandler = gx.ProvideAnnotated(
 	func(s *service.Service, l *zap.Logger) (*handler.Handler, error) {
 		return handler.New(s, handler.WithLogger(l))
 	},
-	gx.As(new(genapi.Handler)),
+	gx.As(new(ogenserver.Handler)),
 )
 
 var securityHandler = gx.ProvideAnnotated(
 	security.New,
-	gx.As(new(genapi.SecurityHandler)),
+	gx.As(new(ogenserver.SecurityHandler)),
 )
 
 var apiHandler = gx.ProvideAnnotated(
 	api.NewHandler,
-	gx.ResultTags(`name:"api-handler"`),
+	gx.ResultTags(`name:"ogenserver-handler"`),
 )
 
 type RouterParams struct {
 	gx.In
-	ApiHandler http.Handler `name:"api-handler"`
+	ApiHandler http.Handler `name:"ogenserver-handler"`
 	Log        *zap.Logger
 }
 

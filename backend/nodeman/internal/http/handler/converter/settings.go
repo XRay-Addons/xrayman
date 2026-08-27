@@ -1,8 +1,8 @@
 package converter
 
 import (
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/ogenserver"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/openapi-gen"
 )
 
 // goverter:converter
@@ -12,6 +12,6 @@ import (
 //
 //go:generate goverter gen .
 type DynamicConfig interface {
-	ConvertSettingsRequest(r api.Settings) (*models.Settings, error)
-	ConvertSettingsResult(r models.Settings) *api.Settings
+	ConvertSettingsRequest(r ogenserver.Settings) (*models.Settings, error)
+	ConvertSettingsResult(r models.Settings) *ogenserver.Settings
 }

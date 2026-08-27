@@ -5,11 +5,11 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/converter"
-	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/openapi-gen"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/ogenserver"
 	"github.com/go-faster/jx"
 )
 
-func (h *Handler) UserSub(ctx context.Context, req api.UserSubParams) (
+func (h *Handler) UserSub(ctx context.Context, req ogenserver.UserSubParams) (
 	[]jx.Raw, error,
 ) {
 	if h == nil || h.subscr == nil {

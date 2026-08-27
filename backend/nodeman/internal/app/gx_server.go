@@ -10,23 +10,23 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/config"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/api"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/ogenserver"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/security"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/pages"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/pages/pagecfg"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/settings"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/subscr"
-	genapi "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/openapi-gen"
 	"go.uber.org/zap"
 )
 
 var apiHandler = gx.Options(
 	gx.ProvideAnnotated(
 		handler.New,
-		gx.As(new(genapi.Handler)),
+		gx.As(new(ogenserver.Handler)),
 	),
 	gx.ProvideAnnotated(
 		security.New,
-		gx.As(new(genapi.SecurityHandler)),
+		gx.As(new(ogenserver.SecurityHandler)),
 	),
 	gx.ProvideNamed(
 		api.NewHandler,

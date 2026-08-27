@@ -3,8 +3,8 @@ package converter
 import (
 	"time"
 
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/ogenserver"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/openapi-gen"
 )
 
 // goverter:converter
@@ -15,9 +15,9 @@ import (
 //
 //go:generate goverter gen .
 type AuthConverter interface {
-	ConvertAuthRequest(r *api.AuthRequest) (*models.AuthParams, error)
+	ConvertAuthRequest(r *ogenserver.AuthRequest) (*models.AuthParams, error)
 
-	ConvertAuthResult(r *models.AuthResult) *api.AuthResponse
+	ConvertAuthResult(r *models.AuthResult) *ogenserver.AuthResponse
 }
 
 func ConvertExpireTime(i time.Duration) int {
