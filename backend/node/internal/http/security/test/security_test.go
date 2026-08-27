@@ -1,8 +1,8 @@
-package security
+package test
 
-//go:generate mockgen -source=../../../pkg/api/http/openapi-gen/oas_server_gen.go -destination=./mocks/mock_handler.go -package=mocks
+//go:generate mockgen -source=../../handler/ogenserver/oas_server_gen.go -destination=./mocks/mock_handler.go -package=mocks
 
-/*import (
+import (
 	"context"
 	"mime"
 	"net/http"
@@ -10,17 +10,17 @@ package security
 	"testing"
 	"time"
 
-	"github.com/XRay-Addons/xrayman/node/internal/http/httperr"
-	"github.com/XRay-Addons/xrayman/node/internal/http/security/mocks"
+	"github.com/XRay-Addons/xrayman/node/internal/http/handler/ogenserver"
+	"github.com/XRay-Addons/xrayman/node/internal/http/httperrdefs"
+	"github.com/XRay-Addons/xrayman/node/internal/http/security"
+	"github.com/XRay-Addons/xrayman/node/internal/http/security/test/mocks"
 	authjwt "github.com/XRay-Addons/xrayman/node/internal/infra/auth/jwt"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
-	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/gen"
 	jwt "github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
-
 
 func TestSecurity(t *testing.T) {
 	tests := []struct {
@@ -40,7 +40,7 @@ func TestSecurity(t *testing.T) {
 			mockSetup: func(m *mocks.MockHandler) {
 				m.EXPECT().
 					GetStatus(gomock.Any()).
-					Return(&api.StatusResponse{ServiceStatus: api.ServiceStatusRunning}, nil)
+					Return(&ogenserver.StatusResponse{ServiceStatus: ogenserver.ServiceStatusRunning}, nil)
 			},
 			expectedCode: http.StatusOK,
 			expectedBody: `{"serviceStatus":"running"}`,
@@ -54,12 +54,12 @@ func TestSecurity(t *testing.T) {
 				m.EXPECT().
 					NewError(gomock.Any(), gomock.Any()).
 					DoAndReturn(func(any, any) error {
-						authErr := api.ErrorStatusCode(*httperr.ErrAuthToken)
+						authErr := ogenserver.ErrorStatusCode(*httperrdefs.ErrAuthToken)
 						return &authErr
 					})
 			},
 			expectedCode: http.StatusUnauthorized,
-			expectedBody: `{"details":"try another one", "message":"Invalid auth token"}`,
+			expectedBody: `{"Details":"try another one", "Message":"Invalid auth token"}`,
 		},
 	}
 
@@ -75,10 +75,10 @@ func TestSecurity(t *testing.T) {
 			copy(s[:], tt.serverSecret)
 			auth, err := authjwt.New(s)
 			require.NoError(t, err)
-			security, err := New(auth)
+			security, err := security.New(auth)
 			require.NoError(t, err)
 
-			srv, err := api.NewServer(mockHandler, security)
+			srv, err := ogenserver.NewServer(mockHandler, security)
 			require.NoError(t, err)
 
 			claims := jwt.MapClaims{
@@ -107,4 +107,4 @@ func TestSecurity(t *testing.T) {
 			assert.Equal(t, expectedContentType, mt)
 		})
 	}
-}*/
+}
