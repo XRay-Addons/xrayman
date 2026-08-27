@@ -79,7 +79,7 @@ func TestHandler(t *testing.T) {
 					Return(&models.StartResult{}, nil)
 			},
 			expectedCode: http.StatusOK,
-			expectedBody: `{"clientConfigTemplate": {"template":[], "vlessEmailField":"", "vlessUUIDField":""}}`,
+			expectedBody: `{"clientConfigTemplate": {"template":[], "vlessEmailField":"", "vlessUUIDField":""}, "version":""}`,
 		},
 		{
 			name:         "Post Validation Error",
