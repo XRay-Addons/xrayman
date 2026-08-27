@@ -9,12 +9,14 @@ package main
 // 2. ogen - node client by openapi
 //go:generate go generate ./internal/node/ogenclient/
 
-// 3. converters
+// 3. sqlc - queries
+//go:generate go generate ./internal/dbstorage/sqlc/
+
+// 4. converters
 //go:generate go generate ./internal/http/handler/converter/
 //go:generate go generate ./internal/node/converter/
 //go:generate go generate ./internal/pages/converter/
 
-// 4. mocks
+// 5. mocks
 //go:generate go generate ./internal/http/handler/
-//go:generate go generate ./internal/http/security/test/
 //go:generate go generate ./internal/jobs/syncman/
