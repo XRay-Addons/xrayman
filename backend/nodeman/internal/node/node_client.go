@@ -1,0 +1,87 @@
+package node
+
+import (
+	"context"
+
+	"github.com/XRay-Addons/xrayman/common/xerr"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/node/converter"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/node/ogenclient"
+)
+
+type NodeClient struct {
+	client *ogenclient.Client
+}
+
+var _ nodesync.Client = (*NodeClient)(nil)
+
+func (c *NodeClient) Start(ctx context.Context, users []models.UserProfile) (
+	*models.NodeSettings, error,
+) {
+	if c == nil || c.client == nil {
+		return nil, errdefs.NilCall()
+	}
+
+	startRequest := ogenclient.StartRequest{Users: converter.ConvertUsers(users)}
+	startResponse, err := c.client.Start(ctx, &startRequest)
+	if err != nil {
+		return nil, wrapOgenErr(err)
+	}
+	nodeSettings := converter.ConvertStartResponse(*startResponse)
+	return &nodeSettings, nil
+}
+
+func (c *NodeClient) Stop(ctx context.Context) error {
+	if c == nil || c.client == nil {
+		return errdefs.NilCall()
+	}
+
+	if err := c.client.Stop(ctx); err != nil {
+		return wrapOgenErr(err)
+	}
+	return nil
+}
+
+func (c *NodeClient) CheckStatus(ctx context.Context) (models.NodeStatus, error) {
+	if c == nil || c.client == nil {
+		return models.NodeStatusUnknown, errdefs.NilCall()
+	}
+
+	status, err := c.client.GetStatus(ctx)
+	if err != nil {
+		return models.NodeStatusUnknown, wrapOgenErr(err)
+	}
+	return converter.ConvertNodeStatus(status.ServiceStatus), nil
+}
+
+func (c *NodeClient) UpdateUsers(ctx context.Context, update models.NodeUsersUpdate) error {
+	if c == nil || c.client == nil {
+		return errdefs.NilCall()
+	}
+
+	editRequest := converter.ConvertUsersUpdate(update)
+	if err := c.client.EditUsers(ctx, &editRequest); err != nil {
+		return wrapOgenErr(err)
+	}
+	return nil
+}
+
+func (c *NodeClient) GetStats(ctx context.Context) (*models.NodeStats, error) {
+	if c == nil || c.client == nil {
+		return nil, errdefs.NilCall()
+	}
+
+	statsResponse, err := c.client.GetStats(ctx)
+	if err != nil {
+		return nil, wrapOgenErr(err)
+	}
+
+	stats := converter.ConvertNodeStats(statsResponse)
+	return stats, nil
+}
+
+func wrapOgenErr(err error) error {
+	return xerr.Wrap(err, xerr.WithStack(), xerr.WithType(errdefs.ErrConnection))
+}

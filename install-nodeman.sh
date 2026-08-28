@@ -5,7 +5,7 @@ APP=xray-nodeman
 BIN_DIR=/opt
 BIN_PATH=$BIN_DIR/$APP
 ENV_DIR=/etc/$APP
-PACKAGE_BIN_PATH="$APP/$APP"
+PACKAGE_BIN_PATH="$APP"
 EXEC_CMD=$(cat <<EOF
 $BIN_PATH \
 --log-lvl info
@@ -47,7 +47,7 @@ case "$(uname -m)" in
     ;;
 esac
  
-DOWNLOAD_URL="https://github.com/XRay-Addons/xrayman/releases/latest/download/xrayman-$OS-$ARCH.tar.gz"
+DOWNLOAD_URL="https://github.com/XRay-Addons/xrayman/releases/latest/download/xrayman-nodeman-$OS-$ARCH.tar.gz"
 
 log() {
   echo "==> $*"

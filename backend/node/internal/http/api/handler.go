@@ -5,15 +5,15 @@ import (
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
-	genapi "github.com/XRay-Addons/xrayman/node/pkg/api/http/openapi-gen"
+	"github.com/XRay-Addons/xrayman/node/internal/http/handler/ogenserver"
 )
 
-func NewHandler(h genapi.Handler, s genapi.SecurityHandler) (http.Handler, error) {
+func NewHandler(h ogenserver.Handler, s ogenserver.SecurityHandler) (http.Handler, error) {
 	if h == nil {
 		return nil, errdefs.NilArg("api.Handler")
 	}
 
-	apiHandler, err := genapi.NewServer(h, s)
+	apiHandler, err := ogenserver.NewServer(h, s)
 	if err != nil {
 		return nil, xerr.WrapWithStack(err)
 	}

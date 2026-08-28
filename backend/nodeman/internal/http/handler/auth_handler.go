@@ -6,11 +6,11 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/converter"
-	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/openapi-gen"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/ogenserver"
 )
 
-func (h *Handler) Auth(ctx context.Context, req *api.AuthRequest) (
-	*api.AuthResponse, error,
+func (h *Handler) Auth(ctx context.Context, req *ogenserver.AuthRequest) (
+	*ogenserver.AuthResponse, error,
 ) {
 	if h == nil || h.auth == nil {
 		return nil, errdefs.NilCall()

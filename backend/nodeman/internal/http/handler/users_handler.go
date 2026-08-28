@@ -5,10 +5,10 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/converter"
-	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/openapi-gen"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/ogenserver"
 )
 
-func (h *Handler) NewUser(ctx context.Context, req *api.NewUserRequest) (*api.User, error) {
+func (h *Handler) NewUser(ctx context.Context, req *ogenserver.NewUserRequest) (*ogenserver.User, error) {
 	if h == nil || h.users == nil {
 		return nil, errdefs.NilCall()
 	}
@@ -23,7 +23,7 @@ func (h *Handler) NewUser(ctx context.Context, req *api.NewUserRequest) (*api.Us
 	return converter.ConvertNewUserResult(res), nil
 }
 
-func (h *Handler) GetUser(ctx context.Context, req api.GetUserParams) (*api.UserView, error) {
+func (h *Handler) GetUser(ctx context.Context, req ogenserver.GetUserParams) (*ogenserver.UserView, error) {
 	if h == nil || h.users == nil {
 		return nil, errdefs.NilCall()
 	}
@@ -39,7 +39,7 @@ func (h *Handler) GetUser(ctx context.Context, req api.GetUserParams) (*api.User
 	return userResponse, nil
 }
 
-func (h *Handler) ListUsers(ctx context.Context) (*api.ListUsersResponse, error) {
+func (h *Handler) ListUsers(ctx context.Context) (*ogenserver.ListUsersResponse, error) {
 	if h == nil || h.users == nil {
 		return nil, errdefs.NilCall()
 	}
@@ -50,7 +50,7 @@ func (h *Handler) ListUsers(ctx context.Context) (*api.ListUsersResponse, error)
 	return converter.ConvertListUsersResult(res), nil
 }
 
-func (h *Handler) EnableUser(ctx context.Context, req *api.EnableUserRequest) error {
+func (h *Handler) EnableUser(ctx context.Context, req *ogenserver.EnableUserRequest) error {
 	if h == nil || h.users == nil {
 		return errdefs.NilCall()
 	}
@@ -64,7 +64,7 @@ func (h *Handler) EnableUser(ctx context.Context, req *api.EnableUserRequest) er
 	return nil
 }
 
-func (h *Handler) DisableUser(ctx context.Context, req *api.DisableUserRequest) error {
+func (h *Handler) DisableUser(ctx context.Context, req *ogenserver.DisableUserRequest) error {
 	if h == nil || h.users == nil {
 		return errdefs.NilCall()
 	}
@@ -78,7 +78,7 @@ func (h *Handler) DisableUser(ctx context.Context, req *api.DisableUserRequest) 
 	return nil
 }
 
-func (h *Handler) DeleteUser(ctx context.Context, req *api.DeleteUserRequest) error {
+func (h *Handler) DeleteUser(ctx context.Context, req *ogenserver.DeleteUserRequest) error {
 	if h == nil || h.users == nil {
 		return errdefs.NilCall()
 	}

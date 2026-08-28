@@ -8,8 +8,8 @@ PERSIST_DIR="/var/lib/$APP"
 BIN_PATH=$BIN_DIR/$APP
 DATA_PATH="/opt/$APP/data"
 ENV_DIR=/etc/$APP
-PACKAGE_BIN_PATH="$APP/$APP"
-PACKAGE_DATA_PATH="$APP/data"
+PACKAGE_BIN_PATH="$APP"
+PACKAGE_DATA_PATH="data"
 
 EXEC_CMD=$(cat <<EOF
 $BIN_PATH \
@@ -52,7 +52,7 @@ case "$(uname -m)" in
     ;;
 esac
 
-DOWNLOAD_URL="https://github.com/XRay-Addons/xrayman/releases/latest/download/xrayman-$OS-$ARCH.tar.gz"
+DOWNLOAD_URL="https://github.com/XRay-Addons/xrayman/releases/latest/download/xrayman-node-$OS-$ARCH.tar.gz"
 
 log() {
   echo "==> $*"

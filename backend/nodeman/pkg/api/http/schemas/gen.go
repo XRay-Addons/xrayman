@@ -1,4 +1,4 @@
 package schemas
 
-//go:generate go-jsonschema -p scheme ./userpagecfg.json -o ../schemas-gen/userpagecfg.go
-//go:generate go-jsonschema -p scheme ./adminpagecfg.json -o ../schemas-gen/adminpagecfg.go
+//go:generate go-jsonschema -p schemas userpagecfg.json -o ../../../../internal/pages/schemas/userpagecfg.go
+//go:generate go-jsonschema -p schemas adminpagecfg.json -o ../../../../internal/pages/schemas/adminpagecfg.go

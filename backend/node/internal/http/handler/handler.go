@@ -7,8 +7,8 @@ import (
 	"github.com/XRay-Addons/xrayman/common/http/middleware"
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/node/internal/http/handler/converter"
+	"github.com/XRay-Addons/xrayman/node/internal/http/handler/ogenserver"
 	"github.com/XRay-Addons/xrayman/node/internal/http/httperrdefs"
-	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/openapi-gen"
 	chimw "github.com/go-chi/chi/v5/middleware"
 	"go.uber.org/zap"
 )
@@ -29,7 +29,7 @@ func WithLogger(log *zap.Logger) option {
 
 type option = func(h *Handler)
 
-var _ api.Handler = (*Handler)(nil)
+var _ ogenserver.Handler = (*Handler)(nil)
 
 func New(s Service, opts ...option) (*Handler, error) {
 	if s == nil {
@@ -45,7 +45,9 @@ func New(s Service, opts ...option) (*Handler, error) {
 	return handler, nil
 }
 
-func (h *Handler) Start(ctx context.Context, req *api.StartRequest) (_ *api.StartResponse, err error) {
+func (h *Handler) Start(ctx context.Context,
+	req *ogenserver.StartRequest,
+) (*ogenserver.StartResponse, error) {
 	if h == nil || h.service == nil {
 		return nil, errdefs.NilCall()
 	}
@@ -68,7 +70,9 @@ func (h *Handler) Stop(ctx context.Context) error {
 	return nil
 }
 
-func (h *Handler) GetStatus(ctx context.Context) (*api.StatusResponse, error) {
+func (h *Handler) GetStatus(ctx context.Context) (
+	*ogenserver.StatusResponse, error,
+) {
 	if h == nil || h.service == nil {
 		return nil, errdefs.NilCall()
 	}
@@ -79,7 +83,9 @@ func (h *Handler) GetStatus(ctx context.Context) (*api.StatusResponse, error) {
 	return converter.ConvertStatusResult(status), nil
 }
 
-func (h *Handler) EditUsers(ctx context.Context, req *api.EditUsersRequest) error {
+func (h *Handler) EditUsers(ctx context.Context,
+	req *ogenserver.EditUsersRequest,
+) error {
 	if h == nil || h.service == nil {
 		return errdefs.NilCall()
 	}
@@ -90,7 +96,7 @@ func (h *Handler) EditUsers(ctx context.Context, req *api.EditUsersRequest) erro
 	return nil
 }
 
-func (h *Handler) GetStats(ctx context.Context) (*api.StatsResponse, error) {
+func (h *Handler) GetStats(ctx context.Context) (*ogenserver.StatsResponse, error) {
 	if h == nil || h.service == nil {
 		return nil, errdefs.NilCall()
 	}
@@ -101,12 +107,12 @@ func (h *Handler) GetStats(ctx context.Context) (*api.StatsResponse, error) {
 	return converter.ConvertStatsResult(stats), nil
 }
 
-func (h *Handler) NewError(ctx context.Context, err error) *api.ErrorStatusCode {
+func (h *Handler) NewError(ctx context.Context, err error) *ogenserver.ErrorStatusCode {
 	// log error
 	h.logError(ctx, err)
 
 	// if error contains status, return it
-	var statusError *api.ErrorStatusCode
+	var statusError *ogenserver.ErrorStatusCode
 	if errors.As(err, &statusError) {
 		return statusError
 	}
@@ -115,7 +121,7 @@ func (h *Handler) NewError(ctx context.Context, err error) *api.ErrorStatusCode 
 	return h.translateError(err)
 }
 
-func (h *Handler) translateError(err error) *api.ErrorStatusCode {
+func (h *Handler) translateError(err error) *ogenserver.ErrorStatusCode {
 	if err == nil {
 		return nil
 	}

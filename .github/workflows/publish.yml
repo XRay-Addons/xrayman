@@ -65,23 +65,26 @@ jobs:
           COMMIT: ${{ github.sha }}
           BUILD_TIME: ${{ github.event.head_commit.timestamp }}
 
-      - name: Add XRay binaries
-        run: make xray
-
-      - name: Archive build folder
+      - name: Archive build artifacts
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           cd build
-          zip -r ../xrayman-${{ matrix.goos }}-${{ matrix.goarch }}.zip .
-          tar -czf ../xrayman-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz .
+
+          zip -r ../xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.zip xray-node
+          tar -czf ../xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz xray-node
+
+          zip -r ../xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.zip xray-nodeman
+          tar -czf ../xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz xray-nodeman
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v3
         with:
           files: |
-            xrayman-${{ matrix.goos }}-${{ matrix.goarch }}.zip
-            xrayman-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
+            xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.zip
+            xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
+            xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.zip
+            xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
           name: Release ${{ github.ref_name }}
           generate_release_notes: true
         env:

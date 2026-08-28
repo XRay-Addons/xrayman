@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/openapi-gen"
+	"github.com/XRay-Addons/xrayman/node/internal/http/handler/ogenserver"
 )
 
 var (
@@ -22,14 +22,14 @@ var (
 		"unknown error", "we really don't know")
 )
 
-func new(statusCode int, message string, details ...string) *api.ErrorStatusCode {
-	he := api.Error{Message: message}
+func new(statusCode int, message string, details ...string) *ogenserver.ErrorStatusCode {
+	he := ogenserver.Error{Message: message}
 
 	if d := strings.Join(details, ""); len(d) > 0 {
 		he.Details.SetTo(d)
 	}
 
-	return &api.ErrorStatusCode{
+	return &ogenserver.ErrorStatusCode{
 		StatusCode: statusCode,
 		Response:   he,
 	}

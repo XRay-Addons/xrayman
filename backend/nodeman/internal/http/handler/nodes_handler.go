@@ -5,11 +5,11 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/converter"
-	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/openapi-gen"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/ogenserver"
 )
 
-func (h *Handler) NewNode(ctx context.Context, req *api.NewNodeRequest) (
-	*api.NewNodeResponse, error,
+func (h *Handler) NewNode(ctx context.Context, req *ogenserver.NewNodeRequest) (
+	*ogenserver.NewNodeResponse, error,
 ) {
 	if h == nil || h.nodes == nil {
 		return nil, errdefs.NilCall()
@@ -25,7 +25,7 @@ func (h *Handler) NewNode(ctx context.Context, req *api.NewNodeRequest) (
 	return converter.ConvertNewNodeResult(res), nil
 }
 
-func (h *Handler) StartNode(ctx context.Context, req *api.StartNodeRequest) error {
+func (h *Handler) StartNode(ctx context.Context, req *ogenserver.StartNodeRequest) error {
 	if h == nil || h.nodes == nil {
 		return errdefs.NilCall()
 	}
@@ -39,7 +39,7 @@ func (h *Handler) StartNode(ctx context.Context, req *api.StartNodeRequest) erro
 	return nil
 }
 
-func (h *Handler) StopNode(ctx context.Context, req *api.StopNodeRequest) error {
+func (h *Handler) StopNode(ctx context.Context, req *ogenserver.StopNodeRequest) error {
 	if h == nil || h.nodes == nil {
 		return errdefs.NilCall()
 	}
@@ -53,7 +53,7 @@ func (h *Handler) StopNode(ctx context.Context, req *api.StopNodeRequest) error 
 	return nil
 }
 
-func (h *Handler) ListNodes(ctx context.Context) (*api.ListNodeResponse, error) {
+func (h *Handler) ListNodes(ctx context.Context) (*ogenserver.ListNodeResponse, error) {
 	if h == nil || h.nodes == nil {
 		return nil, errdefs.NilCall()
 	}
@@ -64,7 +64,7 @@ func (h *Handler) ListNodes(ctx context.Context) (*api.ListNodeResponse, error) 
 	return converter.ConvertListNodesResult(res), nil
 }
 
-func (h *Handler) DeleteNode(ctx context.Context, req *api.DeleteNodeRequest) error {
+func (h *Handler) DeleteNode(ctx context.Context, req *ogenserver.DeleteNodeRequest) error {
 	if h == nil || h.nodes == nil {
 		return errdefs.NilCall()
 	}
