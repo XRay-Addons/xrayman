@@ -5,7 +5,7 @@ APP=xray-nodeman
 BIN_DIR=/opt
 BIN_PATH=$BIN_DIR/$APP
 ENV_DIR=/etc/$APP
-PACKAGE_BIN_PATH="$APP"
+PACKAGE_BIN_PATH="$APP/$APP"
 EXEC_CMD=$(cat <<EOF
 $BIN_PATH \
 --log-lvl info
