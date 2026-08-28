@@ -13,35 +13,51 @@ UNZIP := unzip
 FRONTEND_ROOT := $(ROOT)/frontend
 BACKEND_ROOT := $(ROOT)/backend
 
+VERSION ?= dev
+COMMIT ?= unknown-commit
+BUILD_TIME ?= unknown-time
+
+XRAY_VERSION ?= v26.5.9
+
+# Целевая платформа сборки (можно переопределить: make build GOOS=linux GOARCH=arm64)
+GOOS ?= $(shell go env GOOS)
+GOARCH ?= $(shell go env GOARCH)
+CGO_ENABLED ?= 0
 
 # -----------------------------
 # DEFAULT
 # -----------------------------
 
-.PHONY: all build clean
+.PHONY: all build
 all: build
 
-build: build_backend
+# Собирает и node, и nodeman
+build: build_node build_nodeman
 
 # -----------------------------
 # CLEAN
 # -----------------------------
 
-.PHONY: clean clean_frontend clean_backend clean_xray
+.PHONY: clean clean_node clean_nodeman clean_frontend clean_xray
 
-clean: clean_frontend clean_backend clean_xray
+# Общий clean — чистит всё
+clean: clean_node clean_nodeman clean_frontend
 	rm -rf $(DST)
+
+# Чистит только node (включая скачанный xray и его data/)
+clean_node:
+	rm -rf $(DST)/xray-node
+
+# Чистит только nodeman
+clean_nodeman:
+	rm -rf $(DST)/xray-nodeman
 
 clean_frontend:
 	rm -rf $(FRONTEND_ROOT)/admpage/dist
 	rm -rf $(FRONTEND_ROOT)/userpage/dist
 
-clean_backend:
-	rm -rf $(DST)/xray-node
-	rm -rf $(DST)/xray-nodeman
-
 # -----------------------------
-# FRONTEND
+# FRONTEND (нужен только для nodeman)
 # -----------------------------
 
 .PHONY: deps_frontend gen_frontend build_frontend
@@ -57,13 +73,13 @@ build_frontend: gen_frontend
 	cd $(FRONTEND_ROOT) && $(PNPM) run build
 
 # -----------------------------
-# EMBED FRONTEND INTO BACKEND
+# EMBED FRONTEND INTO NODEMAN
 # -----------------------------
 
 .PHONY: embed_frontend
 
 embed_frontend: build_frontend
-	@echo "==> Embedding frontend into backend"
+	@echo "==> Embedding frontend into nodeman"
 
 	rm -rf $(BACKEND_ROOT)/nodeman/internal/pages/admpage
 	rm -rf $(BACKEND_ROOT)/nodeman/internal/pages/userpage
@@ -75,10 +91,10 @@ embed_frontend: build_frontend
 		$(BACKEND_ROOT)/nodeman/internal/pages/userpage
 
 # -----------------------------
-# BACKEND
+# TOOLS
 # -----------------------------
 
-.PHONY: deps_backend gen_backend build_backend tools
+.PHONY: tools
 
 GO_TOOLS := \
 	github.com/ogen-go/ogen/cmd/ogen@latest \
@@ -87,22 +103,6 @@ GO_TOOLS := \
 	github.com/atombender/go-jsonschema@latest \
 	github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 
-VERSION ?= dev
-COMMIT ?= unknown-commit
-BUILD_TIME ?= unknown-time
-
-NODE_VERSION_PKG := github.com/XRay-Addons/xrayman/node/internal/version
-NODE_LDFLAGS := \
-	-X $(NODE_VERSION_PKG).Version=$(VERSION) \
-	-X $(NODE_VERSION_PKG).Commit=$(COMMIT) \
-	-X $(NODE_VERSION_PKG).BuildTime=$(BUILD_TIME)
-
-NODEMAN_VERSION_PKG := github.com/XRay-Addons/xrayman/nodeman/internal/version
-NODEMAN_LDFLAGS := \
-	-X $(NODEMAN_VERSION_PKG).Version=$(VERSION) \
-	-X $(NODEMAN_VERSION_PKG).Commit=$(COMMIT) \
-	-X $(NODEMAN_VERSION_PKG).BuildTime=$(BUILD_TIME)	
-
 tools:
 	@echo "==> Installing Go tools"
 	@for tool in $(GO_TOOLS); do \
@@ -110,24 +110,58 @@ tools:
 		go install $$tool; \
 	done
 
-deps_backend:
+# -----------------------------
+# BACKEND: NODE
+# -----------------------------
+
+.PHONY: deps_node gen_node build_node
+
+
+NODE_VERSION_PKG := github.com/XRay-Addons/xrayman/node/internal/version
+NODE_LDFLAGS := \
+	-X $(NODE_VERSION_PKG).Version=$(VERSION) \
+	-X $(NODE_VERSION_PKG).Commit=$(COMMIT) \
+	-X $(NODE_VERSION_PKG).BuildTime=$(BUILD_TIME)
+
+deps_node:
 	cd $(BACKEND_ROOT)/node && $(GO) mod download
-	cd $(BACKEND_ROOT)/nodeman && $(GO) mod download
 
-gen_backend: deps_backend
+gen_node: deps_node
 	cd $(BACKEND_ROOT)/node && $(GO) generate ./...
-	cd $(BACKEND_ROOT)/nodeman && $(GO) generate ./...
 
-build_backend: gen_backend embed_frontend
-	@echo "==> Building backend"
+# node зависит от xray-рантайма, но НЕ от фронтенда
+build_node: gen_node download_xray
+	@echo "==> Building node ($(GOOS)/$(GOARCH))"
 
 	mkdir -p $(DST)/xray-node
-	mkdir -p $(DST)/xray-nodeman
 
 	cd $(BACKEND_ROOT)/node && \
 	CGO_ENABLED=$(CGO_ENABLED) GOOS=$(GOOS) GOARCH=$(GOARCH) \
 	$(GO) build -ldflags "$(NODE_LDFLAGS)" -o $(DST)/xray-node/xray-node ./cmd/main.go
 
+# -----------------------------
+# BACKEND: NODEMAN
+# -----------------------------
+
+.PHONY: deps_nodeman gen_nodeman build_nodeman
+
+NODEMAN_VERSION_PKG := github.com/XRay-Addons/xrayman/nodeman/internal/version
+NODEMAN_LDFLAGS := \
+	-X $(NODEMAN_VERSION_PKG).Version=$(VERSION) \
+	-X $(NODEMAN_VERSION_PKG).Commit=$(COMMIT) \
+	-X $(NODEMAN_VERSION_PKG).BuildTime=$(BUILD_TIME)
+
+deps_nodeman:
+	cd $(BACKEND_ROOT)/nodeman && $(GO) mod download
+
+gen_nodeman: deps_nodeman
+	cd $(BACKEND_ROOT)/nodeman && $(GO) generate ./...
+
+# nodeman зависит от фронтенда (админка/юзерпейдж встраиваются внутрь)
+build_nodeman: gen_nodeman embed_frontend
+	@echo "==> Building nodeman ($(GOOS)/$(GOARCH))"
+
+	mkdir -p $(DST)/xray-nodeman
 
 	cd $(BACKEND_ROOT)/nodeman && \
 	CGO_ENABLED=$(CGO_ENABLED) GOOS=$(GOOS) GOARCH=$(GOARCH) \
@@ -137,13 +171,7 @@ build_backend: gen_backend embed_frontend
 # XRAY DOWNLOAD
 # -----------------------------
 
-.PHONY: xray
-
-XRAY_VERSION ?= v26.5.9
-XRAY_DST := $(DST)/xray
-
-GOOS := $(shell go env GOOS)
-GOARCH := $(shell go env GOARCH)
+.PHONY: download_xray
 
 XRAY_ASSET :=
 
@@ -171,17 +199,13 @@ endif
 
 XRAY_URL := https://github.com/XTLS/Xray-core/releases/download/$(XRAY_VERSION)/$(XRAY_ASSET)
 
-xray:
-	@echo "==> Downloading Xray: $(XRAY_ASSET)"
-	rm -rf $(XRAY_DST)
-	mkdir -p $(XRAY_DST)
+download_xray:
+	@echo "==> Downloading Xray: $(XRAY_ASSET) ($(GOOS)/$(GOARCH))"
+	mkdir -p $(DST)/xray-node/data
 
 	$(CURL) -L -o $(DST)/xray.zip $(XRAY_URL)
-	$(UNZIP) -o $(DST)/xray.zip -d $(XRAY_DST)
+	$(UNZIP) -j -o $(DST)/xray.zip 'xray' -d $(DST)/xray-node
+	$(UNZIP) -j -o $(DST)/xray.zip 'geoip.dat' 'geosite.dat' -d $(DST)/xray-node/data
 	rm -f $(DST)/xray.zip
 
-	mkdir -p $(DST)/xray-node/data
-	mv $(XRAY_DST)/geoip.dat $(DST)/xray-node/data/
-	mv $(XRAY_DST)/geosite.dat $(DST)/xray-node/data/
-
-	@echo "==> Xray ready at $(XRAY_DST)"
+	@echo "==> Xray ready at $(DST)/xray-node"
