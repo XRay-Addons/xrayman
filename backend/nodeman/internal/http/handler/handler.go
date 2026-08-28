@@ -7,9 +7,9 @@ import (
 	mw "github.com/XRay-Addons/xrayman/common/http/middleware"
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/ogenserver"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/httperrdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/openapi-gen"
 	chimw "github.com/go-chi/chi/v5/middleware"
 	"github.com/ogen-go/ogen/ogenerrors"
 	"go.uber.org/zap"
@@ -25,7 +25,7 @@ type Handler struct {
 	log      *zap.Logger
 }
 
-var _ api.Handler = (*Handler)(nil)
+var _ ogenserver.Handler = (*Handler)(nil)
 
 func New(
 	users UsersService,
@@ -68,12 +68,12 @@ func New(
 	}, nil
 }
 
-func (h *Handler) NewError(ctx context.Context, err error) *api.ErrorStatusCode {
+func (h *Handler) NewError(ctx context.Context, err error) *ogenserver.ErrorStatusCode {
 	// log error
 	h.logError(ctx, err)
 
 	// if error contains status, return it
-	var statusError *api.ErrorStatusCode
+	var statusError *ogenserver.ErrorStatusCode
 	if errors.As(err, &statusError) {
 		return statusError
 	}
@@ -82,7 +82,7 @@ func (h *Handler) NewError(ctx context.Context, err error) *api.ErrorStatusCode 
 	return h.translateError(err)
 }
 
-func (h *Handler) translateError(err error) *api.ErrorStatusCode {
+func (h *Handler) translateError(err error) *ogenserver.ErrorStatusCode {
 	if err == nil {
 		return nil
 	}

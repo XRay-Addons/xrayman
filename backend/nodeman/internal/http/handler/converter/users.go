@@ -1,8 +1,8 @@
 package converter
 
 import (
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/ogenserver"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/openapi-gen"
 )
 
 // goverter:converter
@@ -12,22 +12,22 @@ import (
 //
 //go:generate goverter gen .
 type Users interface {
-	ConvertNewUserRequest(r *api.NewUserRequest) (*models.NewUserParams, error)
-	ConvertNewUserResult(r *models.User) *api.User
+	ConvertNewUserRequest(r *ogenserver.NewUserRequest) (*models.NewUserParams, error)
+	ConvertNewUserResult(r *models.User) *ogenserver.User
 
-	ConvertGetUserRequest(r *api.GetUserParams) (*models.GetUserParams, error)
-	ConvertGetUserResult(r *models.UserView) *api.UserView
+	ConvertGetUserRequest(r *ogenserver.GetUserParams) (*models.GetUserParams, error)
+	ConvertGetUserResult(r *models.UserView) *ogenserver.UserView
 
-	ConvertEnableUserRequest(r *api.EnableUserRequest) (*models.EnableUserParams, error)
+	ConvertEnableUserRequest(r *ogenserver.EnableUserRequest) (*models.EnableUserParams, error)
 
-	ConvertDisableUserRequest(r *api.DisableUserRequest) (*models.DisableUserParams, error)
+	ConvertDisableUserRequest(r *ogenserver.DisableUserRequest) (*models.DisableUserParams, error)
 
-	ConvertListUsersResult(r *models.ListUsersResult) *api.ListUsersResponse
+	ConvertListUsersResult(r *models.ListUsersResult) *ogenserver.ListUsersResponse
 
-	ConvertDeleteUserRequest(r *api.DeleteUserRequest) (*models.DeleteUserParams, error)
+	ConvertDeleteUserRequest(r *ogenserver.DeleteUserRequest) (*models.DeleteUserParams, error)
 
 	// goverter:map . SubscriptionPath | GetUserSubscription
-	ConvertProfile(r models.UserProfile) api.UserProfile
+	ConvertProfile(r models.UserProfile) ogenserver.UserProfile
 }
 
 func GetUserSubscription(source models.UserProfile) string {

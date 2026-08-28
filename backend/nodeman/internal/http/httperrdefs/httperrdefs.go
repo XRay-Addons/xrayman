@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/openapi-gen"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/ogenserver"
 )
 
 var (
@@ -26,14 +26,14 @@ var (
 		"Connection issues", "try better connection")
 )
 
-func new(statusCode int, message string, details ...string) *api.ErrorStatusCode {
-	he := api.Error{Message: message}
+func new(statusCode int, message string, details ...string) *ogenserver.ErrorStatusCode {
+	he := ogenserver.Error{Message: message}
 
 	if d := strings.Join(details, ""); len(d) > 0 {
 		he.Details.SetTo(d)
 	}
 
-	return &api.ErrorStatusCode{
+	return &ogenserver.ErrorStatusCode{
 		StatusCode: statusCode,
 		Response:   he,
 	}

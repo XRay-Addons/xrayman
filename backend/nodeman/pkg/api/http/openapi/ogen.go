@@ -1,3 +1,3 @@
-package openapi
+package ogenserver
 
-//go:generate ogen --target=../openapi-gen --clean --config=./ogen-settings.yaml openapi.yaml
+//go:generate ogen --target=./../../../../internal/http/handler/ogenserver/ --clean --config=./ogen-settings.yaml --package=ogenserver openapi.yaml

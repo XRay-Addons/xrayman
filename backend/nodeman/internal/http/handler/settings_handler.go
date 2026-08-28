@@ -5,10 +5,10 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/converter"
-	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/openapi-gen"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/ogenserver"
 )
 
-func (h *Handler) GetSettings(ctx context.Context) (*api.Settings, error) {
+func (h *Handler) GetSettings(ctx context.Context) (*ogenserver.Settings, error) {
 	if h == nil || h.settings == nil {
 		return nil, errdefs.NilCall()
 	}
@@ -19,7 +19,7 @@ func (h *Handler) GetSettings(ctx context.Context) (*api.Settings, error) {
 	return converter.ConvertSettingsResult(*res), nil
 }
 
-func (h *Handler) SetSettings(ctx context.Context, req *api.Settings) error {
+func (h *Handler) SetSettings(ctx context.Context, req *ogenserver.Settings) error {
 	if h == nil || h.settings == nil {
 		return errdefs.NilCall()
 	}

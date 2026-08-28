@@ -1,8 +1,8 @@
 package converter
 
 import (
+	"github.com/XRay-Addons/xrayman/node/internal/http/handler/ogenserver"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
-	api "github.com/XRay-Addons/xrayman/node/pkg/api/http/openapi-gen"
 )
 
 // goverter:converter
@@ -12,10 +12,10 @@ import (
 //
 //go:generate goverter gen .
 type Converter interface {
-	ConvertStartRequest(source *api.StartRequest) *models.StartParams
-	ConvertStartResult(source *models.StartResult) *api.StartResponse
-	ConvertEditUsersRequest(source *api.EditUsersRequest) *models.EditUsersParams
-	ConvertStatusResult(source *models.StatusResult) *api.StatusResponse
-	ConvertStatus(source models.ServiceStatus) api.ServiceStatus
-	ConvertStatsResult(source *models.StatsResult) *api.StatsResponse
+	ConvertStartRequest(source *ogenserver.StartRequest) *models.StartParams
+	ConvertStartResult(source *models.StartResult) *ogenserver.StartResponse
+	ConvertEditUsersRequest(source *ogenserver.EditUsersRequest) *models.EditUsersParams
+	ConvertStatusResult(source *models.StatusResult) *ogenserver.StatusResponse
+	ConvertStatus(source models.ServiceStatus) ogenserver.ServiceStatus
+	ConvertStatsResult(source *models.StatsResult) *ogenserver.StatsResponse
 }

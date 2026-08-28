@@ -2,8 +2,8 @@ package converter
 
 import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/ogenserver"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	api "github.com/XRay-Addons/xrayman/nodeman/pkg/api/http/openapi-gen"
 )
 
 // goverter:converter
@@ -14,20 +14,20 @@ import (
 //
 //go:generate goverter gen .
 type Nodes interface {
-	ConvertNewNodeRequest(r *api.NewNodeRequest) (*models.NewNodeParams, error)
+	ConvertNewNodeRequest(r *ogenserver.NewNodeRequest) (*models.NewNodeParams, error)
 
-	ConvertNewNodeResult(r *models.NewNodeResult) *api.NewNodeResponse
+	ConvertNewNodeResult(r *models.NewNodeResult) *ogenserver.NewNodeResponse
 
-	ConvertStartNodeRequest(r *api.StartNodeRequest) (*models.StartNodeParams, error)
+	ConvertStartNodeRequest(r *ogenserver.StartNodeRequest) (*models.StartNodeParams, error)
 
-	ConvertStopNodeRequest(r *api.StopNodeRequest) (*models.StopNodeParams, error)
+	ConvertStopNodeRequest(r *ogenserver.StopNodeRequest) (*models.StopNodeParams, error)
 
-	ConvertListNodesResult(r *models.ListNodeResult) *api.ListNodeResponse
+	ConvertListNodesResult(r *models.ListNodeResult) *ogenserver.ListNodeResponse
 
-	ConvertDeleteNodeRequest(r *api.DeleteNodeRequest) (*models.DeleteNodeParams, error)
+	ConvertDeleteNodeRequest(r *ogenserver.DeleteNodeRequest) (*models.DeleteNodeParams, error)
 }
 
-func ConvertAccessKey(s api.AccessKey) (models.AccessKey, error) {
+func ConvertAccessKey(s ogenserver.AccessKey) (models.AccessKey, error) {
 	var accessKey models.AccessKey
 	if err := accessKey.UnmarshalText([]byte(s)); err != nil {
 		return accessKey, errdefs.PayloadErr(err)
