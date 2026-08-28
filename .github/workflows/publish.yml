@@ -70,11 +70,11 @@ jobs:
         run: |
           cd build
 
-          zip -r ../xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.zip node
-          tar -czf ../xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz node
+          zip -r ../xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.zip xray-node
+          tar -czf ../xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz xray-node
 
-          zip -r ../xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.zip nodeman
-          tar -czf ../xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz nodeman
+          zip -r ../xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.zip xray-nodeman
+          tar -czf ../xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz xray-nodeman
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
