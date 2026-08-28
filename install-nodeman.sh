@@ -47,7 +47,7 @@ case "$(uname -m)" in
     ;;
 esac
  
-DOWNLOAD_URL="https://github.com/XRay-Addons/xrayman/releases/latest/download/xrayman-$OS-$ARCH.tar.gz"
+DOWNLOAD_URL="https://github.com/XRay-Addons/xrayman/releases/latest/download/xrayman-nodeman-$OS-$ARCH.tar.gz"
 
 log() {
   echo "==> $*"
