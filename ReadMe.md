@@ -9,3 +9,8 @@ curl -fsSL https://raw.githubusercontent.com/XRay-Addons/xrayman/main/install-no
 ```
 curl -fsSL https://raw.githubusercontent.com/XRay-Addons/xrayman/main/install-nodeman.sh -o install-nodeman.sh && sudo bash install-nodeman.sh
 ```
+
+## Local build
+
+1. Install `act` whatever it takes
+2. Run `./bin/act --artifact-server-path ./act-artifacts`
