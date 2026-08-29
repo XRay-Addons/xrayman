@@ -39,9 +39,8 @@ jobs:
 
       - name: Install Go Tools
         run: |
-          # install go tools via make, add to path
           make tools
-          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v5
@@ -52,7 +51,7 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 24.3.0
-          cache: "pnpm"
+          cache: pnpm
           cache-dependency-path: frontend/pnpm-lock.yaml
 
       - name: Build Project
@@ -65,35 +64,125 @@ jobs:
           COMMIT: ${{ github.sha }}
           BUILD_TIME: ${{ github.event.head_commit.timestamp }}
 
+      # ------------------------------------------------------------
+      # Archive binaries
+      # ------------------------------------------------------------
+
       - name: Archive build artifacts
         run: |
+          mkdir -p dist
+
           cd build
 
-          zip -r ../xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.zip xray-node
-          tar -czf ../xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz xray-node
+          zip -r "../dist/xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.zip" xray-node
+          tar -czf "../dist/xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz" xray-node
 
-          zip -r ../xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.zip xray-nodeman
-          tar -czf ../xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz xray-nodeman
+          zip -r "../dist/xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.zip" xray-nodeman
+          tar -czf "../dist/xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz" xray-nodeman
+
+          cd ..
+
+      # ------------------------------------------------------------
+      # Install nfpm
+      # ------------------------------------------------------------
+
+      - name: Install nfpm
+        run: |
+          echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | sudo tee /etc/apt/sources.list.d/goreleaser.list
+          sudo apt update
+          sudo apt install nfpm
+          nfpm --version
+
+      - name: Set package version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            VERSION="${{ github.ref_name }}"
+            VERSION="${VERSION#v}"
+            RELEASE="1"
+          else
+            VERSION="0.0.0"
+            RELEASE="${{ github.ref_name }}"
+
+            # Keep only letters, digits and hyphens.
+            RELEASE=$(printf '%s' "$RELEASE" | sed 's/[^A-Za-z0-9-]\+/-/g')
+
+            # Remove leading/trailing hyphens.
+            RELEASE=$(printf '%s' "$RELEASE" | sed 's/^-*//; s/-*$//')
+
+            # Fallback if nothing remains.
+            [ -n "$RELEASE" ] || RELEASE="dev"
+          fi
+
+          echo "PACKAGE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "PACKAGE_RELEASE=$RELEASE" >> "$GITHUB_ENV"
+
+          echo "Package version: $VERSION-$RELEASE"
+
+      # ------------------------------------------------------------
+      # Build DEB
+      # ------------------------------------------------------------
+
+      - name: Build DEB package
+        run: |
+          mkdir -p dist
+
+          ARCH=${{ matrix.goarch }} \
+          VERSION=${PACKAGE_VERSION} \
+          RELEASE=${PACKAGE_RELEASE} \
+          nfpm package \
+            --config packaging/nfpm.yaml \
+            --packager deb \
+            --target "dist/xrayman-nodeman-${{ matrix.goarch }}.deb"
+
+      # ------------------------------------------------------------
+      # Build RPM
+      # ------------------------------------------------------------
+
+      - name: Build RPM package
+        run: |
+          mkdir -p dist
+
+          ARCH=${{ matrix.goarch }} \
+          VERSION=${PACKAGE_VERSION} \
+          RELEASE=${PACKAGE_RELEASE} \
+          nfpm package \
+            --config packaging/nfpm.yaml \
+            --packager rpm \
+            --target "dist/xrayman-nodeman-${{ matrix.goarch }}.rpm"
+
+      # ------------------------------------------------------------
+      # Upload everything
+      # ------------------------------------------------------------
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: xrayman-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: |
-            xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.zip
-            xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
-            xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.zip
-            xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
+          path: dist/
+
+  # ==================================================================
+  # GitHub Release
+  # ==================================================================
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
 
       - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v3
         with:
-          files: |
-            xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.zip
-            xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
-            xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.zip
-            xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
+          files: dist/*
           name: Release ${{ github.ref_name }}
           generate_release_notes: true
         env:
