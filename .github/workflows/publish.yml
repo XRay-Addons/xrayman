@@ -61,7 +61,7 @@ jobs:
         run: |
           CLEAN_VER=$(echo '${{ github.ref_name }}' | sed 's/^v//')
           for ARCH in amd64 arm64; do
-            DIR="xray-nodeman_${CLEAN_VER}_${ARCH}"
+            DIR="xray-nodeman-${ARCH}"
             mkdir -p "$DIR/usr/bin" "$DIR/lib/systemd/system" "$DIR/DEBIAN"
             cp ./dist/${ARCH}/xray-nodeman "$DIR/usr/bin/xray-nodeman"
             cp ./packaging/xray-nodeman.service "$DIR/lib/systemd/system/xray-nodeman.service"
