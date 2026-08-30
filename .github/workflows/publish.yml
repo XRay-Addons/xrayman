@@ -60,7 +60,7 @@ jobs:
           COMMIT: ${{ github.sha }}
           BUILD_TIME: ${{ github.event.head_commit.timestamp }}
 
-      # Сохраняем бинарник: Перекладываем его в уникальную папку под архитектуру
+      # Сохраняем бинарник для следующей джобы
       - name: Prepare binary for upload
         run: |
           mkdir -p ./dist-binaries/${{ matrix.goarch }}
@@ -73,7 +73,7 @@ jobs:
           path: ./dist-binaries/${{ matrix.goarch }}/xray-nodeman
           retention-days: 1
 
-  # НОВАЯ ДЖОБА ДЛЯ NFPM, DOCKER И GITHUB RELEASE (Запускается только по тегам)
+  # СБОРКА .DEB ПАКЕТОВ, DOCKER И ПУБЛИКАЦИЯ РЕЛИЗА
   release:
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
@@ -85,10 +85,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v5
-        with:
-          fetch-depth: 0 # Важно для генерации changelog в GoReleaser
 
-      # СКАЧИВАЕМ ОБА БИНАРНИКА (amd64 и arm64)
+      # Скачиваем скомпилированные бинарники
       - name: Download amd64 binary
         uses: actions/download-artifact@v4
         with:
@@ -101,6 +99,58 @@ jobs:
           name: xray-nodeman-arm64
           path: ./dist-binaries/arm64
 
+      # Устанавливаем системный сборщик пакетов fpm
+      - name: Install FPM packager
+        run: |
+          sudo apt-get update && sudo apt-get install -y ruby ruby-dev rubygems build-essential
+          sudo gem install --no-document fpm
+
+      # Собираем .deb пакет для amd64
+      - name: Pack DEB (amd64)
+        run: |
+          CLEAN_VER=$(echo "${{ github.ref_name }}" | sed 's/^v//')
+          fpm -s dir -t deb \
+            -n xrayman-nodeman \
+            -v "$CLEAN_VER" \
+            -a amd64 \
+            --maintainer "XRay-Addons Team <admin@example.com>" \
+            --description "XRayMan Node Manager Service" \
+            --post-install packaging/xray-nodeman.postinstall.sh \
+            --pre-uninstall packaging/xray-nodeman.prerm.sh \
+            ./dist-binaries/amd64/xrayman-nodeman=/usr/bin/xrayman-nodeman \
+            packaging/xrayman-nodeman.service=/lib/systemd/system/xrayman-nodeman.service
+
+      # Собираем .deb пакет для arm64
+      - name: Pack DEB (arm64)
+        run: |
+          CLEAN_VER=$(echo "${{ github.ref_name }}" | sed 's/^v//')
+          fpm -s dir -t deb \
+            -n xrayman-nodeman \
+            -v "$CLEAN_VER" \
+            -a arm64 \
+            --maintainer "XRay-Addons Team <admin@example.com>" \
+            --description "XRayMan Node Manager Service" \
+            --post-install packaging/xray-nodeman.postinstall.sh \
+            --pre-uninstall packaging/xray-nodeman.prerm.sh \
+            ./dist-binaries/arm64/xrayman-nodeman=/usr/bin/xrayman-nodeman \
+            packaging/xrayman-nodeman.service=/lib/systemd/system/xrayman-nodeman.service
+
+      # Публикуем собранные .deb пакеты в GitHub Releases
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            xrayman-nodeman_*.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # НАСТРОЙКА И СБОРКА DOCKER MULTI-ARCH
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -108,12 +158,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # ЗАПУСКАЕМ GORELEASER
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v6
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v6
         with:
-          distribution: goreleaser
-          version: latest
-          args: release --clean
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${{ github.ref_name }}
