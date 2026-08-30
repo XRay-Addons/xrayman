@@ -96,7 +96,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           CLEAN_VER=$(echo '${{ github.ref_name }}' | sed 's/^v//')
-          DIR="xrayman-nodeman_${CLEAN_VER}_${{ matrix.goarch }}"
+          DIR="xray-nodeman_${CLEAN_VER}_${{ matrix.goarch }}"
 
           # 1. Создаем структуру папок внутри будущего пакета
           mkdir -p "$DIR/usr/bin"
@@ -104,15 +104,15 @@ jobs:
           mkdir -p "$DIR/DEBIAN"
 
           # 2. Копируем бинарник (из папки build/xray-nodeman), сервис и скрипты
-          cp ./build/xray-nodeman/xray-nodeman "$DIR/usr/bin/xrayman-nodeman"
-          cp ./packaging/xrayman-nodeman.service "$DIR/lib/systemd/system/xrayman-nodeman.service"
+          cp ./build/xray-nodeman/xray-nodeman "$DIR/usr/bin/xray-nodeman"
+          cp ./packaging/xray-nodeman.service "$DIR/lib/systemd/system/xray-nodeman.service"
           cp ./packaging/postinstall.sh "$DIR/DEBIAN/postinst"
           cp ./packaging/prerm.sh "$DIR/DEBIAN/prerm"
           chmod +x "$DIR/DEBIAN/postinst" "$DIR/DEBIAN/prerm"
 
           # 3. Генерируем обязательный манифест пакета (control)
           cat << EOF > "$DIR/DEBIAN/control"
-          Package: xrayman-nodeman
+          Package: xray-nodeman
           Version: $CLEAN_VER
           Architecture: ${{ matrix.goarch }}
           Maintainer: XRay-Addons Team <admin@example.com>
@@ -128,7 +128,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: "xrayman-nodeman_*.deb"
+          files: "xray-nodeman_*.deb"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
