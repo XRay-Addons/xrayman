@@ -9,6 +9,10 @@ on:
       - main
 
 jobs:
+  # ==================================================================
+  # Build
+  # ==================================================================
+
   build:
     runs-on: ubuntu-latest
 
@@ -21,7 +25,7 @@ jobs:
             goarch: arm64
 
     permissions:
-      contents: write
+      contents: read
 
     steps:
       - name: Checkout Code
@@ -53,6 +57,10 @@ jobs:
           node-version: 24.3.0
           cache: pnpm
           cache-dependency-path: frontend/pnpm-lock.yaml
+
+      # ------------------------------------------------------------
+      # Build Project
+      # ------------------------------------------------------------
 
       - name: Build Project
         run: make build
@@ -92,6 +100,10 @@ jobs:
           sudo apt update
           sudo apt install nfpm
           nfpm --version
+
+      # ------------------------------------------------------------
+      # Set package version
+      # ------------------------------------------------------------
 
       - name: Set package version
         run: |
@@ -151,6 +163,43 @@ jobs:
             --target "dist/xrayman-nodeman-${{ matrix.goarch }}.rpm"
 
       # ------------------------------------------------------------
+      # Docker
+      #
+      # The Go binary was already built above.
+      # Docker only packages the existing binary.
+      # ------------------------------------------------------------
+
+      - name: Set up Docker Build
+        uses: docker/setup-buildx-action@v3
+
+      - name: Prepare Docker context
+        run: |
+          mkdir -p docker-context
+          mkdir -p dist/docker-input
+
+          cp build/xray-nodeman/xray-nodeman \
+            "dist/docker-input/xray-nodeman-${{ matrix.goarch }}"
+
+          cp build/xray-nodeman/xray-nodeman \
+            "docker-context/xray-nodeman-${{ matrix.goarch }}"
+
+          cp packaging/xray-nodeman.dockerfile docker-context/Dockerfile
+
+      # ------------------------------------------------------------
+      # Build architecture-specific Docker image
+      #
+      # This image is stored as a Docker archive and uploaded
+      # together with the other architecture-specific artifacts.
+      # ------------------------------------------------------------
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: docker-context
+          platforms: linux/${{ matrix.goarch }}
+          outputs: type=docker,dest=dist/xrayman-nodeman-${{ matrix.goarch }}.docker.tar
+
+      # ------------------------------------------------------------
       # Upload everything
       # ------------------------------------------------------------
 
@@ -161,28 +210,156 @@ jobs:
           path: dist/
 
   # ==================================================================
+  # Docker multi-platform image
+  # ==================================================================
+
+  docker:
+    needs: build
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      # ------------------------------------------------------------
+      # Download architecture-specific build artifacts
+      # ------------------------------------------------------------
+
+      - name: Checkout Code
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: xrayman-linux-*
+          path: dist
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Prepare Docker context
+        run: |
+          mkdir -p docker-context
+
+          cp dist/docker-input/xray-nodeman-amd64 \
+            docker-context/xray-nodeman-amd64
+
+          cp dist/docker-input/xray-nodeman-arm64 \
+            docker-context/xray-nodeman-arm64
+
+          cp packaging/xray-nodeman.dockerfile docker-context/Dockerfile
+
+      # ------------------------------------------------------------
+      # Tag: login to GHCR
+      # ------------------------------------------------------------
+
+      - name: Log in to GHCR
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # ------------------------------------------------------------
+      # Tag: build and push multi-arch image
+      # ------------------------------------------------------------
+
+      - name: Build and push multi-arch Docker image
+        if: startsWith(github.ref, 'refs/tags/') && env.ACT != 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: docker-context
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+            ghcr.io/${{ github.repository }}:latest
+
+      # ------------------------------------------------------------
+      # Build multi-arch OCI archive
+      #
+      # This is built from the already-compiled amd64/arm64 binaries.
+      # No Go compilation happens here.
+      # ------------------------------------------------------------
+
+      - name: Build multi-arch OCI archive
+        uses: docker/build-push-action@v6
+        with:
+          context: docker-context
+          platforms: linux/amd64,linux/arm64
+          outputs: type=oci,dest=dist/xrayman-nodeman.oci.tar
+
+      # ------------------------------------------------------------
+      # Compress OCI archive
+      # ------------------------------------------------------------
+
+      - name: Compress OCI archive
+        run: |
+          zstd -T0 -19 \
+            dist/xrayman-nodeman.oci.tar \
+            -o dist/xrayman-nodeman.oci.tar.zst
+
+          rm dist/xrayman-nodeman.oci.tar
+
+      # ------------------------------------------------------------
+      # Upload multi-arch Docker artifact
+      # ------------------------------------------------------------
+
+      - name: Upload Docker artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: xrayman-docker
+          path: dist/xrayman-nodeman.oci.tar.zst
+
+  # ==================================================================
   # GitHub Release
   # ==================================================================
 
   release:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: build
+    needs:
+      - build
+      - docker
     runs-on: ubuntu-latest
 
     permissions:
       contents: write
 
     steps:
+      # ------------------------------------------------------------
+      # Download architecture-specific build artifacts
+      # ------------------------------------------------------------
+
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
+          pattern: xrayman-linux-*
           path: dist
           merge-multiple: true
+
+      # ------------------------------------------------------------
+      # Download multi-arch Docker artifact
+      # ------------------------------------------------------------
+
+      - name: Download Docker artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: xrayman-docker
+          path: dist
+
+      # ------------------------------------------------------------
+      # Create GitHub Release
+      # ------------------------------------------------------------
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
-          files: dist/*
+          files: dist/**/*
           name: Release ${{ github.ref_name }}
           generate_release_notes: true
         env:

@@ -4,8 +4,8 @@ SERVICE_USER="xray-nodeman"
 SERVICE_GROUP="xray-nodeman"
 
 CONFIG_DIR="/etc/xrayman"
-ENV_FILE="${CONFIG_DIR}/nodeman.env"
-ENV_EXAMPLE="${CONFIG_DIR}/nodeman.env.example"
+ENV_FILE="${CONFIG_DIR}/xray-nodeman.env
+ENV_EXAMPLE="${CONFIG_DIR}/xray-nodeman.env.example"
 
 echo "Create system group."
 if ! getent group "$SERVICE_GROUP" >/dev/null 2>&1; then
