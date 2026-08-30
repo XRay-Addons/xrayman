@@ -2,24 +2,13 @@ name: Publish XRayMan
 
 on:
   push:
-    tags:
-      - "v*"
+    tags: ["v*"]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        include:
-          - goos: linux
-            goarch: amd64
-          - goos: linux
-            goarch: arm64
-
     permissions:
       contents: write
       packages: write
@@ -40,7 +29,6 @@ jobs:
 
       - name: Install Go Tools
         run: |
-          # install go tools via make, add to path
           make tools
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
 
@@ -56,71 +44,53 @@ jobs:
           cache: "pnpm"
           cache-dependency-path: frontend/pnpm-lock.yaml
 
+      # СБОРКА ОБЕИХ АРХИТЕКТУР ПО ОЧЕРЕДИ БЕЗ МАТРИЦЫ
       - name: Build Project
-        run: make build
-        env:
-          GOOS: ${{ matrix.goos }}
-          GOARCH: ${{ matrix.goarch }}
-          CGO_ENABLED: 0
-          VERSION: ${{ github.ref_name }}
-          COMMIT: ${{ github.sha }}
-          BUILD_TIME: ${{ github.event.head_commit.timestamp }}
+        run: |
+          # Сборка amd64
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 VERSION=${{ github.ref_name }} COMMIT=${{ github.sha }} BUILD_TIME=${{ github.event.head_commit.timestamp }} make build
+          mkdir -p ./dist/amd64 && cp ./build/xray-nodeman/xray-nodeman ./dist/amd64/xrayman-nodeman
 
-      - name: Archive build artifacts
+          # Сборка arm64
+          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 VERSION=${{ github.ref_name }} COMMIT=${{ github.sha }} BUILD_TIME=${{ github.event.head_commit.timestamp }} make build
+          mkdir -p ./dist/arm64 && cp ./build/xray-nodeman/xray-nodeman ./dist/dist/arm64/xrayman-nodeman
+
+      # СОБИРАЕМ ДВА .DEB ПАКЕТА ЗА ОДИН ПРОХОД
+      - name: Pack DEB Packages
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          cd build
+          CLEAN_VER=$(echo '${{ github.ref_name }}' | sed 's/^v//')
+          for ARCH in amd64 arm64; do
+            DIR="xray-nodeman_${CLEAN_VER}_${ARCH}"
+            mkdir -p "$DIR/usr/bin" "$DIR/lib/systemd/system" "$DIR/DEBIAN"
+            cp ./dist/${ARCH}/xrayman-nodeman "$DIR/usr/bin/xray-nodeman"
+            cp ./packaging/xray-nodeman.service "$DIR/lib/systemd/system/xray-nodeman.service"
+            cp ./packaging/xray-nodeman.postinstall.sh "$DIR/DEBIAN/postinst"
+            cp ./packaging/xray-nodeman.prerm.sh "$DIR/DEBIAN/prerm"
+            chmod +x "$DIR/DEBIAN/postinst" "$DIR/DEBIAN/prerm"
+            echo -e "Package: xray-nodeman\nVersion: $CLEAN_VER\nArchitecture: $ARCH\nMaintainer: XRay\nDescription: XRayMan" > "$DIR/DEBIAN/control"
+            dpkg-deb --build "$DIR"
+          done
 
-          zip -r ../xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.zip xray-node
-          tar -czf ../xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz xray-node
-
-          zip -r ../xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.zip xray-nodeman
-          tar -czf ../xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz xray-nodeman
-
-      - name: Create GitHub Release
+      - name: Upload to GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.zip
-            xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
-            xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.zip
-            xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
+          files: "*.deb"
           name: Release ${{ github.ref_name }}
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # СБОРКА .DEB ПАКЕТА ВНУТРИ ТЕКУЩЕЙ МАТРИЦЫ
-      - name: Pack DEB Packages
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          CLEAN_VER=$(echo '${{ github.ref_name }}' | sed 's/^v//')
-          DIR="xray-nodeman_${CLEAN_VER}_${{ matrix.goarch }}"
-
-          mkdir -p "$DIR/usr/bin" "$DIR/lib/systemd/system" "$DIR/DEBIAN"
-          cp ./build/xray-nodeman/xray-nodeman "$DIR/usr/bin/xray-nodeman"
-          cp ./packaging/xray-nodeman.service "$DIR/lib/systemd/system/xray-nodeman.service"
-          cp ./packaging/xray-nodeman.postinstall.sh "$DIR/DEBIAN/postinst"
-          cp ./packaging/xray-nodeman.prerm.sh "$DIR/DEBIAN/prerm"
-          chmod +x "$DIR/DEBIAN/postinst" "$DIR/DEBIAN/prerm"
-
-          echo -e "Package: xray-nodeman\nVersion: $CLEAN_VER\nArchitecture: ${{ matrix.goarch }}\nMaintainer: XRay\nDescription: XRayMan" > "$DIR/DEBIAN/control"
-          dpkg-deb --build "$DIR"
-
-      - name: Upload DEB to Release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: "xray-nodeman_*.deb"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # СБОРКА И ПУШ DOCKER-ОБРАЗА ПОД ТЕКУЩУЮ АРХИТЕКТУРУ
-      - name: Push Docker Image
+      # СБОРКА ОДНОГО МУЛЬТИПЛАТФОРМЕННОГО ОБРАЗА СРАЗУ (БЕЗ ДУБЛИРОВАНИЯ)
+      - name: Push Multi-Arch Docker Image
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          docker build -f ./packaging/xray-nodeman.dockerfile -t ghcr.io/${REPO_LOWER}:${{ github.ref_name }}-${{ matrix.goarch }} .
-          docker push ghcr.io/${REPO_LOWER}:${{ github.ref_name }}-${{ matrix.goarch }}
+
+          # Включаем эмуляцию QEMU для сборки под ARM прямо на машине Intel
+          docker run --privileged --rm tonistiigi/binfmt --install all
+          docker buildx create --use
+
+          docker buildx build --platform linux/amd64,linux/arm64 -f ./packaging/xray-nodeman.dockerfile -t ghcr.io/${REPO_LOWER}:latest -t ghcr.io/${REPO_LOWER}:${{ github.ref_name }} --push .
