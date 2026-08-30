@@ -2,13 +2,16 @@ name: Publish XRayMan
 
 on:
   push:
-    tags: ["v*"]
+    tags:
+      - "v*"
   pull_request:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     strategy:
       matrix:
         include:
@@ -16,6 +19,10 @@ jobs:
             goarch: amd64
           - goos: linux
             goarch: arm64
+
+    permissions:
+      contents: write
+      packages: write # Нужно для публикации Docker-образов в ghcr.io
 
     steps:
       - name: Checkout Code
@@ -31,6 +38,12 @@ jobs:
             backend/node/go.sum
             backend/nodeman/go.sum
 
+      - name: Install Go Tools
+        run: |
+          # install go tools via make, add to path
+          make tools
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
       - name: Install pnpm
         uses: pnpm/action-setup@v5
         with:
@@ -43,16 +56,8 @@ jobs:
           cache: "pnpm"
           cache-dependency-path: frontend/pnpm-lock.yaml
 
-      # ТЕПЕРЬ ВСЁ В ОДНОМ ШАГЕ, ПУТИ К ИНСТРУМЕНТАМ НЕ ПОТЕРЯЮТСЯ
       - name: Build Project
-        run: |
-          make tools
-          # Добавляем путь в текущую сессию bash и сохраняем для следующих шагов
-          export PATH="$(go env GOPATH)/bin:$PATH"
-          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-
-          # Запускаем сборку
-          make build
+        run: make build
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
@@ -61,9 +66,34 @@ jobs:
           COMMIT: ${{ github.sha }}
           BUILD_TIME: ${{ github.event.head_commit.timestamp }}
 
-      # НАТИВНАЯ СБОРКА .DEB ИЗ СТАНДАРТНЫХ КОМАНД LINUX
+      - name: Archive build artifacts
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          cd build
+
+          zip -r ../xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.zip xray-node
+          tar -czf ../xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz xray-node
+
+          zip -r ../xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.zip xray-nodeman
+          tar -czf ../xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz xray-nodeman
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.zip
+            xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
+            xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.zip
+            xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
+          name: Release ${{ github.ref_name }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # НАЧАЛО НОВЫХ ШАГОВ: СБОРКА .DEB И DOCKER
       - name: Pack DEB Package
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
           CLEAN_VER=$(echo '${{ github.ref_name }}' | sed 's/^v//')
           DIR="xrayman-nodeman_${CLEAN_VER}_${{ matrix.goarch }}"
@@ -73,7 +103,7 @@ jobs:
           mkdir -p "$DIR/lib/systemd/system"
           mkdir -p "$DIR/DEBIAN"
 
-          # 2. Копируем бинарник, сервис и скрипты
+          # 2. Копируем бинарник (из папки build/xray-nodeman), сервис и скрипты
           cp ./build/xray-nodeman/xray-nodeman "$DIR/usr/bin/xrayman-nodeman"
           cp ./packaging/xrayman-nodeman.service "$DIR/lib/systemd/system/xrayman-nodeman.service"
           cp ./packaging/postinstall.sh "$DIR/DEBIAN/postinst"
@@ -94,16 +124,16 @@ jobs:
           # 4. Собираем дебиан-пакет стандартной утилитой Ubuntu
           dpkg-deb --build "$DIR"
 
-      - name: Upload to GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Upload DEB to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: "*.deb"
+          files: "xrayman-nodeman_*.deb"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push Docker Image
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           docker build -t ghcr.io/${{ github.repository }}:${{ github.ref_name }}-${{ matrix.goarch }} .
