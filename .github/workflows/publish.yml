@@ -64,7 +64,7 @@ jobs:
       - name: Prepare binary for upload
         run: |
           mkdir -p ./dist-binaries/${{ matrix.goarch }}
-          cp xray-nodeman/xray-nodeman ./dist-binaries/${{ matrix.goarch }}/xray-nodeman
+          cp ./build/xray-nodeman/xray-nodeman ./dist-binaries/${{ matrix.goarch }}/xray-nodeman
 
       - name: Upload Binary Artifact
         uses: actions/upload-artifact@v4
