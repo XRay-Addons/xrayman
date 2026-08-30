@@ -1,0 +1,58 @@
+version: 2
+project_name: xrayman-nodeman
+
+# Указываем, где лежат уже скомпилированные бинарники для каждой архитектуры
+binaries:
+  - id: xrayman-nodeman-amd64
+    binary: xrayman-nodeman
+    path: ./dist-binaries/amd64/xray-nodeman
+    goos: linux
+    goarch: amd64
+
+  - id: xrayman-nodeman-arm64
+    binary: xrayman-nodeman
+    path: ./dist-binaries/arm64/xray-nodeman
+    goos: linux
+    goarch: arm64
+
+# Сборка .deb пакетов для обеих архитектур
+nfpms:
+  - id: xrayman-deb
+    package_name: xrayman-nodeman
+    formats:
+      - deb
+    vendor: "XRay-Addons"
+    homepage: "https://github.com"
+    maintainer: "XRay-Addons Team"
+    description: "XRayMan Node Manager Service"
+    license: "MIT"
+
+    # Файлы внутри .deb пакета
+    contents:
+      # Главный бинарник устанавливается в /usr/bin/xrayman-nodeman
+      - src: ./xray-nodeman/xray-nodeman
+        dst: /usr/bin/xrayman-nodeman
+        file_info:
+          mode: 0755
+      # Systemd-сервис
+      - src: ./packaging/xrayman-nodeman.service
+        dst: /lib/systemd/system/xrayman-nodeman.service
+        file_info:
+          mode: 0644
+
+    # Автоматический запуск/остановка сервиса при установке/удалении пакета
+    scripts:
+      postinstall: ./packaging/xray-nodeman.postinstall.sh
+      prerm: ./packaging/xray-nodeman.prerm.sh
+
+# Сборка Docker-образов (для amd64 и arm64) и публикация в GitHub Packages
+dockers:
+  - image_templates:
+      - "ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:latest"
+      - "ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:{{ .Version }}"
+    dockerfile: Dockerfile
+    use: buildx # Позволяет собирать multi-arch образы бесплатно
+    build_flag_templates:
+      - "--platform=linux/{{ .Arch }}"
+    binaries:
+      - xrayman-nodeman

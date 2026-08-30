@@ -11,14 +11,13 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        goos: [linux]
-        goarch: [amd64, arm64]
-
-    permissions:
-      contents: read
+        include:
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
 
     steps:
       - name: Checkout Code
@@ -37,7 +36,7 @@ jobs:
       - name: Install Go Tools
         run: |
           make tools
-          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
 
       - name: Install pnpm
         uses: pnpm/action-setup@v5
@@ -48,7 +47,7 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 24.3.0
-          cache: pnpm
+          cache: "pnpm"
           cache-dependency-path: frontend/pnpm-lock.yaml
 
       - name: Build Project
@@ -61,170 +60,60 @@ jobs:
           COMMIT: ${{ github.sha }}
           BUILD_TIME: ${{ github.event.head_commit.timestamp }}
 
-      - name: Archive binaries
+      # СОХРАНЯЕМ БИНАРНИК: Перекладываем его в уникальную папку под архитектуру
+      - name: Prepare binary for upload
         run: |
-          mkdir -p dist
+          mkdir -p ./dist-binaries/${{ matrix.goarch }}
+          cp xray-nodeman/xray-nodeman ./dist-binaries/${{ matrix.goarch }}/xray-nodeman
 
-          cd build
-
-          zip -r "../dist/xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.zip" xray-node
-          tar -czf "../dist/xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz" xray-node
-
-          zip -r "../dist/xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.zip" xray-nodeman
-          tar -czf "../dist/xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz" xray-nodeman
-
-      - name: Install nfpm
-        run: |
-          echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' \
-            | sudo tee /etc/apt/sources.list.d/goreleaser.list
-          sudo apt update
-          sudo apt install nfpm
-
-      - name: Set package version
-        run: |
-          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
-            VERSION="${{ github.ref_name }}"
-            VERSION="${VERSION#v}"
-            RELEASE="1"
-          else
-            VERSION="0.0.0"
-            RELEASE="${{ github.ref_name }}"
-            RELEASE=$(printf '%s' "$RELEASE" | sed 's/[^A-Za-z0-9-]\+/-/g')
-            RELEASE=$(printf '%s' "$RELEASE" | sed 's/^-*//; s/-*$//')
-            [ -n "$RELEASE" ] || RELEASE="dev"
-          fi
-
-          echo "PACKAGE_VERSION=$VERSION" >> "$GITHUB_ENV"
-          echo "PACKAGE_RELEASE=$RELEASE" >> "$GITHUB_ENV"
-
-      - name: Build DEB
-        run: |
-          ARCH=${{ matrix.goarch }} \
-          VERSION=${PACKAGE_VERSION} \
-          RELEASE=${PACKAGE_RELEASE} \
-          nfpm package \
-            --config packaging/nfpm.yaml \
-            --packager deb \
-            --target "dist/xrayman-nodeman-${{ matrix.goarch }}.deb"
-
-      - name: Build RPM
-        run: |
-          ARCH=${{ matrix.goarch }} \
-          VERSION=${PACKAGE_VERSION} \
-          RELEASE=${PACKAGE_RELEASE} \
-          nfpm package \
-            --config packaging/nfpm.yaml \
-            --packager rpm \
-            --target "dist/xrayman-nodeman-${{ matrix.goarch }}.rpm"
-
-      # Keep the already-built binaries for the Docker job.
-      - name: Prepare Docker input
-        run: |
-          mkdir -p dist/docker-input
-
-          cp build/xray-nodeman/xray-nodeman \
-            "dist/docker-input/xray-nodeman-${{ matrix.goarch }}"
-
-      - name: Upload build artifacts
+      - name: Upload Binary Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: xrayman-${{ matrix.goarch }}
-          path: dist/
+          name: xray-nodeman-${{ matrix.goarch }}
+          path: ./dist-binaries/${{ matrix.goarch }}/xray-nodeman
+          retention-days: 1
 
-  docker:
-    if: startsWith(github.ref, 'refs/tags/')
+  # НОВАЯ ДЖОБА ДЛЯ NFPM, DOCKER И GITHUB RELEASE (Запускается только по тегам)
+  release:
     needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
-
     permissions:
-      contents: read
-      packages: write
+      contents: write # Для GitHub Releases
+      packages: write # Для отправки Docker-образов в GHCR
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # Важно для генерации changelog в GoReleaser
 
-      - name: Download build artifacts
+      # СКАЧИВАЕМ ОБА БИНАРНИКА (amd64 и arm64)
+      - name: Download amd64 binary
         uses: actions/download-artifact@v4
         with:
-          pattern: xrayman-*
-          path: dist
-          merge-multiple: true
+          name: xray-nodeman-amd64
+          path: ./dist-binaries/amd64
 
-      - name: Prepare Docker context
-        run: |
-          mkdir docker-context
+      - name: Download arm64 binary
+        uses: actions/download-artifact@v4
+        with:
+          name: xray-nodeman-arm64
+          path: ./dist-binaries/arm64
 
-          cp dist/docker-input/xray-nodeman-amd64 \
-            docker-context/xray-nodeman-amd64
-
-          cp dist/docker-input/xray-nodeman-arm64 \
-            docker-context/xray-nodeman-arm64
-
-          cp packaging/xray-nodeman.dockerfile \
-            docker-context/Dockerfile
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to GHCR
+      - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set Docker image name
-        run: |
-          echo "DOCKER_IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6
+      # ЗАПУСКАЕМ GORELEASER
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
         with:
-          context: docker-context
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: |
-            ${{ env.DOCKER_IMAGE }}:${{ github.ref_name }}
-            ${{ env.DOCKER_IMAGE }}:latest
-
-      - name: Build OCI archive
-        uses: docker/build-push-action@v6
-        with:
-          context: docker-context
-          platforms: linux/amd64,linux/arm64
-          outputs: type=oci,dest=dist/xrayman-nodeman.oci.tar
-
-      - name: Compress OCI archive
-        run: zstd -T0 -19 dist/xrayman-nodeman.oci.tar -o dist/xrayman-nodeman.oci.tar.zst
-
-      - name: Upload Docker artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: xrayman-docker
-          path: dist/xrayman-nodeman.oci.tar.zst
-
-  release:
-    if: startsWith(github.ref, 'refs/tags/')
-    needs: [build, docker]
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: write
-
-    steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: xrayman-*
-          path: dist
-          merge-multiple: true
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v3
-        with:
-          files: dist/**/*
-          name: Release ${{ github.ref_name }}
-          generate_release_notes: true
+          distribution: goreleaser
+          version: latest
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
