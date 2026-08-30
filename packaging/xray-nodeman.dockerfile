@@ -1,9 +1,7 @@
 FROM alpine:3.20
 RUN apk add --no-cache ca-certificates tzdata
 
-# Docker Buildx сам подставит нужную папку во время multi-arch сборки
-ARG TARGETARCH
-COPY ./downloads/xrayman-nodeman-linux-${TARGETARCH}.tar.gz /tmp/
-RUN tar -xzf /tmp/xrayman-nodeman-linux-${TARGETARCH}.tar.gz -C /usr/bin/ && rm /tmp/*.tar.gz
+# Копируем уже скомпилированный бинарник текущей архитектуры матрицы
+COPY ./build/xray-nodeman/xray-nodeman /usr/bin/xray-nodeman
 
 ENTRYPOINT ["/usr/bin/xray-nodeman"]
