@@ -106,8 +106,8 @@ jobs:
           # 2. Копируем бинарник (из папки build/xray-nodeman), сервис и скрипты
           cp ./build/xray-nodeman/xray-nodeman "$DIR/usr/bin/xray-nodeman"
           cp ./packaging/xray-nodeman.service "$DIR/lib/systemd/system/xray-nodeman.service"
-          cp ./packaging/postinstall.sh "$DIR/DEBIAN/postinst"
-          cp ./packaging/prerm.sh "$DIR/DEBIAN/prerm"
+          cp ./packaging/xray-nodeman.postinstall.sh "$DIR/DEBIAN/postinst"
+          cp ./packaging/xray-nodeman.prerm.sh "$DIR/DEBIAN/prerm"
           chmod +x "$DIR/DEBIAN/postinst" "$DIR/DEBIAN/prerm"
 
           # 3. Генерируем обязательный манифест пакета (control)
