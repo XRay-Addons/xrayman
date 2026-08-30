@@ -9,20 +9,13 @@ on:
       - main
 
 jobs:
-  # ==================================================================
-  # Build
-  # ==================================================================
-
   build:
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        include:
-          - goos: linux
-            goarch: amd64
-          - goos: linux
-            goarch: arm64
+        goos: [linux]
+        goarch: [amd64, arm64]
 
     permissions:
       contents: read
@@ -58,10 +51,6 @@ jobs:
           cache: pnpm
           cache-dependency-path: frontend/pnpm-lock.yaml
 
-      # ------------------------------------------------------------
-      # Build Project
-      # ------------------------------------------------------------
-
       - name: Build Project
         run: make build
         env:
@@ -72,11 +61,7 @@ jobs:
           COMMIT: ${{ github.sha }}
           BUILD_TIME: ${{ github.event.head_commit.timestamp }}
 
-      # ------------------------------------------------------------
-      # Archive binaries
-      # ------------------------------------------------------------
-
-      - name: Archive build artifacts
+      - name: Archive binaries
         run: |
           mkdir -p dist
 
@@ -88,22 +73,12 @@ jobs:
           zip -r "../dist/xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.zip" xray-nodeman
           tar -czf "../dist/xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz" xray-nodeman
 
-          cd ..
-
-      # ------------------------------------------------------------
-      # Install nfpm
-      # ------------------------------------------------------------
-
       - name: Install nfpm
         run: |
-          echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | sudo tee /etc/apt/sources.list.d/goreleaser.list
+          echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' \
+            | sudo tee /etc/apt/sources.list.d/goreleaser.list
           sudo apt update
           sudo apt install nfpm
-          nfpm --version
-
-      # ------------------------------------------------------------
-      # Set package version
-      # ------------------------------------------------------------
 
       - name: Set package version
         run: |
@@ -114,30 +89,16 @@ jobs:
           else
             VERSION="0.0.0"
             RELEASE="${{ github.ref_name }}"
-
-            # Keep only letters, digits and hyphens.
             RELEASE=$(printf '%s' "$RELEASE" | sed 's/[^A-Za-z0-9-]\+/-/g')
-
-            # Remove leading/trailing hyphens.
             RELEASE=$(printf '%s' "$RELEASE" | sed 's/^-*//; s/-*$//')
-
-            # Fallback if nothing remains.
             [ -n "$RELEASE" ] || RELEASE="dev"
           fi
 
           echo "PACKAGE_VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "PACKAGE_RELEASE=$RELEASE" >> "$GITHUB_ENV"
 
-          echo "Package version: $VERSION-$RELEASE"
-
-      # ------------------------------------------------------------
-      # Build DEB
-      # ------------------------------------------------------------
-
-      - name: Build DEB package
+      - name: Build DEB
         run: |
-          mkdir -p dist
-
           ARCH=${{ matrix.goarch }} \
           VERSION=${PACKAGE_VERSION} \
           RELEASE=${PACKAGE_RELEASE} \
@@ -146,14 +107,8 @@ jobs:
             --packager deb \
             --target "dist/xrayman-nodeman-${{ matrix.goarch }}.deb"
 
-      # ------------------------------------------------------------
-      # Build RPM
-      # ------------------------------------------------------------
-
-      - name: Build RPM package
+      - name: Build RPM
         run: |
-          mkdir -p dist
-
           ARCH=${{ matrix.goarch }} \
           VERSION=${PACKAGE_VERSION} \
           RELEASE=${PACKAGE_RELEASE} \
@@ -162,57 +117,19 @@ jobs:
             --packager rpm \
             --target "dist/xrayman-nodeman-${{ matrix.goarch }}.rpm"
 
-      # ------------------------------------------------------------
-      # Docker
-      #
-      # The Go binary was already built above.
-      # Docker only packages the existing binary.
-      # ------------------------------------------------------------
-
-      - name: Set up Docker Build
-        uses: docker/setup-buildx-action@v3
-
-      - name: Prepare Docker context
+      # Keep the already-built binaries for the Docker job.
+      - name: Prepare Docker input
         run: |
-          mkdir -p docker-context
           mkdir -p dist/docker-input
 
           cp build/xray-nodeman/xray-nodeman \
             "dist/docker-input/xray-nodeman-${{ matrix.goarch }}"
 
-          cp build/xray-nodeman/xray-nodeman \
-            "docker-context/xray-nodeman-${{ matrix.goarch }}"
-
-          cp packaging/xray-nodeman.dockerfile \
-            docker-context/Dockerfile
-
-      # ------------------------------------------------------------
-      # Build architecture-specific Docker image
-      #
-      # This is an offline Docker archive and is included in
-      # GitHub Actions artifacts.
-      # ------------------------------------------------------------
-
-      - name: Build Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: docker-context
-          platforms: linux/${{ matrix.goarch }}
-          outputs: type=docker,dest=dist/xrayman-nodeman-${{ matrix.goarch }}.docker.tar
-
-      # ------------------------------------------------------------
-      # Upload everything
-      # ------------------------------------------------------------
-
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: xrayman-${{ matrix.goos }}-${{ matrix.goarch }}
+          name: xrayman-${{ matrix.goarch }}
           path: dist/
-
-  # ==================================================================
-  # Docker multi-platform image
-  # ==================================================================
 
   docker:
     if: startsWith(github.ref, 'refs/tags/')
@@ -224,32 +141,19 @@ jobs:
       packages: write
 
     steps:
-      # ------------------------------------------------------------
-      # Checkout repository
-      # ------------------------------------------------------------
-
       - name: Checkout Code
         uses: actions/checkout@v5
-        with:
-          submodules: recursive
-
-      # ------------------------------------------------------------
-      # Download architecture-specific build artifacts
-      # ------------------------------------------------------------
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: xrayman-linux-*
+          pattern: xrayman-*
           path: dist
           merge-multiple: true
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Prepare Docker context
         run: |
-          mkdir -p docker-context
+          mkdir docker-context
 
           cp dist/docker-input/xray-nodeman-amd64 \
             docker-context/xray-nodeman-amd64
@@ -260,22 +164,17 @@ jobs:
           cp packaging/xray-nodeman.dockerfile \
             docker-context/Dockerfile
 
-      # ------------------------------------------------------------
-      # Login to GHCR
-      # ------------------------------------------------------------
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Log in to GHCR
+      - name: Login to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # ------------------------------------------------------------
-      # Build and push multi-arch image
-      # ------------------------------------------------------------
-
-      - name: Build and push multi-arch Docker image
+      - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: docker-context
@@ -285,81 +184,37 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ github.ref_name }}
             ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:latest
 
-      # ------------------------------------------------------------
-      # Build multi-arch OCI archive
-      #
-      # This is built from the already-compiled amd64/arm64 binaries.
-      # No Go compilation happens here.
-      # ------------------------------------------------------------
-
-      - name: Build multi-arch OCI archive
+      - name: Build OCI archive
         uses: docker/build-push-action@v6
         with:
           context: docker-context
           platforms: linux/amd64,linux/arm64
           outputs: type=oci,dest=dist/xrayman-nodeman.oci.tar
 
-      # ------------------------------------------------------------
-      # Compress OCI archive
-      # ------------------------------------------------------------
-
       - name: Compress OCI archive
-        run: |
-          zstd -T0 -19 \
-            dist/xrayman-nodeman.oci.tar \
-            -o dist/xrayman-nodeman.oci.tar.zst
+        run: zstd -T0 -19 dist/xrayman-nodeman.oci.tar -o dist/xrayman-nodeman.oci.tar.zst
 
-          rm dist/xrayman-nodeman.oci.tar
-
-      # ------------------------------------------------------------
-      # Upload multi-arch Docker artifact
-      # ------------------------------------------------------------
-
-      - name: Upload Docker artifacts
+      - name: Upload Docker artifact
         uses: actions/upload-artifact@v4
         with:
           name: xrayman-docker
           path: dist/xrayman-nodeman.oci.tar.zst
 
-  # ==================================================================
-  # GitHub Release
-  # ==================================================================
-
   release:
     if: startsWith(github.ref, 'refs/tags/')
-    needs:
-      - build
-      - docker
+    needs: [build, docker]
     runs-on: ubuntu-latest
 
     permissions:
       contents: write
 
     steps:
-      # ------------------------------------------------------------
-      # Download architecture-specific build artifacts
-      # ------------------------------------------------------------
-
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: xrayman-linux-*
+          pattern: xrayman-*
           path: dist
           merge-multiple: true
-
-      # ------------------------------------------------------------
-      # Download multi-arch Docker artifact
-      # ------------------------------------------------------------
-
-      - name: Download Docker artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: xrayman-docker
-          path: dist
-
-      # ------------------------------------------------------------
-      # Create GitHub Release
-      # ------------------------------------------------------------
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
