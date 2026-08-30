@@ -43,10 +43,15 @@ jobs:
           cache: "pnpm"
           cache-dependency-path: frontend/pnpm-lock.yaml
 
+      # ТЕПЕРЬ ВСЁ В ОДНОМ ШАГЕ, ПУТИ К ИНСТРУМЕНТАМ НЕ ПОТЕРЯЮТСЯ
       - name: Build Project
         run: |
           make tools
+          # Добавляем путь в текущую сессию bash и сохраняем для следующих шагов
+          export PATH="$(go env GOPATH)/bin:$PATH"
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+          # Запускаем сборку
           make build
         env:
           GOOS: ${{ matrix.goos }}
