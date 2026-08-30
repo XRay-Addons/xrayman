@@ -63,14 +63,14 @@ jobs:
       # Сохраняем бинарник для следующей джобы
       - name: Prepare binary for upload
         run: |
-          mkdir -p ./dist-binaries/${{ matrix.goarch }}
-          cp ./build/xray-nodeman/xray-nodeman ./dist-binaries/${{ matrix.goarch }}/xray-nodeman
+          mkdir -p ./dist-binaries
+          cp ./build/xray-nodeman/xray-nodeman ./dist-binaries/xrayman-nodeman
 
       - name: Upload Binary Artifact
         uses: actions/upload-artifact@v4
         with:
           name: xray-nodeman-${{ matrix.goarch }}
-          path: ./dist-binaries/${{ matrix.goarch }}/xray-nodeman
+          path: ./dist-binaries/xrayman-nodeman
           retention-days: 1
 
   # СБОРКА .DEB ПАКЕТОВ, DOCKER И ПУБЛИКАЦИЯ РЕЛИЗА
@@ -86,7 +86,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v5
 
-      # Скачиваем скомпилированные бинарники
+      # Явно скачиваем бинарники в изолированные папки под архитектуры
       - name: Download amd64 binary
         uses: actions/download-artifact@v4
         with:
@@ -115,10 +115,10 @@ jobs:
             -a amd64 \
             --maintainer "XRay-Addons Team <admin@example.com>" \
             --description "XRayMan Node Manager Service" \
-            --post-install packaging/xray-nodeman.postinstall.sh \
-            --pre-uninstall packaging/xray-nodeman.prerm.sh \
+            --post-install scripts/postinstall.sh \
+            --pre-uninstall scripts/prerm.sh \
             ./dist-binaries/amd64/xrayman-nodeman=/usr/bin/xrayman-nodeman \
-            packaging/xrayman-nodeman.service=/lib/systemd/system/xrayman-nodeman.service
+            scripts/xrayman-nodeman.service=/lib/systemd/system/xrayman-nodeman.service
 
       # Собираем .deb пакет для arm64
       - name: Pack DEB (arm64)
@@ -130,10 +130,10 @@ jobs:
             -a arm64 \
             --maintainer "XRay-Addons Team <admin@example.com>" \
             --description "XRayMan Node Manager Service" \
-            --post-install packaging/xray-nodeman.postinstall.sh \
-            --pre-uninstall packaging/xray-nodeman.prerm.sh \
+            --post-install scripts/postinstall.sh \
+            --pre-uninstall scripts/prerm.sh \
             ./dist-binaries/arm64/xrayman-nodeman=/usr/bin/xrayman-nodeman \
-            packaging/xrayman-nodeman.service=/lib/systemd/system/xrayman-nodeman.service
+            scripts/xrayman-nodeman.service=/lib/systemd/system/xrayman-nodeman.service
 
       # Публикуем собранные .deb пакеты в GitHub Releases
       - name: Upload to GitHub Release
