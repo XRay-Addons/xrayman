@@ -53,8 +53,8 @@ jobs:
           arch: ${{ matrix.debarch }}
           maintainer: "XRay-Addons Team <admin@example.com>"
           description: "XRayMan Node Manager Service"
-          postinst: scripts/postinstall.sh
-          prerm: scripts/prerm.sh
+          postinst: packaging/xray-nodeman.postinstall.sh
+          prerm: packaging/xray-nodeman.prerm.sh
 
       - name: Upload to GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
