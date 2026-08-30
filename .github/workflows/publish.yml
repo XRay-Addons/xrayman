@@ -56,29 +56,38 @@ jobs:
           COMMIT: ${{ github.sha }}
           BUILD_TIME: ${{ github.event.head_commit.timestamp }}
 
-      # Готовим структуру папок для сборки .deb
-      - name: Prepare DEB Structure
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: |
-          mkdir -p ./deb-root/usr/bin
-          mkdir -p ./deb-root/lib/systemd/system
-          cp ./build/xray-nodeman/xray-nodeman ./deb-root/usr/bin/xrayman-nodeman
-          cp ./scripts/xrayman-nodeman.service ./deb-root/lib/systemd/system/xrayman-nodeman.service
-          # Заодно очищаем префикс 'v' из версии для deb-пакета
-          echo "CLEAN_VER=$(echo '${{ github.ref_name }}' | sed 's/^v//')" >> $GITHUB_ENV
-
+      # НАТИВНАЯ СБОРКА .DEB ИЗ СТАНДАРТНЫХ КОМАНД LINUX
       - name: Pack DEB Package
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: jasononeil/create-debian-package@v3
-        with:
-          directory: ./deb-root
-          package_name: xrayman-nodeman
-          version: ${{ env.CLEAN_VER }}
-          arch: ${{ matrix.goarch }}
-          maintainer: "XRay-Addons Team <admin@example.com>"
-          description: "XRayMan Node Manager Service"
-          postinst: scripts/postinstall.sh
-          prerm: scripts/prerm.sh
+        run: |
+          CLEAN_VER=$(echo '${{ github.ref_name }}' | sed 's/^v//')
+          DIR="xrayman-nodeman_${CLEAN_VER}_${{ matrix.goarch }}"
+
+          # 1. Создаем структуру папок внутри будущего пакета
+          mkdir -p "$DIR/usr/bin"
+          mkdir -p "$DIR/lib/systemd/system"
+          mkdir -p "$DIR/DEBIAN"
+
+          # 2. Копируем бинарник, сервис и скрипты
+          cp ./build/xray-nodeman/xray-nodeman "$DIR/usr/bin/xrayman-nodeman"
+          cp ./packaging/xrayman-nodeman.service "$DIR/lib/systemd/system/xrayman-nodeman.service"
+          cp ./packaging/postinstall.sh "$DIR/DEBIAN/postinst"
+          cp ./packaging/prerm.sh "$DIR/DEBIAN/prerm"
+          chmod +x "$DIR/DEBIAN/postinst" "$DIR/DEBIAN/prerm"
+
+          # 3. Генерируем обязательный манифест пакета (control)
+          cat << EOF > "$DIR/DEBIAN/control"
+          Package: xrayman-nodeman
+          Version: $CLEAN_VER
+          Architecture: ${{ matrix.goarch }}
+          Maintainer: XRay-Addons Team <admin@example.com>
+          Description: XRayMan Node Manager Service
+          Section: utils
+          Priority: optional
+          EOF
+
+          # 4. Собираем дебиан-пакет стандартной утилитой Ubuntu
+          dpkg-deb --build "$DIR"
 
       - name: Upload to GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
