@@ -30,7 +30,7 @@ nfpms:
     # Файлы внутри .deb пакета
     contents:
       # Главный бинарник устанавливается в /usr/bin/xrayman-nodeman
-      - src: ./xray-nodeman/xray-nodeman
+      - src: ./xray-nodeman
         dst: /usr/bin/xrayman-nodeman
         file_info:
           mode: 0755
