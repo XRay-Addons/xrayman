@@ -2,11 +2,9 @@ name: Publish XRayMan
 
 on:
   push:
-    tags:
-      - "v*"
+    tags: [ "v*" ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   build:
@@ -14,10 +12,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - goos: linux
-            goarch: amd64
-          - goos: linux
-            goarch: arm64
+          - goos: linux; goarch: amd64; debarch: amd64
+          - goos: linux; goarch: arm64; debarch: arm64
 
     steps:
       - name: Checkout Code
@@ -25,33 +21,19 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Set up Go
+      - name: Set up Environment (Go, Node, pnpm)
         uses: actions/setup-go@v6
-        with:
-          go-version: "1.26.2"
-          cache-dependency-path: |
-            backend/node/go.sum
-            backend/nodeman/go.sum
+        with: { go-version: "1.26.2", cache-dependency-path: "backend/node/go.sum\nbackend/nodeman/go.sum" }
+      - uses: pnpm/action-setup@v5
+        with: { version: 10.33.2 }
+      - uses: actions/setup-node@v5
+        with: { node-version: 24.3.0, cache: "pnpm", cache-dependency-path: frontend/pnpm-lock.yaml }
 
-      - name: Install Go Tools
+      - name: Build Project
         run: |
           make tools
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v5
-        with:
-          version: 10.33.2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v5
-        with:
-          node-version: 24.3.0
-          cache: "pnpm"
-          cache-dependency-path: frontend/pnpm-lock.yaml
-
-      - name: Build Project
-        run: make build
+          make build
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
@@ -60,110 +42,30 @@ jobs:
           COMMIT: ${{ github.sha }}
           BUILD_TIME: ${{ github.event.head_commit.timestamp }}
 
-      # Сохраняем бинарник для следующей джобы
-      - name: Prepare binary for upload
-        run: |
-          mkdir -p ./dist-binaries
-          cp ./build/xray-nodeman/xray-nodeman ./dist-binaries/xrayman-nodeman
-
-      - name: Upload Binary Artifact
-        uses: actions/upload-artifact@v4
+      # ВСЕГО ОДИН ШАГ ДЛЯ СБОРКИ ПОЛНОЦЕННОГО .DEB С SYSTEMD
+      - name: Pack DEB Package
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: jasononeil/create-debian-package@v3
         with:
-          name: xray-nodeman-${{ matrix.goarch }}
-          path: ./dist-binaries/xrayman-nodeman
-          retention-days: 1
+          directory: ./build
+          package_name: xrayman-nodeman
+          version: ${{ sed 's/^v//' <<< github.ref_name }}
+          arch: ${{ matrix.debarch }}
+          maintainer: "XRay-Addons Team <admin@example.com>"
+          description: "XRayMan Node Manager Service"
+          postinst: scripts/postinstall.sh
+          prerm: scripts/prerm.sh
 
-  # СБОРКА .DEB ПАКЕТОВ, DOCKER И ПУБЛИКАЦИЯ РЕЛИЗА
-  release:
-    needs: build
-    if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write # Для GitHub Releases
-      packages: write # Для отправки Docker-образов в GHCR
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v5
-
-      # Явно скачиваем бинарники в изолированные папки под архитектуры
-      - name: Download amd64 binary
-        uses: actions/download-artifact@v4
-        with:
-          name: xray-nodeman-amd64
-          path: ./dist-binaries/amd64
-
-      - name: Download arm64 binary
-        uses: actions/download-artifact@v4
-        with:
-          name: xray-nodeman-arm64
-          path: ./dist-binaries/arm64
-
-      # Устанавливаем системный сборщик пакетов fpm
-      - name: Install FPM packager
-        run: |
-          sudo apt-get update && sudo apt-get install -y ruby ruby-dev rubygems build-essential
-          sudo gem install --no-document fpm
-
-      # Собираем .deb пакет для amd64
-      - name: Pack DEB (amd64)
-        run: |
-          CLEAN_VER=$(echo "${{ github.ref_name }}" | sed 's/^v//')
-          fpm -s dir -t deb \
-            -n xrayman-nodeman \
-            -v "$CLEAN_VER" \
-            -a amd64 \
-            --maintainer "XRay-Addons Team <admin@example.com>" \
-            --description "XRayMan Node Manager Service" \
-            --post-install scripts/postinstall.sh \
-            --pre-uninstall scripts/prerm.sh \
-            ./dist-binaries/amd64/xrayman-nodeman=/usr/bin/xrayman-nodeman \
-            scripts/xrayman-nodeman.service=/lib/systemd/system/xrayman-nodeman.service
-
-      # Собираем .deb пакет для arm64
-      - name: Pack DEB (arm64)
-        run: |
-          CLEAN_VER=$(echo "${{ github.ref_name }}" | sed 's/^v//')
-          fpm -s dir -t deb \
-            -n xrayman-nodeman \
-            -v "$CLEAN_VER" \
-            -a arm64 \
-            --maintainer "XRay-Addons Team <admin@example.com>" \
-            --description "XRayMan Node Manager Service" \
-            --post-install scripts/postinstall.sh \
-            --pre-uninstall scripts/prerm.sh \
-            ./dist-binaries/arm64/xrayman-nodeman=/usr/bin/xrayman-nodeman \
-            scripts/xrayman-nodeman.service=/lib/systemd/system/xrayman-nodeman.service
-
-      # Публикуем собранные .deb пакеты в GitHub Releases
       - name: Upload to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            xrayman-nodeman_*.deb
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with: { files: "*.deb" }
+        env: { GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} }
 
-      # НАСТРОЙКА И СБОРКА DOCKER MULTI-ARCH
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: |
-            ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+      # ВСЕГО ДВЕ КОМАНДЫ ДЛЯ ОТПРАВКИ DOCKER-ОБРАЗА В GHCR
+      - name: Push Docker Image
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker build -t ghcr.io/${{ github.repository }}:${{ github.ref_name }}-${{ matrix.debarch }} .
+          docker push ghcr.io/${{ github.repository }}:${{ github.ref_name }}-${{ matrix.debarch }}
