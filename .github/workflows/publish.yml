@@ -2,16 +2,13 @@ name: Publish XRayMan
 
 on:
   push:
-    tags:
-      - "v*"
+    tags: [ "v*" ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         include:
@@ -20,44 +17,24 @@ jobs:
           - goos: linux
             goarch: arm64
 
-    permissions:
-      contents: write
-      packages: write # Нужно для публикации Docker-образов в ghcr.io
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v5
-        with:
-          submodules: recursive
+        with: { submodules: recursive }
 
-      - name: Set up Go
+      - name: Set up Environment (Go, Node, pnpm)
         uses: actions/setup-go@v6
-        with:
-          go-version: "1.26.2"
-          cache-dependency-path: |
-            backend/node/go.sum
-            backend/nodeman/go.sum
-
-      - name: Install Go Tools
-        run: |
-          # install go tools via make, add to path
-          make tools
-          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v5
-        with:
-          version: 10.33.2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v5
-        with:
-          node-version: 24.3.0
-          cache: "pnpm"
-          cache-dependency-path: frontend/pnpm-lock.yaml
+        with: { go-version: "1.26.2", cache-dependency-path: "backend/node/go.sum\nbackend/nodeman/go.sum" }
+      - uses: pnpm/action-setup@v5
+        with: { version: 10.33.2 }
+      - uses: actions/setup-node@v5
+        with: { node-version: 24.3.0, cache: "pnpm", cache-dependency-path: frontend/pnpm-lock.yaml }
 
       - name: Build Project
-        run: make build
+        run: |
+          make tools
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+          make build
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
@@ -66,80 +43,42 @@ jobs:
           COMMIT: ${{ github.sha }}
           BUILD_TIME: ${{ github.event.head_commit.timestamp }}
 
-      - name: Archive build artifacts
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          cd build
-
-          zip -r ../xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.zip xray-node
-          tar -czf ../xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz xray-node
-
-          zip -r ../xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.zip xray-nodeman
-          tar -czf ../xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz xray-nodeman
-
-      - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.zip
-            xrayman-node-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
-            xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.zip
-            xrayman-nodeman-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
-          name: Release ${{ github.ref_name }}
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # НАЧАЛО НОВЫХ ШАГОВ: СБОРКА .DEB И DOCKER
+      # 1. СБОРКА .DEB ПАКЕТА ОДНОЙ КОМАНДОЙ ЧЕРЕЗ FPM
       - name: Pack DEB Package
         if: startsWith(github.ref, 'refs/tags/')
         run: |
+          sudo gem install --no-document fpm
           CLEAN_VER=$(echo '${{ github.ref_name }}' | sed 's/^v//')
-          DIR="xray-nodeman_${CLEAN_VER}_${{ matrix.goarch }}"
+          fpm -s dir -t deb -n xray-nodeman -v "$CLEAN_VER" -a ${{ matrix.goarch }} \
+            --maintainer "XRay-Addons Team <admin@example.com>" \
+            --description "XRayMan Node Manager Service" \
+            --post-install ./packaging/xray-nodeman.postinstall.sh \
+            --pre-uninstall ./packaging/xray-nodeman.prerm.sh \
+            ./build/xray-nodeman/xray-nodeman=/usr/bin/xray-nodeman \
+            ./packaging/xray-nodeman.service=/lib/systemd/system/xray-nodeman.service
 
-          # 1. Создаем структуру папок внутри будущего пакета
-          mkdir -p "$DIR/usr/bin"
-          mkdir -p "$DIR/lib/systemd/system"
-          mkdir -p "$DIR/DEBIAN"
-
-          # 2. Копируем бинарник (из папки build/xray-nodeman), сервис и скрипты
-          cp ./build/xray-nodeman/xray-nodeman "$DIR/usr/bin/xray-nodeman"
-          cp ./packaging/xray-nodeman.service "$DIR/lib/systemd/system/xray-nodeman.service"
-          cp ./packaging/xray-nodeman.postinstall.sh "$DIR/DEBIAN/postinst"
-          cp ./packaging/xray-nodeman.prerm.sh "$DIR/DEBIAN/prerm"
-          chmod +x "$DIR/DEBIAN/postinst" "$DIR/DEBIAN/prerm"
-
-          # 3. Генерируем обязательный манифест пакета (control)
-          cat << EOF > "$DIR/DEBIAN/control"
-          Package: xray-nodeman
-          Version: $CLEAN_VER
-          Architecture: ${{ matrix.goarch }}
-          Maintainer: XRay-Addons Team <admin@example.com>
-          Description: XRayMan Node Manager Service
-          Section: utils
-          Priority: optional
-          EOF
-
-          # 4. Собираем дебиан-пакет стандартной утилитой Ubuntu
-          dpkg-deb --build "$DIR"
-
+      # 2. ПУБЛИКАЦИЯ ПАКЕТА В GITHUB RELEASES
       - name: Upload DEB to GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: "xray-nodeman_*.deb"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          files: "*.deb"
+          name: Release ${{ github.ref_name }}
+          generate_release_notes: true
+        env: { GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} }
+
+      # 3. АВТОРИЗАЦИЯ, СБОРКА И ОТПРАВКА DOCKER-ОБРАЗА В ОДИН ШАГ
+      - name: Login to GHCR
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: docker/login-action@v3
+        with: { registry: ghcr.io, username: "${{ github.actor }}", password: "${{ secrets.GITHUB_TOKEN }}" }
 
       - name: Push Docker Image
         if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-          # Переводим имя репозитория GitHub в нижний регистр для Docker
-          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-
-          # Указываем точный путь к кастомному докерфайлу
-          docker build -f packaging/xray-nodeman.dockerfile -t ghcr.io/${REPO_LOWER}:${{ github.ref_name }}-${{ matrix.goarch }} .
-          docker push ghcr.io/${REPO_LOWER}:${{ github.ref_name }}-${{ matrix.goarch }}
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./packaging/xray-nodeman.dockerfile
+          push: true
+          # Экшен сам автоматически переведет имя вашего репозитория в нижний регистр!
+          tags: ghcr.io/${{ github.repository }}:${{ github.ref_name }}-${{ matrix.goarch }}
