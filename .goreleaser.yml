@@ -1,21 +1,29 @@
 version: 2
 project_name: xrayman-nodeman
 
-# Указываем, где лежат уже скомпилированные бинарники для каждой архитектуры
-binaries:
-  - id: xrayman-nodeman-amd64
+# Используем стандартный блок сборки, но обманываем его, подкладывая готовые файлы
+builds:
+  - id: xrayman-nodeman
     binary: xrayman-nodeman
-    path: ./dist-binaries/amd64/xray-nodeman
-    goos: linux
-    goarch: amd64
+    # Используем любой минимальный go-файл, чтобы GoReleaser запустил процесс (можно указать '.', он не скомпилируется из-за no_unique_id или пустых флагов)
+    main: .
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
 
-  - id: xrayman-nodeman-arm64
-    binary: xrayman-nodeman
-    path: ./dist-binaries/arm64/xray-nodeman
-    goos: linux
-    goarch: arm64
+    # Говорим GoReleaser ничего не компилировать (просто подменяем команду компиляции на пустую)
+    builder: custom
+    custom:
+      command: "echo 'Skipping compilation, using pre-built binary'"
 
-# Сборка .deb пакетов для обеих архитектур
+    # Как только "пустая" сборка завершена, хук копирует ваш готовый бинарник в папку, где его ждет GoReleaser
+    hooks:
+      post:
+        - cp ./dist-binaries/{{ .Arch }}/xrayman-nodeman {{ .Path }}
+
+# Сборка .deb пакетов
 nfpms:
   - id: xrayman-deb
     package_name: xrayman-nodeman
@@ -29,30 +37,26 @@ nfpms:
 
     # Файлы внутри .deb пакета
     contents:
-      # Главный бинарник устанавливается в /usr/bin/xrayman-nodeman
-      - src: ./xray-nodeman
+      - src: ./dist-binaries/{{ .Arch }}/xrayman-nodeman
         dst: /usr/bin/xrayman-nodeman
         file_info:
           mode: 0755
-      # Systemd-сервис
-      - src: ./packaging/xrayman-nodeman.service
+      - src: ./scripts/xrayman-nodeman.service
         dst: /lib/systemd/system/xrayman-nodeman.service
         file_info:
           mode: 0644
 
-    # Автоматический запуск/остановка сервиса при установке/удалении пакета
+    # Исправленное имя поля скрипта удаления
     scripts:
-      postinstall: ./packaging/xray-nodeman.postinstall.sh
-      prerm: ./packaging/xray-nodeman.prerm.sh
+      postinstall: ./scripts/postinstall.sh
+      pre_remove: ./scripts/prerm.sh
 
-# Сборка Docker-образов (для amd64 и arm64) и публикация в GitHub Packages
+# Сборка Docker-образов
 dockers:
   - image_templates:
       - "ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:latest"
       - "ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:{{ .Version }}"
     dockerfile: Dockerfile
-    use: buildx # Позволяет собирать multi-arch образы бесплатно
+    use: buildx
     build_flag_templates:
       - "--platform=linux/{{ .Arch }}"
-    binaries:
-      - xrayman-nodeman
