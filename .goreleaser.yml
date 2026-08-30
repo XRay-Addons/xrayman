@@ -12,10 +12,9 @@ builds:
       - amd64
       - arm64
 
-    # Правильный синтаксис кастомного сборщика для v2
+    # Правильный синтаксис кастомного сборщика для v2 без лишней вложенности
     builder: custom
-    custom_builder:
-      command: "echo 'Skipping compilation, using pre-built binary'"
+    command: "echo 'Skipping compilation, using pre-built binary'"
 
     # Копируем готовый бинарник в целевую папку билда
     hooks:
@@ -45,7 +44,7 @@ nfpms:
         file_info:
           mode: 0644
 
-    # Возвращаем стандартное имя для скрипта удаления в nFPM
+    # Скрипты управления systemd
     scripts:
       postinstall: ./scripts/postinstall.sh
       preremove: ./scripts/prerm.sh
