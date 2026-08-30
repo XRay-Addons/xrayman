@@ -49,11 +49,11 @@ jobs:
         run: |
           # Сборка amd64
           GOOS=linux GOARCH=amd64 CGO_ENABLED=0 VERSION=${{ github.ref_name }} COMMIT=${{ github.sha }} BUILD_TIME=${{ github.event.head_commit.timestamp }} make build
-          mkdir -p ./dist/amd64 && cp ./build/xray-nodeman/xray-nodeman ./dist/amd64/xrayman-nodeman
+          mkdir -p ./dist/amd64 && cp ./build/xray-nodeman/xray-nodeman ./dist/amd64/xray-nodeman
 
           # Сборка arm64 (Опечатка с двойным dist исправлена!)
           GOOS=linux GOARCH=arm64 CGO_ENABLED=0 VERSION=${{ github.ref_name }} COMMIT=${{ github.sha }} BUILD_TIME=${{ github.event.head_commit.timestamp }} make build
-          mkdir -p ./dist/arm64 && cp ./build/xray-nodeman/xray-nodeman ./dist/arm64/xrayman-nodeman
+          mkdir -p ./dist/arm64 && cp ./build/xray-nodeman/xray-nodeman ./dist/arm64/xray-nodeman
 
       # СОБИРАЕМ ДВА .DEB ПАКЕТА ЗА ОДИН ПРОХОД
       - name: Pack DEB Packages
@@ -63,7 +63,7 @@ jobs:
           for ARCH in amd64 arm64; do
             DIR="xray-nodeman_${CLEAN_VER}_${ARCH}"
             mkdir -p "$DIR/usr/bin" "$DIR/lib/systemd/system" "$DIR/DEBIAN"
-            cp ./dist/${ARCH}/xrayman-nodeman "$DIR/usr/bin/xray-nodeman"
+            cp ./dist/${ARCH}/xray-nodeman "$DIR/usr/bin/xray-nodeman"
             cp ./packaging/xray-nodeman.service "$DIR/lib/systemd/system/xray-nodeman.service"
             cp ./packaging/xray-nodeman.postinstall.sh "$DIR/DEBIAN/postinst"
             cp ./packaging/xray-nodeman.prerm.sh "$DIR/DEBIAN/prerm"
