@@ -60,7 +60,7 @@ jobs:
           COMMIT: ${{ github.sha }}
           BUILD_TIME: ${{ github.event.head_commit.timestamp }}
 
-      # СОХРАНЯЕМ БИНАРНИК: Перекладываем его в уникальную папку под архитектуру
+      # Сохраняем бинарник: Перекладываем его в уникальную папку под архитектуру
       - name: Prepare binary for upload
         run: |
           mkdir -p ./dist-binaries/${{ matrix.goarch }}

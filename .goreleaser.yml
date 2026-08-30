@@ -1,22 +1,27 @@
 version: 2
 project_name: xrayman-nodeman
 
-# Кастомная сборка-заглушка под бесплатную версию
+# Используем стандартный Go-билдер, но подменяем результат
 builds:
   - id: xrayman-nodeman
     binary: xrayman-nodeman
-    main: .
+    # Указываем на любой существующий файл, например на сам этот конфиг,
+    # но флагами заставим Go собрать пустую строку
+    main: .goreleaser.yml
     goos:
       - linux
     goarch:
       - amd64
       - arm64
 
-    # Правильный синтаксис кастомного сборщика для v2 без лишней вложенности
-    builder: custom
-    command: "echo 'Skipping compilation, using pre-built binary'"
+    # Переопределяем флаги компиляции Go, чтобы он не ругался на отсутствие кода,
+    # а просто создал бинарник-пустышку
+    flags:
+      - -buildmode=exe
+    ldflags:
+      - -w -s
 
-    # Копируем готовый бинарник в целевую папку билда
+    # Сразу после создания "пустышки" подменяем её вашим настоящим бинарником
     hooks:
       post:
         - cp ./dist-binaries/{{ .Arch }}/xrayman-nodeman {{ .Path }}
