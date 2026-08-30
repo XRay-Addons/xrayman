@@ -51,9 +51,9 @@ jobs:
           GOOS=linux GOARCH=amd64 CGO_ENABLED=0 VERSION=${{ github.ref_name }} COMMIT=${{ github.sha }} BUILD_TIME=${{ github.event.head_commit.timestamp }} make build
           mkdir -p ./dist/amd64 && cp ./build/xray-nodeman/xray-nodeman ./dist/amd64/xrayman-nodeman
 
-          # Сборка arm64
+          # Сборка arm64 (Опечатка с двойным dist исправлена!)
           GOOS=linux GOARCH=arm64 CGO_ENABLED=0 VERSION=${{ github.ref_name }} COMMIT=${{ github.sha }} BUILD_TIME=${{ github.event.head_commit.timestamp }} make build
-          mkdir -p ./dist/arm64 && cp ./build/xray-nodeman/xray-nodeman ./dist/dist/arm64/xrayman-nodeman
+          mkdir -p ./dist/arm64 && cp ./build/xray-nodeman/xray-nodeman ./dist/arm64/xrayman-nodeman
 
       # СОБИРАЕМ ДВА .DEB ПАКЕТА ЗА ОДИН ПРОХОД
       - name: Pack DEB Packages
