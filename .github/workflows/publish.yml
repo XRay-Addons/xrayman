@@ -140,5 +140,6 @@ jobs:
           # Переводим имя репозитория GitHub в нижний регистр для Docker
           REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
 
-          docker build -t ghcr.io/${REPO_LOWER}:${{ github.ref_name }}-${{ matrix.goarch }} .
+          # Указываем точный путь к кастомному докерфайлу
+          docker build -f packaging/xray-nodeman.dockerfile -t ghcr.io/${REPO_LOWER}:${{ github.ref_name }}-${{ matrix.goarch }} .
           docker push ghcr.io/${REPO_LOWER}:${{ github.ref_name }}-${{ matrix.goarch }}
