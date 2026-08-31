@@ -9,7 +9,7 @@ Type=simple
 User=xray-nodeman
 Group=xray-nodeman
 
-EnvironmentFile=/etc/xrayman/xray-nodeman.env
+EnvironmentFile=/etc/xray-nodeman/xray-nodeman.env
 
 ExecStart=/usr/bin/xray-nodeman
 
