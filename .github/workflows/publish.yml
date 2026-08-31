@@ -83,8 +83,8 @@ jobs:
           CLEAN_VER=$(echo '${{ github.ref_name }}' | sed 's/^v//')
 
           # Заменяем плейсхолдер версии на реальный тег релиза
-          sed "s/VERSION_PLACEHOLDER/$CLEAN_VER/g" ./packaging/xray-nodeman.docker-compose.yml > ./docker-compose.yml
-          sed "s/VERSION_PLACEHOLDER/$CLEAN_VER/g" ./packaging/xray-nodeman.docker-compose.standalone.yml > ./docker-compose.standalone.yml
+          sed "s/VERSION_PLACEHOLDER/$CLEAN_VER/g" ./packaging/xray-nodeman.docker-compose.yaml > ./docker-compose.yaml
+          sed "s/VERSION_PLACEHOLDER/$CLEAN_VER/g" ./packaging/xray-nodeman.docker-compose.standalone.yaml > ./docker-compose.standalone.yaml
 
       # ПУБЛИКУЕМ ВСЕ АССЕТЫ В РЕЛИЗ (DEB + DOCKER COMPOSE)
       - name: Upload Artifacts to GitHub Release
@@ -93,8 +93,8 @@ jobs:
         with:
           files: |
             xray-nodeman-*.deb
-            docker-compose.yml
-            docker-compose.standalone.yml
+            docker-compose.yaml
+            docker-compose.standalone.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
