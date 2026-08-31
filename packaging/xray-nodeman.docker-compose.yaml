@@ -5,9 +5,9 @@ services:
     container_name: xrayman-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: xray-nodeman
-      POSTGRES_DB: xrayman_db
-      POSTGRES_PASSWORD: { POSTGRESS_PASSWORD }
+      POSTGRES_USER: ${POSTGRES_USER:-MISSING}
+      POSTGRES_DB: ${POSTGRES_DB:-MISSING}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-MISSING}
     volumes:
       - xrayman_db_data:/var/lib/postgresql/data
 
@@ -21,24 +21,50 @@ services:
       - ./backups:/backups
     environment:
       POSTGRES_HOST: xrayman-db
-      POSTGRES_USER: xrayman_user
-      POSTGRES_PASSWORD: super_secure_db_password_change_me
-      POSTGRES_DB: xrayman_db
+      POSTGRES_USER: ${POSTGRES_USER:-MISSING}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-MISSING}
+      POSTGRES_DB: ${POSTGRES_DB:-MISSING}
       POSTGRES_EXTRA_OPTS: "-Z6"
       SCHEDULE: "@daily"
       BACKUP_KEEP_DAYS: 7
 
-  xrayman-nodeman:
-    image: ghcr.io/xray-addons/xrayman:VERSION_PLACEHOLDER
+  xray-nodeman:
+    image: ghcr.io/xray-addons/xray-nodeman:VERSION_PLACEHOLDER
     container_name: xray-nodeman
     restart: unless-stopped
-    depends_on:
-      - xrayman-db
     ports:
       - "8080:80"
-    env_file:
-      - xray-nodeman.env
     environment:
+      XRAY_NODEMAN_ENDPOINT: "localhost:80"
+      XRAY_NODEMAN_METRICS_ENDPOINT: "localhost:9090"
+      XRAY_NODEMAN_DB: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@xrayman-db:5432/${POSTGRES_DB}?sslmode=disable"
+      XRAY_NODEMAN_JWT: ${XRAY_NODEMAN_JWT:-MISSING}
+
+  vmetrics:
+    image: victoriametrics/victoria-metrics:stable
+    container_name: xrayman-vmetrics
+    restart: unless-stopped
+    volumes:
+      - vmetrics_data:/victoria-metrics-data
+    environment:
+      - VM_promscrape_config_static_targets=xray-nodeman:9090
+      - VM_promscrape_scrape_interval=15s
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: xrayman-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - vmetrics
+    environment:
+      - GF_SERVER_ROOT_URL=http://localhost:3000/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
 
 volumes:
   xrayman_db_data:
+  vmetrics_data:
+  grafana_data:

@@ -1,6 +1,6 @@
 services:
   xray-nodeman:
-    image: ghcr.io/xray-addons/xray-nodeman:v0.2.14-28
+    image: ghcr.io/xray-addons/xray-nodeman:VERSION_PLACEHOLDER
     container_name: xray-nodeman
     restart: unless-stopped
     ports:
