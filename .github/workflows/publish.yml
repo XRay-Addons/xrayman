@@ -70,7 +70,9 @@ jobs:
             cp ./packaging/xray-nodeman.prerm.sh "$DIR/DEBIAN/prerm"
             cp ./packaging/xray-nodeman.postrm.sh "$DIR/DEBIAN/postrm"
             chmod +x "$DIR/DEBIAN/postinst" "$DIR/DEBIAN/prerm" "$DIR/DEBIAN/postrm"
-            echo -e "Package: xray-nodeman\nVersion: $CLEAN_VER\nArchitecture: $ARCH\nMaintainer: XRay\nDescription: XRayMan" > "$DIR/DEBIAN/control"    
+            sed -e "s/VERSION_PLACEHOLDER/$CLEAN_VER/" \
+                -e "s/ARCH_PLACEHOLDER/$ARCH/" \
+                ./packaging/xray-nodeman.control.template > "$DIR/DEBIAN/control"
             dpkg-deb --build "$DIR"
           done
 
