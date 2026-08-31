@@ -1,0 +1,15 @@
+version: "3.8"
+services:
+  xrayman-app:
+    image: ghcr.io/xray-addons/xrayman:VERSION_PLACEHOLDER
+    container_name: xray-nodeman
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+      - "9090:9090"
+    env_file:
+      - xray-nodeman.env
+    environment:
+      XRAY_NODEMAN_ENDPOINT: "localhost:80"
+      XRAY_NODEMAN_METRICS_ENDPOINT: "localhost:9090"
+      XRAY_NODEMAN_DB: ${XRAY_NODEMAN_DB:?database connection string is required in  xray-nodeman.env}

@@ -39,24 +39,24 @@ should be like /admin or https://adm.example.com (optional)`,
 }
 
 type CLI struct {
-	DBConn    string `name:"db" env:"DBCONN" help:"${dbHelp}"`
-	JwtSecret string `name:"jwt" env:"JWT_SECRET" help:"${jwtHelp}"`
+	DBConn    string `name:"db" help:"${dbHelp}"`
+	JwtSecret string `name:"jwt" help:"${jwtHelp}"`
 
-	Endpoint      string `name:"endpoint" env:"ENDPOINT" default:"localhost:80" help:"${endpointHelp}"`
-	AdminPassword string `name:"admpass" env:"ADMIN_PASSWORD" default:"" help:"${admpassHelp}"`
+	Endpoint      string `name:"endpoint" default:"localhost:80" help:"${endpointHelp}"`
+	AdminPassword string `name:"adm-pass" default:"" help:"${admpassHelp}"`
 
-	ApiServiceUrl string `name:"apisrv" env:"API_SERVICE_URL" default:"" help:"${apisrvHelp}"`
-	UserSpaUrl    string `name:"userspa" env:"USER_SPA_URL" default:"" help:"${userspaHelp}"`
-	AdminSpaUrl   string `name:"adminspa" env:"ADMIN_SPA_URL" default:"" help:"${adminspaHelp}"`
+	ApiServiceUrl string `name:"api-service-url" default:"" help:"${apisrvHelp}"`
+	UserSpaUrl    string `name:"user-spa-url" default:"" help:"${userspaHelp}"`
+	AdminSpaUrl   string `name:"admin-spa-url" default:"" help:"${adminspaHelp}"`
 
-	StateSyncInterval int `name:"state" env:"STATE_SYNC_INTERVAL" default:"5" help:"${stateHelp}"`
-	StatsSyncInterval int `name:"stats" env:"STATS_SYNC_INTERVAL" default:"60" help:"${statsHelp}"`
+	StateSyncInterval int `name:"state-sync-interval" default:"5" help:"${stateHelp}"`
+	StatsSyncInterval int `name:"stats-sync-interval" default:"60" help:"${statsHelp}"`
 
-	NodeCallTimeout    int `name:"node-timeout" env:"NODE_CALL_TIMEOUT" default:"5" help:"${nodeTimeoutHelp}"`
-	StorageCallTimeout int `name:"storage-timeout" env:"STORAGE_CALL_TIMEOUT" default:"5" help:"${storageTimeoutHelp}"`
+	NodeCallTimeout    int `name:"node-call-timeout" default:"5" help:"${nodeTimeoutHelp}"`
+	StorageCallTimeout int `name:"storage-call-timeout" default:"5" help:"${storageTimeoutHelp}"`
 
-	MetricsEndpoint string        `name:"metrics-endpoint" env:"METRICS_ENDPOINT" default:"" help:"${metricsHelp}"`
-	LogLevel        zapcore.Level `name:"log-lvl" env:"LOG_LEVEL" default:"info" help:"zap log level"`
+	MetricsEndpoint string        `name:"metrics-endpoint" default:"" help:"${metricsHelp}"`
+	LogLevel        zapcore.Level `name:"log-level" default:"info" help:"zap log level"`
 
 	Version bool `short:"v" help:"Show version and exit."`
 }
@@ -68,6 +68,7 @@ func LoadCLI() (*CLI, error) {
 		kongVars,
 		kong.Name("xray-node"),
 		kong.Description("XRay node daemon"),
+		kong.DefaultEnvars("xray_nodeman"),
 	)
 
 	if err := ctx.Validate(); err != nil {

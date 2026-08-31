@@ -76,6 +76,28 @@ jobs:
             dpkg-deb --build "$DIR"
           done
 
+      # ГЕНЕРИРУЕМ АКТУАЛЬНЫЕ DOCKER COMPOSE ФАЙЛЫ
+      - name: Prepare Docker Compose Manifests
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          CLEAN_VER=$(echo '${{ github.ref_name }}' | sed 's/^v//')
+
+          # Заменяем плейсхолдер версии на реальный тег релиза
+          sed "s/VERSION_PLACEHOLDER/$CLEAN_VER/g" ./packaging/xray-nodeman.docker-compose.yml > ./docker-compose.yml
+          sed "s/VERSION_PLACEHOLDER/$CLEAN_VER/g" ./packaging/xray-nodeman.docker-compose.standalone.yml > ./docker-compose.standalone.yml
+
+      # ПУБЛИКУЕМ ВСЕ АССЕТЫ В РЕЛИЗ (DEB + DOCKER COMPOSE)
+      - name: Upload Artifacts to GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            xray-nodeman-*.deb
+            docker-compose.yml
+            docker-compose.standalone.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Upload to GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
@@ -91,10 +113,10 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_NAME=$(echo "${{ github.repository_owner }}/xray-nodeman" | tr '[:upper:]' '[:lower:]')
 
           # Включаем эмуляцию QEMU для сборки под ARM прямо на машине Intel
           docker run --privileged --rm tonistiigi/binfmt --install all
           docker buildx create --use
 
-          docker buildx build --platform linux/amd64,linux/arm64 -f ./packaging/xray-nodeman.dockerfile -t ghcr.io/${REPO_LOWER}:latest -t ghcr.io/${REPO_LOWER}:${{ github.ref_name }} --push .
+          docker buildx build --platform linux/amd64,linux/arm64 -f ./packaging/xray-nodeman.dockerfile -t ghcr.io/${IMAGE_NAME}:latest -t ghcr.io/${IMAGE_NAME}:${{ github.ref_name }} --push .
