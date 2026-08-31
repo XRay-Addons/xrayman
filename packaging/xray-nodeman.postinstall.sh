@@ -52,21 +52,21 @@ echo
 # Честный вывод в зависимости от того, создали мы файл или он уже был
 if [ "$CONFIG_CREATED" = true ]; then
     echo "║ A new configuration file has been created at:             ║"
-    echo "║  $ENV_FILE"                                               ║"
+    echo "║  $ENV_FILE                                                ║"
     echo "║                                                           ║"
     echo "║ Please edit the configuration file with your settings:    ║"
-    echo "║   sudo nano $ENV_FILE"                                    ║"
+    echo "║   sudo nano $ENV_FILE                                     ║"
 else
     echo "║ Existing configuration file found at:                     ║"
-    echo "║  $ENV_FILE"                                               ║"
+    echo "║  $ENV_FILE                                                ║"
     echo "║                                                           ║"
     echo "║ Look at the currently supported env parameters:           ║"
     echo "║   sudo cat $ENV_EXAMPLE                                   ║"
-    echo "║ And review or edit your settings if needed:               ║"
+    echo "║ And review (or edit your) settings if needed:             ║"
     echo "║   sudo nano $ENV_FILE                                     ║"
 fi
 
-echo "║ [!]List of the most actual supported params available via ║"
+echo "║ [!]List of the most actual  params available via          ║"
 echo "║   xray-nodeman --help                                     ║"
 echo "║                                                           ║"
 echo "║ Then start or restart the service:                        ║"
