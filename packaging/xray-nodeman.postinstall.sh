@@ -44,32 +44,33 @@ if command -v systemctl >/dev/null 2>&1; then
 fi
 
 echo
-echo "===================================================="
-echo "XRayMan Node Manager installed successfully!"
-echo "===================================================="
+echo "╔════════════════════════════════════════════════════════╗"
+echo "║     XRayMan Node Manager installed successfully!       ║"
+echo "╠════════════════════════════════════════════════════════╣"
 echo
 
 # Честный вывод в зависимости от того, создали мы файл или он уже был
 if [ "$CONFIG_CREATED" = true ]; then
-    echo "A new configuration file has been created at:"
-    echo "  $ENV_FILE"
-    echo
-    echo "Please edit the configuration file with your settings:"
-    echo "   sudo nano $ENV_FILE"
+    echo "║ A new configuration file has been created at:          ║"
+    echo "║  $ENV_FILE"                                            ║"
+    echo "║                                                        ║"
+    echo "║ Please edit the configuration file with your settings: ║"
+    echo "║   sudo nano $ENV_FILE"                                 ║"
 else
-    echo "Existing configuration file found at:"
-    echo "  $ENV_FILE"
-    echo
-    echo "Look at the currently supported env parameters:"
-    echo "   sudo cat $ENV_EXAMPLE"
-    echo "And review or edit your settings if needed:"
-    echo "   sudo nano $ENV_FILE"
+    echo "║ Existing configuration file found at:                  ║"
+    echo "║  $ENV_FILE"                                            ║"
+    echo "║                                                        ║"
+    echo "║ Look at the currently supported env parameters:        ║"
+    echo "║   sudo cat $ENV_EXAMPLE                                ║"
+    echo "║ And review or edit your settings if needed:            ║"
+    echo "║   sudo nano $ENV_FILE                                  ║"
 fi
 
-echo
-echo "2. Then start (or restart) the service:"
-echo "   sudo systemctl enable --now xray-nodeman"
-echo "   # or: sudo systemctl restart xray-nodeman"
-echo
+echo "║                                                        ║"
+echo "║ Then start or restart the service:                     ║"
+echo "║   sudo systemctl enable --now xray-nodeman             ║"
+echo "║   or: sudo systemctl restart xray-nodeman              ║"
+echo "║                                                        ║"
+echo "╚════════════════════════════════════════════════════════╝"
 
 exit 0
