@@ -66,8 +66,8 @@ func LoadCLI() (*CLI, error) {
 
 	ctx := kong.Parse(&cli,
 		kongVars,
-		kong.Name("xray-node"),
-		kong.Description("XRay node daemon"),
+		kong.Name("xray-nodeman"),
+		kong.Description("XRay node manager daemon"),
 		kong.DefaultEnvars("xray_nodeman"),
 	)
 

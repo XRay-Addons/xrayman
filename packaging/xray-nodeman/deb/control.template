@@ -5,7 +5,7 @@ Maintainer: XRayMan
 Section: utils
 Priority: optional
 Description: XRayMan Node Manager service
- This package manages XRay nodes automatically.
+ This package manages XRay nodes.
  Configuration file is located at /etc/xray-nodeman/xray-nodeman.env
  Configuration file example is located at /etc/xray-nodeman/xray-nodeman.env.example
  Configuration file exaple might be outdated.

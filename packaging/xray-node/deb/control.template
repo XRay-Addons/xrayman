@@ -1,0 +1,16 @@
+Package: xray-node
+Version: VERSION_PLACEHOLDER
+Architecture: ARCH_PLACEHOLDER
+Maintainer: XRayMan 
+Section: utils
+Priority: optional
+Description: XRayMan Node service
+ This package implements XRay node.
+ Configuration file is located at /etc/xray-node/xray-node.env
+ Configuration file example is located at /etc/xray-node/xray-node.env.example
+ Configuration file exaple might be outdated.
+ View actual config via application help : xray-node -h
+ After setup, reload systemctl           : sudo systemctl daemon-reload
+ Start service                           : sudo systemctl enable --now xray-node
+ Or restart service                      : sudo systemctl restart xray-node
+ View logs                               : sudo journalctl -u xray-node -n 50 -f

@@ -44,19 +44,51 @@ jobs:
           cache: "pnpm"
           cache-dependency-path: frontend/pnpm-lock.yaml
 
-      # СБОРКА ОБЕИХ АРХИТЕКТУР ПО ОЧЕРЕДИ БЕЗ МАТРИЦЫ
-      - name: Build Project
+      # XRay node: СБОРКА ОБЕИХ АРХИТЕКТУР ПО ОЧЕРЕДИ БЕЗ МАТРИЦЫ
+      - name: Node Build Project
         run: |
           # Сборка amd64
-          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 VERSION=${{ github.ref_name }} COMMIT=${{ github.sha }} BUILD_TIME=${{ github.event.head_commit.timestamp }} make build
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 VERSION=${{ github.ref_name }} COMMIT=${{ github.sha }} BUILD_TIME=${{ github.event.head_commit.timestamp }} make build_node
+          mkdir -p ./dist/amd64 && cp -r ./build/xray-node/ ./dist/amd64/xray-node
+
+          # Сборка arm64 
+          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 VERSION=${{ github.ref_name }} COMMIT=${{ github.sha }} BUILD_TIME=${{ github.event.head_commit.timestamp }} make build_node
+          mkdir -p ./dist/arm64 && cp -r ./build/xray-node/ ./dist/arm64/xray-node
+
+      # XRay node: СОБИРАЕМ ДВА .DEB ПАКЕТА ЗА ОДИН ПРОХОД
+      - name: Node Pack DEB Packages
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          CLEAN_VER=$(echo '${{ github.ref_name }}' | sed 's/^v//')
+          for ARCH in amd64 arm64; do
+            DIR="xray-node-${ARCH}"
+            mkdir -p "$DIR/usr/bin" "$DIR/lib/systemd/system" "$DIR/etc/xray-node" "$DIR/DEBIAN"
+            cp ./dist/${ARCH}/xray-node "$DIR/usr/bin/xray-node"
+            cp ./packaging/xray-node/deb/xray-node.service "$DIR/lib/systemd/system/xray-node.service"
+            cp ./packaging/xray-node/deb/env.example "$DIR/etc/xray-node/env.example"
+            cp ./packaging/xray-node/deb/postinstall.sh "$DIR/DEBIAN/postinst"
+            cp ./packaging/xray-node/deb/prerm.sh "$DIR/DEBIAN/prerm"
+            cp ./packaging/xray-node/deb/postrm.sh "$DIR/DEBIAN/postrm"
+            chmod +x "$DIR/DEBIAN/postinst" "$DIR/DEBIAN/prerm" "$DIR/DEBIAN/postrm"
+            sed -e "s/VERSION_PLACEHOLDER/$CLEAN_VER/" \
+                -e "s/ARCH_PLACEHOLDER/$ARCH/" \
+                ./packaging/xray-node/deb/control.template > "$DIR/DEBIAN/control"
+            dpkg-deb --build "$DIR"
+          done
+
+      # XRay node man: СБОРКА ОБЕИХ АРХИТЕКТУР ПО ОЧЕРЕДИ БЕЗ МАТРИЦЫ
+      - name: Nodeman Build Project
+        run: |
+          # Сборка amd64
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 VERSION=${{ github.ref_name }} COMMIT=${{ github.sha }} BUILD_TIME=${{ github.event.head_commit.timestamp }} make build_nodeman
           mkdir -p ./dist/amd64 && cp ./build/xray-nodeman/xray-nodeman ./dist/amd64/xray-nodeman
 
           # Сборка arm64 (Опечатка с двойным dist исправлена!)
-          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 VERSION=${{ github.ref_name }} COMMIT=${{ github.sha }} BUILD_TIME=${{ github.event.head_commit.timestamp }} make build
+          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 VERSION=${{ github.ref_name }} COMMIT=${{ github.sha }} BUILD_TIME=${{ github.event.head_commit.timestamp }} make build_nodeman
           mkdir -p ./dist/arm64 && cp ./build/xray-nodeman/xray-nodeman ./dist/arm64/xray-nodeman
 
-      # СОБИРАЕМ ДВА .DEB ПАКЕТА ЗА ОДИН ПРОХОД
-      - name: Pack DEB Packages
+      # XRay node man: СОБИРАЕМ ДВА .DEB ПАКЕТА ЗА ОДИН ПРОХОД
+      - name: Nodeman Pack DEB Packages
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           CLEAN_VER=$(echo '${{ github.ref_name }}' | sed 's/^v//')
@@ -108,6 +140,7 @@ jobs:
         with:
           files: |
             xray-nodeman-*.deb
+            xray-node-*.deb
             docker-compose.all-in-one.tar.gz
             docker-compose.standalone.tar.gz
         env:

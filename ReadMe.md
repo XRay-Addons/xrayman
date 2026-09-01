@@ -10,6 +10,14 @@ curl -fsSL https://raw.githubusercontent.com/XRay-Addons/xrayman/main/install-no
 curl -fsSL https://raw.githubusercontent.com/XRay-Addons/xrayman/main/install-nodeman.sh -o install-nodeman.sh && sudo bash install-nodeman.sh
 ```
 
+# XRay Node
+
+Tool to be running on node
+
+# XRay Node Manager
+
+Service to manage all nodes, users, subscriptions, etc...
+
 ## Install xray node manager
 
 ### .deb (Ubuntu, Debian, etc...)
@@ -46,6 +54,13 @@ sudo systemctl restart xray-nodeman
 # view logs
 sudo journalctl -u xray-nodeman -n 50 -f
 ```
+
+If success, user following handlers are available:
+
+- `localhost:8080/u` - user page
+- `localhost:8080/adm` - admin page
+- `localhost:8080/api/version` - unprotected status page
+- `localhost:9090/metrics` - prometheus metrics
 
 ### Docker
 
@@ -93,4 +108,27 @@ docker compose up -d
 docker compose down && docker compose up -d
 # view logs
 docker compose logs -n 50 -f xray-nodeman
+```
+
+### Manual build
+
+#### Requirements
+
+- go v1.26.2
+- pnpm v10.33.2
+- node.js v24.4.0
+
+#### Build
+
+```sh
+# download source code
+git clone https://github.com/XRay-Addons/xrayman.git
+cd xrayman
+git submodule update --init --recursive
+# install build tools
+make tools
+# build
+make build_nodeman
+# check
+./build/xray-nodeman/xray-nodeman -h
 ```
