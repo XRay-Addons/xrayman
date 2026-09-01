@@ -33,11 +33,12 @@ services:
     restart: unless-stopped
     ports:
       - "8080:80"
+      - "9090:9090"
     environment:
-      XRAY_NODEMAN_ENDPOINT: "localhost:80"
-      XRAY_NODEMAN_METRICS_ENDPOINT: "localhost:9090"
-      XRAY_NODEMAN_DB: "postgres://xrayman-user:${POSTGRES_PASSWORD}@xrayman-db:5432/xrayman-db?sslmode=disable"
-      XRAY_NODEMAN_JWT: ${XRAY_NODEMAN_JWT:-MISSING}
+      XRAY_NODEMAN_ENDPOINT: "0.0.0.0:80"
+      XRAY_NODEMAN_METRICS_ENDPOINT: "0.0.0.0:9090"
+      XRAY_NODEMAN_DB: "postgresql://xrayman-user:${POSTGRES_PASSWORD}@xrayman-db:5432/xrayman-db?sslmode=disable"
+      XRAY_NODEMAN_JWT: ${XRAY_NODEMAN_JWT:?Set XRAY_NODEMAN_JWT in .env file}
 
   vmetrics:
     image: victoriametrics/victoria-metrics:latest
@@ -57,11 +58,14 @@ services:
       - "3000:3000"
     volumes:
       - grafana_data:/var/lib/grafana
+      - ./datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml:ro
     depends_on:
       - vmetrics
     environment:
       - GF_SERVER_ROOT_URL=http://localhost:3000/grafana/
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:?Set GRAFANA_ADMIN_USER in .env file}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD in .env file}
 
 volumes:
   xrayman_db_data:

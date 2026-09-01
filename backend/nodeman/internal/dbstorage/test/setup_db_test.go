@@ -74,7 +74,7 @@ func setupTestDB(t *testing.T, logger *zap.Logger) (
 	require.NoError(t, err)
 
 	connStr := fmt.Sprintf(
-		"postgres://test:test@%s:%s/testdb?sslmode=disable",
+		"postgresql://test:test@%s:%s/testdb?sslmode=disable",
 		host,
 		port.Port(),
 	)

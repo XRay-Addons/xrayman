@@ -87,10 +87,11 @@ jobs:
           mkdir -p ./dist/standalone.docker
 
           # 2. Заменяем плейсхолдер версии на реальный тег релиза
-          sed "s/VERSION_PLACEHOLDER/$CLEAN_VER/g" ./packaging/xray-nodeman/docker/docker-compose.all-in-one.yaml > ./dist/all-in-one.docker/docker-compose.yaml
-          sed "s/VERSION_PLACEHOLDER/$CLEAN_VER/g" ./packaging/xray-nodeman/docker/docker-compose.standalone.yaml > ./dist/standalone.docker/docker-compose.yaml
+          sed "s/VERSION_PLACEHOLDER/$CLEAN_VER/g" ./packaging/xray-nodeman/docker/all-in-one.docker-compose.yml > ./dist/all-in-one.docker/docker-compose.yml
+          sed "s/VERSION_PLACEHOLDER/$CLEAN_VER/g" ./packaging/xray-nodeman/docker/standalone.docker-compose.yml > ./dist/standalone.docker/docker-compose.yml
 
           # 3. (Опционально) Скопируйте сюда дополнительные файлы конфигурации, если они есть
+          cp ./all-in-one.datasource.yml ./dist/all-in-one.docker/datasource.yml
           # cp ./packaging/xray-nodeman/docker/prometheus.yml ./dist/all-in-one/
           # cp -r ./packaging/xray-nodeman/docker/config ./dist/all-in-one/
 
