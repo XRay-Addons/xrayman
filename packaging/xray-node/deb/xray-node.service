@@ -16,7 +16,7 @@ EnvironmentFile=/etc/xray-node/xray-node.env
 
 ExecStart=/usr/bin/xray-node \
     --persistent-dir=%S/xray-node/persistent \
-    --data-dir=%S/xray-node/geodata \
+    --data-dir=%S/xray-node/data \
     --config-dir=%E/xray-node/config
 
 Restart=on-failure
