@@ -5,7 +5,7 @@ Maintainer: XRayMan
 Section: utils
 Priority: optional
 Description: XRayMan Node service
- This package implements XRay node.
+ This package implements XRay Node.
  .
  App files locations:
  systemd service file                 : /lib/systemd/system/xray-node.service
