@@ -83,21 +83,23 @@ jobs:
           CLEAN_VER=$(echo '${{ github.ref_name }}' | sed 's/^v//')
 
           # 1. Создаем целевые папки (без этого sed упадет с ошибкой)
-          mkdir -p ./dist/all-in-one.docker
-          mkdir -p ./dist/standalone.docker
+          mkdir -p ./dist/docker
+          mkdir -p ./dist/docker/all-in-one
+          mkdir -p ./dist/docker/standalone
 
           # 2. Заменяем плейсхолдер версии на реальный тег релиза
-          sed "s/VERSION_PLACEHOLDER/$CLEAN_VER/g" ./packaging/xray-nodeman/docker/all-in-one.docker-compose.yml > ./dist/all-in-one.docker/docker-compose.yml
-          sed "s/VERSION_PLACEHOLDER/$CLEAN_VER/g" ./packaging/xray-nodeman/docker/standalone.docker-compose.yml > ./dist/standalone.docker/docker-compose.yml
+          sed "s/VERSION_PLACEHOLDER/$CLEAN_VER/g" ./packaging/xray-nodeman/docker/all-in-one/docker-compose.yml > ./dist/docker/all-in-one/docker-compose.yml
+          sed "s/VERSION_PLACEHOLDER/$CLEAN_VER/g" ./packaging/xray-nodeman/docker/standalone/docker-compose.yml > ./dist/docker/standalone/docker-compose.yml
 
           # 3. (Опционально) Скопируйте сюда дополнительные файлы конфигурации, если они есть
-          cp ./packaging/xray-nodeman/docker/all-in-one.datasource.yml ./dist/all-in-one.docker/datasource.yml
+          cp ./packaging/xray-nodeman/docker/all-in-one/datasource.yml ./dist/docker/all-in-one/datasource.yml
+          cp ./packaging/xray-nodeman/docker/all-in-one/prometheus.yml ./dist/docker/all-in-one/prometheus.yml
           # cp ./packaging/xray-nodeman/docker/prometheus.yml ./dist/all-in-one/
           # cp -r ./packaging/xray-nodeman/docker/config ./dist/all-in-one/
 
           # 4. Архиривуем папки (флаг -C временно меняет директорию, чтобы внутри архива не было лишней вложенности)
-          tar -czf docker-compose.all-in-one.tar.gz -C ./dist/all-in-one.docker .
-          tar -czf docker-compose.standalone.tar.gz -C ./dist/standalone.docker .
+          tar -czf docker-compose.all-in-one.tar.gz -C ./dist/docker/all-in-one .
+          tar -czf docker-compose.standalone.tar.gz -C ./dist/docker/standalone .
 
       # ПУБЛИКУЕМ ВСЕ АССЕТЫ В РЕЛИЗ (DEB + DOCKER COMPOSE)
       - name: Upload Artifacts to GitHub Release

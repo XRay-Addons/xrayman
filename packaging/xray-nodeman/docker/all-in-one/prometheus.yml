@@ -1,0 +1,5 @@
+scrape_configs:
+  - job_name: "nodeman"
+    scrape_interval: 15s
+    static_configs:
+      - targets: ["xray-nodeman:9090"]

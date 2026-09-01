@@ -58,9 +58,9 @@ Postgress DB and its conntection string should be provided as above.
 ```sh
 # download docker-compose
 curl -fsSL "https://github.com/XRay-Addons/xrayman/releases/latest/download/docker-compose.standalone.tar.gz" | tar -xzf -
-# create .env file, set up env variables
+# create .env file
 sudo nano .env
-# view setup manual
+# view setup manual (add variables to .env till success)
 docker compose run --rm xray-nodeman --help
 # start
 docker compose up -d
@@ -82,10 +82,10 @@ Docker container contains everything required for nodeman:
 
 ```sh
 # download docker-compose
-curl -fsSL "https://github.com/XRay-Addons/xrayman/releases/latest/download/docker-compose.standalone.tar.gz" | tar -xzf -
-# create .env file, set up env variables
+curl -fsSL "https://github.com/XRay-Addons/xrayman/releases/latest/download/docker-compose.all-in-one.tar.gz" | tar -xzf -
+# create .env file
 sudo nano .env
-# view setup manual
+# view setup manual (add variables to .env till success)
 docker compose run --rm xray-nodeman --help
 # start
 docker compose up -d
