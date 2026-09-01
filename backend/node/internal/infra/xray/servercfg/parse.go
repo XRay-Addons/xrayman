@@ -1,8 +1,11 @@
 package servercfg
 
 import (
+	"fmt"
+
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 	"github.com/tidwall/gjson"
+	"go.uber.org/zap"
 )
 
 const (
@@ -14,7 +17,9 @@ const (
 	apiUrlPath     = "api.listen"
 )
 
-func parseSrvInbounds(cfg string) []models.Inbound {
+func parseSrvInbounds(cfg string, fmts []models.InboundFormat,
+	log *zap.Logger,
+) []models.Inbound {
 	inboundSections := gjson.Get(cfg, inboundsPath).Array()
 
 	inbounds := make([]models.Inbound, 0, len(inboundSections))
@@ -24,30 +29,25 @@ func parseSrvInbounds(cfg string) []models.Inbound {
 		network := inbound.Get(networkPath).String()
 		security := inbound.Get(securityPath).String()
 
-		inboundType := getInboundType(protocol, network, security)
-		if inboundType == models.UnsupportedInbound {
-			continue
+		if f, ok := findInboundFormat(fmts, protocol, network, security); ok {
+			inbounds = append(inbounds, models.Inbound{Tag: tag, Format: f})
+		} else {
+			log.Warn(fmt.Sprintf(
+				"unsupported inbound format '%s': %v(protocol)-%v(network)-%v(security)",
+				tag, protocol, network, security))
 		}
-		inbounds = append(inbounds, models.Inbound{
-			Tag:  tag,
-			Type: inboundType,
-		})
 	}
 
 	return inbounds
 }
 
-func getInboundType(protocol, network, security string) models.InboundType {
-	if protocol != "vless" {
-		return models.UnsupportedInbound
+func findInboundFormat(fmts []models.InboundFormat, p, n, s string) (models.InboundFormat, bool) {
+	for _, f := range fmts {
+		if f.Check(p, n, s) {
+			return f, true
+		}
 	}
-	if network == "tcp" && security == "reality" {
-		return models.VlessTcpReality
-	}
-	if network == "xhttp" {
-		return models.VlessXHTTP
-	}
-	return models.UnsupportedInbound
+	return nil, false
 }
 
 func parseSrvApiURL(srvCfg string) string {

@@ -5,7 +5,9 @@ import (
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/node/internal/errdefs"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/xray/formats"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
+	"go.uber.org/zap"
 )
 
 type Config struct {
@@ -14,14 +16,17 @@ type Config struct {
 	apiURL   string
 }
 
-func New(path string) (*Config, error) {
+func New(path string, log *zap.Logger) (*Config, error) {
 	srvCfg, err := os.ReadFile(path)
 	if err != nil {
 		return nil, xerr.WrapWithStack(err)
 	}
 	srvCfgStr := string(srvCfg)
+	if log == nil {
+		return nil, xerr.NilArg("log")
+	}
 
-	inbounds := parseSrvInbounds(srvCfgStr)
+	inbounds := parseSrvInbounds(srvCfgStr, formats.InboundFormats(), log)
 	if len(inbounds) == 0 {
 		return nil, xerr.New("no supported inbounds in server cfg")
 	}
