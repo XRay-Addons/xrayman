@@ -91,13 +91,35 @@ jobs:
           GOOS=linux GOARCH=amd64 CGO_ENABLED=0 VERSION=${{ github.ref_name }} COMMIT=${{ github.sha }} BUILD_TIME=${{ github.event.head_commit.timestamp }} make build_nodeman
           mkdir -p ./dist/amd64 && cp ./build/xray-nodeman/xray-nodeman ./dist/amd64/xray-nodeman
 
-          # Сборка arm64 (Опечатка с двойным dist исправлена!)
+          # Сборка arm64
           GOOS=linux GOARCH=arm64 CGO_ENABLED=0 VERSION=${{ github.ref_name }} COMMIT=${{ github.sha }} BUILD_TIME=${{ github.event.head_commit.timestamp }} make build_nodeman
           mkdir -p ./dist/arm64 && cp ./build/xray-nodeman/xray-nodeman ./dist/arm64/xray-nodeman
 
       # XRay node man: СОБИРАЕМ ДВА .DEB ПАКЕТА ЗА ОДИН ПРОХОД
       - name: Nodeman Pack DEB Packages
         if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          CLEAN_VER=$(echo '${{ github.ref_name }}' | sed 's/^v//')
+          for ARCH in amd64 arm64; do
+            DIR="xray-nodeman-${ARCH}"
+            mkdir -p "$DIR/usr/bin"
+            cp    ./dist/${ARCH}/xray-nodeman  "$DIR/usr/bin/xray-nodeman"
+
+            mkdir -p "$DIR/lib/systemd/system" "$DIR/etc/xray-nodeman"
+            cp ./packaging/xray-nodeman/deb/xray-nodeman.service      "$DIR/lib/systemd/system/xray-nodeman.service"
+            cp ./packaging/xray-nodeman/deb/xray-nodeman.env.example  "$DIR/etc/xray-nodeman/xray-nodeman.env.example"
+
+            mkdir -p "$DIR/DEBIAN"
+            cp ./packaging/xray-nodeman/deb/postinstall.sh "$DIR/DEBIAN/postinst"
+            cp ./packaging/xray-nodeman/deb/prerm.sh       "$DIR/DEBIAN/prerm"
+            cp ./packaging/xray-nodeman/deb/postrm.sh      "$DIR/DEBIAN/postrm"
+            chmod +x "$DIR/DEBIAN/postinst" "$DIR/DEBIAN/prerm" "$DIR/DEBIAN/postrm"
+
+            sed -e "s/VERSION_PLACEHOLDER/$CLEAN_VER/" \
+                -e "s/ARCH_PLACEHOLDER/$ARCH/" \
+                ./packaging/xray-nodeman/deb/control.template > "$DIR/DEBIAN/control"
+            dpkg-deb --build "$DIR"
+          done
         run: |
           CLEAN_VER=$(echo '${{ github.ref_name }}' | sed 's/^v//')
           for ARCH in amd64 arm64; do
