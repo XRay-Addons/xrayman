@@ -7,6 +7,7 @@ import (
 
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 )
 
 const testServerCfg = `{
@@ -60,9 +61,9 @@ const testServerCfg = `{
 
 const testApiURL = "127.0.0.1:32999"
 
-var testInbounds = []models.Inbound{
-	{Tag: "reality-in", Type: models.VlessTcpReality},
-	{Tag: "xhttp-in", Type: models.VlessXHTTP},
+var testInboundsTags = []string{
+	"reality-in",
+	"xhttp-in",
 }
 
 var testUser = models.User{
@@ -77,14 +78,17 @@ func TestServiceCfg(t *testing.T) {
 	err := os.WriteFile(filePath, []byte(testServerCfg), 0o600)
 	require.NoError(t, err)
 
-	serviceCfg, err := New(filePath)
+	serviceCfg, err := New(filePath, zap.NewNop())
 	require.NoError(t, err)
 
 	apiURL := serviceCfg.GetApiURL()
 	require.Equal(t, testApiURL, apiURL)
 
 	inbounds := serviceCfg.GetInbounds()
-	require.Equal(t, testInbounds, inbounds)
+	require.Equal(t, len(testInboundsTags), len(inbounds))
+	for i := range inbounds {
+		require.Equal(t, testInboundsTags[i], inbounds[i].Tag)
+	}
 
 	_, err = serviceCfg.GetUsersCfg([]models.User{testUser})
 	require.NoError(t, err)

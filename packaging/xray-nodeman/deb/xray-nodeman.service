@@ -1,0 +1,25 @@
+[Unit]
+Description=XRayMan Node Manager
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+
+User=xray-nodeman
+Group=xray-nodeman
+
+EnvironmentFile=/etc/xray-nodeman/xray-nodeman.env
+
+ExecStart=/usr/bin/xray-nodeman
+
+Restart=on-failure
+RestartSec=5
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

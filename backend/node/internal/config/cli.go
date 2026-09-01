@@ -24,12 +24,13 @@ should be generated on-demand`,
 }
 
 type CLI struct {
-	Version       bool          `short:"v" help:"Show version and exit."`
-	Endpoint      string        `short:"a" default:"localhost:8080" env:"ENDPOINT" help:"${endpointHelp}"`
-	XRayDataDir   string        `short:"d" env:"XRAY_DATA_DIR" help:"${xrayDataHelp}"`
-	XRayConfigDir string        `short:"c" env:"XRAY_CONFIG_DIR" help:"${xrayConfigHelp}"`
-	PersistentDir string        `short:"p" env:"PERSISTENT_DIR" help:"${persistentHelp}"`
-	LogLevel      zapcore.Level `name:"log-lvl" default:"info" env:"LOG_LEVEL" help:"zap log level"`
+	Endpoint      string        `name:"endpoint" default:"localhost:8080" help:"${endpointHelp}"`
+	XRayDataDir   string        `name:"data-dir" help:"${xrayDataHelp}"`
+	XRayConfigDir string        `name:"config-dir" help:"${xrayConfigHelp}"`
+	PersistentDir string        `name:"persistent-dir" help:"${persistentHelp}"`
+	LogLevel      zapcore.Level `name:"log-level" default:"info" help:"zap log level"`
+
+	Version bool `short:"v" help:"Show version and exit."`
 }
 
 func LoadCLI() (*CLI, error) {
@@ -39,6 +40,7 @@ func LoadCLI() (*CLI, error) {
 		kongVars,
 		kong.Name("xray-node"),
 		kong.Description("XRay node daemon"),
+		kong.DefaultEnvars("xray_node"),
 	)
 
 	if err := ctx.Validate(); err != nil {

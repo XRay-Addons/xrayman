@@ -121,7 +121,7 @@ func (api *XRayApi) EditUsers(
 	var editUsersTx tx.Tx
 	for _, in := range api.inbounds {
 		for _, u := range add {
-			inUser, err := getInboundUser(u, in.Type)
+			inUser, err := in.Format.ApiUser(u)
 			if err != nil {
 				return err
 			}
@@ -131,7 +131,7 @@ func (api *XRayApi) EditUsers(
 			)
 		}
 		for _, u := range remove {
-			inUser, err := getInboundUser(u, in.Type)
+			inUser, err := in.Format.ApiUser(u)
 			if err != nil {
 				return err
 			}

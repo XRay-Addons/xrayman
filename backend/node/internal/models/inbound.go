@@ -1,14 +1,17 @@
 package models
 
-type InboundType int
+import "github.com/xtls/xray-core/common/protocol"
 
-const (
-	UnsupportedInbound = iota
-	VlessTcpReality
-	VlessXHTTP
-)
+type CfgUser = map[string]string
+
+// inbound format is combination of protocol, network and security
+type InboundFormat interface {
+	Check(protocol, network, security string) bool
+	CfgUser(u User) (CfgUser, error)
+	ApiUser(u User) (*protocol.User, error)
+}
 
 type Inbound struct {
-	Tag  string
-	Type InboundType
+	Tag    string
+	Format InboundFormat
 }

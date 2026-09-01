@@ -1,0 +1,73 @@
+services:
+  xrayman-db:
+    image: postgres:16-alpine
+    container_name: xrayman-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: xrayman-user
+      POSTGRES_DB: xrayman-db
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - xrayman_db_data:/var/lib/postgresql/data
+
+  xrayman-db-backup:
+    image: prodrigestivill/postgres-backup-local:16
+    container_name: xrayman-db-backup
+    restart: unless-stopped
+    depends_on:
+      - xrayman-db
+    volumes:
+      - ./backups:/backups
+    environment:
+      POSTGRES_HOST: xrayman-db
+      POSTGRES_USER: xrayman-user
+      POSTGRES_DB: xrayman-db
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-MISSING}
+      POSTGRES_EXTRA_OPTS: "-Z6"
+      SCHEDULE: "@daily"
+      BACKUP_KEEP_DAYS: 7
+
+  xray-nodeman:
+    image: ghcr.io/xray-addons/xray-nodeman:VERSION_PLACEHOLDER
+    container_name: xray-nodeman
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      XRAY_NODEMAN_ENDPOINT: "0.0.0.0:80"
+      XRAY_NODEMAN_METRICS_ENDPOINT: "0.0.0.0:9090"
+      XRAY_NODEMAN_DB: "postgresql://xrayman-user:${POSTGRES_PASSWORD}@xrayman-db:5432/xrayman-db?sslmode=disable"
+      XRAY_NODEMAN_JWT: ${XRAY_NODEMAN_JWT:?Set XRAY_NODEMAN_JWT in .env file}
+      XRAY_NODEMAN_ADM_PASS: ${XRAY_NODEMAN_ADM_PASS:?Set XRAY_NODEMAN_ADM_PASS in .env file}
+
+  vmetrics:
+    image: victoriametrics/victoria-metrics:latest
+    container_name: xrayman-vmetrics
+    restart: unless-stopped
+    volumes:
+      - vmetrics_data:/victoria-metrics-data
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - "-promscrape.config=/etc/prometheus/prometheus.yml"
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: xrayman-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml:ro
+    depends_on:
+      - vmetrics
+    environment:
+      - GF_SERVER_ROOT_URL=http://localhost:3000/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:?Set GRAFANA_ADMIN_USER in .env file}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD in .env file}
+
+volumes:
+  xrayman_db_data:
+  vmetrics_data:
+  grafana_data:

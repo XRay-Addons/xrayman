@@ -1,0 +1,62 @@
+version: 2
+project_name: xrayman-nodeman
+
+# Используем стандартный Go-билдер над пустым файлом
+builds:
+  - id: xrayman-nodeman
+    binary: xrayman-nodeman
+    # Указываем на реальный мини-файл Go
+    main: ./dummy-trick.go
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+
+    # Оптимизируем сборку пустышки
+    flags:
+      - -buildmode=exe
+    ldflags:
+      - -w -s
+
+    # Сразу после компиляции пустышки подменяем её вашим настоящим бинарником
+    hooks:
+      post:
+        - cp ./dist-binaries/{{ .Arch }}/xrayman-nodeman {{ .Path }}
+
+# Сборка .deb пакетов
+nfpms:
+  - id: xrayman-deb
+    package_name: xrayman-nodeman
+    formats:
+      - deb
+    vendor: "XRay-Addons"
+    homepage: "https://github.com"
+    maintainer: "XRay-Addons Team"
+    description: "XRayMan Node Manager Service"
+    license: "MIT"
+
+    # Файлы внутри .deb пакета
+    contents:
+      - src: ./dist-binaries/{{ .Arch }}/xrayman-nodeman
+        dst: /usr/bin/xrayman-nodeman
+        file_info:
+          mode: 0755
+      - src: ./scripts/xrayman-nodeman.service
+        dst: /lib/systemd/system/xrayman-nodeman.service
+        file_info:
+          mode: 0644
+
+    # Скрипты управления systemd
+    scripts:
+      postinstall: ./scripts/postinstall.sh
+      preremove: ./scripts/prerm.sh
+
+# Новый современный синтаксис сборки Docker для GoReleaser v2
+dockers_v2:
+  - images:
+      - "ghcr.io/{{ .Env.GITHUB_REPOSITORY }}"
+    tags:
+      - "latest"
+      - "{{ .Version }}"
+    dockerfile: Dockerfile

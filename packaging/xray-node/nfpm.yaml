@@ -1,0 +1,39 @@
+name: xray-node
+arch: "${ARCH}"
+platform: linux
+version: "${VERSION}"
+maintainer: you@example.com
+description: xray-node service
+
+contents:
+  - src: ../../build/xray-node/xray-node
+    dst: /opt/xray-node/bin/xray-node
+    file_info:
+      mode: 0755
+
+  - src: ../../build/xray-node/xray
+    dst: /opt/xray-node/bin/xray
+    file_info:
+      mode: 0755
+
+  - src: ../../build/xray-node/data
+    dst: /opt/xray-node/data
+
+  - src: ./xray-node.service
+    dst: /etc/systemd/system/xray-node.service
+
+  - src: ./xray-node.env.default
+    dst: /etc/xray-node/xray-node.env
+    type: config|noreplace
+
+  - src: ./xray_server.example.json
+    dst: /etc/xray-node/xray_server.example.json
+
+  - src: ./xray_client.example.json
+    dst: /etc/xray-node/xray_client.example.json
+
+scripts:
+  preinstall: ./scripts/preinstall.sh
+  postinstall: ./scripts/postinstall.sh
+  preremove: ./scripts/preremove.sh
+  postremove: ./scripts/postremove.sh

@@ -9,49 +9,35 @@ import (
 )
 
 func addSrvUsers(cfg string, ins []models.Inbound, us []models.User) (string, error) {
-	usersCfg := cfg
 	for _, inbound := range ins {
-		sectionUsers, err := makeSectionUsers(inbound.Type, us)
-		if err != nil {
-			return "", err
+		cfgUsers := make([]models.CfgUser, 0, len(us))
+		for _, u := range us {
+			cfgUser, err := inbound.Format.CfgUser(u)
+			if err != nil {
+				return "", err
+			}
+			cfgUsers = append(cfgUsers, cfgUser)
 		}
 
 		usersPath := fmt.Sprintf("inbounds.#(tag=%s).settings.clients", inbound.Tag)
-		usersCfg, err = sjson.Set(usersCfg, usersPath, sectionUsers)
+		withInbound, err := sjson.Set(cfg, usersPath, cfgUsers)
 		if err != nil {
 			return "", xerr.WrapWithStack(err)
 		}
+		cfg = withInbound
 	}
 
-	return usersCfg, nil
+	return cfg, nil
 }
 
-func makeSectionUsers(it models.InboundType, us []models.User) ([]map[string]string, error) {
-	sectionUsers := make([]map[string]string, 0, len(us))
+func makeSectionUsers(it models.Inbound, us []models.User) ([]models.CfgUser, error) {
+	sectionUsers := make([]models.CfgUser, 0, len(us))
 	for _, u := range us {
-		su, err := makeSectionUser(it, u)
+		cfgUser, err := it.Format.CfgUser(u)
 		if err != nil {
 			return nil, err
 		}
-		sectionUsers = append(sectionUsers, su)
+		sectionUsers = append(sectionUsers, cfgUser)
 	}
 	return sectionUsers, nil
-}
-
-func makeSectionUser(it models.InboundType, u models.User) (map[string]string, error) {
-	switch it {
-	case models.VlessTcpReality:
-		return map[string]string{
-			"email": u.VlessEmail(),
-			"flow":  "xtls-rprx-vision",
-			"id":    u.VlessUUID,
-		}, nil
-	case models.VlessXHTTP:
-		return map[string]string{
-			"email": u.VlessEmail(),
-			"id":    u.VlessUUID,
-		}, nil
-	default:
-		return nil, xerr.Newf("unsupported inbound type: %v", it)
-	}
 }

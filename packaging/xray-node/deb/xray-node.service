@@ -1,0 +1,31 @@
+[Unit]
+Description=XRayMan Node
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+
+User=xray-node
+Group=xray-node
+
+StateDirectory=xray-node
+ConfigurationDirectory=xray-node
+
+EnvironmentFile=/etc/xray-node/xray-node.env
+
+ExecStart=/usr/bin/xray-node \
+    --persistent-dir=%S/xray-node/persistent \
+    --data-dir=%S/xray-node/data \
+    --config-dir=%E/xray-node/config
+
+Restart=on-failure
+RestartSec=5
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

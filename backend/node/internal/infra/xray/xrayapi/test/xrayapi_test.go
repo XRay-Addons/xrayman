@@ -1,4 +1,4 @@
-package xrayapi
+package xrayapitest
 
 import (
 	"context"
@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/XRay-Addons/xrayman/common/logging"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/xray/formats"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/xray/xrayapi"
 	"github.com/XRay-Addons/xrayman/node/internal/infra/xray/xrayservice"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 	"github.com/stretchr/testify/assert"
@@ -61,7 +63,10 @@ var testXRayUser = models.User{
 }
 
 var testXRayInbounds = []models.Inbound{
-	{Tag: "vlesstcp-reality", Type: models.VlessTcpReality},
+	{
+		Tag:    "vlesstcp-reality",
+		Format: &formats.VlessTCPReality{},
+	},
 }
 
 // test service ctl
@@ -72,7 +77,7 @@ func TestXRayAPI(t *testing.T) {
 	require.NoError(t, err)
 
 	// create xray api
-	xrayapi, err := New(testApiURL, testXRayInbounds, WithLogger(log))
+	xrayapi, err := xrayapi.New(testApiURL, testXRayInbounds, xrayapi.WithLogger(log))
 	assert.NoError(t, err)
 	defer func() {
 		err := xrayapi.Close(ctx)

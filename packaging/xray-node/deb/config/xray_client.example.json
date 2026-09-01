@@ -1,0 +1,26 @@
+{
+  "inbounds": [],
+  "outbounds": [
+    {
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "SERVER_IP",
+            "port": 10086,
+            "users": [
+              {
+                "id": "{{ .VlessUUID }}",
+                "email": "{{ .VlessEmail }}",
+                "encryption": "none"
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "tcp"
+      }
+    }
+  ]
+}
