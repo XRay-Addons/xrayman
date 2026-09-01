@@ -6,9 +6,19 @@ Section: utils
 Priority: optional
 Description: XRayMan Node service
  This package implements XRay node.
- Configuration file is located at /etc/xray-node/xray-node.env
- Configuration file example is located at /etc/xray-node/xray-node.env.example
- Configuration file exaple might be outdated.
+
+ App files locations:
+ xray-node binary file                : /usr/bin/xray-node
+ Configuration file                   : /etc/xray-node/xray-node.env
+ Configuration file example           : /etc/xray-node/xray-node.env.example
+ Client and Server cfgs dir           : %E/xray-node/config
+ Persistent app data dir (incl. keys) : %S/xray-node/persistent
+ XRay geodata dir.                    : %S/xray-node/geodata
+ XRay binary file                     : /usr/bin/xray
+ Paths uses systemd-specific aliases %S = /var/lib, %E = /etc
+
+ Configuration file example might be outdated.
+
  View actual config via application help : xray-node -h
  After setup, reload systemctl           : sudo systemctl daemon-reload
  Start service                           : sudo systemctl enable --now xray-node
