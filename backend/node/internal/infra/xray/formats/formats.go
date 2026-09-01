@@ -6,5 +6,6 @@ func InboundFormats() []models.InboundFormat {
 	return []models.InboundFormat{
 		&VlessTCPReality{},
 		&VlessXHTTP{},
+		&VlessTCP{},
 	}
 }
