@@ -6,7 +6,7 @@ ARG TARGETARCH
 COPY ./dist/${TARGETARCH}/xray-nodeman /usr/bin/xray-nodeman
 
 # Копируем наш скрипт-обертку
-COPY ./packaging/xray-nodeman.docker-entrypoint.sh /docker-entrypoint.sh
+COPY ./packaging/xray-nodeman/docker/docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
 LABEL org.opencontainers.image.title="XRayMan Node Manager"
