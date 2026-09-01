@@ -83,8 +83,16 @@ jobs:
           CLEAN_VER=$(echo '${{ github.ref_name }}' | sed 's/^v//')
 
           # Заменяем плейсхолдер версии на реальный тег релиза
-          sed "s/VERSION_PLACEHOLDER/$CLEAN_VER/g" ./packaging/xray-nodeman/docker/docker-compose.yaml > ./docker-compose.yaml
-          sed "s/VERSION_PLACEHOLDER/$CLEAN_VER/g" ./packaging/xray-nodeman/docker/docker-compose.standalone.yaml > ./docker-compose.standalone.yaml
+          sed "s/VERSION_PLACEHOLDER/$CLEAN_VER/g" ./packaging/xray-nodeman/docker/docker-compose.all-in-one.yaml > ./all-in-one.docker/docker-compose.yaml
+          sed "s/VERSION_PLACEHOLDER/$CLEAN_VER/g" ./packaging/xray-nodeman/docker/docker-compose.standalone.yaml > ./standalone.docker/docker-compose.yaml
+
+          # 3. (Опционально) Скопируйте сюда дополнительные файлы конфигурации, если они есть
+          # cp ./packaging/xray-nodeman/docker/prometheus.yml ./dist/all-in-one/
+          # cp -r ./packaging/xray-nodeman/docker/config ./dist/all-in-one/
+
+          # 4. Архиривуем папки (флаг -C временно меняет директорию, чтобы внутри архива не было лишней вложенности)
+          tar -czf docker-compose.all-in-one.tar.gz -C ./dist/all-in-one .
+          tar -czf docker-compose.standalone.tar.gz -C ./dist/standalone .
 
       # ПУБЛИКУЕМ ВСЕ АССЕТЫ В РЕЛИЗ (DEB + DOCKER COMPOSE)
       - name: Upload Artifacts to GitHub Release
@@ -93,8 +101,8 @@ jobs:
         with:
           files: |
             xray-nodeman-*.deb
-            docker-compose.yaml
-            docker-compose.standalone.yaml
+            docker-compose.all-in-one.tar.gz
+            docker-compose.standalone.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
