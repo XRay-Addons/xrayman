@@ -69,8 +69,8 @@ jobs:
             cp -r ./packaging/xray-node/deb/config    "$DIR/etc/xray-node/config"
 
             mkdir -p "$DIR/lib/systemd/system" "$DIR/etc/xray-node"
-            cp ./packaging/xray-node/deb/xray-node.service "$DIR/lib/systemd/system/xray-node.service"
-            cp ./packaging/xray-node/deb/xray-node.env.example       "$DIR/etc/xray-node/xray-node.env.example"
+            cp ./packaging/xray-node/deb/xray-node.service      "$DIR/lib/systemd/system/xray-node.service"
+            cp ./packaging/xray-node/deb/xray-node.env.example  "$DIR/etc/xray-node/xray-node.env.example"
 
             mkdir -p "$DIR/DEBIAN"
             cp ./packaging/xray-node/deb/postinstall.sh "$DIR/DEBIAN/postinst"
@@ -105,7 +105,7 @@ jobs:
             mkdir -p "$DIR/usr/bin" "$DIR/lib/systemd/system" "$DIR/etc/xray-nodeman" "$DIR/DEBIAN"
             cp ./dist/${ARCH}/xray-nodeman "$DIR/usr/bin/xray-nodeman"
             cp ./packaging/xray-nodeman/deb/xray-nodeman.service "$DIR/lib/systemd/system/xray-nodeman.service"
-            cp ./packaging/xray-nodeman/deb/env.example "$DIR/etc/xray-nodeman/env.example"
+            cp ./packaging/xray-nodeman/deb/env.example "$DIR/etc/xray-nodeman/xray-nodeman.env.example"
             cp ./packaging/xray-nodeman/deb/postinstall.sh "$DIR/DEBIAN/postinst"
             cp ./packaging/xray-nodeman/deb/prerm.sh "$DIR/DEBIAN/prerm"
             cp ./packaging/xray-nodeman/deb/postrm.sh "$DIR/DEBIAN/postrm"
