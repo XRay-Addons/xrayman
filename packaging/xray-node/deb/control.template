@@ -13,7 +13,7 @@ Description: XRayMan Node service
  Configuration file example           : /etc/xray-node/xray-node.env.example
  Client and Server cfgs dir           : %E/xray-node/config
  Persistent app data dir (incl. keys) : %S/xray-node/persistent
- XRay geodata dir.                    : %S/xray-node/geodata
+ XRay geodata dir.                    : %S/xray-node/data
  XRay binary file                     : /usr/bin/xray
  Paths uses systemd-specific aliases %S = /var/lib, %E = /etc
 

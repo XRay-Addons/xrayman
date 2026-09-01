@@ -8,6 +8,10 @@ CONFIG_DIR="/etc/xray-node"
 ENV_FILE="${CONFIG_DIR}/xray-node.env"
 ENV_EXAMPLE="${CONFIG_DIR}/xray-node.env.example"
 
+XRAY_CONFIG_DIR="/etc/xray-node"
+XRAY_GEODATA_DIR="/var/lib/geodata"
+XRAY_BINARY_DIR="/usr/bin"
+
 echo "Create system group."
 if ! getent group "$SERVICE_GROUP" >/dev/null 2>&1; then
     groupadd --system "$SERVICE_GROUP"
