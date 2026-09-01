@@ -28,6 +28,10 @@ func main() {
 		stdlog.Printf("config loading: %+v", err)
 		return
 	}
+	if err = config.Validate(cfg); err != nil {
+		stdlog.Printf("config validation: %+v", err)
+		return
+	}
 
 	log, err := logging.New(cfg.LogLevel)
 	if err != nil {
