@@ -63,7 +63,7 @@ jobs:
           for ARCH in amd64 arm64; do
             DIR="xray-node-${ARCH}"
             mkdir -p "$DIR/usr/bin" "$DIR/lib/systemd/system" "$DIR/etc/xray-node" "$DIR/DEBIAN"
-            cp ./dist/${ARCH}/xray-node "$DIR/usr/bin/xray-node"
+            cp -r ./dist/${ARCH}/xray-node "$DIR/usr/bin/xray-node"
             cp ./packaging/xray-node/deb/xray-node.service "$DIR/lib/systemd/system/xray-node.service"
             cp ./packaging/xray-node/deb/env.example "$DIR/etc/xray-node/env.example"
             cp ./packaging/xray-node/deb/postinstall.sh "$DIR/DEBIAN/postinst"
