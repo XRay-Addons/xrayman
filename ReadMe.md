@@ -1,24 +1,59 @@
-## [NO] One-command Install xray-node
-
-```
-curl -fsSL https://raw.githubusercontent.com/XRay-Addons/xrayman/main/install-node.sh -o install-node.sh && sudo bash install-node.sh
-```
-
-## [NO] One-command Install xray-nodeman
-
-```
-curl -fsSL https://raw.githubusercontent.com/XRay-Addons/xrayman/main/install-nodeman.sh -o install-nodeman.sh && sudo bash install-nodeman.sh
-```
-
 # XRay Node
 
 Tool to be running on node
+
+## Install xray node
+
+### .deb (Ubuntu, Debian, etc...)
+
+```sh
+# download .deb for required architecture (amd64 or arm64)
+curl -fsSL "https://github.com/XRay-Addons/xrayman/releases/latest/download/xray-node-amd64.deb" -o xray-node.deb
+# install
+sudo apt install ./xray-node.deb
+# view setup manual
+sudo apt show xray-node
+# start
+sudo systemctl daemon-reload
+sudo systemctl enable --now xray-node
+# or restart
+sudo systemctl daemon-reload
+sudo systemctl restart xray-node
+# view logs
+sudo journalctl -u xray-node -n 50 -f
+```
+
+If success, user following handlers are available:
+
+- `${ENDPOINT}/api` - node api
+- `${ENDPOINT}/api/version` - unprotected status handler
+
+### Manual build
+
+#### Requirements
+
+- go v1.26.2
+
+#### Build
+
+```sh
+# download source code
+git clone https://github.com/XRay-Addons/xrayman.git
+cd xrayman
+git submodule update --init --recursive
+# install build tools
+make tools
+# build
+make build_node
+# check
+./build/xray-node/xray-node -h
+```
 
 # XRay Node Manager
 
 Service to manage all nodes, users, subscriptions, etc...
 
-## Install xray node manager
+## Install xray nodeman
 
 ### .deb (Ubuntu, Debian, etc...)
 
@@ -57,10 +92,10 @@ sudo journalctl -u xray-nodeman -n 50 -f
 
 If success, user following handlers are available:
 
-- `localhost:8080/u` - user page
-- `localhost:8080/adm` - admin page
-- `localhost:8080/api/version` - unprotected status page
-- `localhost:9090/metrics` - prometheus metrics
+- `${ENDPOINT}/u` - user page
+- `${ENDPOINT}adm` - admin page
+- `${ENDPOINT}/api/version` - unprotected status handler
+- `${METRICS_ENDPOINT}/metrics` - prometheus metrics
 
 ### Docker
 
