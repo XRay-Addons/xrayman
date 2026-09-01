@@ -9,5 +9,8 @@ Description: XRayMan Node Manager service
  Configuration file is located at /etc/xray-nodeman/xray-nodeman.env
  Configuration file example is located at /etc/xray-nodeman/xray-nodeman.env.example
  Configuration file exaple might be outdated.
- Actual config available via application help: xray-nodeman -h
- View logs: sudo journalctl -u xray-nodeman -n 50 -f
+ View actual config via application help : xray-nodeman -h
+ After setup, reload systemctl           : sudo systemctl daemon-reload
+ Start service                           : sudo systemctl enable --now xray-nodeman
+ Or restart service                      : sudo systemctl restart xray-nodeman
+ View logs                               : sudo journalctl -u xray-nodeman -n 50 -f
