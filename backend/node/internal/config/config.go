@@ -3,7 +3,6 @@ package config
 import (
 	"path"
 
-	"github.com/XRay-Addons/xrayman/common/xerr"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -33,7 +32,7 @@ func NewConfig(cli *CLI) (*Config, error) {
 	}
 
 	if err := Validate(cfg); err != nil {
-		return nil, xerr.WrapWithInfo(err, "validate config")
+		return nil, err
 	}
 
 	return cfg, nil

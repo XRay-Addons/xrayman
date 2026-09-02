@@ -46,7 +46,7 @@ func NewConfig(cli *CLI) (*Config, error) {
 	}
 
 	if err := Validate(cfg); err != nil {
-		return nil, xerr.WrapWithInfo(err, "validate config")
+		return nil, err
 	}
 
 	return cfg, nil

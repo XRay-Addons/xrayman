@@ -43,6 +43,7 @@ func main() {
 			stdlog.Print(err)
 		}
 	}()
+	log.Warn(fmt.Sprintf("Starting app with config: %v...", cfg))
 
 	app, err := app.New(cfg, log)
 	if err != nil {
