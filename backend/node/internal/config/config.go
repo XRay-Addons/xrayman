@@ -2,8 +2,6 @@ package config
 
 import (
 	"path"
-
-	"go.uber.org/zap/zapcore"
 )
 
 type Config struct {
@@ -11,7 +9,6 @@ type Config struct {
 	XRayDataDir   string
 	XRayConfigDir string
 	PersistentDir string
-	LogLevel      zapcore.Level
 }
 
 func (c *Config) XRayServer() string {
@@ -28,7 +25,6 @@ func NewConfig(cli *CLI) (*Config, error) {
 		XRayDataDir:   cli.XRayDataDir,
 		XRayConfigDir: cli.XRayConfigDir,
 		PersistentDir: cli.PersistentDir,
-		LogLevel:      cli.LogLevel,
 	}
 
 	if err := Validate(cfg); err != nil {

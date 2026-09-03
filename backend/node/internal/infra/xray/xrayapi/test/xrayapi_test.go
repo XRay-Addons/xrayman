@@ -73,8 +73,7 @@ var testXRayInbounds = []models.Inbound{
 func TestXRayAPI(t *testing.T) {
 	ctx := context.TODO()
 
-	log, err := logging.New(zapcore.InfoLevel)
-	require.NoError(t, err)
+	log := logging.New(zapcore.InfoLevel)
 
 	// create xray api
 	xrayapi, err := xrayapi.New(testApiURL, testXRayInbounds, xrayapi.WithLogger(log))

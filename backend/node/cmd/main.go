@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	stdlog "log"
 
 	"github.com/XRay-Addons/xrayman/common/logging"
@@ -15,7 +14,7 @@ import (
 func main() {
 	cli, err := config.LoadCLI()
 	if err != nil {
-		log.Fatal(err)
+		stdlog.Fatal(err)
 	}
 
 	if cli.Version {
@@ -23,26 +22,24 @@ func main() {
 		return
 	}
 
-	cfg, err := config.NewConfig(cli)
-	if err != nil {
-		stdlog.Printf("config loading: %+v", err)
-		return
-	}
-	if err = config.Validate(cfg); err != nil {
-		stdlog.Printf("config validation: %+v", err)
-		return
-	}
-
-	log, err := logging.New(cfg.LogLevel)
-	if err != nil {
-		stdlog.Print(err)
-		return
-	}
+	log := logging.New(cli.LogLevel)
 	defer func() {
 		if err := log.Sync(); err != nil {
 			stdlog.Print(err)
 		}
 	}()
+
+	cfg, err := config.NewConfig(cli)
+	if err != nil {
+		log.Error("config loading", zap.Error(err))
+		return
+	}
+
+	if err = config.Validate(cfg); err != nil {
+		log.Error("config validation", zap.Error(err))
+		return
+	}
+
 	log.Warn(fmt.Sprintf("Starting app with config: %v...", cfg))
 
 	app, err := app.New(cfg, log)
