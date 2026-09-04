@@ -19,7 +19,10 @@ func NilCall() error {
 }
 
 func InvalidArgf(f string, args ...any) error {
-	return WrapWithInfof(ErrInvalidArg, f, args...)
+	return Wrap(ErrInvalidArg,
+		WithInfof(f, args...),
+		withStack(1))
+	// return WrapWithInfof(ErrInvalidArg, f, args...)
 }
 
 func Panic(p any) error {

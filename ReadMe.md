@@ -167,3 +167,54 @@ make build_nodeman
 # check
 ./build/xray-nodeman/xray-nodeman -h
 ```
+
+## Pretty logs view
+
+To view pretty human-readable logs use `jq` preset:
+
+### Install JQ
+
+JQ install page: https://jqlang.org/download/
+
+### Add alias for go zap logs viewer
+
+#### OSX
+
+```sh
+sudo cat >> ~/.zshrc <<'EOF'
+
+# >>> zl - jq setup for go zap log formatting >>>
+zl() {
+jq -r '
+  def level_color:
+    if . == "error" then "\u001b[31m"
+    elif . == "warn" then "\u001b[33m"
+    elif . == "info" then "\u001b[32m"
+    elif . == "debug" then "\u001b[36m"
+    else "\u001b[0m"
+    end;
+
+  . as $log
+  |
+  "\($log.ts) \($log.level | level_color)\($log.level | ascii_upcase)\u001b[0m \($log.msg)",
+  ($log
+    | to_entries[]
+    | select(.key != "ts" and .key != "level" and .key != "msg")
+    | "- \(.key):\n\(.value | split("\n") | map("    " + .) | join("\n"))"
+  )
+'
+}
+# <<< zlog initializing <<<
+
+EOF
+
+source ~/.zshrc
+```
+
+### Use `zl` alias
+
+Just add `| zl` to any command returning logs, like
+
+```sh
+docker compose logs -n 50 -f xray-nodeman | zl
+```
