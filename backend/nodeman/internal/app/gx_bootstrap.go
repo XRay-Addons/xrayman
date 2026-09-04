@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/XRay-Addons/xrayman/common/gx"
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/dbstorage"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/auth"
@@ -63,7 +64,11 @@ var ensurePassword = gx.Invoke(
 			Name: "ensure password",
 			Fn: func(ctx context.Context) error {
 				_, err := s.GetAuth(ctx)
-				return err
+				if errors.Is(err, errdefs.ErrNotFound) {
+					return xerr.InvalidArgf("admin password not set")
+				} else {
+					return err
+				}
 			},
 			Retry: func(err error) bool {
 				return errors.Is(err, errdefs.ErrTemporaryUnavailable)
