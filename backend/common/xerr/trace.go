@@ -16,7 +16,7 @@ func (t *trace) Format(f fmt.State, verb rune) {
 		return
 	}
 	format := "%" + string(verb)
-	traceText := "\n\t-> " + strings.Join(t.frames, "\n\t-> ")
+	traceText := "stacktrace\n\t-> " + strings.Join(t.frames, "\n\t-> ")
 	fmt.Fprintf(f, format, traceText)
 }
 

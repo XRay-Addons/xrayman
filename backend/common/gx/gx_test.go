@@ -56,8 +56,7 @@ type B struct{}
 type C struct{}
 
 func TestGx_Simple(t *testing.T) {
-	logger, err := logging.New(zapcore.InfoLevel)
-	require.NoError(t, err)
+	logger := logging.New(zapcore.InfoLevel)
 
 	var aStart, bStart, cStart, cStop, iI, iIstop, iII, iIIstop CallsCounter
 	defer aStart.Check(t, "a", 1)

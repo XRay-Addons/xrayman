@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
-	"go.uber.org/zap/zapcore"
 )
 
 type Config struct {
@@ -30,7 +29,6 @@ type Config struct {
 
 	AllowedOrigins  []string
 	MetricsEndpoint string
-	LogLevel        zapcore.Level
 }
 
 const (
@@ -70,7 +68,6 @@ func loadConfig(cli *CLI) (*Config, error) {
 		StorageCallTimeout: time.Duration(cli.StorageCallTimeout) * time.Second,
 
 		MetricsEndpoint: cli.MetricsEndpoint,
-		LogLevel:        cli.LogLevel,
 	}
 
 	cfg.ApiServiceUrl = or(cli.ApiServiceUrl, cfg.ApiServicePath)

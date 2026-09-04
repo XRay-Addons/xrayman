@@ -74,17 +74,26 @@ const { ...hostProps } = props;
       super.connectedCallback();
 
       const inputEl = pt<HTMLInputElement>(this, "group-input");
-
-      const formEl = pt<HTMLFormElement>(this, "group-form");
-      formEl.addEventListener("submit", async (e: Event) => {
-        e.preventDefault();
-        await this.submitfn?.(inputEl.value);
-      });
-
       const btnEl = pt<HTMLButtonElement>(this, "group-btn");
+      const formEl = pt<HTMLFormElement>(this, "group-form");
+
       btnEl.addEventListener("click", (e) => {
         e.preventDefault();
         formEl.requestSubmit();
+      });
+
+      formEl.addEventListener("submit", async (e: Event) => {
+        e.preventDefault();
+        if (btnEl.disabled) {
+          return;
+        }
+        btnEl.disabled = true;
+
+        try {
+          await this.submitfn?.(inputEl.value);
+        } finally {
+          btnEl.disabled = false;
+        }
       });
     }
   }

@@ -10,24 +10,22 @@ import (
 
 func Validate(c *Config) error {
 	if _, err := net.ResolveTCPAddr("tcp", c.Endpoint); err != nil {
-		return xerr.Wrap(err,
-			xerr.WithStack(),
-			xerr.WithInfof("invalid endpoint %s", c.Endpoint))
+		return xerr.InvalidArgf("endpoint: '%s', %v", c.Endpoint, err)
 	}
 	if err := checkDir(c.XRayDataDir); err != nil {
-		return xerr.WrapWithInfof(err, "arg: %s", c.XRayDataDir)
+		return xerr.InvalidArgf("xray data dir: '%s', %v", c.XRayDataDir, err)
 	}
 	if err := checkFile(c.XRayServer()); err != nil {
-		return xerr.WrapWithInfo(err, "xray server cfg")
+		return xerr.InvalidArgf("xray server config: '%s', %v", c.XRayServer(), err)
 	}
 	if err := checkJson(c.XRayServer()); err != nil {
-		return xerr.WrapWithInfo(err, "xray server cfg")
+		return xerr.InvalidArgf("xray server config: '%s', %v", c.XRayServer(), err)
 	}
 	if err := checkFile(c.XRayClient()); err != nil {
-		return xerr.WrapWithInfo(err, "xray client cfg")
+		return xerr.InvalidArgf("xray client config: '%s', %v", c.XRayClient(), err)
 	}
 	if err := checkJson(c.XRayClient()); err != nil {
-		return xerr.WrapWithInfo(err, "xray client cfg")
+		return xerr.InvalidArgf("xray client config: '%s', %v", c.XRayClient(), err)
 	}
 	// don't check c.PersistentDir, it could be created later
 

@@ -10,4 +10,7 @@ SELECT
     n.node_endpoint
 FROM nodes n
 LEFT JOIN nodes_stats ns ON ns.node_id = n.node_id
-WHERE n.deleted_at IS NULL;
+WHERE n.node_current_status = sqlc.arg(node_status_running)
+    AND n.node_target_status = sqlc.arg(node_status_running)
+    AND n.deleted_at IS NULL
+ORDER BY n.node_id ASC; 

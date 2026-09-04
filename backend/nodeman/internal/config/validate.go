@@ -3,46 +3,53 @@ package config
 import (
 	"net"
 	"net/url"
+	"time"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
 )
 
 func Validate(c *Config) error {
-	if _, err := net.ResolveTCPAddr("tcp", c.Endpoint); err != nil {
-		return xerr.Newf("invalid endpoint: %s", c.Endpoint)
+	if err := checkEndpoint(c.Endpoint); err != nil {
+		return xerr.InvalidArgf("endpoint: '%s', %v", c.Endpoint, err)
 	}
-	if err := checkDBConn(c); err != nil {
-		return err
+	if err := checkDBConn(c.DBConn); err != nil {
+		return xerr.InvalidArgf("db conn: '%s', %v", c.DBConn, err)
 	}
-	if err := checkBaseUrls(c); err != nil {
-		return err
-	}
-	if err := checkSyncIntervals(c); err != nil {
-		return err
-	}
-	if err := checkAuth(c); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func checkDBConn(c *Config) error {
-	if len(c.DBConn) == 0 {
-		return xerr.New("dbconn string invalid")
-	}
-	return nil
-}
-
-func checkBaseUrls(c *Config) error {
 	if !checkBaseUrl(c.ApiServiceUrl) {
-		return xerr.New("api service invalid")
+		return xerr.InvalidArgf("api service url: '%s'", c.ApiServiceUrl)
 	}
 	if !checkBaseUrl(c.UserSpaUrl) {
-		return xerr.New("user spa url invalid")
+		return xerr.InvalidArgf("user spa url: '%s'", c.UserSpaUrl)
 	}
 	if !checkBaseUrl(c.AdminSpaUrl) {
-		return xerr.New("admin spa url invalid")
+		return xerr.InvalidArgf("admin spa url: '%s'", c.AdminSpaUrl)
+	}
+	if !checkSyncInterval(c.StateSyncInterval) {
+		return xerr.InvalidArgf("state sync interval: '%d'", c.StateSyncInterval)
+	}
+	if !checkSyncInterval(c.StateSyncInterval) {
+		return xerr.InvalidArgf("stats sync interval: '%d'", c.StatsSyncInterval)
+	}
+	if !checkJwtSecret(c.JwtSecret) {
+		return xerr.InvalidArgf("jwt secret: '%s'", c.JwtSecret)
+	}
+	if c.MetricsEndpoint != "" {
+		if err := checkEndpoint(c.MetricsEndpoint); err != nil {
+			return xerr.InvalidArgf("metrics endpoint: '%s', %v", c.MetricsEndpoint, err)
+		}
+	}
+
+	return nil
+}
+
+func checkEndpoint(e string) error {
+	_, err := net.ResolveTCPAddr("tcp", e)
+	return err
+}
+
+func checkDBConn(dbconn string) error {
+	if len(dbconn) == 0 {
+		return xerr.New("dbconn string invalid")
 	}
 	return nil
 }
@@ -57,19 +64,10 @@ func checkBaseUrl(u string) bool {
 		(parsed.Scheme != "" && parsed.Host != "")
 }
 
-func checkSyncIntervals(c *Config) error {
-	if c.StateSyncInterval <= 0 {
-		return xerr.New("state sync interval invalid")
-	}
-	if c.StatsSyncInterval <= 0 {
-		return xerr.New("stats sync interval invalid")
-	}
-	return nil
+func checkSyncInterval(interval time.Duration) bool {
+	return interval > 0
 }
 
-func checkAuth(c *Config) error {
-	if c.JwtSecret == "" {
-		return xerr.New("jwt secret invalid")
-	}
-	return nil
+func checkJwtSecret(s string) bool {
+	return s != ""
 }

@@ -62,7 +62,7 @@ func (w *withDetails[T]) Error() string {
 }
 
 func (w *withDetails[T]) Details() string {
-	return fmt.Sprintf("%T: %v", w.details, w.details)
+	return fmt.Sprintf("%v", w.details)
 }
 
 func (w *withDetails[T]) Unwrap() error {

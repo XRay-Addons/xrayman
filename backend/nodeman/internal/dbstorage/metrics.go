@@ -13,7 +13,7 @@ func (s *Storage) GetNodeMetrics(ctx context.Context) ([]models.NodeMetrics, err
 	resp, err := doAny(ctx, s, func(ctx context.Context,
 		q *queries.Queries,
 	) ([]queries.GetMetricsRow, error) {
-		return q.GetMetrics(ctx)
+		return q.GetMetrics(ctx, int16(models.NodeStatusRunning))
 	})
 	if err != nil {
 		return nil, err

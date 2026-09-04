@@ -2,9 +2,6 @@ package config
 
 import (
 	"path"
-
-	"github.com/XRay-Addons/xrayman/common/xerr"
-	"go.uber.org/zap/zapcore"
 )
 
 type Config struct {
@@ -12,7 +9,6 @@ type Config struct {
 	XRayDataDir   string
 	XRayConfigDir string
 	PersistentDir string
-	LogLevel      zapcore.Level
 }
 
 func (c *Config) XRayServer() string {
@@ -29,11 +25,10 @@ func NewConfig(cli *CLI) (*Config, error) {
 		XRayDataDir:   cli.XRayDataDir,
 		XRayConfigDir: cli.XRayConfigDir,
 		PersistentDir: cli.PersistentDir,
-		LogLevel:      cli.LogLevel,
 	}
 
 	if err := Validate(cfg); err != nil {
-		return nil, xerr.WrapWithInfo(err, "validate config")
+		return nil, err
 	}
 
 	return cfg, nil

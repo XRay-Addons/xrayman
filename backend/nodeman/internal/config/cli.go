@@ -1,6 +1,9 @@
 package config
 
 import (
+	"strings"
+	"time"
+
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/alecthomas/kong"
 	"go.uber.org/zap/zapcore"
@@ -9,7 +12,7 @@ import (
 var kongVars = kong.Vars{
 	"endpointHelp": "server endpoint tcp address, like :8080, 127.0.0.1:80, localhost:22",
 
-	"dbHelp": "postgress connection string, like postgresql://user@password/127.0.0.1:4321/dbname",
+	"dbHelp": "postgress connection string, like postgresql://user:password@127.0.0.1:4321/dbname",
 
 	"jwtHelp": "jwt secret",
 
@@ -39,10 +42,10 @@ should be like /admin or https://adm.example.com (optional)`,
 }
 
 type CLI struct {
-	DBConn    string `name:"db" help:"${dbHelp}"`
-	JwtSecret string `name:"jwt" help:"${jwtHelp}"`
+	DBConn   string `name:"db" help:"${dbHelp}"`
+	Endpoint string `name:"endpoint" default:"localhost:80" help:"${endpointHelp}"`
 
-	Endpoint      string `name:"endpoint" default:"localhost:80" help:"${endpointHelp}"`
+	JwtSecret     string `name:"jwt" help:"${jwtHelp}"`
 	AdminPassword string `name:"adm-pass" default:"" help:"${admpassHelp}"`
 
 	ApiServiceUrl string `name:"api-service-url" default:"" help:"${apisrvHelp}"`
@@ -76,4 +79,34 @@ func LoadCLI() (*CLI, error) {
 	}
 
 	return &cli, nil
+}
+
+var _ zapcore.ObjectMarshaler = (*CLI)(nil)
+
+func (c *CLI) MarshalLogObject(enc zapcore.ObjectEncoder) error {
+	enc.AddString("DBConn", c.DBConn)
+	enc.AddString("Endpoint", c.Endpoint)
+
+	if c.JwtSecret != "" {
+		enc.AddString("JwtSecret", strings.Repeat("*", len(c.JwtSecret)))
+	}
+	if c.AdminPassword != "" {
+		enc.AddString("AdminPassword", strings.Repeat("*", len(c.AdminPassword)))
+	}
+
+	enc.AddString("ApiServiceUrl", c.ApiServiceUrl)
+	enc.AddString("UserSpaUrl", c.UserSpaUrl)
+	enc.AddString("AdminSpaUrl", c.AdminSpaUrl)
+
+	enc.AddString("StateSyncInterval", (time.Duration(c.StateSyncInterval) * time.Second).String())
+	enc.AddString("StatsSyncInterval", (time.Duration(c.StatsSyncInterval) * time.Second).String())
+
+	enc.AddString("NodeCallTimeout", (time.Duration(c.NodeCallTimeout) * time.Second).String())
+	enc.AddString("StorageCallTimeout", (time.Duration(c.StorageCallTimeout) * time.Second).String())
+
+	enc.AddString("MetricsEndpoint", c.MetricsEndpoint)
+
+	enc.AddString("LogLevel", c.LogLevel.String())
+
+	return nil
 }
