@@ -22,7 +22,6 @@ func NilCall() error {
 
 func InvalidArgf(f string, args ...any) error {
 	return Wrap(ErrInvalidArg,
-		withStack(1),
 		WithInfof(f, args...),
 	)
 }
