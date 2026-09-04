@@ -28,6 +28,7 @@ func main() {
 			stdlog.Print(err)
 		}
 	}()
+	log.Warn("app config", zap.Inline(cli))
 
 	cfg, err := config.NewConfig(cli)
 	if err != nil {

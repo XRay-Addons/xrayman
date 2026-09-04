@@ -49,3 +49,14 @@ func LoadCLI() (*CLI, error) {
 
 	return &cli, nil
 }
+
+var _ zapcore.ObjectMarshaler = (*CLI)(nil)
+
+func (c *CLI) MarshalLogObject(enc zapcore.ObjectEncoder) error {
+	enc.AddString("Endpoint", c.Endpoint)
+	enc.AddString("XRayDataDir", c.XRayDataDir)
+	enc.AddString("XRayConfigDir", c.XRayConfigDir)
+	enc.AddString("PersistentDir", c.PersistentDir)
+	enc.AddString("LogLevel", c.LogLevel.String())
+	return nil
+}

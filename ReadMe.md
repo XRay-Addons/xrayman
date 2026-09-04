@@ -180,9 +180,15 @@ JQ install page: https://jqlang.org/download/
 
 #### OSX
 
-```sh
-sudo cat >> ~/.zshrc <<'EOF'
+Open `~/.zshrc`
 
+```sh
+sudo nano ~/.zshrc
+```
+
+Add `zl` - alias for formatting zap logs
+
+```sh
 # >>> zl - jq setup for go zap log formatting >>>
 zl() {
 jq -r '
@@ -200,14 +206,20 @@ jq -r '
   ($log
     | to_entries[]
     | select(.key != "ts" and .key != "level" and .key != "msg")
-    | "- \(.key):\n\(.value | split("\n") | map("    " + .) | join("\n"))"
+    | if (.value | type) == "string" and (.value | contains("\n")) then
+        "- \u001b[36m\(.key)\u001b[0m:\n\(.value | split("\n") | map("    " + .) | join("\n"))"
+      else
+        "- \u001b[36m\(.key)\u001b[0m: \(.value)"
+      end
   )
 '
 }
 # <<< zlog initializing <<<
+```
 
-EOF
+Apply modifications
 
+```sh
 source ~/.zshrc
 ```
 
