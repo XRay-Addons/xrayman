@@ -18,12 +18,21 @@ import (
 // return anything marshallable
 type CfgHandler = func(ctx context.Context) (any, error)
 
-// config is nillable for no config
-func Mount(r chi.Router, prefix string, content fs.FS, cfgHandler CfgHandler,
+// config is nillable for no config.
+// mount content on /prefix to router,
+// mount config if exists
+// fallback all paths with fallback(path) == true to index.html
+func Mount(
+	r chi.Router, prefix string, content fs.FS,
+	cfgHandler CfgHandler,
+	fallbackFilter func(path string) bool,
 	log *zap.Logger,
 ) error {
 	if r == nil {
 		return errdefs.NilArg("r")
+	}
+	if fallbackFilter == nil {
+		return errdefs.NilArg("fallbackFilter")
 	}
 	if log == nil {
 		return errdefs.NilArg("log")
@@ -41,7 +50,7 @@ func Mount(r chi.Router, prefix string, content fs.FS, cfgHandler CfgHandler,
 	}
 
 	// host content
-	if err := mountContent(r, prefix, content); err != nil {
+	if err := mountContent(r, prefix, content, fallbackFilter); err != nil {
 		return err
 	}
 
@@ -94,7 +103,12 @@ func getConfigData(ctx context.Context, cfgHandler CfgHandler) ([]byte, error) {
 	return cfgData, nil
 }
 
-func mountContent(r chi.Router, prefix string, content fs.FS) error {
+func mountContent(
+	r chi.Router,
+	prefix string,
+	content fs.FS,
+	fallbackFilter func(path string) bool,
+) error {
 	contentItems, err := listContent(content)
 	if err != nil {
 		return err
@@ -104,7 +118,6 @@ func mountContent(r chi.Router, prefix string, content fs.FS) error {
 		return err
 	}
 	contentFS := http.FileServer(http.FS(content))
-
 	r.Get(prefix+"*", func(w http.ResponseWriter, r *http.Request) {
 		path := strings.TrimPrefix(r.URL.Path, prefix)
 
@@ -115,11 +128,16 @@ func mountContent(r chi.Router, prefix string, content fs.FS) error {
 		}
 
 		// serve fallback
-		http.ServeContent(w, r,
-			contentFallback.name,
-			contentFallback.modTime,
-			bytes.NewReader(contentFallback.data),
-		)
+		if fallbackFilter(path) {
+			http.ServeContent(w, r,
+				contentFallback.name,
+				contentFallback.modTime,
+				bytes.NewReader(contentFallback.data),
+			)
+			return
+		}
+
+		http.NotFound(w, r)
 	})
 
 	return nil

@@ -3,6 +3,7 @@ package pages
 import (
 	"context"
 	"embed"
+	"strings"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/pages/converter"
@@ -27,6 +28,9 @@ func NewUserPage(cfgHandler UserCfgHandler) (*Page, error) {
 		cfgData := converter.ConvertUserPageCfg(*cfg)
 		return cfgData, nil
 	}
+	pageFallbackFilter := func(path string) bool {
+		return !strings.Contains(path, "/")
+	}
 
-	return new(userpageFS, "userpage", pageCfgHandler)
+	return new(userpageFS, "userpage", pageCfgHandler, pageFallbackFilter)
 }

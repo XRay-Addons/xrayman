@@ -12,7 +12,7 @@ import (
 var kongVars = kong.Vars{
 	"endpointHelp": "server endpoint tcp address, like :8080, 127.0.0.1:80, localhost:22",
 
-	"dbHelp": "postgress connection string, like postgresql://user@password/127.0.0.1:4321/dbname",
+	"dbHelp": "postgress connection string, like postgresql://user:password@127.0.0.1:4321/dbname",
 
 	"jwtHelp": "jwt secret",
 

@@ -11,20 +11,34 @@ import (
 )
 
 type Page struct {
-	content    fs.FS
-	cfgHandler spa.CfgHandler
+	content        fs.FS
+	cfgHandler     spa.CfgHandler
+	fallbackFilter func(string) bool
 }
 
 var _ router.SPA = (*Page)(nil)
 
-func new(contentFS fs.FS, contentDir string, cfgHandler spa.CfgHandler) (*Page, error) {
+func new(
+	contentFS fs.FS,
+	contentDir string,
+	cfgHandler spa.CfgHandler,
+	fallbackFilter func(path string) bool,
+) (*Page, error) {
 	content, err := fs.Sub(contentFS, contentDir)
 	if err != nil {
 		return nil, xerr.WrapWithStack(err)
 	}
-	return &Page{content: content, cfgHandler: cfgHandler}, nil
+	return &Page{
+		content:        content,
+		cfgHandler:     cfgHandler,
+		fallbackFilter: fallbackFilter,
+	}, nil
 }
 
-func (p *Page) Mount(r chi.Router, prefix string, log *zap.Logger) error {
-	return spa.Mount(r, prefix, p.content, p.cfgHandler, log)
+func (p *Page) Mount(
+	r chi.Router,
+	prefix string,
+	log *zap.Logger,
+) error {
+	return spa.Mount(r, prefix, p.content, p.cfgHandler, p.fallbackFilter, log)
 }

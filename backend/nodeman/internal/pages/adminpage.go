@@ -27,6 +27,9 @@ func NewAdmPage(cfgHandler AdminCfgHandler) (*Page, error) {
 		cfgData := converter.ConvertAdminPageCfg(*cfg)
 		return cfgData, nil
 	}
+	pageFallbackFilter := func(path string) bool {
+		return path == ""
+	}
 
-	return new(admpageFS, "admpage", pageCfgHandler)
+	return new(admpageFS, "admpage", pageCfgHandler, pageFallbackFilter)
 }
