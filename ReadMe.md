@@ -225,7 +225,7 @@ source ~/.zshrc
 
 ### Use `zl` alias
 
-Just add `| zl` to any command returning logs, like
+Add flag to view raw indirect logs, for example, `-o cut` for journald. Then add `| zl` to any command returning logs, like
 
 ```sh
 docker compose logs -n 50 -f xray-nodeman | zl
