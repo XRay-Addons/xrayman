@@ -11,6 +11,7 @@ interface Props extends PageProps, DlgProps {}
 const { ...props } = Astro.props;
 const { class: dlgClass, ...dlgProps } = ExtractPrefixed(props, "dlg");
 const { class: pageClass, ...pageProps } = props;
+console.log("dlgprops", dlgProps);
 ---
 
 <desktop-dialog>

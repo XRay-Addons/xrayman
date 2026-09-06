@@ -5,5 +5,6 @@ import Button from "@xrayman/shared/astro/primitives/Button.astro";
 
 export type BtnProps = ComponentProps<typeof Button>;
 export type PageProps = WithPrefix<HTMLAttributes<"div">, "page">;
+export type DlgProps = WithPrefix<HTMLAttributes<"dialog">, "dlg">;
 
-export interface ButtonDialogProps extends BtnProps, PageProps {}
+export interface ButtonDialogProps extends BtnProps, PageProps, DlgProps {}

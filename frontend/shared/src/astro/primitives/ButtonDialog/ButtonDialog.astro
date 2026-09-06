@@ -9,6 +9,7 @@ type Props = ButtonDialogProps;
 
 const { ...props } = Astro.props;
 const { ...pageProps } = ExtractPrefixed(props, "page");
+const { ...dlgProps } = ExtractPrefixed(props, "dlg");
 ---
 
 <button-dialog data-breakpoint="768">
@@ -16,11 +17,11 @@ const { ...pageProps } = ExtractPrefixed(props, "page");
     <slot name="button" />
   </Button>
 
-  <MobileDialog {...pageProps} dlg:data-mobile-dialog>
+  <MobileDialog {...pageProps} dlg:data-mobile-dialog dlg={dlgProps}>
     <slot name="page" slot="page" />
   </MobileDialog>
 
-  <DesktopDialog {...pageProps} dlg:data-desktop-dialog>
+  <DesktopDialog {...pageProps} dlg:data-desktop-dialog dlg={dlgProps}>
     <slot name="page" slot="page" />
   </DesktopDialog>
 </button-dialog>
