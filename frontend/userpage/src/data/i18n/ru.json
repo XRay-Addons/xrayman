@@ -150,14 +150,7 @@
     "title": "Ошибка сервера, зайдите позже",
     "server": {
       "get_user": "Получить пользователя ошибка",
-      "get_users": "Получить пользователей ошибка",
-      "get_nodes": "Получить ноды ошибка",
       "new_user": "Добавить юзер",
-      "start_node": "Старт ноды",
-      "stop_node": "Стоп ноды",
-      "new_node": "Добавить ноду",
-      "enable_user": "Разрешить пользователя",
-      "disable_user": "Запретить пользователя",
       "config_js": "config.js ошибка ошибки",
 
       "reason": {
@@ -169,39 +162,5 @@
         "unknown": "Ммм, непонятно"
       }
     }
-  },
-
-  "title.main": "(ノಠ益ಠ)ノ彡...ццц",
-
-  "title.hello": "Привет",
-  "title.name.placeholder": "『Неизвестное Имя』",
-
-  "choosename.info": "Придумайте себе имя пользователя",
-  "choosename.placeholder": "Например, Олег",
-  "choosename.btntext": "Go",
-
-  "userurl.info": "Сохраните адрес этого сайта — здесь всегда будет инструкция по подключению.",
-  "userurl.btntext": "Copy",
-  "userurl.donotshare.info": "ОСТОРОЖНО: Не делитесь ни с кем этой ссылкой, она ваша секретная. Если хотите кому-то рассказать об этом сайте - нажмите кнопку внизу страницы&nbsp;↓↓↓",
-
-  "installapp.info": "Установите приложение <strong>Happ</strong> и вернитесь на эту страницу",
-
-  "runapp.info": "Нажмите на кнопку <strong>Open HAPP</strong> - откроется приложение. Выберите в нём один из серверов и нажмите БОЛЬШУЮ КРАСИВУЮ КНОПКУ.",
-  "runapp.button": "Open HAPP",
-  "runapp.ps": "Если интернет не работает - попробуйте выбрать другой сервер :/",
-
-  "button.install.gplay": "Google Play",
-  "button.install.appstore.ru": "AppStore-RU",
-  "button.install.appstore.global": "AppStore",
-  "button.install.win": "Скачать .exe",
-  "button.install.others": "Другие...",
-
-  "share.button.text": "Отправить друзьям",
-  "share.page.title": "Отправить друзьям...",
-  "share.page.tg-button": "в тг",
-  "share.page.tg-sharedtext": "Только посмотри, какой VPN!",
-
-  "servererror.main": "Ошибка сервера, зайдите позже",
-
-  "servererror.reason.not_found": "Страница не найдена"
+  }
 }
