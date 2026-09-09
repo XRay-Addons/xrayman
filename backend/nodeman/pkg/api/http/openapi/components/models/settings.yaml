@@ -1,10 +1,14 @@
 Settings:
   type: object
   properties:
+    RecentDays:
+      type: integer
+      minimum: 1
     SubscrTitle:
       type: string
     UpdateInterval:
       type: integer
+      minimum: 1
     UserPage:
       type: string
     UsersMessage:
@@ -22,6 +26,7 @@ Settings:
       items:
         $ref: "#/Header"
   required:
+    - RecentDays
     - SubscrTitle
     - UpdateInterval
     - UserPage

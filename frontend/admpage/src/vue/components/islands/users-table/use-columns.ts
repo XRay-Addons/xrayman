@@ -27,7 +27,7 @@ export function useUsersTableColumns(i18nPrefix: string) {
         extended: sm,
       },
       {
-        key: "traffic-last-month",
+        key: "traffic-recent-days",
         dataIndex: ["Traffic", "LastMonth"],
         customRender: ({ value }) => renderTraffic(value),
         extended: sm,

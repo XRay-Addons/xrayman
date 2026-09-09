@@ -35,9 +35,7 @@ func (s *Storage) GetUserView(ctx context.Context,
 	id models.UserID, name string,
 ) (*models.UserView, error) {
 	// pre-convert
-	from := time.Now().Add(-month)
 	req := queries.GetUserViewParams{
-		FromDay:  from,
 		UserID:   int64(id),
 		UserName: name,
 	}
@@ -75,11 +73,10 @@ func (s *Storage) ListUsers(ctx context.Context) (
 
 func (s *Storage) ListUserViews(ctx context.Context) ([]models.UserView, error) {
 	// request
-	from := time.Now().Add(-month)
 	resp, err := doAny(ctx, s, func(ctx context.Context,
 		q *queries.Queries,
 	) ([]queries.ListUserViewsRow, error) {
-		return q.ListUserViews(ctx, from)
+		return q.ListUserViews(ctx)
 	})
 	if err != nil {
 		return nil, err

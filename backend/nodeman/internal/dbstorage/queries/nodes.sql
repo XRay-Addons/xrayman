@@ -36,6 +36,13 @@ WHERE deleted_at IS NULL
 ORDER BY node_id ASC;
 
 -- name: ListNodeViews :many
+-- 1. settings -> now - (recent days count)
+WITH from_day AS (
+    SELECT
+        (CURRENT_DATE- COALESCE((settings->>'RecentDays')::int, 0))::date AS value
+    FROM settings
+)
+-- 2. select views from nodes
 SELECT
     n.node_id,
     n.client_cfg_template,
@@ -56,7 +63,7 @@ SELECT
     COALESCE(ts.ram_load, 0)          AS ram_load,
     COALESCE(ts.mem_load, 0)          AS mem_load
 FROM nodes n
-
+-- 3. merged with stats and perf metrics
 LEFT JOIN (
     SELECT
         node_id,
@@ -67,17 +74,16 @@ LEFT JOIN (
         ram_load,
         mem_load
     FROM nodes_stats
-    GROUP BY node_id
 ) ts ON ts.node_id = n.node_id
-
+-- 4. and mention last days interval
 LEFT JOIN (
     SELECT DISTINCT ON (node_id)
         node_id,
         upload,
-        download,
-        day
+        download
     FROM daily_nodes_traffic
-    WHERE day < sqlc.arg(from_day)::date
+    CROSS JOIN from_day
+    WHERE daily_nodes_traffic.day < from_day.value
     ORDER BY node_id, day DESC
 ) ds ON ds.node_id = n.node_id
 

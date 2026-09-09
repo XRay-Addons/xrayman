@@ -25,6 +25,7 @@ export const numInput = {
 
 // -------------------------------------------------------------------------
 // field names
+export const RecentDays = "recent-days";
 export const SubscrTitle = "subscr-title";
 export const UsersMessage = "users-message";
 export const UserPage = "user-page";
@@ -45,7 +46,7 @@ const platformAppFields: ListItemField[] = [
   {
     name: "Platforms",
     type: "input",
-    inputProps: { required: true },
+    inputProps: { required: true, nowrap: false },
     width: "20%",
   },
   {
@@ -70,6 +71,11 @@ export const headersFields: ListItemField[] = [
 ];
 
 export const fields: (InputField | ListField)[] = [
+  {
+    name: RecentDays,
+    type: "input",
+    inputProps: { required: true, ...intInput },
+  },
   {
     name: SubscrTitle,
     type: "tagged-input",

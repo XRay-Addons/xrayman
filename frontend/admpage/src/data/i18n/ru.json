@@ -94,7 +94,13 @@
     },
     "errors": {
       "app-links": "App Links error",
-      "no-platform-apps": "No apps for platform"
+      "no-platform-apps": "No apps for platform",
+
+      "recent-days": "Recent Days error",
+      "positive-recent-days": "Recent days should be positive",
+
+      "update-interval": "Update Interval error",
+      "positive-update-interval": "Update interval should be positive"
     }
   },
 
@@ -146,7 +152,7 @@
         "target-status": "Target Status",
         "name": "ИМЯ",
         "traffic-total": "Total",
-        "traffic-last-month": "Last Month",
+        "traffic-recent-days": "Recent Days",
         "vless-uuid": "VLESS UUID",
         "subscription": "Subscription",
         "userpage": "User Page",
@@ -179,7 +185,7 @@
         "current-status": "Current Status",
         "target-status": "Target Status",
         "traffic-total": "Total",
-        "traffic-last-month": "Last Month",
+        "traffic-recent-days": "Recent Days",
         "connections": "Open Connections",
         "cpu-load": "Cpu Load",
         "ram-load": "Ram Load",
