@@ -54,6 +54,7 @@ export function useExpandedRowRender<T>(
           dataSource: extendedDataSource(ctx.record),
           columns: extendedTableColumns,
           class: "table-ext-expand-table",
+          size: "small",
           scroll: { x: "100%" },
           showHeader: false,
           bordered: false,
