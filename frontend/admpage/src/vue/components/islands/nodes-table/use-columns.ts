@@ -1,68 +1,97 @@
 import { computed } from "vue";
-import { sm, type ExtendedColumn } from "@/vue/components/primitives/table-ext/table-types";
-import { type Node } from "@/services/api/generated/types.gen";
+import { sm, md, xl, type ExtendedColumn } from "@/vue/components/primitives/table-ext/table-types";
+import { type NodeView } from "@/services/api/generated/types.gen";
 import {
   makeConfigLine,
   makeConfigText,
   i18nateColumns,
 } from "@/vue/components/primitives/table-ext/render-primitives";
-import { renderTag, renderActions } from "./rendering";
+import { renderTag, renderActions, renderTraffic, renderLoad } from "./rendering";
 
 export function useNodesTableColumns(i18nPrefix: string) {
   return computed(() => {
-    const columns: ExtendedColumn<Node>[] = [
+    const columns: ExtendedColumn<NodeView>[] = [
       {
         key: "endpoint",
-        dataIndex: ["Config", "ConnectionInfo", "Endpoint"],
+        dataIndex: ["Node", "Config", "ConnectionInfo", "Endpoint"],
       },
       {
-        key: "current-status",
-        dataIndex: ["CurrentStatus"],
-        customRender: ({ value }) => renderTag(value),
+        key: "traffic-total",
+        dataIndex: ["Traffic", "Total"],
+        customRender: ({ value }) => renderTraffic(value),
         extended: sm,
       },
       {
+        key: "traffic-recent-days",
+        dataIndex: ["Traffic", "RecentDays"],
+        customRender: ({ value }) => renderTraffic(value),
+        extended: sm,
+      },
+      {
+        key: "current-status",
+        dataIndex: ["Node", "CurrentStatus"],
+        customRender: ({ value }) => renderTag(value),
+        extended: false,
+      },
+      {
         key: "target-status",
-        dataIndex: ["TargetStatus"],
+        dataIndex: ["Node", "TargetStatus"],
         customRender: ({ value }) => renderTag(value),
         extended: sm,
       },
       {
         key: "id",
-        dataIndex: ["ID"],
-        width: "10%",
+        dataIndex: ["Node", "ID"],
         extended: true,
       },
       {
         key: "version",
-        dataIndex: ["Config", "Settings", "Version"],
-        customRender: ({ text }) => {
-          return makeConfigLine(text);
-        },
+        dataIndex: ["Node", "Config", "Settings", "Version"],
+        customRender: ({ text }) => makeConfigLine(text),
         extended: true,
       },
       {
         key: "access-key",
-        dataIndex: ["Config", "ConnectionInfo", "AccessKey"],
+        dataIndex: ["Node", "Config", "ConnectionInfo", "AccessKey"],
         customRender: ({ text }) => makeConfigLine(text),
-        width: "8ch",
+        extended: true,
+      },
+      {
+        key: "connections",
+        dataIndex: ["Performance", "OpenConnections"],
+        extended: true,
+      },
+      {
+        key: "cpu-load",
+        dataIndex: ["Performance", "CpuLoad"],
+        customRender: ({ text }) => renderLoad(text),
+        extended: true,
+      },
+      {
+        key: "ram-load",
+        dataIndex: ["Performance", "RamLoad"],
+        customRender: ({ text }) => renderLoad(text),
+        extended: true,
+      },
+      {
+        key: "mem-load",
+        dataIndex: ["Performance", "MemLoad"],
+        customRender: ({ text }) => renderLoad(text),
         extended: true,
       },
       {
         key: "client-config",
-        dataIndex: ["Config", "Settings", "ClientConfigTemplate"],
-        customRender: ({ text }) => {
-          return makeConfigText(JSON.stringify(text, null, 2));
-        },
+        dataIndex: ["Node", "Config", "Settings", "ClientConfigTemplate"],
+        customRender: ({ text }) => makeConfigText(JSON.stringify(text, null, 2)),
         extended: true,
       },
       {
         key: "actions",
-        dataIndex: ["TargetStatus"],
-        customRender: ({ value, record }) => renderActions(value, record),
+        dataIndex: ["Node", "TargetStatus"],
+        customRender: ({ value, record }) => renderActions(value, record.Node),
         extended: true,
       },
     ];
-    return i18nateColumns<Node>(`${i18nPrefix}.columns`, columns);
+    return i18nateColumns<NodeView>(`${i18nPrefix}.columns`, columns);
   });
 }

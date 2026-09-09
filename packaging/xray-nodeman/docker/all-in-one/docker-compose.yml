@@ -1,6 +1,13 @@
+x-logging: &default-logging
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "10m"
+      max-file: "3"
+
 services:
   xrayman-db:
-    image: postgres:16-alpine
+    image: postgres:17-alpine
     container_name: xrayman-db
     restart: unless-stopped
     environment:
@@ -9,9 +16,10 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
     volumes:
       - xrayman_db_data:/var/lib/postgresql/data
+    <<: *default-logging
 
   xrayman-db-backup:
-    image: prodrigestivill/postgres-backup-local:16
+    image: prodrigestivill/postgres-backup-local:17
     container_name: xrayman-db-backup
     restart: unless-stopped
     depends_on:
@@ -26,6 +34,7 @@ services:
       POSTGRES_EXTRA_OPTS: "-Z6"
       SCHEDULE: "@daily"
       BACKUP_KEEP_DAYS: 7
+    <<: *default-logging
 
   xray-nodeman:
     image: ghcr.io/xray-addons/xray-nodeman:VERSION_PLACEHOLDER
@@ -39,6 +48,7 @@ services:
       XRAY_NODEMAN_DB: "postgresql://xrayman-user:${POSTGRES_PASSWORD}@xrayman-db:5432/xrayman-db?sslmode=disable"
       XRAY_NODEMAN_JWT: ${XRAY_NODEMAN_JWT:?Set XRAY_NODEMAN_JWT in .env file}
       XRAY_NODEMAN_ADM_PASS: ${XRAY_NODEMAN_ADM_PASS:?Set XRAY_NODEMAN_ADM_PASS in .env file}
+    <<: *default-logging
 
   vmetrics:
     image: victoriametrics/victoria-metrics:latest
@@ -49,6 +59,7 @@ services:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
     command:
       - "-promscrape.config=/etc/prometheus/prometheus.yml"
+    <<: *default-logging
 
   grafana:
     image: grafana/grafana-oss:latest
@@ -66,6 +77,7 @@ services:
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
       - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:?Set GRAFANA_ADMIN_USER in .env file}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD in .env file}
+    <<: *default-logging
 
 volumes:
   xrayman_db_data:

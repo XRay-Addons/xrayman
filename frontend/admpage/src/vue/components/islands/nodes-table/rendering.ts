@@ -1,4 +1,4 @@
-import { type NodeStatus, type Node } from "@/services/api/generated";
+import { type NodeStatus, type Node, type TrafficStats } from "@/services/api/generated";
 
 import {
   enabledTag,
@@ -11,7 +11,7 @@ import {
 } from "@/vue/components/primitives/table-ext/render-primitives";
 import { startNodeAction, stopNodeAction, deleteNodeAction } from "./btn-actions";
 
-import { type VNode } from "vue";
+import { type VNode, h } from "vue";
 
 export function renderTag(status: NodeStatus) {
   if (status === "stopped") {
@@ -21,6 +21,29 @@ export function renderTag(status: NodeStatus) {
   } else {
     return unknownTag("table.nodes.status.unknown");
   }
+}
+
+export function renderTraffic(traffic: TrafficStats) {
+  const total = traffic.Download + traffic.Upload;
+  return h("span", {}, trafficText(total));
+}
+
+function trafficText(traffic: number): string {
+  if (traffic == 0) {
+    return "0";
+  }
+
+  const suffixes = ["B", "KB", "MB", "GB", "TB"];
+  let suffixIdx = Math.floor(Math.log(traffic) / Math.log(1024));
+  suffixIdx = Math.min(suffixIdx, suffixes.length - 1);
+
+  const value = traffic / Math.pow(1024, suffixIdx);
+  return `${value.toFixed(1)} ${suffixes[suffixIdx]}`;
+}
+
+export function renderLoad(load: number) {
+  const value = Math.round(load);
+  return h("span", {}, `${value}%`);
 }
 
 export function renderActions(status: NodeStatus, node: Node) {

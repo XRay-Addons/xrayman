@@ -39,7 +39,7 @@ ListNodeResponse:
     Nodes:
       type: array
       items:
-        $ref: "../models/nodes.yaml#/Node"
+        $ref: "../models/nodes.yaml#/NodeView"
   required:
     - Nodes
 

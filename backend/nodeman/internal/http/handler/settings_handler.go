@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/converter"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/converter/convsettings"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/ogenserver"
 )
 
@@ -16,14 +16,14 @@ func (h *Handler) GetSettings(ctx context.Context) (*ogenserver.Settings, error)
 	if err != nil {
 		return nil, err
 	}
-	return converter.ConvertSettingsResult(*res), nil
+	return convsettings.ConvertSettingsResult(*res), nil
 }
 
 func (h *Handler) SetSettings(ctx context.Context, req *ogenserver.Settings) error {
 	if h == nil || h.settings == nil {
 		return errdefs.NilCall()
 	}
-	p, err := converter.ConvertSettingsRequest(*req)
+	p, err := convsettings.ConvertSettingsRequest(*req)
 	if err != nil {
 		return err
 	}

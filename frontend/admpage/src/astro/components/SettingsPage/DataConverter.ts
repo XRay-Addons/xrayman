@@ -1,6 +1,7 @@
 import { Settings } from "@/services/api/generated/types.gen";
 import type { ConfigData } from "@xrayman/shared/astro/primitives/Config/Config";
 import {
+  RecentDays,
   SubscrTitle,
   UsersMessage,
   UserPage,
@@ -13,6 +14,7 @@ import {
 
 export function toRawData(data: Settings): ConfigData {
   const rd = {
+    [RecentDays]: String(data.RecentDays),
     [SubscrTitle]: data.SubscrTitle,
     [UsersMessage]: data.UsersMessage,
     [UserPage]: data.UserPage,
@@ -36,12 +38,13 @@ export function toRawData(data: Settings): ConfigData {
 
 export function fromRawData(data: ConfigData): Settings {
   return {
+    RecentDays: parseInteger(getString(data, RecentDays) ?? "0"),
     SubscrTitle: getString(data, SubscrTitle) ?? "",
     UsersMessage: getString(data, UsersMessage) ?? "",
     UserPage: getString(data, UserPage) ?? "",
     TgPage: getString(data, TgPage) ?? "",
     Routing: getString(data, Routing) ?? "",
-    UpdateInterval: parseInteger(getString(data, UpdateInterval) ?? "1"),
+    UpdateInterval: parseInteger(getString(data, UpdateInterval) ?? "0"),
 
     AppLinks: getObjectArray(data, AppLinks, {
       Name: "",

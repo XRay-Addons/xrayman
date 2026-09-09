@@ -3,7 +3,7 @@ import SettingsPage from "./SettingsPage/SettingsPage.astro";
 import ButtonDialog from "@xrayman/shared/astro/primitives/ButtonDialog/ButtonDialog.astro";
 ---
 
-<ButtonDialog class="w-100 h-100" page:class="fluid-lg">
+<ButtonDialog class="w-100 h-100" page:class="fluid-lg" dlg:autofocus>
   <div slot="button" class="settings-icon"></div>
   <SettingsPage slot="page" />
 </ButtonDialog>

@@ -12,7 +12,7 @@ type Storage interface {
 	// add new node to storage, assign NodeID to node
 	NewNode(ctx context.Context, node *models.Node) error
 	// get all nodes
-	ListNodes(ctx context.Context) ([]models.Node, error)
+	ListNodeViews(ctx context.Context) ([]models.NodeView, error)
 	// change node target status
 	SetTargetNodeStatus(ctx context.Context, id models.NodeID,
 		status models.NodeStatus) error

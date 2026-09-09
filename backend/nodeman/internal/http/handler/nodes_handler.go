@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/converter"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/converter/convnodes"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/ogenserver"
 )
 
@@ -14,7 +14,7 @@ func (h *Handler) NewNode(ctx context.Context, req *ogenserver.NewNodeRequest) (
 	if h == nil || h.nodes == nil {
 		return nil, errdefs.NilCall()
 	}
-	p, err := converter.ConvertNewNodeRequest(req)
+	p, err := convnodes.ConvertNewNodeRequest(req)
 	if err != nil {
 		return nil, err
 	}
@@ -22,14 +22,14 @@ func (h *Handler) NewNode(ctx context.Context, req *ogenserver.NewNodeRequest) (
 	if err != nil {
 		return nil, err
 	}
-	return converter.ConvertNewNodeResult(res), nil
+	return convnodes.ConvertNewNodeResult(res), nil
 }
 
 func (h *Handler) StartNode(ctx context.Context, req *ogenserver.StartNodeRequest) error {
 	if h == nil || h.nodes == nil {
 		return errdefs.NilCall()
 	}
-	p, err := converter.ConvertStartNodeRequest(req)
+	p, err := convnodes.ConvertStartNodeRequest(req)
 	if err != nil {
 		return err
 	}
@@ -43,7 +43,7 @@ func (h *Handler) StopNode(ctx context.Context, req *ogenserver.StopNodeRequest)
 	if h == nil || h.nodes == nil {
 		return errdefs.NilCall()
 	}
-	p, err := converter.ConvertStopNodeRequest(req)
+	p, err := convnodes.ConvertStopNodeRequest(req)
 	if err != nil {
 		return err
 	}
@@ -61,14 +61,14 @@ func (h *Handler) ListNodes(ctx context.Context) (*ogenserver.ListNodeResponse, 
 	if err != nil {
 		return nil, err
 	}
-	return converter.ConvertListNodesResult(res), nil
+	return convnodes.ConvertListNodesResult(res), nil
 }
 
 func (h *Handler) DeleteNode(ctx context.Context, req *ogenserver.DeleteNodeRequest) error {
 	if h == nil || h.nodes == nil {
 		return errdefs.NilCall()
 	}
-	p, err := converter.ConvertDeleteNodeRequest(req)
+	p, err := convnodes.ConvertDeleteNodeRequest(req)
 	if err != nil {
 		return err
 	}

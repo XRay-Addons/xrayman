@@ -66,6 +66,24 @@ func (s *Storage) ListNodes(ctx context.Context) (
 	return convert.ListNodesResp(nodes)
 }
 
+func (s *Storage) ListNodeViews(ctx context.Context) (
+	[]models.NodeView, error,
+) {
+	// request
+	nodes, err := doAny(ctx, s, func(ctx context.Context,
+		q *queries.Queries) ([]queries.ListNodeViewsRow, error,
+	) {
+		nodes, err := q.ListNodeViews(ctx)
+		return nodes, err
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// post-convert
+	return convert.ListNodeViewsResp(nodes)
+}
+
 func (s *Storage) SetTargetNodeStatus(ctx context.Context,
 	id models.NodeID, status models.NodeStatus,
 ) error {

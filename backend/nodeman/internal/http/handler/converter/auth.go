@@ -9,7 +9,7 @@ import (
 
 // goverter:converter
 // goverter:output:format function
-// goverter:output:file ./auth_generated.go
+// goverter:output:file ./convauth/auth_generated.go
 // goverter:extend ConvertExpireTime
 // goverter:enum:unknown @panic
 //

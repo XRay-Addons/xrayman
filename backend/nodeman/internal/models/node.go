@@ -74,6 +74,18 @@ type Node struct {
 	TargetStatus  NodeStatus
 }
 
+type NodeTraffic struct {
+	Total       TrafficStats
+	RecentDays  TrafficStats
+	Performance NodePerformance
+}
+
+type NodeView struct {
+	Node        Node
+	Traffic     NodeTraffic
+	Performance NodePerformance
+}
+
 func (s NodeStatus) String() string {
 	switch s {
 	case NodeStatusStopped:

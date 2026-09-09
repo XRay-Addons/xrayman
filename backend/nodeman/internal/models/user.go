@@ -56,8 +56,8 @@ type TrafficStats struct {
 }
 
 type UserTraffic struct {
-	Total     TrafficStats
-	LastMonth TrafficStats
+	Total      TrafficStats
+	RecentDays TrafficStats
 }
 
 type UserView struct {

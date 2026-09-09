@@ -59,6 +59,31 @@ func ListNodesResp(r []queries.ListNodesRow) ([]models.Node, error) {
 		})
 }
 
+func ListNodeViewsResp(r []queries.ListNodeViewsRow) ([]models.NodeView, error) {
+	return cnvArr(r,
+		func(from *queries.ListNodeViewsRow, to *models.NodeView) {
+			to.Node.ID = models.NodeID(from.NodeID)
+			to.Node.CurrentStatus = models.NodeStatus(from.NodeCurrentStatus)
+			to.Node.TargetStatus = models.NodeStatus(from.NodeTargetStatus)
+			to.Node.Config.ConnectionInfo.Endpoint = from.NodeEndpoint
+			to.Node.Config.Settings.Version = from.Version
+			to.Traffic.Total.Download = from.DownloadTotal
+			to.Traffic.Total.Upload = from.UploadTotal
+			to.Traffic.RecentDays.Download = from.DownloadRecentDays
+			to.Traffic.RecentDays.Upload = from.UploadRecentDays
+			to.Performance.OpenConnections = from.OpenConnections
+			to.Performance.CpuLoad = from.CpuLoad
+			to.Performance.MemLoad = from.MemLoad
+			to.Performance.RamLoad = from.RamLoad
+		},
+		func(from *queries.ListNodeViewsRow, to *models.NodeView) error {
+			return to.Node.Config.ConnectionInfo.AccessKey.Scan(from.NodeAccessKey)
+		},
+		func(from *queries.ListNodeViewsRow, to *models.NodeView) error {
+			return to.Node.Config.Settings.ClientConfigTemplate.Scan(from.ClientCfgTemplate)
+		})
+}
+
 func SetNodeSettingsReq(id models.NodeID,
 	cfg *models.NodeSettings,
 ) (*queries.SetNodeSettingsParams, error) {
@@ -93,8 +118,8 @@ func GetUserViewResp(r *queries.GetUserViewRow) *models.UserView {
 			to.User.TargetStatus = models.UserStatus(from.UserTargetStatus)
 			to.Traffic.Total.Download = from.DownloadTotal
 			to.Traffic.Total.Upload = from.UploadTotal
-			to.Traffic.LastMonth.Download = from.DownloadLastDays
-			to.Traffic.LastMonth.Upload = from.UploadLastDays
+			to.Traffic.RecentDays.Download = from.DownloadRecentDays
+			to.Traffic.RecentDays.Upload = from.UploadRecentDays
 		})
 }
 
@@ -120,8 +145,8 @@ func ListUserViewsResp(r []queries.ListUserViewsRow) []models.UserView {
 			to.User.TargetStatus = models.UserStatus(from.UserTargetStatus)
 			to.Traffic.Total.Upload = from.UploadTotal
 			to.Traffic.Total.Download = from.DownloadTotal
-			to.Traffic.LastMonth.Download = from.DownloadLastDays
-			to.Traffic.LastMonth.Upload = from.UploadLastDays
+			to.Traffic.RecentDays.Download = from.DownloadRecentDays
+			to.Traffic.RecentDays.Upload = from.UploadRecentDays
 		},
 	)
 }

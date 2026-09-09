@@ -35,6 +35,61 @@ FROM nodes
 WHERE deleted_at IS NULL
 ORDER BY node_id ASC;
 
+-- name: ListNodeViews :many
+-- 1. settings -> now - (recent days count)
+WITH from_day AS (
+    SELECT
+        (CURRENT_DATE- COALESCE((settings->>'RecentDays')::int, 0))::date AS value
+    FROM settings
+)
+-- 2. select views from nodes
+SELECT
+    n.node_id,
+    n.client_cfg_template,
+    n.version,
+    n.node_endpoint,
+    n.node_access_key,
+    n.node_current_status,
+    n.node_target_status,
+
+    COALESCE(ts.upload, 0)   AS upload_total,
+    COALESCE(ts.download, 0) AS download_total,
+
+    (COALESCE(ts.upload, 0) - COALESCE(ds.upload, 0))::bigint AS upload_recent_days,
+    (COALESCE(ts.download, 0) - COALESCE(ds.download, 0))::bigint AS download_recent_days,
+
+    COALESCE(ts.open_connections, 0)  AS open_connections,
+    COALESCE(ts.cpu_load, 0)          AS cpu_load,
+    COALESCE(ts.ram_load, 0)          AS ram_load,
+    COALESCE(ts.mem_load, 0)          AS mem_load
+FROM nodes n
+-- 3. merged with stats and perf metrics
+LEFT JOIN (
+    SELECT
+        node_id,
+        upload,
+        download,
+        open_connections,
+        cpu_load,
+        ram_load,
+        mem_load
+    FROM nodes_stats
+) ts ON ts.node_id = n.node_id
+-- 4. and mention recent days interval
+LEFT JOIN (
+    SELECT DISTINCT ON (node_id)
+        node_id,
+        upload,
+        download
+    FROM daily_nodes_traffic
+    CROSS JOIN from_day
+    WHERE daily_nodes_traffic.day < from_day.value
+    ORDER BY node_id, day DESC
+) ds ON ds.node_id = n.node_id
+
+WHERE deleted_at IS NULL
+ORDER BY n.node_id ASC;
+
 -- name: SetTargetNodeStatus :exec
 UPDATE nodes
 SET

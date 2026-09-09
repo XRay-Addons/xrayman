@@ -6,7 +6,7 @@
       :columns="mainCols"
       :row-key="rowKey"
       :expanded-row-render="expandedRowRender"
-      size="medium"
+      size="small"
       :scroll="{ x: 'max-width' }"
       v-bind="$attrs"
     >

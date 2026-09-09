@@ -5,7 +5,7 @@ import (
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 
-	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/converter"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/converter/convauth"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/ogenserver"
 )
 
@@ -15,7 +15,7 @@ func (h *Handler) Auth(ctx context.Context, req *ogenserver.AuthRequest) (
 	if h == nil || h.auth == nil {
 		return nil, errdefs.NilCall()
 	}
-	p, err := converter.ConvertAuthRequest(req)
+	p, err := convauth.ConvertAuthRequest(req)
 	if err != nil {
 		return nil, err
 	}
@@ -23,5 +23,5 @@ func (h *Handler) Auth(ctx context.Context, req *ogenserver.AuthRequest) (
 	if err != nil {
 		return nil, err
 	}
-	return converter.ConvertAuthResult(res), nil
+	return convauth.ConvertAuthResult(res), nil
 }
