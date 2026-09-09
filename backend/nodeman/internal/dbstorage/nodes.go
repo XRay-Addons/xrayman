@@ -2,6 +2,7 @@ package dbstorage
 
 import (
 	"context"
+	"time"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/dbstorage/convert"
 	queries "github.com/XRay-Addons/xrayman/nodeman/internal/dbstorage/sqlc/gen"
@@ -64,6 +65,25 @@ func (s *Storage) ListNodes(ctx context.Context) (
 
 	// post-convert
 	return convert.ListNodesResp(nodes)
+}
+
+func (s *Storage) ListNodeViews(ctx context.Context) (
+	[]models.NodeView, error,
+) {
+	// request
+	from := time.Now().Add(-month)
+	nodes, err := doAny(ctx, s, func(ctx context.Context,
+		q *queries.Queries) ([]queries.ListNodeViewsRow, error,
+	) {
+		nodes, err := q.ListNodeViews(ctx, from)
+		return nodes, err
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// post-convert
+	return convert.ListNodeViewsResp(nodes)
 }
 
 func (s *Storage) SetTargetNodeStatus(ctx context.Context,

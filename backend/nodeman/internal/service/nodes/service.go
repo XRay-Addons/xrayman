@@ -102,7 +102,7 @@ func (s *Service) StopNode(ctx context.Context, p models.StopNodeParams) error {
 func (s *Service) ListNodes(ctx context.Context) (
 	*models.ListNodeResult, error,
 ) {
-	nodes, err := s.storage.ListNodes(ctx)
+	nodes, err := s.storage.ListNodeViews(ctx)
 	if err != nil {
 		return nil, err
 	}

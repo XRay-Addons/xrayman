@@ -10,7 +10,6 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/nodesync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
 )
 
 type UserStatus struct {
@@ -21,10 +20,11 @@ type UserStatus struct {
 
 type StableStorage interface {
 	poolsync.Storage
-	nodes.Storage
+
+	NewNode(context.Context, *models.Node) error
+	SetTargetNodeStatus(context.Context, models.NodeID, models.NodeStatus) error
 
 	NewUser(context.Context, *models.User) error
-	SetTargetNodeStatus(context.Context, models.NodeID, models.NodeStatus) error
 	SetTargetUserStatus(context.Context, models.UserID, models.UserStatus) error
 }
 

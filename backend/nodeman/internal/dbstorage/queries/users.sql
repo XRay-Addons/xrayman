@@ -21,26 +21,23 @@ SELECT
     u.vless_uuid,
     u.user_target_status,
 
-    COALESCE(total_stats.upload, 0)   AS upload_total,
-    COALESCE(total_stats.download, 0) AS download_total,
+    COALESCE(ts.upload, 0)   AS upload_total,
+    COALESCE(ts.download, 0) AS download_total,
 
-    (COALESCE(total_stats.upload, 0)
-      - COALESCE(daily_stats.upload, 0))::bigint AS upload_last_days,
-
-    (COALESCE(total_stats.download, 0)
-      - COALESCE(daily_stats.download, 0))::bigint AS download_last_days
+    (COALESCE(ts.upload, 0) - COALESCE(ds.upload, 0))::bigint AS upload_last_days,
+    (COALESCE(ts.download, 0) - COALESCE(ds.download, 0))::bigint AS download_last_days
 
 FROM users u
 
 LEFT JOIN (
     SELECT
         user_id,
-        SUM(upload)   AS upload,
-        SUM(download) AS download
+        upload,
+        download
     FROM total_users_traffic
     WHERE user_id = sqlc.arg(user_id)::bigint
     GROUP BY user_id
-) total_stats ON total_stats.user_id = u.user_id
+) ts ON ts.user_id = u.user_id
 
 LEFT JOIN (
     SELECT
@@ -51,7 +48,7 @@ LEFT JOIN (
       AND day < sqlc.arg(from_day)::date
     ORDER BY day DESC
     LIMIT 1
-) daily_stats ON TRUE
+) ds ON TRUE
 
 WHERE u.deleted_at IS NULL
   AND u.user_id = sqlc.arg(user_id)::bigint

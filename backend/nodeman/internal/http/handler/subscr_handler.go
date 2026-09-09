@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/converter"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/converter/convsubscriptions"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/ogenserver"
 	"github.com/go-faster/jx"
 )
@@ -15,7 +15,7 @@ func (h *Handler) UserSub(ctx context.Context, req ogenserver.UserSubParams) (
 	if h == nil || h.subscr == nil {
 		return nil, errdefs.NilCall()
 	}
-	p, err := converter.ConvertUserSubRequest(&req)
+	p, err := convsubscriptions.ConvertUserSubRequest(&req)
 	if err != nil {
 		return nil, err
 	}
@@ -23,7 +23,7 @@ func (h *Handler) UserSub(ctx context.Context, req ogenserver.UserSubParams) (
 	if err != nil {
 		return nil, err
 	}
-	subResponse, err := converter.ConvertUserSubResultBody(sub.ClientConfigs)
+	subResponse, err := convsubscriptions.ConvertUserSubResultBody(sub.ClientConfigs)
 	if err != nil {
 		return nil, err
 	}

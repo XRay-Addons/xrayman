@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/converter"
+	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/converter/convusers"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler/ogenserver"
 )
 
@@ -12,7 +12,7 @@ func (h *Handler) NewUser(ctx context.Context, req *ogenserver.NewUserRequest) (
 	if h == nil || h.users == nil {
 		return nil, errdefs.NilCall()
 	}
-	p, err := converter.ConvertNewUserRequest(req)
+	p, err := convusers.ConvertNewUserRequest(req)
 	if err != nil {
 		return nil, err
 	}
@@ -20,14 +20,14 @@ func (h *Handler) NewUser(ctx context.Context, req *ogenserver.NewUserRequest) (
 	if err != nil {
 		return nil, err
 	}
-	return converter.ConvertNewUserResult(res), nil
+	return convusers.ConvertNewUserResult(res), nil
 }
 
 func (h *Handler) GetUser(ctx context.Context, req ogenserver.GetUserParams) (*ogenserver.UserView, error) {
 	if h == nil || h.users == nil {
 		return nil, errdefs.NilCall()
 	}
-	p, err := converter.ConvertGetUserRequest(&req)
+	p, err := convusers.ConvertGetUserRequest(&req)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func (h *Handler) GetUser(ctx context.Context, req ogenserver.GetUserParams) (*o
 	if err != nil {
 		return nil, err
 	}
-	userResponse := converter.ConvertGetUserResult(user)
+	userResponse := convusers.ConvertGetUserResult(user)
 	return userResponse, nil
 }
 
@@ -47,14 +47,14 @@ func (h *Handler) ListUsers(ctx context.Context) (*ogenserver.ListUsersResponse,
 	if err != nil {
 		return nil, err
 	}
-	return converter.ConvertListUsersResult(res), nil
+	return convusers.ConvertListUsersResult(res), nil
 }
 
 func (h *Handler) EnableUser(ctx context.Context, req *ogenserver.EnableUserRequest) error {
 	if h == nil || h.users == nil {
 		return errdefs.NilCall()
 	}
-	p, err := converter.ConvertEnableUserRequest(req)
+	p, err := convusers.ConvertEnableUserRequest(req)
 	if err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func (h *Handler) DisableUser(ctx context.Context, req *ogenserver.DisableUserRe
 	if h == nil || h.users == nil {
 		return errdefs.NilCall()
 	}
-	p, err := converter.ConvertDisableUserRequest(req)
+	p, err := convusers.ConvertDisableUserRequest(req)
 	if err != nil {
 		return err
 	}
@@ -82,7 +82,7 @@ func (h *Handler) DeleteUser(ctx context.Context, req *ogenserver.DeleteUserRequ
 	if h == nil || h.users == nil {
 		return errdefs.NilCall()
 	}
-	p, err := converter.ConvertDeleteUserRequest(req)
+	p, err := convusers.ConvertDeleteUserRequest(req)
 	if err != nil {
 		return err
 	}

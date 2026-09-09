@@ -16,7 +16,7 @@ import {
   setSettings as _setSettings,
   getVersion as _getVersion,
 } from "./generated/sdk.gen";
-import type { User, Node, AuthResponse, UserView, Settings } from "./generated/types.gen";
+import type { User, Node, AuthResponse, UserView, Settings, NodeView } from "./generated/types.gen";
 
 export async function auth(pwd: string): Promise<ApiResult<AuthResponse>> {
   return handleAPI(
@@ -60,7 +60,7 @@ export async function deleteUser(id: number): Promise<ApiResult<void>> {
   );
 }
 
-export async function listNodes(): Promise<ApiResult<Array<Node>>> {
+export async function listNodes(): Promise<ApiResult<Array<NodeView>>> {
   return handleAPI(
     () => _listNodes(),
     (data) => data.Nodes,

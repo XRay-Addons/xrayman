@@ -18,7 +18,7 @@ type StopNodeParams struct {
 }
 
 type ListNodeResult struct {
-	Nodes []Node
+	Nodes []NodeView
 }
 
 type DeleteNodeParams struct {

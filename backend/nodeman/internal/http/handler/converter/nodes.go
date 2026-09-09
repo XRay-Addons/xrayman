@@ -8,7 +8,7 @@ import (
 
 // goverter:converter
 // goverter:output:format function
-// goverter:output:file ./nodes_generated.go
+// goverter:output:file ./convnodes/nodes_generated.go
 // goverter:extend ConvertAccessKey RConvertAccessKey
 // goverter:enum:unknown @panic
 //

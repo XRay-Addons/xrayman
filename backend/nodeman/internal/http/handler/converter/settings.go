@@ -7,7 +7,7 @@ import (
 
 // goverter:converter
 // goverter:output:format function
-// goverter:output:file ./settings_generated.go
+// goverter:output:file ./convsettings/settings_generated.go
 // goverter:enum:unknown @panic
 //
 //go:generate goverter gen .

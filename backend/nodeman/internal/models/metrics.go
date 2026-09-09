@@ -1,6 +1,6 @@
 package models
 
-type NodeTraffic struct {
+type NodeTrafficMetrics struct {
 	Upload   int64
 	Download int64
 }
@@ -8,6 +8,6 @@ type NodeTraffic struct {
 type NodeMetrics struct {
 	ID          NodeID
 	Endpoint    string
-	Traffic     NodeTraffic
+	Traffic     NodeTrafficMetrics
 	Performance NodePerformance
 }

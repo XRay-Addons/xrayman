@@ -8,7 +8,7 @@ import (
 
 // goverter:converter
 // goverter:output:format function
-// goverter:output:file ./subscriptions_generated.go
+// goverter:output:file ./convsubscriptions/subscriptions_generated.go
 // goverter:enum:unknown @panic
 //
 //go:generate goverter gen .
