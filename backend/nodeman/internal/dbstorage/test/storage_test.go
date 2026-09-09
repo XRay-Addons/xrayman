@@ -427,3 +427,48 @@ func TestStorage_Tx(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 4, len(nodes))
 }
+
+func TestStorage_FailedTx(t *testing.T) {
+	logger := zaptest.NewLogger(t)
+	ctx := context.Background()
+
+	s, _ := setupTestDB(t, logger)
+	logger.Info("new test db inited")
+
+	node1 := models.Node{
+		CurrentStatus: models.NodeStatusRunning,
+		TargetStatus:  models.NodeStatusRunning,
+	}
+	node2 := models.Node{
+		CurrentStatus: models.NodeStatusRunning,
+		TargetStatus:  models.NodeStatusRunning,
+	}
+	node3 := models.Node{
+		CurrentStatus: models.NodeStatusRunning,
+		TargetStatus:  models.NodeStatusRunning,
+	}
+
+	err := s.DoTx(ctx, func(ctx context.Context) error {
+		// no error
+		if err := s.NewNode(ctx, &node1); err != nil {
+			return err
+		}
+		if err := s.NewNode(ctx, &node2); err != nil {
+			return err
+		}
+		if err := s.NewNode(ctx, &node3); err != nil {
+			return err
+		}
+		return nil
+		//return xerr.New("tx error")
+	})
+	require.Error(t, err)
+
+	var nodes []models.Node
+	err = s.DoTx(ctx, func(ctx context.Context) (err error) {
+		nodes, err = s.ListNodes(ctx)
+		return
+	})
+	require.NoError(t, err)
+	require.Equal(t, 0, len(nodes))
+}

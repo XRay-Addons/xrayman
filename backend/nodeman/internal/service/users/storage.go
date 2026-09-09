@@ -21,6 +21,8 @@ type Storage interface {
 	// delete user
 	DeleteUser(ctx context.Context,
 		id models.UserID) error
+	// list user nodes
+	GetUserNodes(ctx context.Context, id models.UserID) ([]models.Node, error)
 	// call multiple operations as tx
 	DoTx(ctx context.Context, fn TxFn) error
 }
