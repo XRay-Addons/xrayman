@@ -69,8 +69,8 @@ func ListNodeViewsResp(r []queries.ListNodeViewsRow) ([]models.NodeView, error) 
 			to.Node.Config.Settings.Version = from.Version
 			to.Traffic.Total.Download = from.DownloadTotal
 			to.Traffic.Total.Upload = from.UploadTotal
-			to.Traffic.LastMonth.Download = from.DownloadLastDays
-			to.Traffic.LastMonth.Upload = from.UploadLastDays
+			to.Traffic.RecentDays.Download = from.DownloadRecentDays
+			to.Traffic.RecentDays.Upload = from.UploadRecentDays
 			to.Performance.OpenConnections = from.OpenConnections
 			to.Performance.CpuLoad = from.CpuLoad
 			to.Performance.MemLoad = from.MemLoad
@@ -118,8 +118,8 @@ func GetUserViewResp(r *queries.GetUserViewRow) *models.UserView {
 			to.User.TargetStatus = models.UserStatus(from.UserTargetStatus)
 			to.Traffic.Total.Download = from.DownloadTotal
 			to.Traffic.Total.Upload = from.UploadTotal
-			to.Traffic.LastMonth.Download = from.DownloadLastDays
-			to.Traffic.LastMonth.Upload = from.UploadLastDays
+			to.Traffic.RecentDays.Download = from.DownloadRecentDays
+			to.Traffic.RecentDays.Upload = from.UploadRecentDays
 		})
 }
 
@@ -145,8 +145,8 @@ func ListUserViewsResp(r []queries.ListUserViewsRow) []models.UserView {
 			to.User.TargetStatus = models.UserStatus(from.UserTargetStatus)
 			to.Traffic.Total.Upload = from.UploadTotal
 			to.Traffic.Total.Download = from.DownloadTotal
-			to.Traffic.LastMonth.Download = from.DownloadLastDays
-			to.Traffic.LastMonth.Upload = from.UploadLastDays
+			to.Traffic.RecentDays.Download = from.DownloadRecentDays
+			to.Traffic.RecentDays.Upload = from.UploadRecentDays
 		},
 	)
 }

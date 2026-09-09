@@ -259,24 +259,24 @@ func TestStorage_Stats(t *testing.T) {
 	require.Equal(t, int64(14), usersList[1].Traffic.Total.Upload)
 	require.Equal(t, int64(16), usersList[1].Traffic.Total.Download)
 
-	require.Equal(t, int64(0), usersList[0].Traffic.LastMonth.Upload)
-	require.Equal(t, int64(0), usersList[0].Traffic.LastMonth.Download)
-	require.Equal(t, int64(11), usersList[1].Traffic.LastMonth.Upload)
-	require.Equal(t, int64(12), usersList[1].Traffic.LastMonth.Download)
+	require.Equal(t, int64(0), usersList[0].Traffic.RecentDays.Upload)
+	require.Equal(t, int64(0), usersList[0].Traffic.RecentDays.Download)
+	require.Equal(t, int64(11), usersList[1].Traffic.RecentDays.Upload)
+	require.Equal(t, int64(12), usersList[1].Traffic.RecentDays.Download)
 
 	userView, err := s.GetUserView(ctx, user1.Profile.ID, user1.Profile.Name)
 	require.NoError(t, err)
 	require.Equal(t, int64(6), userView.Traffic.Total.Upload)
 	require.Equal(t, int64(8), userView.Traffic.Total.Download)
-	require.Equal(t, int64(0), userView.Traffic.LastMonth.Upload)
-	require.Equal(t, int64(0), userView.Traffic.LastMonth.Download)
+	require.Equal(t, int64(0), userView.Traffic.RecentDays.Upload)
+	require.Equal(t, int64(0), userView.Traffic.RecentDays.Download)
 
 	userView, err = s.GetUserView(ctx, user2.Profile.ID, user2.Profile.Name)
 	require.NoError(t, err)
 	require.Equal(t, int64(14), userView.Traffic.Total.Upload)
 	require.Equal(t, int64(16), userView.Traffic.Total.Download)
-	require.Equal(t, int64(11), userView.Traffic.LastMonth.Upload)
-	require.Equal(t, int64(12), userView.Traffic.LastMonth.Download)
+	require.Equal(t, int64(11), userView.Traffic.RecentDays.Upload)
+	require.Equal(t, int64(12), userView.Traffic.RecentDays.Download)
 }
 
 func TestStorage_Password(t *testing.T) {

@@ -76,7 +76,7 @@ type Node struct {
 
 type NodeTraffic struct {
 	Total       TrafficStats
-	LastMonth   TrafficStats
+	RecentDays  TrafficStats
 	Performance NodePerformance
 }
 

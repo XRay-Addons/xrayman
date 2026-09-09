@@ -55,8 +55,8 @@ SELECT
     COALESCE(ts.upload, 0)   AS upload_total,
     COALESCE(ts.download, 0) AS download_total,
 
-    (COALESCE(ts.upload, 0) - COALESCE(ds.upload, 0))::bigint AS upload_last_days,
-    (COALESCE(ts.download, 0) - COALESCE(ds.download, 0))::bigint AS download_last_days,
+    (COALESCE(ts.upload, 0) - COALESCE(ds.upload, 0))::bigint AS upload_recent_days,
+    (COALESCE(ts.download, 0) - COALESCE(ds.download, 0))::bigint AS download_recent_days,
 
     COALESCE(ts.open_connections, 0)  AS open_connections,
     COALESCE(ts.cpu_load, 0)          AS cpu_load,
@@ -75,7 +75,7 @@ LEFT JOIN (
         mem_load
     FROM nodes_stats
 ) ts ON ts.node_id = n.node_id
--- 4. and mention last days interval
+-- 4. and mention recent days interval
 LEFT JOIN (
     SELECT DISTINCT ON (node_id)
         node_id,

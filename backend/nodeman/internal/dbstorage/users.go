@@ -2,14 +2,11 @@ package dbstorage
 
 import (
 	"context"
-	"time"
 
 	"github.com/XRay-Addons/xrayman/nodeman/internal/dbstorage/convert"
 	queries "github.com/XRay-Addons/xrayman/nodeman/internal/dbstorage/sqlc/gen"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
-
-const month = 30 * 24 * time.Hour
 
 func (s *Storage) NewUser(ctx context.Context, user *models.User) error {
 	// pre-convert

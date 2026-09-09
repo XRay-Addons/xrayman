@@ -3,11 +3,11 @@ Traffic:
   properties:
     Total:
       $ref: "#/TrafficStats"
-    LastMonth:
+    RecentDays:
       $ref: "#/TrafficStats"
   required:
     - Total
-    - LastMonth
+    - RecentDays
 
 TrafficStats:
   type: object

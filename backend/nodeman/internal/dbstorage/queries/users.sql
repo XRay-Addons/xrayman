@@ -31,8 +31,8 @@ SELECT
     COALESCE(ts.upload, 0)   AS upload_total,
     COALESCE(ts.download, 0) AS download_total,
 
-    (COALESCE(ts.upload, 0) - COALESCE(ds.upload, 0))::bigint AS upload_last_days,
-    (COALESCE(ts.download, 0) - COALESCE(ds.download, 0))::bigint AS download_last_days
+    (COALESCE(ts.upload, 0) - COALESCE(ds.upload, 0))::bigint AS upload_recent_days,
+    (COALESCE(ts.download, 0) - COALESCE(ds.download, 0))::bigint AS download_recent_days
 FROM users u
 -- 3. merged with stats
 LEFT JOIN (
@@ -44,7 +44,7 @@ LEFT JOIN (
     WHERE user_id = sqlc.arg(user_id)::bigint
     GROUP BY user_id
 ) ts ON ts.user_id = u.user_id
--- 4. and mention last days interval
+-- 4. and mention recent days interval
 LEFT JOIN (
     SELECT
         upload,
@@ -90,8 +90,8 @@ SELECT
     COALESCE(ts.upload, 0)   AS upload_total,
     COALESCE(ts.download, 0) AS download_total,
 
-    (COALESCE(ts.upload, 0) - COALESCE(ds.upload, 0))::bigint AS upload_last_days,
-    (COALESCE(ts.download, 0) - COALESCE(ds.download, 0))::bigint AS download_last_days
+    (COALESCE(ts.upload, 0) - COALESCE(ds.upload, 0))::bigint AS upload_recent_days,
+    (COALESCE(ts.download, 0) - COALESCE(ds.download, 0))::bigint AS download_recent_days
 FROM users u
 -- 3. merged with stats
 LEFT JOIN (
@@ -101,7 +101,7 @@ LEFT JOIN (
         download
     FROM total_users_traffic
 ) ts ON ts.user_id = u.user_id
--- 4. and mention last days interval
+-- 4. and mention recent days interval
 LEFT JOIN (
     SELECT DISTINCT ON (user_id)
         user_id,
