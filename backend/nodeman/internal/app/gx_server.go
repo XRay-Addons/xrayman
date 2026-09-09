@@ -93,11 +93,12 @@ type HttpServerParams struct {
 	gx.In
 	Cfg    *config.Config
 	Router http.Handler `name:"http-router"`
+	Log    *zap.Logger
 }
 
 var httpServer = gx.ProvideNamed(
 	func(p HttpServerParams) (*server.HttpServer, error) {
-		return server.New(p.Cfg.Endpoint, p.Router)
+		return server.New(p.Cfg.Endpoint, p.Router, server.WithLog(p.Log))
 	},
 	"http-server",
 )

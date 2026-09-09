@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type HttpServer struct {
@@ -24,6 +26,7 @@ const (
 
 type options struct {
 	tls *tls.Config
+	log *zap.Logger
 }
 
 type option = func(o *options)
@@ -34,8 +37,18 @@ func WithTLS(tls *tls.Config) option {
 	}
 }
 
+func WithLog(log *zap.Logger) option {
+	return func(o *options) {
+		if log != nil {
+			o.log = log
+		}
+	}
+}
+
 func New(endpoint string, handler http.Handler, opts ...option) (*HttpServer, error) {
-	cfg := options{}
+	cfg := options{
+		log: zap.NewNop(),
+	}
 	for _, o := range opts {
 		o(&cfg)
 	}
@@ -44,11 +57,17 @@ func New(endpoint string, handler http.Handler, opts ...option) (*HttpServer, er
 		return nil, xerr.NilArg("handler")
 	}
 
+	errlog, err := zap.NewStdLogAt(cfg.log, zapcore.ErrorLevel)
+	if err != nil {
+		return nil, xerr.WrapWithStack(err)
+	}
+
 	return &HttpServer{
 		server: http.Server{
 			Addr:      endpoint,
 			Handler:   handler,
 			TLSConfig: cfg.tls,
+			ErrorLog:  errlog,
 
 			ReadHeaderTimeout: defaultReadHeaderTimeout,
 			ReadTimeout:       defaultReadTimeout,
