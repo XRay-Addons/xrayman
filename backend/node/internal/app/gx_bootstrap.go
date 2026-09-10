@@ -5,6 +5,7 @@ import (
 
 	"github.com/XRay-Addons/xrayman/common/gx"
 	"github.com/XRay-Addons/xrayman/common/xerr"
+	"github.com/XRay-Addons/xrayman/node/internal/infra/xray/clientcfg"
 	"github.com/XRay-Addons/xrayman/node/internal/infra/xray/xrayapi"
 	"github.com/XRay-Addons/xrayman/node/internal/models"
 	"github.com/XRay-Addons/xrayman/node/internal/service"
@@ -47,6 +48,16 @@ var checkXRay = gx.Invoke(
 	},
 )
 
+var logConfig = gx.Invoke(
+	func(c *clientcfg.Config, log *zap.Logger) {
+		if tmpl, err := c.GetTemplate(); err == nil {
+			log.Warn("client config placeholdders",
+				zap.String("vless email", tmpl.VlessEmailField),
+				zap.String("vless uuid", tmpl.VlessUUIDField),
+			)
+		}
+	},
+)
 var logNodeAccess = gx.Invoke(
 	func(k models.AccessKey, log *zap.Logger) {
 		log.Warn("node access", zap.String("key", k.String()))
@@ -56,6 +67,7 @@ var logNodeAccess = gx.Invoke(
 )
 
 var Bootstrap = gx.Module("bootstrap",
+	logConfig,
 	logNodeAccess,
 	checkXRay,
 )

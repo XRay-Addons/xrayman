@@ -48,6 +48,7 @@ var Config = gx.Module("config",
 	gx.ProvideAnnotated(
 		clientcfg.New,
 		gx.As(new(service.ClientConfig)),
+		gx.As(gx.Self()),
 		gx.ParamTags(`name:"xray-client"`),
 	),
 )

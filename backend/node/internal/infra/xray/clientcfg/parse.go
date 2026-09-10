@@ -54,8 +54,11 @@ func extractVlessUUIDField(cfg string) (string, error) {
 func getUsers(cfgs gjson.Result) []gjson.Result {
 	users := make([]gjson.Result, 0)
 	cfgs.ForEach(func(_, cfg gjson.Result) bool {
-		cfg.Get(`outbounds.#(protocol=="vless")#`).ForEach(func(_, o gjson.Result) bool {
-			o.Get("settings.vnext").ForEach(func(_, v gjson.Result) bool {
+		cfg.Get(`outbounds.#(protocol=="vless")#`).ForEach(func(_, s gjson.Result) bool {
+			// actual user settings location: settings
+			users = append(users, s.Get("settings"))
+			// legacy users location: settings -> vnext -> users
+			s.Get("settings.vnext").ForEach(func(_, v gjson.Result) bool {
 				v.Get("users").ForEach(func(_, u gjson.Result) bool {
 					users = append(users, u)
 					return true
