@@ -18,7 +18,7 @@ console.log("dlgprops", dlgProps);
   <dialog class:list={["app-dialog", dlgClass]} data-app-desktop-dialog {...dlgProps}>
     <div class="app-dialog-page p-2" data-dialog-page>
       <div class:list={["dialog-surface-wrapper", pageClass]} {...pageProps}>
-        <Surface in:class="p-2" color="var(--bg-color)">
+        <Surface in:class="p-2" color="var(--bg-color)" in:data-dialog-content>
           <slot name="page" />
         </Surface>
       </div>
@@ -34,7 +34,6 @@ console.log("dlgprops", dlgProps);
   class DesktopDialog extends CustomElement {
     private dialog!: HTMLDialogElement;
     private page!: HTMLElement;
-    private closeBtn!: HTMLButtonElement;
 
     connectedCallback() {
       this.dialog = pt<HTMLDialogElement>(this, "app-desktop-dialog");
@@ -56,11 +55,8 @@ console.log("dlgprops", dlgProps);
     }
 
     private reset() {
-      const wrapper = this.page.querySelector(".dialog-surface-wrapper");
-      const target = wrapper || this.page;
-
-      Array.from(target.children).forEach((el) => {
-        if (el === this.closeBtn) return;
+      const dialogContent = pt<HTMLElement>(this, "dialog-content");
+      dialogContent.querySelectorAll("*").forEach((el) => {
         (el as Partial<Resettable>).reset?.();
       });
     }

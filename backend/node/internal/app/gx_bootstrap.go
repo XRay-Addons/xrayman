@@ -47,6 +47,15 @@ var checkXRay = gx.Invoke(
 	},
 )
 
+var logNodeAccess = gx.Invoke(
+	func(k models.AccessKey, log *zap.Logger) {
+		log.Warn("node access", zap.String("key", k.String()))
+		log.Warn("node access", zap.String("key", k.String()))
+		log.Warn("node access", zap.String("key", k.String()))
+	},
+)
+
 var Bootstrap = gx.Module("bootstrap",
+	logNodeAccess,
 	checkXRay,
 )

@@ -53,11 +53,13 @@ type ServerParams struct {
 	Endpoint string       `name:"endpoint"`
 	Router   http.Handler `name:"router"`
 	TLS      *tls.Config
+	Log      *zap.Logger
 }
 
 var s = gx.Provide(
 	func(p ServerParams) (*server.HttpServer, error) {
-		return server.New(p.Endpoint, p.Router, server.WithTLS(p.TLS))
+		return server.New(p.Endpoint, p.Router,
+			server.WithTLS(p.TLS), server.WithLog(p.Log))
 	},
 )
 

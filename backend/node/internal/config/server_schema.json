@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+
+  "required": ["log", "dns", "api", "stats", "policy", "inbounds", "outbounds"],
+
+  "properties": {
+    "log": { "type": "object" },
+
+    "dns": { "type": "object" },
+
+    "stats": { "type": "object" },
+
+    "api": {
+      "type": "object",
+
+      "required": ["tag", "listen", "services"],
+
+      "properties": {
+        "tag": { "type": "string" },
+
+        "listen": { "type": "string" },
+
+        "services": {
+          "type": "array",
+          "allOf": [
+            { "contains": { "const": "HandlerService" } },
+            { "contains": { "const": "LoggerService" } },
+            { "contains": { "const": "StatsService" } },
+            { "contains": { "const": "ReflectionService" } }
+          ]
+        }
+      }
+    },
+
+    "policy": {
+      "const": {
+        "levels": {
+          "0": {
+            "statsUserUplink": true,
+            "statsUserDownlink": true,
+            "statsUserOnline": true
+          }
+        },
+        "system": {
+          "statsInboundUplink": true,
+          "statsInboundDownlink": true,
+          "statsOutboundUplink": true,
+          "statsOutboundDownlink": true
+        }
+      }
+    },
+
+    "inbounds": {
+      "type": "array",
+      "minItems": 1,
+
+      "items": {
+        "type": "object",
+
+        "required": ["tag"],
+
+        "properties": {
+          "tag": { "type": "string" }
+        }
+      }
+    },
+
+    "outbounds": {
+      "type": "array",
+      "minItems": 1
+    }
+  },
+
+  "additionalProperties": true
+}

@@ -33,6 +33,7 @@ const i18n = "settings";
 
 <script>
   import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+  import { addSubmitListener } from "@xrayman/shared/features/submit";
   import { pt } from "@xrayman/shared/runtime/dom/pts";
   import type { ConfigEditorElement } from "@xrayman/shared/astro/primitives/Config/Config";
   import { getSettings, setSettings } from "@/services/api/client";
@@ -84,12 +85,7 @@ const i18n = "settings";
         }, 2000);
       };
 
-      submitBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        form.requestSubmit();
-      });
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
+      addSubmitListener(submitBtn, form, async () => {
         await update();
       });
 

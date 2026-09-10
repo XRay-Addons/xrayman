@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/http/handler"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/supervisor"
@@ -84,14 +85,19 @@ func (s *Service) NewUser(ctx context.Context, p models.NewUserParams) (
 	// to new user and avoid situation when nodes are temporary
 	// unavailable, user successfully created and get empty
 	// subscription config just after that.
-	if err := s.storage.DoTx(ctx, func(context.Context) error {
+	if err := s.storage.DoTx(ctx, func(ctx context.Context) error {
 		if err := s.storage.NewUser(ctx, &user); err != nil {
 			return err
 		}
-		if err := s.syncAllNodes(ctx); err != nil {
-			return err
+		// if at least one node available for user, it's ok
+		syncErr := s.syncAllNodes(ctx)
+		nodes, listErr := s.storage.GetUserNodes(ctx, user.Profile.ID)
+		if listErr == nil && (len(nodes) > 0 || syncErr == nil) {
+			return nil
 		}
-		return nil
+		// no available nodes. but sometimes it is still ok: if all nodes
+		// synced successfully, but it's going as planned
+		return xerr.Join(syncErr, listErr)
 	}); err != nil {
 		return nil, err
 	}

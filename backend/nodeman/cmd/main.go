@@ -18,6 +18,7 @@ func main() {
 	}
 
 	if cli.Version {
+		// fmt, not log. no formats, no timestamp - just version
 		fmt.Println(version.String())
 		return
 	}

@@ -48,6 +48,7 @@ const fields: (InputField | ListField)[] = [
   import type { Resettable } from "@xrayman/shared/astro/primitives/ButtonDialog/ButtonDialog";
   import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
   import { pt } from "@xrayman/shared/runtime/dom/pts";
+  import { addSubmitListener } from "@xrayman/shared/features/submit";
   import type { ConfigEditorElement } from "@xrayman/shared/astro/primitives/Config/Config";
   import type { ActiveSlotElement } from "@xrayman/shared/astro/primitives/ActiveSlot/ActiveSlot";
   import { t } from "@/runtime/i18n";
@@ -62,15 +63,9 @@ const fields: (InputField | ListField)[] = [
 
       const submitBtn = pt<HTMLButtonElement>(this, "submit-btn");
       const submitBtnContent = pt<ActiveSlotElement>(this, "submit-btn-content");
-
-      submitBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        form.requestSubmit();
-      });
-
       const form = pt<HTMLFormElement>(this, "config-form");
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
+
+      addSubmitListener(submitBtn, form, async () => {
         const value = this.configEl.value;
         const endpoint = value.endpoint as string;
         const accesskey = value.accesskey as string;
@@ -85,6 +80,7 @@ const fields: (InputField | ListField)[] = [
           submitBtnContent.value = undefined;
           return;
         }
+        this.reset();
         reloadNodes({ quiet: true });
 
         // show back
