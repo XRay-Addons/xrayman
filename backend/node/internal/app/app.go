@@ -32,7 +32,6 @@ func New(cfg *config.Config, log *zap.Logger) (app *App, err error) {
 		Performance,
 		Server,
 		Bootstrap,
-		Startup,
 		Jobs,
 	)
 
