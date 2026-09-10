@@ -178,9 +178,7 @@ JQ install page: https://jqlang.org/download/
 
 ### Add alias for go zap logs viewer
 
-#### OSX
-
-Open `~/.zshrc`
+Edit shell settings file, `~/.zshrc` on MacOS, `~/.bashrc` or whatever on Linux
 
 ```sh
 sudo nano ~/.zshrc
@@ -191,30 +189,34 @@ Add `zl` - alias for formatting zap logs
 ```sh
 # >>> zl - jq setup for go zap log formatting >>>
 zl() {
-jq -r '
-  def level_color:
-    if . == "error" then "\u001b[31m"
-    elif . == "warn" then "\u001b[33m"
-    elif . == "info" then "\u001b[32m"
-    elif . == "debug" then "\u001b[36m"
-    else "\u001b[0m"
-    end;
+  jq -Rr '
+    def level_color:
+      if . == "error" then "\u001b[31m"
+      elif . == "warn" then "\u001b[33m"
+      elif . == "info" then "\u001b[32m"
+      elif . == "debug" then "\u001b[36m"
+      else "\u001b[0m"
+      end;
 
-  . as $log
-  |
-  "\($log.ts) \($log.level | level_color)\($log.level | ascii_upcase)\u001b[0m \($log.msg)",
-  ($log
-    | to_entries[]
-    | select(.key != "ts" and .key != "level" and .key != "msg")
-    | if (.value | type) == "string" and (.value | contains("\n")) then
-        "- \u001b[36m\(.key)\u001b[0m:\n\(.value | split("\n") | map("    " + .) | join("\n"))"
-      else
-        "- \u001b[36m\(.key)\u001b[0m: \(.value)"
-      end
-  )
-'
+    . as $line
+    | (try ($line | fromjson) catch null) as $log
+    | if ($log | type) == "object" then
+      "\($log.ts) \($log.level | level_color)\($log.level | ascii_upcase)\u001b[0m \($log.msg)",
+      ($log
+        | to_entries[]
+        | select(.key != "ts" and .key != "level" and .key != "msg")
+        | if (.value | type) == "string" and (.value | contains("\n")) then
+            "- \u001b[36m\(.key)\u001b[0m:\n\(.value | split("\n") | map("    " + .) | join("\n"))"
+          else
+            "- \u001b[36m\(.key)\u001b[0m: \(.value)"
+          end
+      )
+    else
+      $line
+    end
+  '
 }
-# <<< zlog initializing <<<
+# <<< zl setup done <<<
 ```
 
 Apply modifications
