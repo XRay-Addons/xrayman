@@ -10,32 +10,32 @@ import (
 
 func Validate(c *Config) error {
 	if err := checkEndpoint(c.Endpoint); err != nil {
-		return xerr.InvalidArgf("endpoint: '%s', %v", c.Endpoint, err)
+		return xerr.InvalidArg("endpoint", c.Endpoint, err)
 	}
 	if err := checkDBConn(c.DBConn); err != nil {
-		return xerr.InvalidArgf("db conn: '%s', %v", c.DBConn, err)
+		return xerr.InvalidArg("db conn", c.DBConn, err)
 	}
 	if !checkBaseUrl(c.ApiServiceUrl) {
-		return xerr.InvalidArgf("api service url: '%s'", c.ApiServiceUrl)
+		return xerr.InvalidArg("api service url", c.ApiServiceUrl, nil)
 	}
 	if !checkBaseUrl(c.UserSpaUrl) {
-		return xerr.InvalidArgf("user spa url: '%s'", c.UserSpaUrl)
+		return xerr.InvalidArg("user spa url", c.UserSpaUrl, nil)
 	}
 	if !checkBaseUrl(c.AdminSpaUrl) {
-		return xerr.InvalidArgf("admin spa url: '%s'", c.AdminSpaUrl)
+		return xerr.InvalidArg("admin spa url", c.AdminSpaUrl, nil)
 	}
 	if !checkSyncInterval(c.StateSyncInterval) {
-		return xerr.InvalidArgf("state sync interval: '%d'", c.StateSyncInterval)
+		return xerr.InvalidArg("state sync interval", c.StateSyncInterval, nil)
 	}
 	if !checkSyncInterval(c.StateSyncInterval) {
-		return xerr.InvalidArgf("stats sync interval: '%d'", c.StatsSyncInterval)
+		return xerr.InvalidArg("stats sync interval", c.StatsSyncInterval, nil)
 	}
 	if !checkJwtSecret(c.JwtSecret) {
-		return xerr.InvalidArgf("jwt secret: '%s'", c.JwtSecret)
+		return xerr.InvalidArg("jwt secret", c.JwtSecret, nil)
 	}
 	if c.MetricsEndpoint != "" {
 		if err := checkEndpoint(c.MetricsEndpoint); err != nil {
-			return xerr.InvalidArgf("metrics endpoint: '%s', %v", c.MetricsEndpoint, err)
+			return xerr.InvalidArg("metrics endpoint", c.MetricsEndpoint, err)
 		}
 	}
 

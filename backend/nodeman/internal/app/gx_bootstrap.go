@@ -65,7 +65,7 @@ var ensurePassword = gx.Invoke(
 			Fn: func(ctx context.Context) error {
 				_, err := s.GetAuth(ctx)
 				if errors.Is(err, errdefs.ErrNotFound) {
-					return xerr.InvalidArgf("admin password not set")
+					return xerr.Newf("admin password is not set")
 				} else {
 					return err
 				}

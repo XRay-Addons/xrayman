@@ -20,10 +20,17 @@ func NilCall() error {
 	)
 }
 
-func InvalidArgf(f string, args ...any) error {
-	return Wrap(ErrInvalidArg,
-		WithInfof(f, args...),
+// invalid argument error. contains argument, its value
+// and optionally details from value check (details may be nil)
+func InvalidArg(name string, value any, details error) error {
+	options := []option{}
+	if details != nil {
+		options = append(options, WithInfof("details: %v", details))
+	}
+	options = append(options,
+		WithInfof("argument '%s' value '%v'", name, value),
 	)
+	return Wrap(ErrInvalidArg, options...)
 }
 
 func Panic(p any) error {
