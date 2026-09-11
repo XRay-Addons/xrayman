@@ -207,11 +207,11 @@ sudo journalctl -u xray-nodeman -n 50 -f
 
 После успешного запуска доступны следующие эндпоинты:
 
-- `\${ENDPOINT}/u` — пользовательская страница;
-- `\${ENDPOINT}/adm` — админ-панель;
-- `\${ENDPOINT}/api` — защищённый авторизацией API;
-- `\${ENDPOINT}/api/version` — незащищённый статусный эндпоинт;
-- `\${METRICS_ENDPOINT}/metrics` — метрики для Prometheus.
+- `${ENDPOINT}/u` — пользовательская страница;
+- `${ENDPOINT}/adm` — админ-панель;
+- `${ENDPOINT}/api` — защищённый авторизацией API;
+- `${ENDPOINT}/api/version` — незащищённый статусный эндпоинт;
+- `${METRICS_ENDPOINT}/metrics` — метрики для Prometheus.
 
 #### Docker
 

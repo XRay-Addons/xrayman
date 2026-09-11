@@ -23,11 +23,6 @@ sudo systemctl restart xray-node
 sudo journalctl -u xray-node -n 50 -f
 ```
 
-If success, user following handlers are available:
-
-- `${ENDPOINT}/api` - node api
-- `${ENDPOINT}/api/version` - unprotected status handler
-
 ### Manual build
 
 #### Requirements
@@ -94,6 +89,7 @@ If success, user following handlers are available:
 
 - `${ENDPOINT}/u` - user page
 - `${ENDPOINT}adm` - admin page
+- `${ENDPOINT}/api` - auth-protected api
 - `${ENDPOINT}/api/version` - unprotected status handler
 - `${METRICS_ENDPOINT}/metrics` - prometheus metrics
 
