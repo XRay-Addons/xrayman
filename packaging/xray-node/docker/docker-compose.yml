@@ -1,0 +1,27 @@
+x-logging: &default-logging
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  xray-node:
+    image: ghcr.io/xray-addons/xray-node:VERSION_PLACEHOLDER
+    container_name: xray-node
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    environment:
+      XRAY_NODE_ENDPOINT: "0.0.0.0:5001"
+      XRAY_NODE_DATA_DIR: "/usr/bin/xray-node/data"
+      XRAY_NODE_CONFIG_DIR: "/config"
+      XRAY_NODE_PERSISTENT_DIR: "/persistent"
+    volumes:
+      # Пользовательские конфиги.
+      # Контейнер читает их, но не должен менять.
+      - ./config:/config:ro
+      # Persistent state самого xray-node.
+      # Обычный rw, поскольку приложение туда пишет.
+      - ./persistent:/persistent
+    <<: *default-logging
