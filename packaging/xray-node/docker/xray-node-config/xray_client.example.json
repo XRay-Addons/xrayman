@@ -1,0 +1,77 @@
+[
+  {
+    "remarks": "Vless Reality - Docker",
+    "log": {
+      "access": "",
+      "error": "",
+      "loglevel": "warning"
+    },
+    "inbounds": [
+      {
+        "listen": "127.0.0.1",
+        "port": 10808,
+        "protocol": "socks",
+        "settings": {
+          "auth": "noauth",
+          "udp": true
+        },
+        "sniffing": {
+          "destOverride": ["tls", "quic", "http"],
+          "enabled": true,
+          "excludedDomains": [],
+          "metadataOnly": false,
+          "routeOnly": true
+        },
+        "tag": "socks-in"
+      },
+      {
+        "listen": "127.0.0.1",
+        "port": 10809,
+        "protocol": "http",
+        "settings": {
+          "auth": "noauth",
+          "udp": true
+        },
+        "sniffing": {
+          "destOverride": ["tls", "quic", "http"],
+          "enabled": true,
+          "excludedDomains": [],
+          "metadataOnly": false,
+          "routeOnly": true
+        },
+        "tag": "http"
+      }
+    ],
+    "outbounds": [
+      {
+        "protocol": "vless",
+        "settings": {
+          "address": "stepka.co.uk",
+          "port": 10443,
+          "id": "{{ .VlessUUID }}",
+          "flow": "xtls-rprx-vision",
+          "encryption": "none"
+        },
+        "streamSettings": {
+          "network": "tcp",
+          "security": "reality",
+          "realitySettings": {
+            "fingerprint": "chrome",
+            "serverName": "dl.google.com",
+            "publicKey": "『PUBLIC KEY EXAMPLE』(generate pair via xray x25519)",
+            "spiderX": "",
+            "shortId": ""
+          }
+        },
+        "tag": "proxy"
+      }
+    ],
+    "dns": {
+      "servers": ["1.1.1.1", "8.8.8.8"]
+    },
+    "routing": {
+      "rules": [],
+      "DomainStrategy": "IPIfNonMatch"
+    }
+  }
+]
