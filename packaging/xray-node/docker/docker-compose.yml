@@ -15,13 +15,13 @@ services:
     environment:
       XRAY_NODE_ENDPOINT: "0.0.0.0:5001"
       XRAY_NODE_DATA_DIR: "/usr/bin/xray-node/data"
-      XRAY_NODE_CONFIG_DIR: "/config"
-      XRAY_NODE_PERSISTENT_DIR: "/persistent"
+      XRAY_NODE_CONFIG_DIR: "/xray-node-config"
+      XRAY_NODE_PERSISTENT_DIR: "/xray-node-persistent"
     volumes:
       # Пользовательские конфиги.
       # Контейнер читает их, но не должен менять.
-      - ./config:/config:ro
+      - ./xray-node-config:/xray-node-config:ro
       # Persistent state самого xray-node.
       # Обычный rw, поскольку приложение туда пишет.
-      - ./persistent:/persistent
+      - ./xray-node-persistent:/xray-node-persistent
     <<: *default-logging
