@@ -1,0 +1,82 @@
+[
+  {
+    "remarks": "VLESS TCP TLS Example",
+    "log": {
+      "access": "",
+      "error": "",
+      "loglevel": "warning"
+    },
+    "inbounds": [
+      {
+        "listen": "127.0.0.1",
+        "port": 10808,
+        "protocol": "socks",
+        "settings": {
+          "auth": "noauth",
+          "udp": true
+        },
+        "sniffing": {
+          "destOverride": ["tls", "quic", "http"],
+          "enabled": true,
+          "excludedDomains": [],
+          "metadataOnly": false,
+          "routeOnly": true
+        },
+        "tag": "socks-in"
+      },
+      {
+        "listen": "127.0.0.1",
+        "port": 10809,
+        "protocol": "http",
+        "settings": {
+          "auth": "noauth",
+          "udp": true
+        },
+        "sniffing": {
+          "destOverride": ["tls", "quic", "http"],
+          "enabled": true,
+          "excludedDomains": [],
+          "metadataOnly": false,
+          "routeOnly": true
+        },
+        "tag": "http"
+      }
+    ],
+    "outbounds": [
+      {
+        "protocol": "vless",
+        "settings": {
+          "address": "1.2.3.4",
+          "port": 443,
+          "id": "{{ .VlessUUID }}",
+          "encryption": "none",
+          "level": 0
+        },
+        "streamSettings": {
+          "network": "tcp",
+          "security": "tls",
+          "tlsSettings": {
+            "serverName": "example.com",
+            "allowInsecure": false,
+            "alpn": ["h2", "http/1.1"],
+            "disableSessionResumption": true
+          }
+        },
+        "tag": "proxy"
+      },
+      {
+        "protocol": "freedom",
+        "tag": "direct"
+      }
+    ],
+    "routing": {
+      "domainStrategy": "AsIs",
+      "rules": [
+        {
+          "ip": ["geoip:private"],
+          "outboundTag": "direct"
+        }
+      ]
+    }
+  }
+]

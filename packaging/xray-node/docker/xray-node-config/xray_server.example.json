@@ -1,0 +1,68 @@
+{
+  "log": {
+    "loglevel": "warning",
+    "dnsLog": false,
+    "access": "/var/log/xray-node/access.log",
+    "error": "/var/log/xray-node/access.log"
+  },
+  "dns": {
+    "servers": ["https://1.1.1.1/dns-query"],
+    "queryStrategy": "UseIP"
+  },
+  "api": {
+    "tag": "api",
+    "listen": "127.0.0.1:32998",
+    "services": ["HandlerService", "LoggerService", "StatsService", "ReflectionService"]
+  },
+  "stats": {},
+
+  "policy": {
+    "levels": {
+      "0": {
+        "statsUserUplink": true,
+        "statsUserDownlink": true,
+        "statsUserOnline": true
+      }
+    },
+    "system": {
+      "statsInboundUplink": true,
+      "statsInboundDownlink": true,
+      "statsOutboundUplink": true,
+      "statsOutboundDownlink": true
+    }
+  },
+
+  "inbounds": [
+    {
+      "tag": "tcp-tls",
+
+      "listen": "0.0.0.0",
+      "port": 9443,
+      "protocol": "vless",
+      "settings": {
+        "clients": [],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "tls",
+        "tlsSettings": {
+          "serverName": "example.com",
+          "alpn": ["h2", "http/1.1"],
+          "certificates": [
+            {
+              "certificateFile": "/config/fullchain.example.crt",
+              "keyFile": "/config/private.example.key"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "protocol": "freedom",
+      "tag": "direct"
+    }
+  ]
+}
