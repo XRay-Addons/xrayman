@@ -72,8 +72,8 @@ jobs:
       # XRay node: build .deb packages
       - name: Node Pack DEB Packages
         run: |
-          ./packaging/xray-node/deb/build/build.sh "$CLEAN_VER" ./build arm64
-          ./packaging/xray-node/deb/build/build.sh "$CLEAN_VER" ./build amd64
+          ./packaging/xray-node/deb/tools/build.sh "$CLEAN_VER" ./build arm64
+          ./packaging/xray-node/deb/tools/build.sh "$CLEAN_VER" ./build amd64
 
       # XRay node: build and publish docker image (only for tags)
       - name: Push Multi-Arch XRay-Node Docker Image
@@ -95,7 +95,7 @@ jobs:
       - name: Publish XRay-Node docker compose
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          ./packaging/xray-nodeman/deb/build/publish.sh "$CLEAN_VER"
+          ./packaging/xray-nodeman/deb/tools/publish.sh "$CLEAN_VER"
 
       # ------------------------------------------------------------ #
       #                        XRay nodeman                          #
