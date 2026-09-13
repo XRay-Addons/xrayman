@@ -49,11 +49,11 @@ jobs:
         run: |
           # Сборка amd64
           GOOS=linux GOARCH=amd64 CGO_ENABLED=0 VERSION=${{ github.ref_name }} COMMIT=${{ github.sha }} BUILD_TIME=${{ github.event.head_commit.timestamp }} make build_node
-          mkdir -p ./dist/amd64 && cp -r ./build/xray-node/ ./dist/amd64/xray-node
+          mkdir -p ./dist/amd64 && cp -r ./build/amd64/xray-node/ ./dist/amd64/xray-node
 
           # Сборка arm64 
           GOOS=linux GOARCH=arm64 CGO_ENABLED=0 VERSION=${{ github.ref_name }} COMMIT=${{ github.sha }} BUILD_TIME=${{ github.event.head_commit.timestamp }} make build_node
-          mkdir -p ./dist/arm64 && cp -r ./build/xray-node/ ./dist/arm64/xray-node
+          mkdir -p ./dist/arm64 && cp -r ./build/arm64/xray-node/ ./dist/arm64/xray-node
 
       # XRay node: СОБИРАЕМ ДВА .DEB ПАКЕТА ЗА ОДИН ПРОХОД
       - name: Node Pack DEB Packages
