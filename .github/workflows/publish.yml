@@ -73,6 +73,13 @@ jobs:
           GOOS=linux GOARCH=arm64 CGO_ENABLED=0 VERSION=${{ github.ref_name }} COMMIT=${{ github.sha }} BUILD_TIME=${{ github.event.head_commit.timestamp }} make build_nodeman
           mkdir -p ./dist/arm64 && cp -r ./build/arm64/xray-nodeman/ ./dist/arm64/xray-nodeman
 
+      # XRay node: СОБИРАЕМ ДВА .DEB ПАКЕТА ЗА ОДИН ПРОХОД
+      - name: Node Pack DEB Packages
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          CLEAN_VER=$(echo '${{ github.ref_name }}' | sed 's/^v//')
+          ./packaging/xray-nodeman/deb/build.sh "$CLEAN_VER" ./dist
+
       # XRay node man: СОБИРАЕМ ДВА .DEB ПАКЕТА ЗА ОДИН ПРОХОД
       - name: Nodeman Pack DEB Packages
         if: startsWith(github.ref, 'refs/tags/')
