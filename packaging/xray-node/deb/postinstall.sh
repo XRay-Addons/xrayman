@@ -27,20 +27,14 @@ if [ -d "$CONFIG_DIR" ]; then
     chown root:root "$CONFIG_DIR"
     chmod 755 "$CONFIG_DIR"
 fi
-# АВТОМАТИЧЕСКОЕ СОЗДАНИЕ КОНФИГА
-CONFIG_CREATED=false
 
-if [ ! -f "$ENV_FILE" ]; then
-    if [ -f "$ENV_EXAMPLE" ]; then
-        echo "Creating configuration file from example..."
-        cp "$ENV_EXAMPLE" "$ENV_FILE"
-        chown root:root "$ENV_FILE"
-        chmod 600 "$ENV_FILE"
-        CONFIG_CREATED=true
-    else
-        echo "Warning: Example file not found at $ENV_EXAMPLE. Cannot create config."
-    fi
-fi
+# Генерим ключи в примеры конфигов и удаляем файл-кейген, он больше не нужен
+echo "Generate config example key."
+XRAY_CONFIG_DIR/xray_keygen.tmp.sh \
+    /opt/xray-node/bin/xray \
+    /etc/xray-node/xray_server.example.json:/etc/xray-node/xray_client.example.json \
+    X25519_PRIVATE_KEY X25519_PUBLIC_KEY
+rm XRAY_CONFIG_DIR/xray_keygen.tmp.sh
 
 echo "Reload systemd units."
 if command -v systemctl >/dev/null 2>&1; then

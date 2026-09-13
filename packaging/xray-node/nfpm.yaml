@@ -26,11 +26,14 @@ contents:
     dst: /etc/xray-node/xray-node.env
     type: config|noreplace
 
-  - src: ./xray_server.example.json
+  - src: ../config-example/xray_server.json
     dst: /etc/xray-node/xray_server.example.json
 
-  - src: ./xray_client.example.json
+  - src: ../config-example/xray_client.json
     dst: /etc/xray-node/xray_client.example.json
+
+  - src: ../config-example/xray_keygen.sh
+    dst: /etc/xray-node/xray_keygen.temp.sh
 
 scripts:
   preinstall: ./scripts/preinstall.sh
