@@ -2,7 +2,7 @@
 set -e
 
 # Генерация уникальных ключей при первом запуске - для примеров
-XRAY_CONFIG_DIR=/xray-node-config/
+XRAY_CONFIG_DIR=/xray-node-config
 if [ -f "$XRAY_CONFIG_DIR/xray_keygen.tmp.sh" ]; then
     echo "Generate config example key."
 
