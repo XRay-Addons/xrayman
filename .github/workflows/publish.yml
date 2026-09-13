@@ -101,7 +101,7 @@ jobs:
           # 3. (Опционально) Скопируйте сюда дополнительные файлы конфигурации, если они есть
           cp ./packaging/xray-nodeman/docker/all-in-one/datasource.yml ./dist/docker/xray-nodeman/all-in-one/datasource.yml
           cp ./packaging/xray-nodeman/docker/all-in-one/prometheus.yml ./dist/docker/xray-nodeman/all-in-one/prometheus.yml
-          cp -r ./packaging/xray-node/config ./dist/docker/xray-node/config
+          cp -r ./packaging/xray-node/config ./dist/docker/xray-node/xray-node-config
 
           # 4. Архиривуем папки (флаг -C временно меняет директорию, чтобы внутри архива не было лишней вложенности)
           tar -czf docker-compose.xray-nodeman.all-in-one.tar.gz -C ./dist/docker/xray-nodeman/all-in-one .

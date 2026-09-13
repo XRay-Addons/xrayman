@@ -1,6 +1,18 @@
 #!/bin/sh
 set -e
 
+# Генерация уникальных ключей при первом запуске - для примеров
+XRAY_CONFIG_DIR=/xray-node-config/
+if [ -f "$XRAY_CONFIG_DIR/xray_keygen.tmp.sh" ]; then
+    echo "Generate config example key."
+
+    "$XRAY_CONFIG_DIR/xray_keygen.tmp.sh" /usr/bin/xray-node/xray \
+        "$XRAY_CONFIG_DIR/xray_server.example.json:$XRAY_CONFIG_DIR/xray_client.example.json" \
+        X25519_PRIVATE_KEY X25519_PUBLIC_KEY
+
+    rm "$XRAY_CONFIG_DIR/xray_keygen.tmp.sh"
+fi
+
 # Рисуем красивую рамку-подсказку при каждом старте контейнера
 echo "╔═══════════════════════════════════════════════════════════════════════╗"
 echo "║               XRAYMAN DOCKER CONTAINER STARTING...                    ║"

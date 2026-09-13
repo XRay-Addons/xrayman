@@ -71,14 +71,10 @@ for config in $CONFIGS; do
 
     echo "Updating: $config"
 
-    PRIVATE_PLACEHOLDER="$PRIVATE_PLACEHOLDER" \
-    PUBLIC_PLACEHOLDER="$PUBLIC_PLACEHOLDER" \
-    PRIVATE_KEY="$PRIVATE_KEY" \
-    PUBLIC_KEY="$PUBLIC_KEY" \
-    perl -0pi -e '
-        s/\Q$ENV{PRIVATE_PLACEHOLDER}\E/$ENV{PRIVATE_KEY}/g;
-        s/\Q$ENV{PUBLIC_PLACEHOLDER}\E/$ENV{PUBLIC_KEY}/g;
-    ' "$config"
+    sed -i \
+        -e "s/$PRIVATE_PLACEHOLDER/$PRIVATE_KEY/g" \
+        -e "s/$PUBLIC_PLACEHOLDER/$PUBLIC_KEY/g" \
+        "$config"
 
     echo "Updated: $config"
 
