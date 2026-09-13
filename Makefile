@@ -24,6 +24,9 @@ GOOS ?= $(shell go env GOOS)
 GOARCH ?= $(shell go env GOARCH)
 CGO_ENABLED ?= 0
 
+NODE_DST := $(DST)/$(GOARCH)/xray-node
+NODEMAN_DST := $(DST)/$(GOARCH)/xray-nodeman
+
 # -----------------------------
 # DEFAULT
 # -----------------------------
@@ -133,11 +136,11 @@ gen_node: deps_node
 build_node: gen_node download_xray
 	@echo "==> Building node ($(GOOS)/$(GOARCH))"
 
-	mkdir -p $(DST)/xray-node
+	mkdir -p $(NODE_DST)
 
 	cd $(BACKEND_ROOT)/node && \
 	CGO_ENABLED=$(CGO_ENABLED) GOOS=$(GOOS) GOARCH=$(GOARCH) \
-	$(GO) build -ldflags "$(NODE_LDFLAGS)" -o $(DST)/xray-node/xray-node ./cmd/main.go
+	$(GO) build -ldflags "$(NODE_LDFLAGS)" -o $(NODE_DST)/xray-node ./cmd/main.go
 
 # -----------------------------
 # BACKEND: NODEMAN
@@ -161,11 +164,11 @@ gen_nodeman: deps_nodeman
 build_nodeman: gen_nodeman embed_frontend
 	@echo "==> Building nodeman ($(GOOS)/$(GOARCH))"
 
-	mkdir -p $(DST)/xray-nodeman
+	mkdir -p $(NODEMAN_DST)
 
 	cd $(BACKEND_ROOT)/nodeman && \
 	CGO_ENABLED=$(CGO_ENABLED) GOOS=$(GOOS) GOARCH=$(GOARCH) \
-	$(GO) build -ldflags "$(NODEMAN_LDFLAGS)" -o $(DST)/xray-nodeman/xray-nodeman ./cmd/main.go
+	$(GO) build -ldflags "$(NODEMAN_LDFLAGS)" -o $(NODEMAN_DST)/xray-nodeman ./cmd/main.go
 
 # -----------------------------
 # XRAY DOWNLOAD
@@ -201,11 +204,11 @@ XRAY_URL := https://github.com/XTLS/Xray-core/releases/download/$(XRAY_VERSION)/
 
 download_xray:
 	@echo "==> Downloading Xray: $(XRAY_ASSET) ($(GOOS)/$(GOARCH))"
-	mkdir -p $(DST)/xray-node/data
+	mkdir -p $(NODE_DST)/data
 
-	$(CURL) -L -o $(DST)/xray.zip $(XRAY_URL)
-	$(UNZIP) -j -o $(DST)/xray.zip 'xray' -d $(DST)/xray-node
-	$(UNZIP) -j -o $(DST)/xray.zip 'geoip.dat' 'geosite.dat' -d $(DST)/xray-node/data
-	rm -f $(DST)/xray.zip
+	$(CURL) -L -o $(NODE_DST)/xray.zip $(XRAY_URL)
+	$(UNZIP) -j -o $(NODE_DST)/xray.zip 'xray' -d $(NODE_DST)
+	$(UNZIP) -j -o $(NODE_DST)/xray.zip 'geoip.dat' 'geosite.dat' -d $(NODE_DST)/data
+	rm -f $(NODE_DST)/xray.zip
 
-	@echo "==> Xray ready at $(DST)/xray-node"
+	@echo "==> Xray ready at $(NODE_DST)"

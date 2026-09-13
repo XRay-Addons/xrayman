@@ -8,7 +8,7 @@ CONFIG_DIR="/etc/xray-node"
 ENV_FILE="${CONFIG_DIR}/xray-node.env"
 ENV_EXAMPLE="${CONFIG_DIR}/xray-node.env.example"
 
-XRAY_CONFIG_DIR="/etc/xray-node"
+XRAY_CONFIG_DIR="/etc/xray-node/config"
 XRAY_GEODATA_DIR="/var/lib/geodata"
 XRAY_BINARY_DIR="/usr/bin"
 
@@ -30,11 +30,12 @@ fi
 
 # Генерим ключи в примеры конфигов и удаляем файл-кейген, он больше не нужен
 echo "Generate config example key."
-XRAY_CONFIG_DIR/xray_keygen.tmp.sh \
-    /opt/xray-node/bin/xray \
-    /etc/xray-node/xray_server.example.json:/etc/xray-node/xray_client.example.json \
-    X25519_PRIVATE_KEY X25519_PUBLIC_KEY
-rm XRAY_CONFIG_DIR/xray_keygen.tmp.sh
+"$XRAY_CONFIG_DIR/xray_keygen.tmp.sh" \
+    /usr/bin/xray \
+    "$XRAY_CONFIG_DIR/xray_server.example.json:$XRAY_CONFIG_DIR/xray_client.example.json" \
+    X25519_PRIVATE_KEY \
+    X25519_PUBLIC_KEY
+rm "$XRAY_CONFIG_DIR/xray_keygen.tmp.sh"
 
 echo "Reload systemd units."
 if command -v systemctl >/dev/null 2>&1; then
