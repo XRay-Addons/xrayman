@@ -28,15 +28,6 @@ if [ -d "$CONFIG_DIR" ]; then
     chmod 755 "$CONFIG_DIR"
 fi
 
-# Генерим ключи в примеры конфигов и удаляем файл-кейген, он больше не нужен
-echo "Generate config example key."
-"$XRAY_CONFIG_DIR/xray_keygen.tmp.sh" \
-    /usr/bin/xray \
-    "$XRAY_CONFIG_DIR/xray_server.example.json:$XRAY_CONFIG_DIR/xray_client.example.json" \
-    X25519_PRIVATE_KEY \
-    X25519_PUBLIC_KEY
-rm "$XRAY_CONFIG_DIR/xray_keygen.tmp.sh"
-
 echo "Reload systemd units."
 if command -v systemctl >/dev/null 2>&1; then
     systemctl daemon-reload || true

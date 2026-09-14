@@ -49,7 +49,7 @@
         "realitySettings": {
           "dest": "dl.google.com:443",
           "serverNames": ["dl.google.com"],
-          "privateKey": "X25519_PRIVATE_KEY",
+          "privateKey": "<<X25519_PRIVATE_KEY>> (generate via xray x25519)",
           "shortIds": [""],
           "xver": 0,
           "show": false

@@ -21,12 +21,6 @@ services:
       # Все пользовательские конфиги — только чтение
       - ./xray-node-config:/xray-node-config:ro
 
-      # Эти файлы контейнер может менять/удалять
-      # (там скрипт который выставляет ключи при первом запуске)
-      - ./xray-node-config/xray_client.example.json:/xray-node-config/xray_client.example.json
-      - ./xray-node-config/xray_server.example.json:/xray-node-config/xray_server.example.json
-      - ./xray-node-config/xray_keygen.tmp.sh:/xray-node-config/xray_keygen.tmp.sh
-
       # Persistent state самого xray-node.
       # Обычный rw, поскольку приложение туда пишет.
       - ./xray-node-persistent:/xray-node-persistent

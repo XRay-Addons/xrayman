@@ -58,7 +58,7 @@
           "realitySettings": {
             "fingerprint": "chrome",
             "serverName": "dl.google.com",
-            "publicKey": "X25519_PUBLIC_KEY",
+            "publicKey": "<<X25519_PUBLIC_KEY>> (generate via xray x25519)",
             "spiderX": "",
             "shortId": ""
           }
