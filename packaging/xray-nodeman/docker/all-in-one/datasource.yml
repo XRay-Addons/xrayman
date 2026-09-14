@@ -1,8 +1,0 @@
-apiVersion: 1
-datasources:
-  - name: XRayMan-VictoriaMetrics
-    type: prometheus
-    access: proxy
-    url: http://xrayman-vmetrics:8428
-    isDefault: true
-    editable: true
