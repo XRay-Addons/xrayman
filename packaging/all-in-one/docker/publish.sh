@@ -8,7 +8,7 @@ CLEAN_VER="${1:-0.0.0}"
 # docker compose with replaced version placeholder
 replace \
     ./packaging/all-in-one/docker/docker-compose.yml \
-    ./build/docker/xray-all-in-one/docker-compose.yml \
+    ./build/docker/all-in-one/docker-compose.yml \
     VERSION_PLACEHOLDER "$CLEAN_VER"
 
 # config xray-node example folder
