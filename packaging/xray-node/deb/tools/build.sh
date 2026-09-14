@@ -20,7 +20,7 @@ copy "$BUILD_DIR/data" "$DIR/var/lib/xray-node/data"
 copy "$BUILD_DIR/xray" "$DIR/usr/bin/xray"
 
 # copy packaging stuff
-copy "$PKG_DIR/config" "$DIR/etc/xray-node/config"
+copy "$PKG_DIR/config-example" "$DIR/etc/xray-node/config/example"
 copy "$PKG_DIR/deb/xray-node.service" "$DIR/lib/systemd/system/xray-node.service"
 copy "$PKG_DIR/deb/xray-node.example.env" "$DIR/etc/xray-node/xray-node.example.env"
 
