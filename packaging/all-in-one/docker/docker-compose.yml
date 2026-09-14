@@ -6,7 +6,6 @@ x-logging: &default-logging
       max-file: "3"
 
 services:
-services:
   xray-node:
     image: ghcr.io/xray-addons/xray-node:VERSION_PLACEHOLDER
     container_name: xray-node
