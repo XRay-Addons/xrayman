@@ -72,8 +72,8 @@ jobs:
       # XRay node: build .deb packages
       - name: Node Pack DEB Packages
         run: |
-          ./packaging/xray-node/deb/tools/build.sh "$CLEAN_VER" ./build arm64
-          ./packaging/xray-node/deb/tools/build.sh "$CLEAN_VER" ./build amd64
+          ./packaging/xray-node/deb/build.sh "$CLEAN_VER" ./build arm64
+          ./packaging/xray-node/deb/build.sh "$CLEAN_VER" ./build amd64
 
       # XRay node: build and publish docker image (only for tags)
       - name: Push Multi-Arch XRay-Node Docker Image
@@ -92,10 +92,11 @@ jobs:
             -t ghcr.io/${IMAGE_NAME}:latest -t ghcr.io/${IMAGE_NAME}:${CLEAN_VER} \
             --push .
 
+      # XRay node: create docker-compose archive in /build/docker/xray-node
       - name: Publish XRay-Node docker compose
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          ./packaging/xray-node/deb/tools/publish.sh "$CLEAN_VER"
+          ./packaging/xray-node/docker/publish.sh "$CLEAN_VER"
 
       # ------------------------------------------------------------ #
       #                        XRay nodeman                          #
@@ -131,6 +132,12 @@ jobs:
             -f ./packaging/xray-nodeman/docker/xray-nodeman.dockerfile \
             -t ghcr.io/${IMAGE_NAME}:latest -t ghcr.io/${IMAGE_NAME}:${CLEAN_VER} \
             --push .
+
+      # XRay nodeman: create docker-compose archive in /build/docker/xray-nodeman
+      - name: Publish XRay-Node docker compose
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          ./packaging/xray-nodeman/docker/publish.sh "$CLEAN_VER"
 
       # ------------------------------------------------------------ #
       #                        Publish all stuff                     #

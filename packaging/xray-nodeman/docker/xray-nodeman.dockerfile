@@ -3,7 +3,7 @@ RUN apk add --no-cache ca-certificates tzdata
 
 # Сборщик сам подставит нужную папку (amd64 или arm64) во время компиляции образа
 ARG TARGETARCH
-COPY ./dist/${TARGETARCH}/xray-nodeman /usr/bin/xray-nodeman
+COPY ./build/${TARGETARCH}/xray-nodeman /usr/bin/xray-nodeman
 
 # Копируем наш скрипт-обертку
 COPY ./packaging/xray-nodeman/docker/docker-entrypoint.sh /docker-entrypoint.sh
