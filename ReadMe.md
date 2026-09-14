@@ -68,7 +68,7 @@ Postgres DB required. You should install it as:
 Only one thing you should provide to node manager is **postgress connection string**:
 
 ```
- postgresql://username:password@host:port/database_name
+postgresql://username:password@host:port/database_name
 ```
 
 #### Installation

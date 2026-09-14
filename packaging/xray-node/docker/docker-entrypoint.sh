@@ -1,16 +1,19 @@
 #!/bin/sh
 set -e
 
-# Рисуем красивую рамку-подсказку при каждом старте контейнера
 echo "╔═══════════════════════════════════════════════════════════════════════╗"
-echo "║               XRAYMAN DOCKER CONTAINER STARTING...                    ║"
+echo "║               XRAY NODE DOCKER CONTAINER STARTING...                  ║"
 echo "╠═══════════════════════════════════════════════════════════════════════╣"
 echo "║                                                                       ║"
 echo "║  * view actual help and env variables:                                ║"
 echo "║    docker compose run --rm xray-node --help                           ║"
 echo "║                                                                       ║"
-echo "║  * create xray server and client configs in xray-node-config          ║"
+echo "║  * create xray server and client configs in 'xray-node-config'        ║"
 echo "║    (see example inside)                                               ║"
+echo "║                                                                       ║"
+echo "║  * run xray for generate keys or whatever you want:                   ║"
+echo "║    sudo docker compose run --rm --entrypoint \                         "
+echo "       /usr/bin/xray-node/xray xray-node --help                         ║"
 echo "║                                                                       ║"
 echo "║  * start xray-node:                                                   ║"
 echo "║    docker compose up -d                                               ║"
@@ -18,14 +21,13 @@ echo "║                                                                       
 echo "║  * restart xray-node:                                                 ║"
 echo "║    docker compose down && docker compose up -d                        ║"
 echo "║                                                                       ║"
-echo "║  * view logs:                                                         ║"
-echo "║    docker compose logs -n 50 -f xray-node                             ║"
-echo "║                                                                       ║"
 echo "║  * node access key will be stored in xray-node-persistent:            ║"
 echo "║    cat xray-node-persistent/access.json.                              ║"
+echo "║                                                                       ║"
+echo "║  * view logs:                                                         ║"
+echo "║    docker compose logs -n 50 -f xray-node                             ║"
 echo "║                                                                       ║"
 echo "╚═══════════════════════════════════════════════════════════════════════╝"
 echo ""
 
-# Магия: передаем управление реальному приложению, прокидывая все аргументы ($@)
 exec /usr/bin/xray-node/xray-node "$@"

@@ -8,7 +8,7 @@ CONFIG_DIR="/etc/xray-node"
 ENV_FILE="${CONFIG_DIR}/xray-node.env"
 ENV_EXAMPLE="${CONFIG_DIR}/xray-node.env.example"
 
-XRAY_CONFIG_DIR="/etc/xray-node"
+XRAY_CONFIG_DIR="/etc/xray-node/config"
 XRAY_GEODATA_DIR="/var/lib/geodata"
 XRAY_BINARY_DIR="/usr/bin"
 
@@ -26,20 +26,6 @@ fi
 if [ -d "$CONFIG_DIR" ]; then
     chown root:root "$CONFIG_DIR"
     chmod 755 "$CONFIG_DIR"
-fi
-# АВТОМАТИЧЕСКОЕ СОЗДАНИЕ КОНФИГА
-CONFIG_CREATED=false
-
-if [ ! -f "$ENV_FILE" ]; then
-    if [ -f "$ENV_EXAMPLE" ]; then
-        echo "Creating configuration file from example..."
-        cp "$ENV_EXAMPLE" "$ENV_FILE"
-        chown root:root "$ENV_FILE"
-        chmod 600 "$ENV_FILE"
-        CONFIG_CREATED=true
-    else
-        echo "Warning: Example file not found at $ENV_EXAMPLE. Cannot create config."
-    fi
 fi
 
 echo "Reload systemd units."

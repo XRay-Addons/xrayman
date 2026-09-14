@@ -8,12 +8,25 @@ on:
 
 jobs:
   release:
+    env:
+      VERSION: ${{ github.ref_name }}
+      COMMIT: ${{ github.sha }}
+      BUILD_TIME: ${{ github.event.head_commit.timestamp }}
+
     runs-on: ubuntu-latest
     permissions:
       contents: write
       packages: write
 
     steps:
+      # ------------------------------------------------------------ #
+      #                        Setup                                 #
+      # ------------------------------------------------------------ #
+
+      - name: Eval env variables
+        run: |
+          echo "CLEAN_VER=${VERSION#v}" >> "$GITHUB_ENV"
+
       - name: Checkout Code
         uses: actions/checkout@v5
         with:
@@ -44,144 +57,65 @@ jobs:
           cache: "pnpm"
           cache-dependency-path: frontend/pnpm-lock.yaml
 
-      # XRay node: СБОРКА ОБЕИХ АРХИТЕКТУР ПО ОЧЕРЕДИ БЕЗ МАТРИЦЫ
+      # ------------------------------------------------------------ #
+      #                        Build                                 #
+      # ------------------------------------------------------------ #
+
+      # XRay node: build amd64 and arm64 to ./build/{ARCH}/xray-node
       - name: Node Build Project
+        env:
+          CGO_ENABLED: 0
         run: |
-          # Сборка amd64
-          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 VERSION=${{ github.ref_name }} COMMIT=${{ github.sha }} BUILD_TIME=${{ github.event.head_commit.timestamp }} make build_node
-          mkdir -p ./dist/amd64 && cp -r ./build/xray-node/ ./dist/amd64/xray-node
+          GOOS=linux GOARCH=amd64 make build_node
+          GOOS=linux GOARCH=arm64 make build_node
 
-          # Сборка arm64 
-          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 VERSION=${{ github.ref_name }} COMMIT=${{ github.sha }} BUILD_TIME=${{ github.event.head_commit.timestamp }} make build_node
-          mkdir -p ./dist/arm64 && cp -r ./build/xray-node/ ./dist/arm64/xray-node
-
-      # XRay node: СОБИРАЕМ ДВА .DEB ПАКЕТА ЗА ОДИН ПРОХОД
+      # XRay node: build .deb packages
       - name: Node Pack DEB Packages
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          CLEAN_VER=$(echo '${{ github.ref_name }}' | sed 's/^v//')
-          for ARCH in amd64 arm64; do
-            DIR="xray-node-${ARCH}"
-            mkdir -p "$DIR/usr/bin"  "$DIR/var/lib/xray-node" "$DIR/etc/xray-node"
-            cp    ./dist/${ARCH}/xray-node/xray-node  "$DIR/usr/bin/xray-node"
-            cp -r ./dist/${ARCH}/xray-node/data       "$DIR/var/lib/xray-node/data"
-            cp    ./dist/${ARCH}/xray-node/xray       "$DIR/usr/bin/xray"
-            cp -r ./packaging/xray-node/deb/config    "$DIR/etc/xray-node/config"
+          ./packaging/xray-node/deb/build.sh "$CLEAN_VER" ./build arm64
+          ./packaging/xray-node/deb/build.sh "$CLEAN_VER" ./build amd64
 
-            mkdir -p "$DIR/lib/systemd/system" "$DIR/etc/xray-node"
-            cp ./packaging/xray-node/deb/xray-node.service      "$DIR/lib/systemd/system/xray-node.service"
-            cp ./packaging/xray-node/deb/xray-node.env.example  "$DIR/etc/xray-node/xray-node.env.example"
-
-            mkdir -p "$DIR/DEBIAN"
-            cp ./packaging/xray-node/deb/postinstall.sh "$DIR/DEBIAN/postinst"
-            cp ./packaging/xray-node/deb/prerm.sh       "$DIR/DEBIAN/prerm"
-            cp ./packaging/xray-node/deb/postrm.sh      "$DIR/DEBIAN/postrm"
-            chmod +x "$DIR/DEBIAN/postinst" "$DIR/DEBIAN/prerm" "$DIR/DEBIAN/postrm"
-
-            sed -e "s/VERSION_PLACEHOLDER/$CLEAN_VER/" \
-                -e "s/ARCH_PLACEHOLDER/$ARCH/" \
-                ./packaging/xray-node/deb/control.template > "$DIR/DEBIAN/control"
-            dpkg-deb --build "$DIR"
-          done
-
-      # XRay node man: СБОРКА ОБЕИХ АРХИТЕКТУР ПО ОЧЕРЕДИ БЕЗ МАТРИЦЫ
-      - name: Nodeman Build Project
+      # XRay node: build and publish docker image (only for tags)
+      - name: Push Multi-Arch XRay-Node Docker Image
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
-          # Сборка amd64
-          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 VERSION=${{ github.ref_name }} COMMIT=${{ github.sha }} BUILD_TIME=${{ github.event.head_commit.timestamp }} make build_nodeman
-          mkdir -p ./dist/amd64 && cp ./build/xray-nodeman/xray-nodeman ./dist/amd64/xray-nodeman
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          IMAGE_NAME=$(echo "${{ github.repository_owner }}/xray-node" | tr '[:upper:]' '[:lower:]')
 
-          # Сборка arm64
-          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 VERSION=${{ github.ref_name }} COMMIT=${{ github.sha }} BUILD_TIME=${{ github.event.head_commit.timestamp }} make build_nodeman
-          mkdir -p ./dist/arm64 && cp ./build/xray-nodeman/xray-nodeman ./dist/arm64/xray-nodeman
+          # enable emulation to build arm64 on amd64
+          docker run --privileged --rm tonistiigi/binfmt --install all
+          docker buildx create --use
 
-      # XRay node man: СОБИРАЕМ ДВА .DEB ПАКЕТА ЗА ОДИН ПРОХОД
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            -f ./packaging/xray-node/docker/xray-node.dockerfile \
+            -t ghcr.io/${IMAGE_NAME}:latest -t ghcr.io/${IMAGE_NAME}:${CLEAN_VER} \
+            --push .
+
+      # XRay nodeman: build amd64 and arm64 to ./build/{ARCH}/xray-nodeman
+      - name: Nodeman Build Project
+        env:
+          CGO_ENABLED: 0
+        run: |
+          GOOS=linux GOARCH=amd64 make build_nodeman
+          GOOS=linux GOARCH=arm64 make build_nodeman
+
+      # XRay nodeman: build .deb packages
       - name: Nodeman Pack DEB Packages
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          CLEAN_VER=$(echo '${{ github.ref_name }}' | sed 's/^v//')
-          for ARCH in amd64 arm64; do
-            DIR="xray-nodeman-${ARCH}"
-            mkdir -p "$DIR/usr/bin"
-            cp    ./dist/${ARCH}/xray-nodeman  "$DIR/usr/bin/xray-nodeman"
+          ./packaging/xray-nodeman/deb/build.sh "$CLEAN_VER" ./build arm64
+          ./packaging/xray-nodeman/deb/build.sh "$CLEAN_VER" ./build amd64
 
-            mkdir -p "$DIR/lib/systemd/system" "$DIR/etc/xray-nodeman"
-            cp ./packaging/xray-nodeman/deb/xray-nodeman.service      "$DIR/lib/systemd/system/xray-nodeman.service"
-            cp ./packaging/xray-nodeman/deb/xray-nodeman.env.example  "$DIR/etc/xray-nodeman/xray-nodeman.env.example"
-
-            mkdir -p "$DIR/DEBIAN"
-            cp ./packaging/xray-nodeman/deb/postinstall.sh "$DIR/DEBIAN/postinst"
-            cp ./packaging/xray-nodeman/deb/prerm.sh       "$DIR/DEBIAN/prerm"
-            cp ./packaging/xray-nodeman/deb/postrm.sh      "$DIR/DEBIAN/postrm"
-            chmod +x "$DIR/DEBIAN/postinst" "$DIR/DEBIAN/prerm" "$DIR/DEBIAN/postrm"
-
-            sed -e "s/VERSION_PLACEHOLDER/$CLEAN_VER/" \
-                -e "s/ARCH_PLACEHOLDER/$ARCH/" \
-                ./packaging/xray-nodeman/deb/control.template > "$DIR/DEBIAN/control"
-            dpkg-deb --build "$DIR"
-          done
-
-      # ГЕНЕРИРУЕМ АКТУАЛЬНЫЕ DOCKER COMPOSE ФАЙЛЫ
-      - name: Prepare Docker Compose Manifests
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          CLEAN_VER=$(echo '${{ github.ref_name }}' | sed 's/^v//')
-
-          # 1. Создаем целевые папки (без этого sed упадет с ошибкой)
-          mkdir -p ./dist/docker
-          mkdir -p ./dist/docker/xray-nodeman
-          mkdir -p ./dist/docker/xray-nodeman/all-in-one
-          mkdir -p ./dist/docker/xray-nodeman/standalone
-          mkdir -p ./dist/docker/xray-node
-
-          # 2. Заменяем плейсхолдер версии на реальный тег релиза
-          sed "s/VERSION_PLACEHOLDER/$CLEAN_VER/g" ./packaging/xray-nodeman/docker/all-in-one/docker-compose.yml > ./dist/docker/xray-nodeman/all-in-one/docker-compose.yml
-          sed "s/VERSION_PLACEHOLDER/$CLEAN_VER/g" ./packaging/xray-nodeman/docker/standalone/docker-compose.yml > ./dist/docker/xray-nodeman/standalone/docker-compose.yml
-          sed "s/VERSION_PLACEHOLDER/$CLEAN_VER/g" ./packaging/xray-node/docker/docker-compose.yml > ./dist/docker/xray-node/docker-compose.yml
-
-          # 3. (Опционально) Скопируйте сюда дополнительные файлы конфигурации, если они есть
-          cp ./packaging/xray-nodeman/docker/all-in-one/datasource.yml ./dist/docker/xray-nodeman/all-in-one/datasource.yml
-          cp ./packaging/xray-nodeman/docker/all-in-one/prometheus.yml ./dist/docker/xray-nodeman/all-in-one/prometheus.yml
-          cp -r ./packaging/xray-node/docker/xray-node-config ./dist/docker/xray-node/xray-node-config
-
-          # 4. Архиривуем папки (флаг -C временно меняет директорию, чтобы внутри архива не было лишней вложенности)
-          tar -czf docker-compose.xray-nodeman.all-in-one.tar.gz -C ./dist/docker/xray-nodeman/all-in-one .
-          tar -czf docker-compose.xray-nodeman.standalone.tar.gz -C ./dist/docker/xray-nodeman/standalone .
-          tar -czf docker-compose.xray-node.tar.gz -C ./dist/docker/xray-node .
-
-      # ПУБЛИКУЕМ ВСЕ АССЕТЫ В РЕЛИЗ (DEB + DOCKER COMPOSE)
-      - name: Upload Artifacts to GitHub Release
-        uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: |
-            xray-nodeman-*.deb
-            xray-node-*.deb
-            docker-compose.xray-nodeman.all-in-one.tar.gz
-            docker-compose.xray-nodeman.standalone.tar.gz
-            docker-compose.xray-node.tar.gz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload to GitHub Release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: "*.deb"
-          name: Release ${{ github.ref_name }}
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # СБОРКА ОДНОГО МУЛЬТИПЛАТФОРМЕННОГО ОБРАЗА XRAY-NODEMAN
+      # XRay nodeman: build and publish docker image (only for tags)
       - name: Push Multi-Arch XRay-NodeMan Docker Image
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           IMAGE_NAME=$(echo "${{ github.repository_owner }}/xray-nodeman" | tr '[:upper:]' '[:lower:]')
-          CLEAN_VER=$(echo '${{ github.ref_name }}' | sed 's/^v//')
 
-          # Включаем эмуляцию QEMU для сборки под ARM прямо на машине Intel
+          # enable emulation to build arm64 on amd64
           docker run --privileged --rm tonistiigi/binfmt --install all
           docker buildx create --use
 
@@ -191,20 +125,46 @@ jobs:
             -t ghcr.io/${IMAGE_NAME}:latest -t ghcr.io/${IMAGE_NAME}:${CLEAN_VER} \
             --push .
 
-      # СБОРКА ОДНОГО МУЛЬТИПЛАТФОРМЕННОГО ОБРАЗА XRAY-NODE
-      - name: Push Multi-Arch XRay-Node Docker Image
+      # ------------------------------------------------------------ #
+      #                        Publish                               #
+      # ------------------------------------------------------------ #
+
+      # publish binaries
+      - name: Compress binaries
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          IMAGE_NAME=$(echo "${{ github.repository_owner }}/xray-node" | tr '[:upper:]' '[:lower:]')
-          CLEAN_VER=$(echo '${{ github.ref_name }}' | sed 's/^v//')
+          tar -czf xrayman.arm64.tar.gz -C ./build/arm64 .
+          tar -czf xrayman.amd64.tar.gz -C ./build/amd64 .
 
-          # Включаем эмуляцию QEMU для сборки под ARM прямо на машине Intel
-          docker run --privileged --rm tonistiigi/binfmt --install all
-          docker buildx create --use
+      # publish docker-compose archives
+      - name: Publish XRay-Node docker compose
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          ./packaging/xray-node/docker/publish.sh "$CLEAN_VER"
 
-          docker buildx build \
-            --platform linux/amd64,linux/arm64 \
-            -f ./packaging/xray-node/docker/xray-node.dockerfile \
-            -t ghcr.io/${IMAGE_NAME}:latest -t ghcr.io/${IMAGE_NAME}:${CLEAN_VER} \
-            --push .
+      - name: Publish XRay-NodeMan docker compose
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          ./packaging/xray-nodeman/docker/publish.sh "$CLEAN_VER"
+
+      - name: Publish All-in-One docker compose
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          ./packaging/all-in-one/docker/publish.sh "$CLEAN_VER"
+
+      - name: Upload Artifacts to GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            xrayman.arm64.tar.gz
+            xrayman.amd64.tar.gz
+            xray-nodeman-*.deb
+            xray-node-*.deb
+            docker-compose.xray-nodeman.tar.gz
+            docker-compose.xray-node.tar.gz
+            docker-compose.all-in-one.tar.gz
+          name: Release ${{ github.ref_name }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

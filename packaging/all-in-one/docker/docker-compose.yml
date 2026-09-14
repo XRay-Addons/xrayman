@@ -6,6 +6,23 @@ x-logging: &default-logging
       max-file: "3"
 
 services:
+  xray-node:
+    image: ghcr.io/xray-addons/xray-node:VERSION_PLACEHOLDER
+    container_name: xray-node
+    restart: unless-stopped
+    ports:
+      - "${XRAY_NODE_ADMIN_PORT:?Set XRAY_NODE_ADMIN_PORT in .env file}:5001"
+      - ${XRAY_NODE_PROXY_PORTS:?Set XRAY_NODE_PROXY_PORTS in .env file like "443:443,8443:8443"}
+    environment:
+      XRAY_NODE_ENDPOINT: "0.0.0.0:5001"
+      XRAY_NODE_DATA_DIR: "/usr/bin/xray-node/data"
+      XRAY_NODE_CONFIG_DIR: "/xray-node-config"
+      XRAY_NODE_PERSISTENT_DIR: "/xray-node-persistent"
+    volumes:
+      - ./xray-node-config:/xray-node-config:ro
+      - ./xray-node-persistent:/xray-node-persistent
+    <<: *default-logging
+
   xrayman-db:
     image: postgres:17-alpine
     container_name: xrayman-db
@@ -18,30 +35,12 @@ services:
       - xrayman_db_data:/var/lib/postgresql/data
     <<: *default-logging
 
-  xrayman-db-backup:
-    image: prodrigestivill/postgres-backup-local:17
-    container_name: xrayman-db-backup
-    restart: unless-stopped
-    depends_on:
-      - xrayman-db
-    volumes:
-      - ./backups:/backups
-    environment:
-      POSTGRES_HOST: xrayman-db
-      POSTGRES_USER: xrayman-user
-      POSTGRES_DB: xrayman-db
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-MISSING}
-      POSTGRES_EXTRA_OPTS: "-Z6"
-      SCHEDULE: "@daily"
-      BACKUP_KEEP_DAYS: 7
-    <<: *default-logging
-
   xray-nodeman:
     image: ghcr.io/xray-addons/xray-nodeman:VERSION_PLACEHOLDER
     container_name: xray-nodeman
     restart: unless-stopped
     ports:
-      - "8080:80"
+      - "${XRAY_NODEMAN_PORT:?Set XRAY_NODEMAN_PORT in .env file}:80"
     environment:
       XRAY_NODEMAN_ENDPOINT: "0.0.0.0:80"
       XRAY_NODEMAN_METRICS_ENDPOINT: "0.0.0.0:9090"
@@ -66,7 +65,7 @@ services:
     container_name: xrayman-grafana
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "${XRAY_GRAFANA_PORT:?Set XRAY_GRAFANA_PORT in .env file}:3000"
     volumes:
       - grafana_data:/var/lib/grafana
       - ./datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml:ro
