@@ -35,24 +35,6 @@ services:
       - xrayman_db_data:/var/lib/postgresql/data
     <<: *default-logging
 
-  xrayman-db-backup:
-    image: prodrigestivill/postgres-backup-local:17
-    container_name: xrayman-db-backup
-    restart: unless-stopped
-    depends_on:
-      - xrayman-db
-    volumes:
-      - ./backups:/backups
-    environment:
-      POSTGRES_HOST: xrayman-db
-      POSTGRES_USER: xrayman-user
-      POSTGRES_DB: xrayman-db
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-MISSING}
-      POSTGRES_EXTRA_OPTS: "-Z6"
-      SCHEDULE: "@daily"
-      BACKUP_KEEP_DAYS: 7
-    <<: *default-logging
-
   xray-nodeman:
     image: ghcr.io/xray-addons/xray-nodeman:VERSION_PLACEHOLDER
     container_name: xray-nodeman

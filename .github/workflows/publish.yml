@@ -71,6 +71,7 @@ jobs:
 
       # XRay node: build .deb packages
       - name: Node Pack DEB Packages
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
           ./packaging/xray-node/deb/build.sh "$CLEAN_VER" ./build arm64
           ./packaging/xray-node/deb/build.sh "$CLEAN_VER" ./build amd64
@@ -102,6 +103,7 @@ jobs:
 
       # XRay nodeman: build .deb packages
       - name: Nodeman Pack DEB Packages
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
           ./packaging/xray-nodeman/deb/build.sh "$CLEAN_VER" ./build arm64
           ./packaging/xray-nodeman/deb/build.sh "$CLEAN_VER" ./build amd64
@@ -127,7 +129,14 @@ jobs:
       #                        Publish                               #
       # ------------------------------------------------------------ #
 
-      # XRay node: create docker-compose archive
+      # publish binaries
+      - name: Compress binaries
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          tar -czf xrayman.arm64.tar.gz -C ./build/arm64 .
+          tar -czf xrayman.amd64.tar.gz -C ./build/amd64 .
+
+      # publish docker-compose archives
       - name: Publish XRay-Node docker compose
         if: startsWith(github.ref, 'refs/tags/')
         run: |
@@ -148,6 +157,8 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
+            xrayman.arm64.tar.gz
+            xrayman.amd64.tar.gz
             xray-nodeman-*.deb
             xray-node-*.deb
             docker-compose.xray-nodeman.tar.gz
