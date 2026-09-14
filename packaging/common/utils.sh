@@ -17,5 +17,6 @@ replace() {
         shift 2
     done
 
+    mkdir -p "$(dirname "$dst")"
     sed "${args[@]}" "$src" > "$dst"
 }
