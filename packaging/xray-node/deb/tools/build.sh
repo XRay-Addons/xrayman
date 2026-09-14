@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. ../../../common/utils.sh
+. ./packaging/common/utils.sh
 
 set -e
 
