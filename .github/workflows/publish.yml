@@ -95,7 +95,7 @@ jobs:
       - name: Publish XRay-Node docker compose
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          ./packaging/xray-nodeman/deb/tools/publish.sh "$CLEAN_VER"
+          ./packaging/xray-node/deb/tools/publish.sh "$CLEAN_VER"
 
       # ------------------------------------------------------------ #
       #                        XRay nodeman                          #
