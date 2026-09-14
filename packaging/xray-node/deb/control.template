@@ -13,6 +13,7 @@ Description: XRayMan Node service
  Configuration file                   : /etc/xray-node/xray-node.env
  Configuration file example           : /etc/xray-node/xray-node.env.example
  Client and Server configs dir        : %E/xray-node/config     (ordinary /etc/xray-node/config)
+ .............(example inside)
  Persistent app data dir (incl. keys) : %S/xray-node/persistent (ordinary /var/lib/xray-node/persistent)
  XRay geodata dir.                    : %S/xray-node/data       (ordinary /var/lib/xray-node/data)
  XRay binary file                     : /usr/bin/xray
