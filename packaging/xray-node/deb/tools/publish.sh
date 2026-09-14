@@ -12,7 +12,7 @@ replace \
     VERSION_PLACEHOLDER "$CLEAN_VER"
 
 # config example folder
-copy ./packaging/xray-node/config ./build/docker/xray-node/xray-node-config/example
+copy ./packaging/xray-node/config-example ./build/docker/xray-node/xray-node-config/example
 
 # docker-compose archive
 tar -czf docker-compose.xray-node.tar.gz -C ./build/docker/xray-node .
