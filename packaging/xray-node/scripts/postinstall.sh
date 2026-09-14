@@ -10,10 +10,10 @@ chmod 770 /var/lib/xray-node
 chown root:xray-node /etc/xray-node/xray-node.env
 chmod 640 /etc/xray-node/xray-node.env
 
-chown root:xray-node /etc/xray-node/xray_server.example.json
-chmod 640 /etc/xray-node/xray_server.example.json
-chown root:xray-node /etc/xray-node/xray_client.example.json
-chmod 640 /etc/xray-node/xray_client.example.json
+chown root:xray-node /etc/xray-node/example/xray_server.json
+chmod 640 /etc/xray-node/example/xray_server.json
+chown root:xray-node /etc/xray-node/example/xray_client.json
+chmod 640 /etc/xray-node/example/xray_client.json
 
 systemctl daemon-reload
 systemctl enable xray-node

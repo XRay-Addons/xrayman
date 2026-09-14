@@ -23,4 +23,4 @@ echo "║                                                                       
 echo "╚═══════════════════════════════════════════════════════════════════════╝"
 echo ""
 
-exec /usr/bin/xray-nodeman "$@"
+exec /usr/bin/xray-nodeman/xray-nodeman "$@"
