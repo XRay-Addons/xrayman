@@ -32,7 +32,8 @@
       }
     },
     "button": {
-      "text": "+"
+      "text": "+",
+      "close": "close"
     }
   },
 
@@ -55,13 +56,15 @@
       "endpoint": "Node endpoint:"
     },
     "button": {
-      "text": "+"
+      "text": "+",
+      "close": "close"
     }
   },
 
   "settings": {
     "button": {
-      "text": "⚙"
+      "text": "⚙",
+      "close": "Close"
     },
     "title": "Настройки",
     "fields": {

@@ -6,9 +6,11 @@ import Button from "@xrayman/shared/astro/primitives/Button.astro";
 type PageProps = HTMLAttributes<"div">;
 type DlgProps = WithPrefix<HTMLAttributes<"dialog">, "dlg">;
 
-interface Props extends PageProps, DlgProps {}
+interface Props extends PageProps, DlgProps {
+  closeI18n: string;
+}
 
-const { ...props } = Astro.props;
+const { closeI18n, ...props } = Astro.props;
 const { class: dlgClass, ...dlgProps } = ExtractPrefixed(props, "dlg");
 ---
 
@@ -21,7 +23,7 @@ const { class: dlgClass, ...dlgProps } = ExtractPrefixed(props, "dlg");
     </div>
 
     <div class="p-2 app-dialog-footer">
-      <Button btn:data-dialog-close>Close</Button>
+      <Button btn:data-dialog-close btn:data-i18n={closeI18n} />
     </div>
   </dialog>
 </mobile-dialog>

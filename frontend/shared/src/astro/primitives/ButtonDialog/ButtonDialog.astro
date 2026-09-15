@@ -5,9 +5,11 @@ import DesktopDialog from "./DesktopDialog.astro";
 import { ExtractPrefixed } from "@xrayman/shared/astro/props/props";
 import type { ButtonDialogProps } from "./types";
 
-type Props = ButtonDialogProps;
+interface Props extends ButtonDialogProps {
+  "close-i18n": string;
+}
 
-const { ...props } = Astro.props;
+const { "close-i18n": closeI18n, ...props } = Astro.props;
 const { ...pageProps } = ExtractPrefixed(props, "page");
 const { ...dlgProps } = ExtractPrefixed(props, "dlg");
 ---
@@ -17,7 +19,7 @@ const { ...dlgProps } = ExtractPrefixed(props, "dlg");
     <slot name="button" />
   </Button>
 
-  <MobileDialog {...pageProps} dlg:data-mobile-dialog dlg={dlgProps}>
+  <MobileDialog {...pageProps} dlg:data-mobile-dialog dlg={dlgProps} closeI18n={closeI18n}>
     <slot name="page" slot="page" />
   </MobileDialog>
 

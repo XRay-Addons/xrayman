@@ -1,5 +1,5 @@
 import { computed } from "vue";
-import { sm, md, xl, type ExtendedColumn } from "@/vue/components/primitives/table-ext/table-types";
+import { sm, type ExtendedColumn } from "@/vue/components/primitives/table-ext/table-types";
 import { type NodeView } from "@/services/api/generated/types.gen";
 import {
   makeConfigLine,
