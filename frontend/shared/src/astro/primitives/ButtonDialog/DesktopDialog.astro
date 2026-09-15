@@ -38,7 +38,6 @@ const { class: pageClass, ...pageProps } = props;
     private page!: HTMLElement;
 
     connectedCallback() {
-      console.log("open dialog");
       this.dialog = pt<HTMLDialogElement>(this, "app-desktop-dialog");
       this.page = pt<HTMLElement>(this, "dialog-page");
 
