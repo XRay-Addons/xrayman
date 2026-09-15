@@ -46,6 +46,7 @@ var userPage = gx.ProvideNamed(
 				UserPrefix:  cfg.UserSpaUrl,
 				SupportLink: settings.TgPage,
 				AppLinks:    settings.AppLinks,
+				Language:    settings.UsersLanguage,
 			}, nil
 		}
 		return pages.NewUserPage(pageConfigHandler)
