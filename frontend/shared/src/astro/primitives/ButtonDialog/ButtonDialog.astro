@@ -5,9 +5,11 @@ import DesktopDialog from "./DesktopDialog.astro";
 import { ExtractPrefixed } from "@xrayman/shared/astro/props/props";
 import type { ButtonDialogProps } from "./types";
 
-type Props = ButtonDialogProps;
+interface Props extends ButtonDialogProps {
+  "close-i18n": string;
+}
 
-const { ...props } = Astro.props;
+const { "close-i18n": closeI18n, ...props } = Astro.props;
 const { ...pageProps } = ExtractPrefixed(props, "page");
 const { ...dlgProps } = ExtractPrefixed(props, "dlg");
 ---
@@ -17,11 +19,11 @@ const { ...dlgProps } = ExtractPrefixed(props, "dlg");
     <slot name="button" />
   </Button>
 
-  <MobileDialog {...pageProps} dlg:data-mobile-dialog dlg={dlgProps}>
+  <MobileDialog {...pageProps} dlg={dlgProps} closeI18n={closeI18n} pt="mobile-dlg">
     <slot name="page" slot="page" />
   </MobileDialog>
 
-  <DesktopDialog {...pageProps} dlg:data-desktop-dialog dlg={dlgProps}>
+  <DesktopDialog {...pageProps} dlg={dlgProps} pt="desktop-dlg">
     <slot name="page" slot="page" />
   </DesktopDialog>
 </button-dialog>
@@ -29,6 +31,7 @@ const { ...dlgProps } = ExtractPrefixed(props, "dlg");
 <script>
   import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
   import { pt } from "@xrayman/shared/runtime/dom/pts";
+  import type { DialogElement } from "./ButtonDialog";
 
   class ButtonDialog extends CustomElement {
     connectedCallback() {
@@ -39,8 +42,8 @@ const { ...dlgProps } = ExtractPrefixed(props, "dlg");
         const isDesktop = window.matchMedia(`(min-width: ${breakpoint}px)`).matches;
 
         const variant = isDesktop ? "desktop" : "mobile";
-        const dlg = pt<HTMLDialogElement>(this, `${variant}-dialog`);
-        dlg.showModal();
+        const dlg = pt<DialogElement>(this, `${variant}-dlg`);
+        await dlg.showModal();
       };
     }
   }

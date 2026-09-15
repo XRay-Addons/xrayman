@@ -6,13 +6,16 @@ import Button from "@xrayman/shared/astro/primitives/Button.astro";
 type PageProps = HTMLAttributes<"div">;
 type DlgProps = WithPrefix<HTMLAttributes<"dialog">, "dlg">;
 
-interface Props extends PageProps, DlgProps {}
+interface Props extends PageProps, DlgProps {
+  closeI18n: string;
+  pt: string;
+}
 
-const { ...props } = Astro.props;
+const { pt, closeI18n, ...props } = Astro.props;
 const { class: dlgClass, ...dlgProps } = ExtractPrefixed(props, "dlg");
 ---
 
-<mobile-dialog>
+<mobile-dialog data-pt={pt}>
   <dialog class:list={["app-dialog", dlgClass]} data-app-mobile-dialog {...dlgProps}>
     <div class="p-2 app-dialog-page">
       <div {...props} data-dialog-content>
@@ -21,7 +24,7 @@ const { class: dlgClass, ...dlgProps } = ExtractPrefixed(props, "dlg");
     </div>
 
     <div class="p-2 app-dialog-footer">
-      <Button btn:data-dialog-close>Close</Button>
+      <Button btn:data-dialog-close btn:data-i18n={closeI18n} />
     </div>
   </dialog>
 </mobile-dialog>
@@ -29,9 +32,9 @@ const { class: dlgClass, ...dlgProps } = ExtractPrefixed(props, "dlg");
 <script>
   import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
   import { pt } from "@xrayman/shared/runtime/dom/pts";
-  import type { Resettable } from "./ButtonDialog";
+  import type { DialogElement, DialogItemElement } from "./ButtonDialog";
 
-  class MobileDialog extends CustomElement {
+  class MobileDialog extends CustomElement implements DialogElement {
     private dialog!: HTMLDialogElement;
     private isClosing: boolean = false;
 
@@ -47,7 +50,6 @@ const { class: dlgClass, ...dlgProps } = ExtractPrefixed(props, "dlg");
 
       this.dialog.addEventListener("close", () => {
         this.unlockScroll();
-        this.reset();
       });
 
       closeButton.addEventListener(
@@ -86,11 +88,12 @@ const { class: dlgClass, ...dlgProps } = ExtractPrefixed(props, "dlg");
       );
     }
 
-    private reset() {
+    async showModal() {
       const dialogContent = pt<HTMLElement>(this, "dialog-content");
-      dialogContent.querySelectorAll("*").forEach((el) => {
-        (el as Partial<Resettable>).reset?.();
-      });
+      for (const el of dialogContent.children) {
+        await (el as Partial<DialogItemElement>).onShow?.();
+      }
+      this.dialog.showModal();
     }
   }
 

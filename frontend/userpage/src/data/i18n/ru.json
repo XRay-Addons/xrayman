@@ -143,7 +143,8 @@
     "tg-button": "в тг",
     "tg-sharedtext": "Только посмотри, какой VPN!",
     "copy": "копировать",
-    "copy-success": "скопировано!"
+    "copy-success": "скопировано!",
+    "close": "закрыть"
   },
 
   "errors": {

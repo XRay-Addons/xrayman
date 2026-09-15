@@ -1,6 +1,6 @@
-export type Language = "en" | "ru";
+export type Language = "en";
 
-let language: Language = "ru";
+let language: Language = "en";
 
 export function getLanguageState() {
   return language;

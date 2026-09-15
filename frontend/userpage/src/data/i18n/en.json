@@ -1,31 +1,64 @@
 {
-  "title.main": "Ottepell'",
+  "page": {
+    "title": "(ノಠ益ಠ)ノ彡...ццц"
+  },
+  "title": {
+    "hello": "Hello, ",
+    "name-placeholder": "『Unknown Name』"
+  },
+  "choosename": {
+    "info": "Choose user name",
+    "placeholder": {
+      "prefix": "For example,",
+      "name": ["Oleg", "Igor", "Nikita"]
+    },
+    "btntext": "Go"
+  },
 
-  "title.hello": "Privet",
-  "title.name.placeholder": "Imya Pol'zovatelya",
+  "userurl": {
+    "info": "Save this website address — this is where you’ll always find the connection instructions.",
+    "btntext": "Copy",
+    "do-not-share": "CAUTION: Do not share this link with anyone. It is your secret link. If you want to tell someone about this website, click the button at the bottom of the page&nbsp;↓↓↓"
+  },
 
-  "choosename.info": "Pridumayte sebe imya pol'zovatelya",
-  "choosename.placeholder": "Naprymer, Oleg",
-  "choosename.btntext": "Go",
+  "installapp": {
+    "info": "Install the <strong>Happ</strong> app (Happ Plus, Happ Proxy, etc.) and return to this page."
+  },
 
-  "userurl.info": "Sokhranite adres etogo sayta — zdes' vsegda budet instruktsiya po podklyucheniyu.",
-  "userurl.btntext": "Copy",
+  "runapp": {
+    "info": "Click the <strong>Open HAPP</strong> button — the app will open. Select one of the servers and press the BIG BEAUTIFUL BUTTON.",
+    "button": "Open HAPP"
+  },
 
-  "installapp.info": "Ustanovite prilozhenie <strong>Happ</strong> i vernytes' na etu stranitsu",
+  "support": {
+    "info": "If the internet isn’t working and you need help, subscribe to this Telegram channel. You can find more detailed instructions there, ask for advice, and get the latest news."
+  },
 
-  "runapp.info": "Nazhmite na knopku <strong>Open HAPP</strong> - otkroetsya prilozhenie. Vyberite v nyom odin iz serverov i nazhmite BOL'SHUYU KRASIVUYU KNOPKU.",
-  "runapp.button": "Open HAPP",
-  "runapp.ps": "Esli internet ne rabotaet - poprobuyte vybrat' drugoy server :/",
+  "share": {
+    "button-text": "Send to friends",
+    "title": "Send to friends...",
+    "tg-button": "on Telegram",
+    "tg-sharedtext": "Just look at this VPN!",
+    "copy": "copy",
+    "copy-success": "copied!",
+    "close": "закрыть"
+  },
 
-  "button.install.gplay": "Google Play",
-  "button.install.appstore.ru": "AppStore-RU",
-  "button.install.appstore.global": "AppStore",
-  "button.install.win": "Download .exe",
-  "button.install.others": "Others...",
+  "errors": {
+    "title": "Server error, please try again later",
+    "server": {
+      "get_user": "Failed to get user",
+      "new_user": "Failed to add user",
+      "config_js": "config.js error",
 
-  "servererror.main": "Server Error, Zajdite Pozze",
-
-  "servererror.reason.not_found": "Stranica ne naidena",
-
-  "errors.server.config-json": "config.json loading error"
+      "reason": {
+        "bad_request": "Bad request",
+        "not_found": "Not found",
+        "unauthorized": "Unauthorized",
+        "forbidden": "F O R B I D D E N!!!11",
+        "network": "No internet connection",
+        "unknown": "Hmm, unclear"
+      }
+    }
+  }
 }

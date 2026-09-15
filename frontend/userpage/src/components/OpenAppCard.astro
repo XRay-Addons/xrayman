@@ -31,7 +31,7 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 
   class OpenAppCard extends CustomElement {
     private unsub?: () => void;
-    private openHappFn?: () => void;
+    private happSubLink?: string;
 
     makeHappSubLink(subscriptionURL: string) {
       const happIntent = "happ://add/";
@@ -43,18 +43,18 @@ import I18NText from "@xrayman/shared/astro/primitives/I18nText.astro";
 
       this.unsub = stateSignal.subscribe((state) => {
         if (state.status !== State.LoggedIn) {
-          this.openHappFn = () => {};
+          this.happSubLink = undefined;
           return;
         }
+
         const subscriptionURL = MakeApiUrl(state.data.Profile.SubscriptionPath);
-        const happSubLink = this.makeHappSubLink(subscriptionURL);
-        this.openHappFn = () => {
-          window.open(happSubLink, "_blank", "noopener");
-        };
+
+        this.happSubLink = this.makeHappSubLink(subscriptionURL);
       });
 
       btnEl.addEventListener("click", () => {
-        this.openHappFn?.();
+        if (!this.happSubLink) return;
+        window.open(this.happSubLink, "_blank");
       });
     }
 
