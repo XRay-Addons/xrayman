@@ -9,7 +9,7 @@ interface Props extends InputProps {
 
 const { type = "text", readonly = false, nowrap = true, ...restProps } = Astro.props;
 
-const input = type !== "text" || (nowrap && !readonly);
+const input = type !== "text" || nowrap;
 const row = !input && nowrap;
 const whitespace = nowrap ? "nowrap" : "pre-wrap";
 ---
@@ -18,10 +18,10 @@ const whitespace = nowrap ? "nowrap" : "pre-wrap";
   input ? (
     <input {...restProps} type={type} readonly={readonly} />
   ) : row ? (
-    <textarea {...restProps} rows={1} />
+    <textarea {...restProps} rows={1} readonly={readonly} />
   ) : (
     <legacy-text-field>
-      <textarea data-textarea {...restProps} rows={1} />
+      <textarea data-textarea {...restProps} rows={1} readonly={readonly} />
     </legacy-text-field>
   )
 }

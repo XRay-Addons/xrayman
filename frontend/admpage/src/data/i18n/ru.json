@@ -66,6 +66,8 @@
     "title": "Настройки",
     "fields": {
       "subscr-title": "Title",
+      "recent-days": "Recent Days Count",
+      "users-language": "Users Language",
       "users-message": "Message",
       "user-page": "User Page",
       "tg-page": "TG Group",
