@@ -33,4 +33,4 @@ replace \
     VERSION_PLACEHOLDER "$VERSION" \
     ARCH_PLACEHOLDER "$ARCH"
 
-dpkg-deb --build "$DIR"
+dpkg-deb --root-owner-group "$DIR"
