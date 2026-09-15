@@ -32,7 +32,7 @@ const i18n = "settings";
 </settings-page>
 
 <script>
-  import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+  import type { DialogItemElement } from "@xrayman/shared/astro/primitives/ButtonDialog/ButtonDialog";
   import { addSubmitListener } from "@xrayman/shared/features/submit";
   import { pt } from "@xrayman/shared/runtime/dom/pts";
   import type { ConfigEditorElement } from "@xrayman/shared/astro/primitives/Config/Config";
@@ -43,9 +43,11 @@ const i18n = "settings";
   import { ActiveSlotElement } from "@xrayman/shared/astro/primitives/ActiveSlot/ActiveSlot";
   import { t } from "@/runtime/i18n";
   import { checkSettings } from "./SettingsCheck";
+  import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
 
-  class SettingsPage extends CustomElement {
+  class SettingsPage extends CustomElement implements DialogItemElement {
     private configEl!: ConfigEditorElement;
+    private submitBtnContentEl!: ActiveSlotElement;
 
     async connectedCallback() {
       super.connectedCallback();
@@ -55,47 +57,51 @@ const i18n = "settings";
       this.configEl.tags = config().SettingsTags;
 
       const submitBtn = pt<HTMLButtonElement>(this, "submit-btn");
-      const submitBtnContent = pt<ActiveSlotElement>(this, "submit-btn-content");
-
-      const refresh = async () => {
-        const result = await getSettings();
-        if (!result.ok) {
-          notifyApiError("get_settings", result.reason);
-          return;
-        }
-        this.configEl.data = toRawData(result.data);
-      };
-
-      const update = async () => {
-        const value = fromRawData(this.configEl.value);
-        const err = checkSettings(value);
-        if (err) {
-          notifyError(err.name, err.message);
-          return;
-        }
-        const result = await setSettings(value);
-        if (!result.ok) {
-          notifyApiError("set_settings", result.reason);
-          return;
-        }
-        // show back
-        submitBtnContent.value = t("settings.submit-btn.success");
-        setTimeout(() => {
-          submitBtnContent.value = undefined;
-        }, 2000);
-      };
+      this.submitBtnContentEl = pt<ActiveSlotElement>(this, "submit-btn-content");
 
       addSubmitListener(submitBtn, form, async () => {
-        await update();
+        await this.update();
       });
 
       const refreshBtn = pt<HTMLButtonElement>(this, "refresh-btn");
       refreshBtn.addEventListener("click", async (e) => {
         e.preventDefault();
-        await refresh();
+        await this.refresh();
       });
 
-      await refresh();
+      await this.refresh();
+    }
+
+    async onShow(): Promise<void> {
+      return await this.refresh();
+    }
+
+    async refresh() {
+      const result = await getSettings();
+      if (!result.ok) {
+        notifyApiError("get_settings", result.reason);
+        return;
+      }
+      this.configEl.data = toRawData(result.data);
+    }
+
+    async update() {
+      const value = fromRawData(this.configEl.value);
+      const err = checkSettings(value);
+      if (err) {
+        notifyError(err.name, err.message);
+        return;
+      }
+      const result = await setSettings(value);
+      if (!result.ok) {
+        notifyApiError("set_settings", result.reason);
+        return;
+      }
+      // show back
+      this.submitBtnContentEl.value = t("settings.submit-btn.success");
+      setTimeout(() => {
+        this.submitBtnContentEl.value = undefined;
+      }, 2000);
     }
   }
 

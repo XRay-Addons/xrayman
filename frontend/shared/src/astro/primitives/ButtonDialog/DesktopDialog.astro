@@ -6,15 +6,16 @@ import type { HTMLAttributes } from "astro/types";
 type PageProps = HTMLAttributes<"div">;
 type DlgProps = WithPrefix<HTMLAttributes<"dialog">, "dlg">;
 
-interface Props extends PageProps, DlgProps {}
+interface Props extends PageProps, DlgProps {
+  pt: string;
+}
 
-const { ...props } = Astro.props;
+const { pt, ...props } = Astro.props;
 const { class: dlgClass, ...dlgProps } = ExtractPrefixed(props, "dlg");
 const { class: pageClass, ...pageProps } = props;
-console.log("dlgprops", dlgProps);
 ---
 
-<desktop-dialog>
+<desktop-dialog data-pt={pt}>
   <dialog class:list={["app-dialog", dlgClass]} data-app-desktop-dialog {...dlgProps}>
     <div class="app-dialog-page p-2" data-dialog-page>
       <div class:list={["dialog-surface-wrapper", pageClass]} {...pageProps}>
@@ -29,36 +30,31 @@ console.log("dlgprops", dlgProps);
 <script>
   import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
   import { pt } from "@xrayman/shared/runtime/dom/pts";
-  import type { Resettable } from "./ButtonDialog";
+  import type { DialogItemElement } from "./ButtonDialog";
+  import type { DialogElement } from "./ButtonDialog";
 
-  class DesktopDialog extends CustomElement {
+  class DesktopDialog extends CustomElement implements DialogElement {
     private dialog!: HTMLDialogElement;
     private page!: HTMLElement;
 
     connectedCallback() {
+      console.log("open dialog");
       this.dialog = pt<HTMLDialogElement>(this, "app-desktop-dialog");
       this.page = pt<HTMLElement>(this, "dialog-page");
 
-      this.dialog.addEventListener("close", () => {
-        this.reset();
-      });
-
-      const close = () => {
-        this.dialog.close();
-      };
-
       this.page.onmousedown = (e) => {
         if (e.target === this.page) {
-          close();
+          this.dialog.close();
         }
       };
     }
 
-    private reset() {
+    async showModal() {
       const dialogContent = pt<HTMLElement>(this, "dialog-content");
-      dialogContent.querySelectorAll("*").forEach((el) => {
-        (el as Partial<Resettable>).reset?.();
-      });
+      for (const el of dialogContent.children) {
+        await (el as Partial<DialogItemElement>).onShow?.();
+      }
+      this.dialog.showModal();
     }
   }
 

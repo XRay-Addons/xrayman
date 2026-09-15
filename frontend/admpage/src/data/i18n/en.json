@@ -68,6 +68,7 @@
     },
     "title": "Settings",
     "fields": {
+      "recent-days": "Recent Days count",
       "subscr-title": "Title",
       "users-message": "Message",
       "user-page": "User Page",

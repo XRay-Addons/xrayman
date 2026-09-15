@@ -45,15 +45,15 @@ const fields: (InputField | ListField)[] = [
   import { newNode } from "@/services/api/client";
   import { notifyApiError } from "@/runtime/notifications/use-notifications";
   import { reloadNodes } from "@/actions/nodes";
-  import type { Resettable } from "@xrayman/shared/astro/primitives/ButtonDialog/ButtonDialog";
-  import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
+  import { DialogItemElement } from "@xrayman/shared/astro/primitives/ButtonDialog/ButtonDialog";
   import { pt } from "@xrayman/shared/runtime/dom/pts";
   import { addSubmitListener } from "@xrayman/shared/features/submit";
   import type { ConfigEditorElement } from "@xrayman/shared/astro/primitives/Config/Config";
   import type { ActiveSlotElement } from "@xrayman/shared/astro/primitives/ActiveSlot/ActiveSlot";
   import { t } from "@/runtime/i18n";
+  import { CustomElement } from "@xrayman/shared/runtime/dom/custom-element";
 
-  class AddNodePage extends CustomElement implements Resettable {
+  class AddNodePage extends CustomElement implements DialogItemElement {
     private configEl!: ConfigEditorElement;
 
     connectedCallback() {
@@ -76,14 +76,14 @@ const fields: (InputField | ListField)[] = [
         // canonize endpoint
         const canonizedEndpoint = this.canonizeEndpoint(endpoint);
 
-        // reset and hide
+        // await for new node creation response
         const response = await newNode(canonizedEndpoint, accesskey);
         if (!response.ok) {
           notifyApiError("new_node", response.reason);
-          submitBtnContent.value = undefined;
           return;
         }
-        this.reset();
+        // clear current node data on success
+        this.configEl.data = {};
         reloadNodes({ quiet: true });
 
         // show back
@@ -105,7 +105,7 @@ const fields: (InputField | ListField)[] = [
       return `https://${e}`;
     }
 
-    reset() {
+    async onShow(): Promise<void> {
       this.configEl.data = {};
     }
   }
