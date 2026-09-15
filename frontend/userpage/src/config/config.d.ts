@@ -26,4 +26,8 @@ export interface UserPageConfig {
     Platforms: string;
     URL: string;
   }[];
+  /**
+   * default user page language
+   */
+  Language: string;
 }

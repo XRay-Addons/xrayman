@@ -9,6 +9,8 @@ type AppLink struct {
 type Settings struct {
 	RecentDays int
 
+	UsersLanguage string
+
 	SubscrTitle    string
 	UpdateInterval int
 	UserPage       string

@@ -5,18 +5,19 @@ import Input from "@xrayman/shared/astro/primitives/Input.astro";
 import Surface from "@xrayman/shared/astro/primitives/Surface.astro";
 
 type InputProps = ComponentProps<typeof Input>;
-type HostProps = WithPrefix<HTMLAttributes<"div">, "tagged">;
-
-interface Props extends InputProps, HostProps {}
+interface HostProps extends HTMLAttributes<"div"> {
+  tags?: string[];
+}
+interface Props extends InputProps, WithPrefix<HostProps, "tagged"> {}
 
 const { ...props } = Astro.props;
-const { ...taggedProps } = ExtractPrefixed(props, "tagged");
+const { tags, ...taggedProps } = ExtractPrefixed(props, "tagged");
 ---
 
-<tagged-input {...taggedProps}>
-  <Input data-input-container input:data-tagged-input {...props} />
+<tagged-input {...taggedProps} tags={JSON.stringify(tags)}>
+  <Input input:data-tagged-input {...props} />
 
-  <div data-tags-container class="tags-container" hidden>
+  <div data-dropdown class="dropdown" hidden>
     <Surface color="var(--input-color)">
       <div data-tags class="d-flex flex-wrap gap-2 m-1 h-center"></div>
 
@@ -30,108 +31,109 @@ const { ...taggedProps } = ExtractPrefixed(props, "tagged");
       </template>
     </Surface>
   </div>
-</tagged-input>
 
-<script>
-  import { CustomElement, prop } from "@xrayman/shared/runtime/dom/custom-element";
-  import type { TaggedInputElement } from "./TaggedInput";
-  import { pt } from "@xrayman/shared/runtime/dom/pts";
+  <script>
+    import { CustomElement, prop } from "@xrayman/shared/runtime/dom/custom-element";
+    import type { TaggedInputElement } from "./TaggedInput";
+    import { pt } from "@xrayman/shared/runtime/dom/pts";
 
-  class TaggedInput extends CustomElement implements TaggedInputElement {
-    @prop({ default: [] }) tags!: string[];
+    class TaggedInput extends CustomElement implements TaggedInputElement {
+      @prop({ default: undefined }) tags!: string[];
 
-    private inputEl!: HTMLInputElement;
-    private tagsEl!: HTMLElement;
-    private tagTmpl!: HTMLTemplateElement;
+      private inputEl!: HTMLInputElement;
+      private tagsEl!: HTMLElement;
+      private tagTmpl!: HTMLTemplateElement;
 
-    connectedCallback() {
-      super.connectedCallback();
+      connectedCallback() {
+        super.connectedCallback();
 
-      this.inputEl = pt<HTMLInputElement>(this, "tagged-input");
-      this.tagsEl = pt<HTMLElement>(this, "tags");
-      this.tagTmpl = pt<HTMLTemplateElement>(this, "tag-template");
+        this.inputEl = pt<HTMLInputElement>(this, "tagged-input");
+        this.tagsEl = pt<HTMLElement>(this, "tags");
+        this.tagTmpl = pt<HTMLTemplateElement>(this, "tag-template");
 
-      const tagsContainerEl = pt<HTMLElement>(this, "tags-container");
+        const dropdownEl = pt<HTMLElement>(this, "dropdown");
 
-      this.inputEl.addEventListener("focus", () => {
-        tagsContainerEl.removeAttribute("hidden");
-      });
-      this.inputEl.addEventListener("blur", () => {
-        tagsContainerEl.setAttribute("hidden", "");
-      });
-      this.inputEl.addEventListener("keydown", (event) => {
-        if (event.key !== "Escape") return;
-        event.preventDefault();
-        this.inputEl.blur();
-      });
-      tagsContainerEl.addEventListener("mousedown", (event) => {
-        event.preventDefault();
-      });
-
-      this.render();
-    }
-
-    protected render() {
-      this.renderTags();
-    }
-
-    private renderTags() {
-      const tags = this.tags.map((ph) => {
-        const tag = this.tagTmpl.content.cloneNode(true) as HTMLElement;
-        const btn = pt<HTMLButtonElement>(tag, "tag-btn");
-        btn.textContent = ph;
-        btn.addEventListener("click", () => {
-          this.addInputText(ph);
+        this.inputEl.addEventListener("focus", () => {
+          dropdownEl.removeAttribute("hidden");
         });
-        return tag;
-      });
-      this.tagsEl.replaceChildren(...tags);
+        this.inputEl.addEventListener("blur", () => {
+          dropdownEl.setAttribute("hidden", "");
+        });
+        this.inputEl.addEventListener("keydown", (event) => {
+          if (event.key !== "Escape") return;
+          event.preventDefault();
+          this.inputEl.blur();
+        });
+        dropdownEl.addEventListener("mousedown", (event) => {
+          event.preventDefault();
+        });
+
+        this.render();
+      }
+
+      protected render() {
+        this.renderTags();
+      }
+
+      private renderTags() {
+        const tags = this.tags ?? JSON.parse(this.getAttribute("tags") ?? "[]");
+        const tagEls = tags.map((ph) => {
+          const tag = this.tagTmpl.content.cloneNode(true) as HTMLElement;
+          const btn = pt<HTMLButtonElement>(tag, "tag-btn");
+          btn.textContent = ph;
+          btn.addEventListener("click", () => {
+            this.addInputText(ph);
+          });
+          return tag;
+        });
+        this.tagsEl.replaceChildren(...tagEls);
+      }
+
+      private addInputText(text: string) {
+        const input = this.inputEl!;
+        const start = input.selectionStart ?? input.value.length;
+        const end = input.selectionEnd ?? input.value.length;
+        input.setRangeText(text, start, end, "end");
+      }
     }
 
-    private addInputText(text: string) {
-      const input = this.inputEl!;
-      const start = input.selectionStart ?? input.value.length;
-      const end = input.selectionEnd ?? input.value.length;
-      input.setRangeText(text, start, end, "end");
+    if (!customElements.get("tagged-input")) {
+      customElements.define("tagged-input", TaggedInput);
     }
-  }
+  </script>
 
-  if (!customElements.get("tagged-input")) {
-    customElements.define("tagged-input", TaggedInput);
-  }
-</script>
+  <style lang="scss">
+    @use "@xrayman/shared/styles/shades.scss" as *;
 
-<style lang="scss">
-  @use "@xrayman/shared/styles/shades.scss" as *;
-
-  tagged-input {
-    display: block;
-    position: relative;
-    height: 100%;
-  }
-
-  .tags-container {
-    position: absolute;
-    z-index: 1;
-    top: 100%;
-    width: 100%;
-
-    margin-top: calc(-1 * var(--surface-depth));
-  }
-
-  .tag {
-    border: 1px solid dddarker(var(--button-color));
-    background-color: var(--button-color);
-    color: contrasted(var(--button-color));
-  }
-
-  @media (any-hover: hover) {
-    .tag:hover {
-      background-color: darker(var(--button-color));
+    tagged-input {
+      display: block;
+      position: relative;
+      height: 100%;
     }
-  }
 
-  .tag:active {
-    background-color: ddarker(var(--button-color));
-  }
-</style>
+    .dropdown {
+      position: absolute;
+      z-index: 1;
+      top: 100%;
+      width: 100%;
+
+      margin-top: calc(-1 * var(--surface-depth));
+    }
+
+    .tag {
+      border: 1px solid dddarker(var(--button-color));
+      background-color: var(--button-color);
+      color: contrasted(var(--button-color));
+    }
+
+    @media (any-hover: hover) {
+      .tag:hover {
+        background-color: darker(var(--button-color));
+      }
+    }
+
+    .tag:active {
+      background-color: ddarker(var(--button-color));
+    }
+  </style>
+</tagged-input>

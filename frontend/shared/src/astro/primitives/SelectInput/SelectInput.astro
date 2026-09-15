@@ -1,0 +1,119 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import { ExtractPrefixed, type WithPrefix } from "@xrayman/shared/astro/props/props";
+import Surface from "@xrayman/shared/astro/primitives/Surface.astro";
+import Input from "@xrayman/shared/astro/primitives/Input.astro";
+
+type InputProps = ComponentProps<typeof Input>;
+interface HostProps extends HTMLAttributes<"div"> {
+  variants?: string[];
+}
+interface Props extends InputProps, WithPrefix<HostProps, "select"> {}
+
+const { ...props } = Astro.props;
+const { variants, ...selectProps } = ExtractPrefixed(props, "select");
+---
+
+<select-input {...selectProps} variants={JSON.stringify(variants)}>
+  <Input input:data-select-input {...props} />
+
+  <div data-dropdown class="dropdown" hidden>
+    <Surface color="var(--input-color)">
+      <div data-variants></div>
+
+      <template data-variant-template>
+        <div class="w-100 text text-md crt p-2 variant" data-variant></div>
+      </template>
+    </Surface>
+  </div>
+</select-input>
+
+<script>
+  import { CustomElement, prop } from "@xrayman/shared/runtime/dom/custom-element";
+  import type { SelectInputElement } from "./SelectInput";
+  import { pt } from "@xrayman/shared/runtime/dom/pts";
+
+  class SelectInput extends CustomElement implements SelectInputElement {
+    @prop({ default: undefined }) variants!: string[];
+
+    private inputEl!: HTMLInputElement;
+    private variantsEl!: HTMLElement;
+    private variantTmpl!: HTMLTemplateElement;
+
+    connectedCallback() {
+      super.connectedCallback();
+
+      this.inputEl = pt<HTMLInputElement>(this, "select-input");
+      this.variantsEl = pt<HTMLElement>(this, "variants");
+      this.variantTmpl = pt<HTMLTemplateElement>(this, "variant-template");
+
+      const dropdownEl = pt<HTMLElement>(this, "dropdown");
+
+      this.inputEl.addEventListener("click", () => {
+        dropdownEl.removeAttribute("hidden");
+      });
+      this.inputEl.addEventListener("focus", () => {
+        dropdownEl.removeAttribute("hidden");
+      });
+      this.inputEl.addEventListener("blur", () => {
+        dropdownEl.setAttribute("hidden", "");
+      });
+      this.inputEl.addEventListener("keydown", (event) => {
+        event.preventDefault();
+        if (event.key !== "Escape") return;
+        this.inputEl.blur();
+      });
+      dropdownEl.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+      });
+
+      this.render();
+    }
+
+    protected render() {
+      this.renderVariants();
+    }
+
+    private renderVariants() {
+      const variants = this.variants ?? JSON.parse(this.getAttribute("variants") ?? "[]");
+      const variantEls = variants.map((v) => {
+        const variant = this.variantTmpl.content.cloneNode(true) as HTMLElement;
+        const content = pt<HTMLButtonElement>(variant, "variant");
+        content.textContent = v;
+        content.addEventListener("click", () => {
+          this.inputEl.value = v;
+        });
+        return variant;
+      });
+      this.variantsEl.replaceChildren(...variantEls);
+    }
+  }
+
+  if (!customElements.get("select-input")) {
+    customElements.define("select-input", SelectInput);
+  }
+</script>
+
+<style lang="scss">
+  @use "@xrayman/shared/styles/shades.scss" as *;
+
+  select-input {
+    display: block;
+    position: relative;
+    height: 100%;
+  }
+
+  .dropdown {
+    position: absolute;
+    z-index: 1;
+    top: 100%;
+    width: 100%;
+    margin-top: calc(-1 * var(--surface-depth));
+  }
+
+  @media (any-hover: hover) {
+    .variant:hover {
+      background-color: darker(var(--input-color));
+    }
+  }
+</style>

@@ -4,6 +4,8 @@ Settings:
     RecentDays:
       type: integer
       minimum: 1
+    UsersLanguage:
+      type: string
     SubscrTitle:
       type: string
     UpdateInterval:
@@ -27,6 +29,7 @@ Settings:
         $ref: "#/Header"
   required:
     - RecentDays
+    - UsersLanguage
     - SubscrTitle
     - UpdateInterval
     - UserPage

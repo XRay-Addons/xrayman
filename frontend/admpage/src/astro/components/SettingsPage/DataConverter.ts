@@ -10,11 +10,13 @@ import {
   Routing,
   AppLinks,
   CustomHeaders,
+  UsersLanguage,
 } from "./SettingsFields";
 
 export function toRawData(data: Settings): ConfigData {
   const rd = {
     [RecentDays]: String(data.RecentDays),
+    [UsersLanguage]: String(data.UsersLanguage),
     [SubscrTitle]: data.SubscrTitle,
     [UsersMessage]: data.UsersMessage,
     [UserPage]: data.UserPage,
@@ -39,6 +41,7 @@ export function toRawData(data: Settings): ConfigData {
 export function fromRawData(data: ConfigData): Settings {
   return {
     RecentDays: parseInteger(getString(data, RecentDays) ?? "0"),
+    UsersLanguage: getString(data, UsersLanguage) ?? "",
     SubscrTitle: getString(data, SubscrTitle) ?? "",
     UsersMessage: getString(data, UsersMessage) ?? "",
     UserPage: getString(data, UserPage) ?? "",

@@ -1,6 +1,12 @@
 import { ListItemField } from "@xrayman/shared/astro/primitives/ListInput/ListInput";
 import TextInput from "@xrayman/shared/astro/primitives/TextInput.astro";
-import type { InputField, ListField } from "@xrayman/shared/astro/primitives/Config/Config.astro";
+import type {
+  InputField,
+  TaggedField,
+  SelectField,
+  ListField,
+} from "@xrayman/shared/astro/primitives/Config/Config.astro";
+import { Languages } from "@xrayman/shared/runtime/dom/i18n";
 import type { ComponentProps } from "astro/types";
 
 // -------------------------------------------------------------------------
@@ -26,6 +32,7 @@ export const numInput = {
 // -------------------------------------------------------------------------
 // field names
 export const RecentDays = "recent-days";
+export const UsersLanguage = "users-language";
 export const SubscrTitle = "subscr-title";
 export const UsersMessage = "users-message";
 export const UserPage = "user-page";
@@ -70,11 +77,17 @@ export const headersFields: ListItemField[] = [
   },
 ];
 
-export const fields: (InputField | ListField)[] = [
+export const fields: (InputField | TaggedField | SelectField | ListField)[] = [
   {
     name: RecentDays,
     type: "input",
     inputProps: { required: true, ...intInput },
+  },
+  {
+    name: UsersLanguage,
+    type: "select-input",
+    variants: Languages(),
+    inputProps: { required: true },
   },
   {
     name: SubscrTitle,

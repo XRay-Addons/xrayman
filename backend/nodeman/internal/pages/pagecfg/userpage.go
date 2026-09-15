@@ -7,4 +7,5 @@ type UserPageCfg struct {
 	UserPrefix  string
 	SupportLink string
 	AppLinks    []models.AppLink
+	Language    string
 }

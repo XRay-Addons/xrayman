@@ -1,8 +1,8 @@
-export type Language = "en" | "ru";
+import type { Language } from "@xrayman/shared/runtime/dom/i18n";
 
-let language: Language = "ru";
+let language: Language = "en";
 
-export function getLanguageState() {
+export function getLanguageState(): Language {
   return language;
 }
 

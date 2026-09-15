@@ -12,6 +12,9 @@ type UserpagecfgJson struct {
 	// application links
 	AppLinks []UserpagecfgJsonAppLinksElem `json:"AppLinks" yaml:"AppLinks" mapstructure:"AppLinks"`
 
+	// default user page language
+	Language string `json:"Language" yaml:"Language" mapstructure:"Language"`
+
 	// prefix for user page spa
 	SupportLink string `json:"SupportLink" yaml:"SupportLink" mapstructure:"SupportLink"`
 
@@ -65,6 +68,9 @@ func (j *UserpagecfgJson) UnmarshalJSON(value []byte) error {
 	}
 	if _, ok := raw["AppLinks"]; raw != nil && !ok {
 		return fmt.Errorf("field AppLinks in UserpagecfgJson: required")
+	}
+	if _, ok := raw["Language"]; raw != nil && !ok {
+		return fmt.Errorf("field Language in UserpagecfgJson: required")
 	}
 	if _, ok := raw["SupportLink"]; raw != nil && !ok {
 		return fmt.Errorf("field SupportLink in UserpagecfgJson: required")

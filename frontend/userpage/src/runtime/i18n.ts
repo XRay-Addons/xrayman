@@ -1,9 +1,18 @@
+import type { Language } from "@xrayman/shared/runtime/dom/i18n";
 import en from "@/data/i18n/en.json";
 import ru from "@/data/i18n/ru.json";
-
-export type Language = "en" | "ru";
+import { config } from "@/config/config";
 
 let language: Language = "ru";
+
+switch (config().Language) {
+  case "en":
+    language = "en";
+    break;
+  case "ru":
+    language = "ru";
+    break;
+}
 
 export function setLanguageState(l: Language) {
   language = l;

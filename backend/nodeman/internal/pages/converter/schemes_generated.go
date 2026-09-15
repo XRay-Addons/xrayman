@@ -31,6 +31,7 @@ func ConvertUserPageCfg(source pagecfg.UserPageCfg) schemas.UserpagecfgJson {
 			schemasUserpagecfgJson.AppLinks[i] = modelsAppLinkToSchemasUserpagecfgJsonAppLinksElem(source.AppLinks[i])
 		}
 	}
+	schemasUserpagecfgJson.Language = source.Language
 	schemasUserpagecfgJson.SupportLink = source.SupportLink
 	schemasUserpagecfgJson.UserPrefix = source.UserPrefix
 	return schemasUserpagecfgJson

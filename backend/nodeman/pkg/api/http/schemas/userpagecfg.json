@@ -3,7 +3,7 @@
   "title": "UserPageConfig",
   "type": "object",
   "additionalProperties": false,
-  "required": ["ApiPrefix", "UserPrefix", "SupportLink", "AppLinks"],
+  "required": ["ApiPrefix", "UserPrefix", "SupportLink", "AppLinks", "Language"],
 
   "properties": {
     "ApiPrefix": {
@@ -42,6 +42,11 @@
           }
         }
       }
+    },
+
+    "Language": {
+      "type": "string",
+      "description": "default user page language"
     }
   }
 }

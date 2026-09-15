@@ -1,17 +1,135 @@
 {
+  "common": {
+    "close": "Close"
+  },
+
   "page": {
-    "title": "Ottepell-Adm"
+    "title": "XRayMan-Admim"
   },
   "title": {
-    "main": "Smotri, Tablichki!"
+    "main": "XRay Node Manager"
   },
 
   "cards": {
     "users": {
-      "title": "Polzovateli"
+      "title": "Users"
     },
     "nodes": {
       "title": "Nodes"
+    }
+  },
+
+  "add-user": {
+    "title": "Add new user",
+    "request": {
+      "name": {
+        "info": "User displayname",
+        "button": "Add!",
+        "placeholder": "For example, Igor"
+      }
+    },
+    "response": {
+      "info": "User added successfully!",
+      "userpage": {
+        "info": "User page URL",
+        "copy-button": "Copy!"
+      }
+    },
+    "button": {
+      "text": "+"
+    }
+  },
+
+  "add-node": {
+    "title": "Add new node",
+    "request": {
+      "fields": {
+        "endpoint": "Node endpoint",
+        "endpoint-placeholder": "https://node.com:80",
+        "accesskey": "Node access key",
+        "accesskey-placeholder": "HexAccessKey..."
+      }
+    },
+    "submit-btn": {
+      "info": "Add!",
+      "success": "Added!"
+    },
+    "response": {
+      "info": "Node added successfully!",
+      "endpoint": "Node endpoint:"
+    },
+    "button": {
+      "text": "+"
+    }
+  },
+
+  "settings": {
+    "button": {
+      "text": "⚙"
+    },
+    "title": "Settings",
+    "fields": {
+      "subscr-title": "Title",
+      "recent-days": "Recent Days Count",
+      "users-language": "Users Language",
+      "users-message": "Message",
+      "user-page": "User Page",
+      "tg-page": "TG Group",
+      "update-interval": "Update Interval, h",
+      "routing": "Routing, like happ://routing/onadd/....",
+      "app-links": {
+        "title": "Application Links",
+        "columns": {
+          "Name": "Name",
+          "Platforms": "Platforms regex",
+          "URL": "URL"
+        }
+      },
+      "custom-headers": {
+        "title": "Custom Headers",
+        "columns": {
+          "Key": "Key",
+          "Value": "Value"
+        }
+      }
+    },
+    "refresh": "Refresh",
+    "submit-btn": {
+      "info": "Submit",
+      "success": "Submitted!"
+    },
+    "errors": {
+      "app-links": "App Links error",
+      "no-platform-apps": "No apps for platform",
+
+      "recent-days": "Recent Days error",
+      "positive-recent-days": "Recent days should be positive",
+
+      "update-interval": "Update Interval error",
+      "positive-update-interval": "Update interval should be positive"
+    }
+  },
+
+  "errors": {
+    "server": {
+      "get_users": "Get users list",
+      "get_nodes": "Get nodes",
+      "new_user": "New user",
+      "start_node": "Start node",
+      "stop_node": "Stop node",
+      "new_node": "New node",
+      "enable_user": "Enable user",
+      "disable_user": "Disable user",
+      "config_json": "Invalid config.json",
+
+      "reason": {
+        "bad_request": "Bad request",
+        "not_found": "Not found",
+        "unauthorized": "Unauthorized",
+        "forbidden": "FORBIDDEN!",
+        "network": "Network troubles",
+        "unknown": "Unknown..."
+      }
     }
   },
 
@@ -28,9 +146,9 @@
           "button": "Delete",
           "confirm": {
             "header": "Delete user?",
-            "body": "Are you sure?",
-            "ok": "Da",
-            "cancel": "Net"
+            "body": "Are you wure?",
+            "ok": "Yes",
+            "cancel": "No"
           }
         }
       },
@@ -39,8 +157,11 @@
         "display-name": "Display Name",
         "target-status": "Target Status",
         "name": "Name",
+        "traffic-total": "Total",
+        "traffic-recent-days": "Recent Days",
         "vless-uuid": "VLESS UUID",
         "subscription": "Subscription",
+        "userpage": "User Page",
         "actions": "Actions"
       }
     },
@@ -59,8 +180,8 @@
           "confirm": {
             "header": "Delete node?",
             "body": "Are you sure?",
-            "ok": "Da",
-            "cancel": "Net"
+            "ok": "Yes",
+            "cancel": "No"
           }
         }
       },
@@ -69,10 +190,47 @@
         "endpoint": "Endpoint",
         "current-status": "Current Status",
         "target-status": "Target Status",
+        "traffic-total": "Total",
+        "traffic-recent-days": "Recent Days",
+        "connections": "Open Connections",
+        "cpu-load": "Cpu Load",
+        "ram-load": "Ram Load",
+        "mem-load": "Memory Load",
         "access-key": "Access Key",
+        "version": "Version",
         "client-config": "Client Config",
         "actions": "Actions"
       }
+    },
+
+    "sub-headers": {
+      "columns": {
+        "id": "ID",
+        "key": "Key",
+        "value": "Value",
+        "actions": "Actions"
+      },
+      "actions": {
+        "delete": {
+          "button": "Delete",
+          "confirm": {
+            "header": "Delete subscription header?",
+            "body": "Are you wure?",
+            "ok": "Yes",
+            "cancel": "No"
+          }
+        }
+      }
+    }
+  },
+
+  "login": {
+    "title": {
+      "authorize": "Enter password"
+    },
+    "password": {
+      "placeholder": "11111!1",
+      "button": "Auth!"
     }
   }
 }
