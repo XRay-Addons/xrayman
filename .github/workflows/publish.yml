@@ -57,6 +57,11 @@ jobs:
           cache: "pnpm"
           cache-dependency-path: frontend/pnpm-lock.yaml
 
+      - name: Install nfpm
+        run: |
+          curl -sSfL https://github.com/goreleaser/nfpm/releases/download/v2.35.0/nfpm_2.35.0_amd64.deb -o /tmp/nfpm.deb
+          sudo dpkg -i /tmp/nfpm.deb
+
       # ------------------------------------------------------------ #
       #                        Build                                 #
       # ------------------------------------------------------------ #

@@ -1,0 +1,122 @@
+# =============================================================================
+# nfpm.yaml — сборка xray-node пакетов (.deb / .rpm / .apk) без dpkg-deb.
+#
+# Запуск:
+#   VERSION=1.2.3 ARCH=amd64 BUILD_DIR=./build/amd64/xray-node \
+#     nfpm package --config nfpm.yaml --target ./dist/ --packager deb
+#
+# Все пути в contents.src читаются относительно места, откуда запущен nfpm
+# (обычно — корень репозитория), поэтому BUILD_DIR должен указывать
+# на уже собранные бинарники, ровно как раньше в build.sh.
+# =============================================================================
+
+name: xray-node
+arch: ${ARCH} # nfpm сам транслирует amd64/arm64/... в deb/rpm нотацию
+platform: linux
+version: ${VERSION}
+version_schema: none # не парсить как semver — на случай версий вида "dev", "1.2.3-rc1" и т.п.
+
+maintainer: "XRayMan <you@example.com>" # !! замените на реальный e-mail
+description: |
+  XRayMan Node service
+  This package implements XRay Node.
+  .
+  App files locations:
+  systemd service file                 : /lib/systemd/system/xray-node.service
+  xray-node binary file                : /usr/bin/xray-node
+  Configuration file                   : /etc/xray-node/xray-node.env
+  Configuration file example           : /etc/xray-node/xray-node.example.env
+  XRay geodata dir                     : /var/lib/xray-node/data
+  Persistent app data dir (incl. keys) : /var/lib/xray-node/persistent
+  XRay binary file                     : /usr/bin/xray
+  .
+  After setup, reload systemctl : sudo systemctl daemon-reload
+  Start service                 : sudo systemctl enable --now xray-node
+  Or restart service            : sudo systemctl restart xray-node
+  View logs                     : sudo journalctl -u xray-node -n 50 -f
+homepage: https://example.com/xray-node # замените на реальный
+license: MIT # замените на актуальную лицензию
+
+# ---------------------------------------------------------------------------
+# Файлы, которые попадают в пакет.
+# BUILD_DIR — переменная окружения, задающая путь к собранным бинарникам,
+# аналог $BUILD_DIR из старого build.sh.
+# ---------------------------------------------------------------------------
+contents:
+  # --- бинарники ---
+  - src: ${BUILD_DIR}/xray-node
+    dst: /usr/bin/xray-node
+    file_info:
+      mode: 0755
+      owner: root
+      group: root
+
+  - src: ${BUILD_DIR}/xray
+    dst: /usr/bin/xray
+    file_info:
+      mode: 0755
+      owner: root
+      group: root
+
+  # --- geodata (только что собранные файлы, реплицируем структуру директории) ---
+  - src: ${BUILD_DIR}/data/
+    dst: /var/lib/xray-node/data
+    type: tree
+
+  # --- systemd unit ---
+  - src: packaging/xray-node/deb/xray-node.service
+    dst: /lib/systemd/system/xray-node.service
+    file_info:
+      mode: 0644
+
+  # --- конфиг-пример для клиентских/серверных конфигов ---
+  - src: packaging/xray-node/config-example
+    dst: /etc/xray-node/config/example
+    type: tree
+
+  # --- example env (просто справочный файл, не conffile — его можно
+  #     перезаписывать при каждом обновлении пакета) ---
+  - src: packaging/xray-node/deb/xray-node.example.env
+    dst: /etc/xray-node/xray-node.example.env
+    file_info:
+      mode: 0644
+
+  # --- реальный env с дефолтами: помечен как config|noreplace.
+  #     "config"      — dpkg/rpm обрабатывает файл как конфиг (сохраняет
+  #                      пользовательские правки при апгрейде, спрашивает
+  #                      при конфликте).
+  #     "noreplace"   — при первой установке создать, при последующих —
+  #                      никогда не трогать, если файл уже существует
+  #                      (для rpm это ближе к "noreplace"; для deb эквивалент
+  #                      обычного conffile-поведения).
+  - src: packaging/xray-node/deb/xray-node.example.env
+    dst: /etc/xray-node/xray-node.env
+    type: config|noreplace
+    file_info:
+      mode: 0640
+      owner: root
+      group: xray-node
+
+  # --- пустая директория под persistent-данные (ключи и т.п.),
+  #     чтобы она гарантированно была создана с нужными правами ---
+empty_folders:
+  - /var/lib/xray-node/persistent
+
+# ---------------------------------------------------------------------------
+# Maintainer-скрипты. Логика создания user/group и systemctl enable/disable
+# остаётся тут вручную — у nfpm (в отличие от dh_installsystemd) нет
+# встроенной автогенерации этого кода, поэтому пишем сами, но здесь его
+# уже меньше: работу с env-файлом взял на себя type: config|noreplace выше.
+# ---------------------------------------------------------------------------
+scripts:
+  preinstall: packaging/xray-node/nfpm/preinstall.sh
+  postinstall: packaging/xray-node/nfpm/postinstall.sh
+  preremove: packaging/xray-node/nfpm/preremove.sh
+  postremove: packaging/xray-node/nfpm/postremove.sh
+
+# ---------------------------------------------------------------------------
+# deb-специфичные настройки (можно добавить debconf-триггеры и т.п., если
+# понадобится когда-нибудь спрашивать пользователя параметры при установке)
+# ---------------------------------------------------------------------------
+deb:
+  compression: xz
