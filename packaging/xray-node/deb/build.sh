@@ -17,7 +17,7 @@ export BUILD_DIR="$BUILD_ROOT/$ARCH/xray-node"
 OUT_FILE="./xray-node-${ARCH}.${FORMAT}"
  
 nfpm package \
-    --config ./packaging/xray-node/nfpm/nfpm.yaml \
+    --config ./packaging/xray-node/nfpm.yaml \
     --target "$OUT_FILE" \
     --packager "$FORMAT"
  

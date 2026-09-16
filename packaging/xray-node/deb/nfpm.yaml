@@ -16,7 +16,7 @@ platform: linux
 version: ${VERSION}
 version_schema: none # не парсить как semver — на случай версий вида "dev", "1.2.3-rc1" и т.п.
 
-maintainer: "XRayMan <you@example.com>" # !! замените на реальный e-mail
+maintainer: "XRayMan" # !! замените на реальный e-mail
 description: |
   XRayMan Node service
   This package implements XRay Node.
@@ -34,9 +34,7 @@ description: |
   Start service                 : sudo systemctl enable --now xray-node
   Or restart service            : sudo systemctl restart xray-node
   View logs                     : sudo journalctl -u xray-node -n 50 -f
-homepage: https://example.com/xray-node # замените на реальный
 license: MIT # замените на актуальную лицензию
-
 # ---------------------------------------------------------------------------
 # Файлы, которые попадают в пакет.
 # BUILD_DIR — переменная окружения, задающая путь к собранным бинарникам,
