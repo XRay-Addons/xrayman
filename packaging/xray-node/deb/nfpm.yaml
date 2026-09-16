@@ -16,7 +16,7 @@ platform: linux
 version: ${VERSION}
 version_schema: none # не парсить как semver — на случай версий вида "dev", "1.2.3-rc1" и т.п.
 
-maintainer: "XRayMan" # !! замените на реальный e-mail
+maintainer: "XRayMan"
 description: |
   XRayMan Node service
   This package implements XRay Node.
@@ -34,7 +34,7 @@ description: |
   Start service                 : sudo systemctl enable --now xray-node
   Or restart service            : sudo systemctl restart xray-node
   View logs                     : sudo journalctl -u xray-node -n 50 -f
-license: MIT # замените на актуальную лицензию
+license: MIT
 # ---------------------------------------------------------------------------
 # Файлы, которые попадают в пакет.
 # BUILD_DIR — переменная окружения, задающая путь к собранным бинарникам,
@@ -96,9 +96,15 @@ contents:
       group: xray-node
 
   # --- пустая директория под persistent-данные (ключи и т.п.),
-  #     чтобы она гарантированно была создана с нужными правами ---
-empty_folders:
-  - /var/lib/xray-node/persistent
+  #     чтобы она гарантированно была создана с нужными правами.
+  #     "empty_folders" в nfpm deprecated и удалён — актуальный способ
+  #     объявить директорию явно через type: dir ---
+  - dst: /var/lib/xray-node/persistent
+    type: dir
+    file_info:
+      mode: 0750
+      owner: xray-node
+      group: xray-node
 
 # ---------------------------------------------------------------------------
 # Maintainer-скрипты. Логика создания user/group и systemctl enable/disable
