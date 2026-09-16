@@ -20,10 +20,10 @@ var backgroundSyncJob = gx.Options(
 		func(s *syncman.SyncMan, lc gx.Lifecycle) {
 			lc.AppendJob(gx.Job{
 				Name: "background sync",
-				OnStart: func(context.Context) error {
+				Run: func() error {
 					return s.Run()
 				},
-				OnStop: func(context.Context) error {
+				Shutdown: func(context.Context) error {
 					s.Stop()
 					return nil
 				},
@@ -42,10 +42,10 @@ var backgroundStatsJob = gx.Options(
 		func(s *statsman.StatsMan, lc gx.Lifecycle) {
 			lc.AppendJob(gx.Job{
 				Name: "background stats",
-				OnStart: func(context.Context) error {
+				Run: func() error {
 					return s.Run()
 				},
-				OnStop: func(context.Context) error {
+				Shutdown: func(context.Context) error {
 					s.Stop()
 					return nil
 				},

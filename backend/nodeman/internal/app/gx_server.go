@@ -112,10 +112,10 @@ var httpServerJob = gx.Invoke(
 	func(p HttpServerJobParams, lc gx.Lifecycle) {
 		lc.AppendJob(gx.Job{
 			Name: "http server",
-			OnStart: func(context.Context) error {
+			Run: func() error {
 				return p.S.Listen()
 			},
-			OnStop: func(ctx context.Context) error {
+			Shutdown: func(ctx context.Context) error {
 				return p.S.Shutdown(ctx)
 			},
 		})

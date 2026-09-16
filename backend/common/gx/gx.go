@@ -22,14 +22,14 @@ How it works when you call [Run]:
 		- builds the dependency graph;
 		- executes all Invoke functions;
 		- collects jobs and closers registered in the custom Lifecycle.
-    2. Starts all registered jobs by calling Job.OnStart in parallel.
+    2. Starts all registered jobs by calling Job.Run in parallel.
        Execution continues until one of the following happens:
          - all jobs exit successfully;
          - any job returns an error;
          - the application receives an interrupt signal (Ctrl+C, SIGINT, SIGTERM).
 
-    3. Calls Job.OnStop for every registered job (running or already finished),
-       then waits until every Job.OnStart function has returned.
+    3. Calls Job.Shutdown for every registered job (running or already finished),
+       then waits until every Job.Run function has returned.
 
     4. Returns a single error created with xerr.Join containing all job start
        and stop errors.

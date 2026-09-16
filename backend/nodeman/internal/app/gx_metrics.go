@@ -65,10 +65,10 @@ var metricsServerJob = gx.Invoke(
 
 		lc.AppendJob(gx.Job{
 			Name: "metrics server",
-			OnStart: func(context.Context) error {
+			Run: func() error {
 				return p.S.Listen()
 			},
-			OnStop: func(ctx context.Context) error {
+			Shutdown: func(ctx context.Context) error {
 				return p.S.Shutdown(ctx)
 			},
 		})
