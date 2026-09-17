@@ -1,6 +1,8 @@
 package app
 
 import (
+	"time"
+
 	"github.com/XRay-Addons/xrayman/common/gx"
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/node/internal/config"
@@ -12,6 +14,8 @@ type App struct {
 	core *gx.App
 }
 
+const shutdownTimeout = 5 * time.Second
+
 func New(cfg *config.Config, log *zap.Logger) (app *App, err error) {
 	if log == nil {
 		return nil, errdefs.NilArg("log")
@@ -20,6 +24,7 @@ func New(cfg *config.Config, log *zap.Logger) (app *App, err error) {
 	srcProvider := gx.Options(
 		gx.Supply(cfg),
 		gx.WithLogger(log),
+		gx.WithShutdownTimeout(shutdownTimeout),
 	)
 
 	appcore := gx.New(

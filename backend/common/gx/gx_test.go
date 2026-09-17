@@ -352,3 +352,39 @@ func TestGx_JobFail(t *testing.T) {
 	require.ErrorIs(t, app.Run(), runErr)
 	logger.Warn("app stopped")
 }
+
+type R struct {
+}
+
+func (r R) MarshalLogObject(enc zapcore.ObjectEncoder) error {
+	enc.AddString("tick job result", "value")
+	return nil
+}
+
+func TestGx_TickJob(t *testing.T) {
+	logger := zaptest.NewLogger(t)
+	counter := 0
+
+	tickFn := func(ctx context.Context) (*R, error) {
+		counter++
+		return &R{}, nil
+	}
+
+	j := MakeTickJob("tick job", tickFn, 2*time.Second, logger)
+
+	app := New(
+		WithLogger(logger),
+		WithShutdownTimeout(5*time.Second),
+		fx.Invoke(func(lc Lifecycle) {
+			lc.AppendJob(j)
+		}),
+	)
+
+	// cancel (after 5 seconds)
+	ch := sendSIGINT(t, logger, 5*time.Second)
+	defer func() { <-ch }()
+
+	require.Nil(t, app.Run())
+	require.Equal(t, 3, counter)
+	logger.Warn("app stopped")
+}

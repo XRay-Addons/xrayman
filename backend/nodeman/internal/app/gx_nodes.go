@@ -8,8 +8,6 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/httpclient"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/stats/poolstats"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/infra/sync/poolsync"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/jobs/statsman"
-	"github.com/XRay-Addons/xrayman/nodeman/internal/jobs/syncman"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/node"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/nodes"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/service/users"
@@ -54,14 +52,13 @@ var poolClient = gx.Provide(
 
 var poolSync = gx.ProvideAnnotated(
 	poolsync.New,
-	gx.As(new(users.Syncer)),
-	gx.As(new(nodes.Syncer)),
-	gx.As(new(syncman.PoolSyncer)),
+	gx.As(new(users.SyncService)),
+	gx.As(new(nodes.SyncService)),
+	gx.As(gx.Self()),
 )
 
 var poolStats = gx.ProvideAnnotated(
 	poolstats.New,
-	gx.As(new(statsman.StatsUpdater)),
 )
 
 var Nodes = gx.Module("nodes",

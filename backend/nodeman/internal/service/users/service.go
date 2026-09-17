@@ -13,8 +13,8 @@ import (
 )
 
 type Service struct {
-	storage    Storage
-	poolSyncer Syncer
+	storage     Storage
+	syncService SyncService
 
 	syncTimeout time.Duration
 	sv          *supervisor.Supervisor
@@ -24,13 +24,13 @@ type Service struct {
 
 var _ handler.UsersService = (*Service)(nil)
 
-func New(poolSyncer Syncer,
+func New(ss SyncService,
 	storage Storage,
 	syncTimeout time.Duration,
 	logger *zap.Logger,
 ) (*Service, error) {
-	if poolSyncer == nil {
-		return nil, errdefs.NilArg("poolSyncer")
+	if ss == nil {
+		return nil, errdefs.NilArg("ss")
 	}
 	if storage == nil {
 		return nil, errdefs.NilArg("storage")
@@ -41,7 +41,7 @@ func New(poolSyncer Syncer,
 
 	return &Service{
 		storage:     storage,
-		poolSyncer:  poolSyncer,
+		syncService: ss,
 		syncTimeout: syncTimeout,
 		sv:          supervisor.New(),
 		logger:      logger,
@@ -189,7 +189,7 @@ func (s *Service) setUserStatus(ctx context.Context,
 
 // sync all nodes, return nil if at least one node synced ok
 func (s *Service) syncAllNodes(ctx context.Context) error {
-	syncResults, err := s.poolSyncer.SyncPoolState(ctx)
+	syncResults, err := s.syncService.SyncPoolState(ctx)
 	if err != nil {
 		return err
 	}

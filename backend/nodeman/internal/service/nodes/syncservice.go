@@ -6,6 +6,6 @@ import (
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 )
 
-type Syncer interface {
+type SyncService interface {
 	SyncNodeState(ctx context.Context, id models.NodeID) error
 }

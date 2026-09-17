@@ -77,9 +77,9 @@ func WithLogger(log *zap.Logger) Option {
 	)
 }
 
-func WithCancelTimeout(to time.Duration) Option {
+func WithShutdownTimeout(to time.Duration) Option {
 	return Invoke(func(lc *lifecycle) {
-		lc.closeTimeout = to
+		lc.shutdownTimeout = to
 	})
 }
 
@@ -92,6 +92,8 @@ func New(opts ...Option) App {
 	return App{options: opts}
 }
 
+const defaultShutdownTimeout = 1 * time.Second
+
 func (a *App) Run() (err error) {
 	if a == nil {
 		return xerr.NilCall()
@@ -102,7 +104,8 @@ func (a *App) Run() (err error) {
 
 	// lifecycle option
 	lc := &lifecycle{
-		log: zap.NewNop(),
+		log:             zap.NewNop(),
+		shutdownTimeout: defaultShutdownTimeout,
 	}
 	options = append(options, Supply(Annotate(
 		lc,
@@ -121,7 +124,7 @@ func (a *App) Run() (err error) {
 
 	app := fx.New(options...)
 	defer func() {
-		err = xerr.Join(err, lc.Close())
+		err = xerr.Join(err, lc.Shutdown())
 	}()
 
 	if err = app.Err(); err != nil {

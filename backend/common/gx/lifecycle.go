@@ -37,8 +37,8 @@ type Lifecycle interface {
 }
 
 type lifecycle struct {
-	log          *zap.Logger
-	closeTimeout time.Duration
+	log             *zap.Logger
+	shutdownTimeout time.Duration
 
 	bootstraps []Bootstrap
 	jobs       []Job
@@ -98,9 +98,9 @@ func (lc *lifecycle) Run(ctx context.Context) error {
 	}
 
 	// cancel jobs
-	closeCtx, cancel := context.WithTimeout(context.Background(), lc.closeTimeout)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), lc.shutdownTimeout)
 	defer cancel()
-	closeErr := lc.invokeJobClosers(closeCtx)
+	closeErr := lc.invokeJobClosers(shutdownCtx)
 
 	// wait for all jobs completed
 	wg.Wait()
@@ -110,10 +110,10 @@ func (lc *lifecycle) Run(ctx context.Context) error {
 	return xerr.Join(runErr, closeErr)
 }
 
-func (lc *lifecycle) Close() error {
-	closeCtx, cancel := context.WithTimeout(context.Background(), lc.closeTimeout)
+func (lc *lifecycle) Shutdown() error {
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), lc.shutdownTimeout)
 	defer cancel()
-	return lc.invokeClosers(closeCtx)
+	return lc.invokeClosers(shutdownCtx)
 }
 
 func wgChan(wg *sync.WaitGroup) <-chan struct{} {

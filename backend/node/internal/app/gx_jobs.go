@@ -8,8 +8,8 @@ import (
 )
 
 var httpServerJob = gx.Invoke(
-	func(s *server.HttpServer, lc gx.Lifecycle) {
-		lc.AppendJob(gx.Job{
+	func(s *server.HttpServer) gx.Job {
+		return gx.Job{
 			Name: "http server",
 			Run: func() error {
 				return s.Listen()
@@ -17,7 +17,7 @@ var httpServerJob = gx.Invoke(
 			Shutdown: func(ctx context.Context) error {
 				return s.Shutdown(ctx)
 			},
-		})
+		}
 	},
 )
 

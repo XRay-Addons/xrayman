@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/errdefs"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/models"
 	"github.com/stretchr/testify/require"
@@ -191,7 +192,11 @@ func TestStorage_Stats(t *testing.T) {
 		TargetStatus: models.UserStatusEnabled,
 	}
 
-	err := s.DoTx(ctx, func(ctx context.Context) error {
+	const nRecentDays = 10
+	err := s.SetSettings(ctx, models.Settings{RecentDays: nRecentDays})
+	require.NoError(t, err)
+
+	err = s.DoTx(ctx, func(ctx context.Context) error {
 		for _, user := range []*models.User{&user1, &user2} {
 			if err := s.NewUser(ctx, user); err != nil {
 				return err
@@ -237,7 +242,7 @@ func TestStorage_Stats(t *testing.T) {
 		}); err != nil {
 			return err
 		}
-		if err := s.RefreshDailyStats(ctx, time.Now().Add(-60*24*time.Hour)); err != nil {
+		if err := s.RefreshDailyStats(ctx, time.Now().Add(-2*nRecentDays*24*time.Hour)); err != nil {
 			return err
 		}
 		if err := s.UpdateStats(ctx, node2.ID, models.NodeStats{
@@ -459,8 +464,7 @@ func TestStorage_FailedTx(t *testing.T) {
 		if err := s.NewNode(ctx, &node3); err != nil {
 			return err
 		}
-		return nil
-		//return xerr.New("tx error")
+		return xerr.New("tx error")
 	})
 	require.Error(t, err)
 
