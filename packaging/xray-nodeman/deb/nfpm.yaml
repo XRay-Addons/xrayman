@@ -1,0 +1,52 @@
+#env:
+#  VERSION: dev
+#  ARCH: amd64
+#  GITHUB_REPOSITORY: "non-github-repository"
+
+name: xray-nodeman
+arch: ${ARCH}
+platform: linux
+version: ${VERSION}
+section: default
+priority: extra
+maintainer: "X Ray Man"
+description: |
+  XRay Nodeman service.
+  Help         : xray-nodeman --help
+  Logs         : journalctl -u xray-nodeman
+  Env Location : /etc/xray-nodeman/xray-nodeman.env
+  Env Example  : /etc/xray-nodeman/xray-nodeman.example.env
+homepage: https://github.com/${GITHUB_REPOSITORY}
+license: MIT
+
+contents:
+  # binaries
+  - src: ./build/${ARCH}/xray-nodeman/xray-nodeman
+    dst: /usr/bin/xray-nodeman
+    file_info:
+      mode: 0755
+    expand: true
+
+  # systemclt .service file
+  - src: ./packaging/xray-nodeman/deb/xray-nodeman.service
+    dst: /lib/systemd/system/xray-nodeman.service
+    file_info:
+      mode: 0644
+
+  # config example (replace every time, view/edit only with sudo)
+  - src: ./packaging/xray-nodeman/deb/xray-nodeman.example.env
+    dst: /etc/xray-nodeman/xray-nodeman.example.env
+    file_info:
+      mode: 0644
+
+  # real config, do not replace, access only with sudo
+  - src: ./packaging/xray-nodeman/deb/xray-nodeman.example.env
+    dst: /etc/xray-nodeman/xray-nodeman.env
+    type: config|noreplace
+    file_info:
+      mode: 0600
+
+scripts:
+  postinstall: ./packaging/xray-nodeman/deb/postinstall.sh
+  preremove: ./packaging/xray-nodeman/deb/prerm.sh
+  postremove: ./packaging/xray-nodeman/deb/postrm.sh

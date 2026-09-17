@@ -50,6 +50,10 @@ jobs:
         with:
           version: 10.33.2
 
+      - name: Install nfpm
+        run: |
+          go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.46.0
+
       - name: Set up Node.js
         uses: actions/setup-node@v5
         with:
@@ -105,8 +109,8 @@ jobs:
       - name: Nodeman Pack DEB Packages
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          ./packaging/xray-nodeman/deb/build.sh "$CLEAN_VER" ./build arm64
-          ./packaging/xray-nodeman/deb/build.sh "$CLEAN_VER" ./build amd64
+          ARCH=arm64 nfpm package -p deb -f ./packaging/xray-nodeman/deb/nfpm.yaml -t ./build/xray-nodeman-arm64.deb
+          ARCH=amd64 nfpm package -p deb -f ./packaging/xray-nodeman/deb/nfpm.yaml -t ./build/xray-nodeman-amd64.deb
 
       # XRay nodeman: build and publish docker image (only for tags)
       - name: Push Multi-Arch XRay-NodeMan Docker Image
