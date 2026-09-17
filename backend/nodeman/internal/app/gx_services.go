@@ -18,7 +18,7 @@ import (
 type NodesServiceParams struct {
 	gx.In
 	Lc          gx.Lifecycle
-	PoolSyncer  nodes.Syncer
+	SyncService nodes.SyncService
 	Storage     nodes.Storage
 	SyncTimeout time.Duration `name:"service-sync-timeout"`
 	Log         *zap.Logger
@@ -27,7 +27,7 @@ type NodesServiceParams struct {
 type UsersServiceParams struct {
 	gx.In
 	Lc          gx.Lifecycle
-	PoolSyncer  users.Syncer
+	SyncService users.SyncService
 	Storage     users.Storage
 	SyncTimeout time.Duration `name:"service-sync-timeout"`
 	Log         *zap.Logger
@@ -36,7 +36,7 @@ type UsersServiceParams struct {
 var Services = gx.Module("services",
 	gx.ProvideAnnotated(
 		func(p NodesServiceParams) (*nodes.Service, error) {
-			ns, err := nodes.New(p.PoolSyncer, p.Storage, p.SyncTimeout, p.Log)
+			ns, err := nodes.New(p.SyncService, p.Storage, p.SyncTimeout, p.Log)
 			if err != nil {
 				return nil, err
 			}
@@ -53,7 +53,7 @@ var Services = gx.Module("services",
 	),
 	gx.ProvideAnnotated(
 		func(p UsersServiceParams) (*users.Service, error) {
-			us, err := users.New(p.PoolSyncer, p.Storage, p.SyncTimeout, p.Log)
+			us, err := users.New(p.SyncService, p.Storage, p.SyncTimeout, p.Log)
 			if err != nil {
 				return nil, err
 			}

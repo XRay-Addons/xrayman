@@ -1,6 +1,8 @@
 package app
 
 import (
+	"time"
+
 	"github.com/XRay-Addons/xrayman/common/gx"
 	"github.com/XRay-Addons/xrayman/common/xerr"
 	"github.com/XRay-Addons/xrayman/nodeman/internal/config"
@@ -14,6 +16,7 @@ type App struct {
 }
 
 const JWTIssuer = "nodeman"
+const ShutdownTimeout = 5 * time.Second
 
 func New(cfg *config.Config, log *zap.Logger) (*App, error) {
 	if log == nil {
@@ -22,7 +25,7 @@ func New(cfg *config.Config, log *zap.Logger) (*App, error) {
 	srcProvider := gx.Options(
 		gx.Supply(cfg),
 		gx.WithLogger(log),
-	)
+		gx.WithShutdownTimeout(ShutdownTimeout))
 
 	appcore := gx.New(
 		srcProvider,
@@ -36,7 +39,7 @@ func New(cfg *config.Config, log *zap.Logger) (*App, error) {
 		MetricsServer,
 
 		Bootstrap,
-		Jobs,
+		TickJobs,
 		Startup,
 	)
 

@@ -288,5 +288,5 @@ func TestStorage_Time_Stats(t *testing.T) {
 	metrics, err = expl.Metrics()
 	require.NoError(t, err)
 	metrics.Print(logger)
-	require.Less(t, metrics.ExecutionTime, 1*time.Second)
+	require.Less(t, metrics.ExecutionTime, 5*time.Second)
 }

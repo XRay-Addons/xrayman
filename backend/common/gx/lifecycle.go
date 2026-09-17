@@ -18,9 +18,11 @@ type Bootstrap struct {
 }
 
 type Job struct {
-	Name    string
-	OnStart func(context.Context) error
-	OnStop  func(context.Context) error
+	Name string
+	// run job, blocking
+	Run func() error
+	// shutdown, wait for Run or ctx cancelled
+	Shutdown func(context.Context) error
 }
 
 type Closer struct {
@@ -35,8 +37,8 @@ type Lifecycle interface {
 }
 
 type lifecycle struct {
-	log          *zap.Logger
-	closeTimeout time.Duration
+	log             *zap.Logger
+	shutdownTimeout time.Duration
 
 	bootstraps []Bootstrap
 	jobs       []Job
@@ -79,7 +81,7 @@ func (lc *lifecycle) Run(ctx context.Context) error {
 				wg.Done()
 			}()
 
-			if err := lc.invokeJobRunner(ctx, job); err != nil {
+			if err := lc.invokeJobRunner(job); err != nil {
 				runErrs[idx] = err
 				select {
 				case errCh <- struct{}{}:
@@ -96,9 +98,9 @@ func (lc *lifecycle) Run(ctx context.Context) error {
 	}
 
 	// cancel jobs
-	closeCtx, cancel := context.WithTimeout(context.Background(), lc.closeTimeout)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), lc.shutdownTimeout)
 	defer cancel()
-	closeErr := lc.invokeJobClosers(closeCtx)
+	closeErr := lc.invokeJobClosers(shutdownCtx)
 
 	// wait for all jobs completed
 	wg.Wait()
@@ -108,10 +110,10 @@ func (lc *lifecycle) Run(ctx context.Context) error {
 	return xerr.Join(runErr, closeErr)
 }
 
-func (lc *lifecycle) Close() error {
-	closeCtx, cancel := context.WithTimeout(context.Background(), lc.closeTimeout)
+func (lc *lifecycle) Shutdown() error {
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), lc.shutdownTimeout)
 	defer cancel()
-	return lc.invokeClosers(closeCtx)
+	return lc.invokeClosers(shutdownCtx)
 }
 
 func wgChan(wg *sync.WaitGroup) <-chan struct{} {
@@ -146,13 +148,13 @@ func (lc *lifecycle) invokeBootstraps(ctx context.Context) error {
 	return nil
 }
 
-func (lc *lifecycle) invokeJobRunner(ctx context.Context, job Job) error {
-	if job.OnStart == nil {
+func (lc *lifecycle) invokeJobRunner(job Job) error {
+	if job.Run == nil {
 		return nil
 	}
 
 	lc.log.Warn(fmt.Sprintf("run job '%s'...", job.Name))
-	err := job.OnStart(ctx)
+	err := job.Run()
 	if err == nil {
 		lc.log.Warn(fmt.Sprintf("job '%s' done", job.Name))
 		return nil
@@ -165,11 +167,11 @@ func (lc *lifecycle) invokeJobRunner(ctx context.Context, job Job) error {
 func (lc *lifecycle) invokeJobClosers(ctx context.Context) error {
 	errs := make([]error, len(lc.jobs))
 	for idx, job := range lc.jobs {
-		if job.OnStop == nil {
+		if job.Shutdown == nil {
 			continue
 		}
 		lc.log.Warn(fmt.Sprintf("job '%s' stopping signal sent", job.Name))
-		if err := job.OnStop(ctx); err != nil {
+		if err := job.Shutdown(ctx); err != nil {
 			lc.log.Error(fmt.Sprintf("job '%s' stoppping", job.Name), zap.Error(err))
 			errs[idx] = xerr.WrapWithInfof(err, "job %s", job.Name)
 		}

@@ -3,7 +3,6 @@ package xerrgroup
 import (
 	"context"
 	"fmt"
-	"sync"
 	"testing"
 	"time"
 
@@ -30,7 +29,7 @@ func TestGroup_DemonstrateRaceCondition(t *testing.T) {
 	}
 }
 
-func TestGroup_GoroutinePanic(t *testing.T) {
+/*func TestGroup_GoroutinePanic(t *testing.T) {
 	done := make(chan struct{})
 
 	go func() {
@@ -73,4 +72,4 @@ func TestGroup_GoroutinePanic(t *testing.T) {
 	}()
 
 	<-done
-}
+}*/

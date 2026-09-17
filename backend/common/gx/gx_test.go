@@ -77,7 +77,7 @@ func TestGx_Simple(t *testing.T) {
 			time.Sleep(3 * time.Second)
 			lc.AppendJob(Job{
 				Name: "A Hook",
-				OnStart: func(context.Context) error {
+				Run: func() error {
 					aStart.Call()
 					time.Sleep(3 * time.Second)
 					return nil
@@ -101,12 +101,12 @@ func TestGx_Simple(t *testing.T) {
 			time.Sleep(3 * time.Second)
 			lc.AppendJob(Job{
 				Name: "C Hook",
-				OnStart: func(context.Context) error {
+				Run: func() error {
 					cStart.Call()
 					time.Sleep(3 * time.Second)
 					return nil
 				},
-				OnStop: func(context.Context) error {
+				Shutdown: func(context.Context) error {
 					cStop.Call()
 					time.Sleep(3 * time.Second)
 					return nil
@@ -120,11 +120,11 @@ func TestGx_Simple(t *testing.T) {
 			time.Sleep(3 * time.Second)
 			lc.AppendJob(Job{
 				Name: "Long invoke",
-				OnStart: func(context.Context) error {
+				Run: func() error {
 					iI.Call()
 					return nil
 				},
-				OnStop: func(context.Context) error {
+				Shutdown: func(context.Context) error {
 					iIstop.Call()
 					time.Sleep(3 * time.Second)
 					return nil
@@ -137,12 +137,12 @@ func TestGx_Simple(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			lc.AppendJob(Job{
 				Name: "Infinite invoke",
-				OnStart: func(context.Context) error {
+				Run: func() error {
 					<-ctx.Done()
 					iII.Call()
 					return nil
 				},
-				OnStop: func(context.Context) error {
+				Shutdown: func(context.Context) error {
 					iIIstop.Call()
 					cancel()
 					return nil
@@ -184,11 +184,11 @@ func TestGx_Success(t *testing.T) {
 		fx.Invoke(func(lc Lifecycle, log *zap.Logger) {
 			lc.AppendJob(Job{
 				Name: "job 1",
-				OnStart: func(context.Context) error {
+				Run: func() error {
 					log.Info("job 1")
 					return nil
 				},
-				OnStop: func(context.Context) error {
+				Shutdown: func(context.Context) error {
 					log.Info("job 1 stop")
 					return nil
 				},
@@ -197,11 +197,11 @@ func TestGx_Success(t *testing.T) {
 		fx.Invoke(func(lc Lifecycle, log *zap.Logger) {
 			lc.AppendJob(Job{
 				Name: "job 2",
-				OnStart: func(context.Context) error {
+				Run: func() error {
 					log.Info("job 2")
 					return nil
 				},
-				OnStop: func(context.Context) error {
+				Shutdown: func(context.Context) error {
 					log.Info("job 2 stop")
 					return nil
 				},
@@ -269,11 +269,11 @@ func TestGx_BootstrapFail(t *testing.T) {
 		fx.Invoke(func(lc Lifecycle, log *zap.Logger) {
 			lc.AppendJob(Job{
 				Name: "job 1",
-				OnStart: func(context.Context) error {
+				Run: func() error {
 					log.Info("job 1")
 					return nil
 				},
-				OnStop: func(context.Context) error {
+				Shutdown: func(context.Context) error {
 					log.Info("job 1 stop")
 					return nil
 				},
@@ -282,11 +282,11 @@ func TestGx_BootstrapFail(t *testing.T) {
 		fx.Invoke(func(lc Lifecycle, log *zap.Logger) {
 			lc.AppendJob(Job{
 				Name: "job 2",
-				OnStart: func(context.Context) error {
+				Run: func() error {
 					log.Info("job 2")
 					return nil
 				},
-				OnStop: func(context.Context) error {
+				Shutdown: func(context.Context) error {
 					log.Info("job 2 stop")
 					return nil
 				},
@@ -318,7 +318,7 @@ func TestGx_JobFail(t *testing.T) {
 	// run (10 seconds)
 	runErr := xerr.New("run timeout error")
 	runCtx, runCancel := context.WithCancel(context.Background())
-	runFn := func(context.Context) error {
+	runFn := func() error {
 		select {
 		case <-time.After(10 * time.Second):
 			return nil
@@ -338,9 +338,9 @@ func TestGx_JobFail(t *testing.T) {
 		fx.Invoke(bootstrapFn),
 		fx.Invoke(func(lc Lifecycle) {
 			lc.AppendJob(Job{
-				Name:    "job",
-				OnStart: runFn,
-				OnStop:  stopFn,
+				Name:     "job",
+				Run:      runFn,
+				Shutdown: stopFn,
 			})
 		}),
 	)
@@ -350,5 +350,41 @@ func TestGx_JobFail(t *testing.T) {
 	defer func() { <-ch }()
 
 	require.ErrorIs(t, app.Run(), runErr)
+	logger.Warn("app stopped")
+}
+
+type R struct {
+}
+
+func (r R) MarshalLogObject(enc zapcore.ObjectEncoder) error {
+	enc.AddString("tick job result", "value")
+	return nil
+}
+
+func TestGx_TickJob(t *testing.T) {
+	logger := zaptest.NewLogger(t)
+	counter := 0
+
+	tickFn := func(ctx context.Context) (*R, error) {
+		counter++
+		return &R{}, nil
+	}
+
+	j := MakeTickJob("tick job", tickFn, 2*time.Second, logger)
+
+	app := New(
+		WithLogger(logger),
+		WithShutdownTimeout(5*time.Second),
+		fx.Invoke(func(lc Lifecycle) {
+			lc.AppendJob(j)
+		}),
+	)
+
+	// cancel (after 5 seconds)
+	ch := sendSIGINT(t, logger, 5*time.Second)
+	defer func() { <-ch }()
+
+	require.Nil(t, app.Run())
+	require.Equal(t, 3, counter)
 	logger.Warn("app stopped")
 }

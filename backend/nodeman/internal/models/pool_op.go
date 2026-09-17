@@ -14,16 +14,7 @@ type PoolOpResult struct {
 	Nodes []NodeOpResult
 }
 
-func (r *PoolOpResult) GetNodeErr(id NodeID) error {
-	for _, node := range r.Nodes {
-		if node.ID == id {
-			return node.Err
-		}
-	}
-	return xerr.Newf("node %v not found", id)
-}
-
-func (r *PoolOpResult) GetEntireErr() error {
+func (r *PoolOpResult) JointErr() error {
 	errs := make([]error, 0, len(r.Nodes))
 	for _, node := range r.Nodes {
 		if node.Err != nil {
