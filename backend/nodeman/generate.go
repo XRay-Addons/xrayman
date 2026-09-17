@@ -19,4 +19,3 @@ package main
 
 // 5. mocks
 //go:generate go generate ./internal/http/handler/
-//go:generate go generate ./internal/jobs/syncman/

@@ -14,14 +14,28 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// sync state job
-type SyncStateResult models.PoolOpResult
+// job result adapters for logging
+type voidResultAdapter struct {
+	name string
+}
 
-var _ zapcore.ObjectMarshaler = (*SyncStateResult)(nil)
+var _ zapcore.ObjectMarshaler = (*voidResultAdapter)(nil)
 
-func (r SyncStateResult) MarshalLogObject(enc zapcore.ObjectEncoder) error {
+func (r voidResultAdapter) MarshalLogObject(enc zapcore.ObjectEncoder) error {
+	enc.AddString(r.name, "OK")
+	return nil
+}
+
+type poolResultAdapter struct {
+	models.PoolOpResult
+	name string
+}
+
+var _ zapcore.ObjectMarshaler = (*poolResultAdapter)(nil)
+
+func (r poolResultAdapter) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 	for _, node := range r.Nodes {
-		key := fmt.Sprintf("sync %s state", node.Endpoint)
+		key := fmt.Sprintf("%s for node %s", r.name, node.Endpoint)
 		if node.Err != nil {
 			enc.AddString(key, fmt.Sprintf("%+v", node.Err))
 		} else {
@@ -31,14 +45,17 @@ func (r SyncStateResult) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 	return nil
 }
 
-func syncState(s *poolsync.Service) func(context.Context) (*SyncStateResult, error) {
-	return func(ctx context.Context) (*SyncStateResult, error) {
+// sync state job
+func syncState(s *poolsync.Service) func(context.Context) (*poolResultAdapter, error) {
+	return func(ctx context.Context) (*poolResultAdapter, error) {
 		r, err := s.SyncPoolState(ctx)
 		if err != nil {
 			return nil, err
 		}
-		rw := SyncStateResult(*r)
-		return &rw, nil
+		return &poolResultAdapter{
+			PoolOpResult: *r,
+			name:         "sync state",
+		}, nil
 	}
 }
 
@@ -50,30 +67,16 @@ var syncStateJob = gx.ProvideAnnotated(
 )
 
 // update stats job
-type UpdateStatsResult models.PoolOpResult
-
-var _ zapcore.ObjectMarshaler = (*UpdateStatsResult)(nil)
-
-func (r UpdateStatsResult) MarshalLogObject(enc zapcore.ObjectEncoder) error {
-	for _, node := range r.Nodes {
-		key := fmt.Sprintf("update %s stats", node.Endpoint)
-		if node.Err != nil {
-			enc.AddString(key, fmt.Sprintf("%+v", node.Err))
-		} else {
-			enc.AddString(key, "OK")
-		}
-	}
-	return nil
-}
-
-func updateStats(s *poolstats.Service) func(context.Context) (*UpdateStatsResult, error) {
-	return func(ctx context.Context) (*UpdateStatsResult, error) {
+func updateStats(s *poolstats.Service) func(context.Context) (*poolResultAdapter, error) {
+	return func(ctx context.Context) (*poolResultAdapter, error) {
 		r, err := s.UpdatePoolStats(ctx)
 		if err != nil {
 			return nil, err
 		}
-		rw := UpdateStatsResult(*r)
-		return &rw, nil
+		return &poolResultAdapter{
+			PoolOpResult: *r,
+			name:         "sync state",
+		}, nil
 	}
 }
 
@@ -87,21 +90,14 @@ var updateStatsJob = gx.ProvideAnnotated(
 // refresh daily stats job. run every hour for:
 // - to be sure it runs at least once every day
 // - to not lost data for more than one hour in case of fail
-type RefreshDailyStatsResult struct{}
-
-var _ zapcore.ObjectMarshaler = (*RefreshDailyStatsResult)(nil)
-
-func (r RefreshDailyStatsResult) MarshalLogObject(enc zapcore.ObjectEncoder) error {
-	enc.AddString("refresh daily stats", "OK")
-	return nil
-}
-
-func refreshDailyStats(s *poolstats.Service) func(context.Context) (*RefreshDailyStatsResult, error) {
-	return func(ctx context.Context) (*RefreshDailyStatsResult, error) {
+func refreshDailyStats(s *poolstats.Service) func(context.Context) (*voidResultAdapter, error) {
+	return func(ctx context.Context) (*voidResultAdapter, error) {
 		if err := s.RefreshDailyStats(ctx); err != nil {
 			return nil, err
 		}
-		return &RefreshDailyStatsResult{}, nil
+		return &voidResultAdapter{
+			name: "refresh daily stats",
+		}, nil
 	}
 }
 

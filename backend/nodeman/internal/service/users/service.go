@@ -193,5 +193,5 @@ func (s *Service) syncAllNodes(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	return syncResults.GetEntireErr()
+	return syncResults.JointErr()
 }

@@ -16,8 +16,7 @@ type App struct {
 }
 
 const JWTIssuer = "nodeman"
-
-const cancelTimeout = 5 * time.Second
+const ShutdownTimeout = 5 * time.Second
 
 func New(cfg *config.Config, log *zap.Logger) (*App, error) {
 	if log == nil {
@@ -26,7 +25,7 @@ func New(cfg *config.Config, log *zap.Logger) (*App, error) {
 	srcProvider := gx.Options(
 		gx.Supply(cfg),
 		gx.WithLogger(log),
-		gx.WithShutdownTimeout(cancelTimeout))
+		gx.WithShutdownTimeout(ShutdownTimeout))
 
 	appcore := gx.New(
 		srcProvider,

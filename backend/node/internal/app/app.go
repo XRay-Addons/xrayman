@@ -14,7 +14,7 @@ type App struct {
 	core *gx.App
 }
 
-const shutdownTimeout = 5 * time.Second
+const ShutdownTimeout = 5 * time.Second
 
 func New(cfg *config.Config, log *zap.Logger) (app *App, err error) {
 	if log == nil {
@@ -24,7 +24,7 @@ func New(cfg *config.Config, log *zap.Logger) (app *App, err error) {
 	srcProvider := gx.Options(
 		gx.Supply(cfg),
 		gx.WithLogger(log),
-		gx.WithShutdownTimeout(shutdownTimeout),
+		gx.WithShutdownTimeout(ShutdownTimeout),
 	)
 
 	appcore := gx.New(
