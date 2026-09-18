@@ -46,21 +46,29 @@ contents:
 
   # geodata dir
   - src: ./build/${ARCH}/xray-node/data
-    dst: /usr/bin/xray-node/data
+    dst: /var/lib/xray-node/data
     file_info:
       owner: xray-node
       group: xray-node
       mode: 0550
     expand: true
+    type: tree
 
   # xray-node config example
   - src: ./packaging/xray-node/config-example
     dst: /etc/xray-node/config-example
     file_info:
+      mode: 0755
+    type: tree
+
+  # real xray-node config
+  - src: ./packaging/xray-node/config-example
+    dst: /etc/xray-node/config
+    file_info:
       owner: xray-node
       group: xray-node
       mode: 0550
-    expand: true
+    type: tree|config|noreplace
 
   # systemclt .service file
   - src: ./packaging/xray-node/deb/xray-node.service
@@ -79,7 +87,7 @@ contents:
     dst: /etc/xray-node/xray-node.env
     type: config|noreplace
     file_info:
-      mode: 0600
+      mode: 0400
 
 scripts:
   postinstall: ./packaging/xray-node/deb/postinstall.sh
