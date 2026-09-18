@@ -62,7 +62,7 @@ contents:
     type: tree
 
   # real xray-node config
-  - src: ./packaging/xray-node/config-example/**/*
+  - src: ./packaging/xray-node/config-example/**
     dst: /etc/xray-node/config/
     file_info:
       owner: xray-node
