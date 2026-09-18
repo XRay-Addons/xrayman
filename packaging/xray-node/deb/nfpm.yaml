@@ -12,7 +12,7 @@ description: |
   systemd service file                 : /lib/systemd/system/xray-node.service
   xray-node binary file                : /usr/bin/xray-node
   Configuration file                   : /etc/xray-node/xray-node.env
-  Configuration file example           : /etc/xray-node/xray-node.env.example
+  Configuration file example           : /etc/xray-node/xray-node.example.env
   Client and Server configs dir        : /etc/xray-node/config
   .............(example inside)
   Persistent app data dir (incl. keys) : /var/lib/xray-node/persistent
@@ -68,7 +68,7 @@ contents:
       owner: xray-node
       group: xray-node
       mode: 0550
-    type: config
+    type: config|tree|noreplace
 
   # systemclt .service file
   - src: ./packaging/xray-node/deb/xray-node.service

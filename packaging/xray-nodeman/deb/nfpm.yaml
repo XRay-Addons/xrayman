@@ -18,7 +18,7 @@ description: |
   systemd service file                 : /lib/systemd/system/xray-nodeman.service
   xray-nodeman binary file             : /usr/bin/xray-nodeman
   Configuration file                   : /etc/xray-nodeman/xray-nodeman.env
-  Configuration file example           : /etc/xray-nodeman/xray-nodeman.env.example
+  Configuration file example           : /etc/xray-nodeman/xray-nodeman.example.env
   .
   Configuration file example might be outdated.
   .

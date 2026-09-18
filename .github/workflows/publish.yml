@@ -35,7 +35,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version: "1.26.2"
+          go-version: "1.27.1"
           cache-dependency-path: |
             backend/node/go.sum
             backend/nodeman/go.sum
@@ -52,7 +52,7 @@ jobs:
 
       - name: Install nfpm
         run: |
-          go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.46.0
+          go install github.com/goreleaser/nfpm/v2/cmd/nfpm@main
 
       - name: Set up Node.js
         uses: actions/setup-node@v5
