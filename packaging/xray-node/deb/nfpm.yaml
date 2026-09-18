@@ -68,7 +68,7 @@ contents:
       owner: xray-node
       group: xray-node
       mode: 0550
-    type: config|tree|noreplace
+    type: config|tree
 
   # systemclt .service file
   - src: ./packaging/xray-node/deb/xray-node.service
