@@ -52,7 +52,7 @@ jobs:
 
       - name: Install nfpm
         run: |
-          go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.46.1
+          go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.46.0
 
       - name: Set up Node.js
         uses: actions/setup-node@v5
