@@ -7,7 +7,7 @@ SERVICE_GROUP="xray-nodeman"
 
 if [ "$1" = "purge" ]; then
     echo "Run $SERVICE package postremove.sh script..."
-    
+
     if getent passwd "$SERVICE_USER" >/dev/null 2>&1; then
         echo "Removing system user '$SERVICE_USER'"
         userdel "$SERVICE_USER"
@@ -21,6 +21,6 @@ if [ "$1" = "purge" ]; then
     else
         echo "System group '$SERVICE_GROUP' does not exist, skipping"
     fi
-esac
+fi
 
 exit 0
