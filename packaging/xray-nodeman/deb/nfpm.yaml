@@ -60,4 +60,4 @@ contents:
 scripts:
   postinstall: ./packaging/xray-nodeman/deb/postinstall.sh
   preremove: ./packaging/xray-nodeman/deb/preremove.sh
-  # postremove: ./packaging/xray-nodeman/deb/postremove.sh
+  postremove: ./packaging/xray-nodeman/deb/postremove.sh
