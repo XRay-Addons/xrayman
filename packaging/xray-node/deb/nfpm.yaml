@@ -55,20 +55,20 @@ contents:
     type: tree
 
   # xray-node config example
-  - src: ./packaging/xray-node/config-example
+  - src: ./packaging/xray-node/config-example/
     dst: /etc/xray-node/config-example
     file_info:
       mode: 0755
     type: tree
 
   # real xray-node config
-  - src: ./packaging/xray-node/config-example/**
-    dst: /etc/xray-node/config/
+  - src: ./packaging/xray-node/config-example/
+    dst: /etc/xray-node/config
     file_info:
       owner: xray-node
       group: xray-node
       mode: 0550
-    type: config|noreplace
+    type: config|noreplace|tree
 
   # systemclt .service file
   - src: ./packaging/xray-node/deb/xray-node.service
