@@ -20,7 +20,6 @@ else:
      echo "System group '$SERVICE_GROUP' already exists, skipping"
 fi
 
-echo "Create system user."
 if ! getent passwd "$SERVICE_USER" >/dev/null 2>&1; then
     echo "Create system user '$SERVICE_USER'"
     useradd --system --gid "$SERVICE_GROUP" --no-create-home --shell /usr/sbin/nologin "$SERVICE_USER"
@@ -37,7 +36,7 @@ systemctl enable $SERVICE
 
 printf '\n'
 printf '╔════════════════════════════════════════════════════════════════╗\n'
-printf '║     XRayMan %-16s service installed successfully!   ║\n' "$SERVICE"
+printf '║     XRayMan service successfully installed: %-16s   ║\n' "$SERVICE"
 printf '╠════════════════════════════════════════════════════════════════╣\n'
 printf '║ [!] Setup app configuration [!]                                ║\n'
 printf '║   [!] User manual available via sudo apt show %-16s ║\n' "$SERVICE"
