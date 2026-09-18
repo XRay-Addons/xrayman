@@ -1,51 +1,50 @@
 #!/bin/sh
 set -e
 
+SERVICE="xray-node"
 SERVICE_USER="xray-node"
 SERVICE_GROUP="xray-node"
 
-CONFIG_DIR="/etc/xray-node"
-ENV_FILE="${CONFIG_DIR}/xray-node.env"
-ENV_EXAMPLE="${CONFIG_DIR}/xray-node.env.example"
+echo "Run $SERVICE package postinstall.sh script..."
 
-XRAY_CONFIG_DIR="/etc/xray-node/config"
-XRAY_GEODATA_DIR="/var/lib/geodata"
-XRAY_BINARY_DIR="/usr/bin"
+DPKG_GARBAGE_FILE="/etc/$SERVICE/$SERVICE.env.dpkg-dist"
+if [ -f "$DPKG_GARBAGE_FILE" ]; then
+    echo "Removing dpkg garbage '$DPKG_GARBAGE_FILE'"
+    rm -f "$DPKG_GARBAGE_FILE"
+fi
 
-echo "Create system group."
-if ! getent group "$SERVICE_GROUP" >/dev/null 2>&1; then
+if ! getent group $SERVICE_GROUP >/dev/null; then
+    echo "Create system group '$SERVICE_GROUP'"
     groupadd --system "$SERVICE_GROUP"
+else
+     echo "System group '$SERVICE_GROUP' already exists, skipping"
 fi
 
-echo "Create system user."
 if ! getent passwd "$SERVICE_USER" >/dev/null 2>&1; then
+    echo "Create system user '$SERVICE_USER'"
     useradd --system --gid "$SERVICE_GROUP" --no-create-home --shell /usr/sbin/nologin "$SERVICE_USER"
-fi
-
-# Выставляем безопасные права на директорию
-if [ -d "$CONFIG_DIR" ]; then
-    chown root:root "$CONFIG_DIR"
-    chmod 755 "$CONFIG_DIR"
+else
+    echo "System user '$SERVICE_USER' already exists, skipping"
 fi
 
 echo "Reload systemd units."
-if command -v systemctl >/dev/null 2>&1; then
-    systemctl daemon-reload || true
-fi
+systemctl daemon-reload
 
-echo
-echo "╔═════════════════════════════════════════════════════════════╗"
-echo "║             XRayMan Node installed successfully!            ║"
-echo "╠═════════════════════════════════════════════════════════════╣"
-echo "║ [!] Setup app configuration [!]                             ║"
-echo "║   [!] User manual available via sudo apt show xray-node     ║"
-echo "║   [!] User manual available via sudo apt show xray-node     ║"
-echo "║   [!] User manual available via sudo apt show xray-node.    ║"
-echo "║                                                             ║"
-echo "║ Then start (or restart) the service:                        ║"
-echo "║   sudo systemctl enable --now xray-node                     ║"
-echo "║   or: sudo systemctl restart xray-node.                     ║"
-echo "║                                                             ║"
-echo "╚═════════════════════════════════════════════════════════════╝"
+echo "Enable $SERVICE service."
+systemctl enable $SERVICE
+
+
+printf '\n'
+printf '╔════════════════════════════════════════════════════════════════╗\n'
+printf '║     XRayMan service successfully installed: %-16s   ║\n' "$SERVICE"
+printf '╠════════════════════════════════════════════════════════════════╣\n'
+printf '║ [!] Setup app configuration [!]                                ║\n'
+printf '║   [!] User manual available via sudo apt show %-16s ║\n' "$SERVICE"
+printf '║                                                                ║\n'
+printf '║ Then start/restart the service:                                ║\n'
+printf '║   sudo systemctl restart %-16s                      ║\n' "$SERVICE"
+printf '║                                                                ║\n'
+printf '╚════════════════════════════════════════════════════════════════╝\n'
+printf '\n'
 
 exit 0

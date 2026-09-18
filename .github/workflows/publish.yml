@@ -74,11 +74,11 @@ jobs:
           GOOS=linux GOARCH=arm64 make build_node
 
       # XRay node: build .deb packages
-      - name: Node Pack DEB Packages
+      - name: Nodeman Pack DEB Packages
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          ./packaging/xray-node/deb/build.sh "$CLEAN_VER" ./build arm64
-          ./packaging/xray-node/deb/build.sh "$CLEAN_VER" ./build amd64
+          ARCH=arm64 nfpm package -p deb -f ./packaging/xray-node/deb/nfpm.yaml -t ./xray-node-arm64.deb
+          ARCH=amd64 nfpm package -p deb -f ./packaging/xray-node/deb/nfpm.yaml -t ./xray-node-amd64.deb
 
       # XRay node: build and publish docker image (only for tags)
       - name: Push Multi-Arch XRay-Node Docker Image
