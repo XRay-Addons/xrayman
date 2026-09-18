@@ -38,13 +38,13 @@ contents:
     file_info:
       mode: 0644
 
-  # config example (replace every time, view/edit only with sudo)
+  # env config example (replace every time, view/edit only with sudo)
   - src: ./packaging/xray-nodeman/deb/xray-nodeman.example.env
     dst: /etc/xray-nodeman/xray-nodeman.example.env
     file_info:
       mode: 0644
 
-  # real config, do not replace, access only with sudo
+  # real env config, do not replace, access only with sudo
   - src: ./packaging/xray-nodeman/deb/xray-nodeman.example.env
     dst: /etc/xray-nodeman/xray-nodeman.env
     type: config|noreplace

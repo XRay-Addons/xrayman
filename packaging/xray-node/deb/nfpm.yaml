@@ -1,0 +1,87 @@
+name: xray-node
+arch: ${ARCH}
+platform: linux
+version: ${VERSION}
+section: utils
+priority: optional
+maintainer: "XRayMan"
+description: |
+  XRayMan Node service.
+  .
+  App files locations:
+  systemd service file                 : /lib/systemd/system/xray-node.service
+  xray-node binary file                : /usr/bin/xray-node
+  Configuration file                   : /etc/xray-node/xray-node.env
+  Configuration file example           : /etc/xray-node/xray-node.env.example
+  Client and Server configs dir        : /etc/xray-node/config
+  .............(example inside)
+  Persistent app data dir (incl. keys) : /var/lib/xray-node/persistent
+  XRay geodata dir.                    : /var/lib/xray-node/data
+  XRay binary file                     : /usr/bin/xray
+  .
+  Configuration file example might be outdated.
+  .
+  View actual config via application help : xray-node -h
+  After setup, reload systemctl           : sudo systemctl daemon-reload
+  Start service                           : sudo systemctl enable --now xray-node
+  Or restart service                      : sudo systemctl restart xray-node
+  View logs                               : sudo journalctl -u xray-node -n 50 -f
+homepage: https://github.com/${GITHUB_REPOSITORY}
+license: MIT
+
+contents:
+  # xray-node binaries
+  - src: ./build/${ARCH}/xray-node/xray-node
+    dst: /usr/bin/xray-node/xray-node
+    file_info:
+      mode: 0755
+    expand: true
+
+  # xray binaries
+  - src: ./build/${ARCH}/xray-node/xray
+    dst: /usr/bin/xray-node/xray
+    file_info:
+      mode: 0755
+    expand: true
+
+  # geodata dir
+  - src: ./build/${ARCH}/xray-node/data
+    dst: /usr/bin/xray-node/data
+    file_info:
+      owner: xray-node
+      group: xray-node
+      mode: 0550
+    expand: true
+
+  # xray-node config example
+  - src: ./packaging/xray-node/config-example
+    dst: /etc/xray-node/config-example
+    file_info:
+      owner: xray-node
+      group: xray-node
+      mode: 0550
+    expand: true
+
+  # systemclt .service file
+  - src: ./packaging/xray-node/deb/xray-node.service
+    dst: /lib/systemd/system/xray-node.service
+    file_info:
+      mode: 0644
+
+  # env config example (replace every time, view/edit only with sudo)
+  - src: ./packaging/xray-node/deb/xray-node.example.env
+    dst: /etc/xray-node/xray-node.example.env
+    file_info:
+      mode: 0644
+
+  # real env config, do not replace, access only with sudo
+  - src: ./packaging/xray-node/deb/xray-node.example.env
+    dst: /etc/xray-node/xray-node.env
+    type: config|noreplace
+    file_info:
+      mode: 0600
+
+scripts:
+  postinstall: ./packaging/xray-node/deb/postinstall.sh
+  preremove: ./packaging/xray-node/deb/preremove.sh
+  postremove: ./packaging/xray-node/deb/postremove.sh
