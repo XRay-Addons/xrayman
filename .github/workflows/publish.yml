@@ -89,7 +89,6 @@ jobs:
 
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
-            --provenance=false \
             -f ./packaging/xray-node/docker/xray-node.dockerfile \
             -t ghcr.io/${IMAGE_NAME}:latest -t ghcr.io/${IMAGE_NAME}:${CLEAN_VER} \
             --push .
@@ -122,7 +121,6 @@ jobs:
 
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
-            --provenance=false \
             -f ./packaging/xray-nodeman/docker/xray-nodeman.dockerfile \
             -t ghcr.io/${IMAGE_NAME}:latest -t ghcr.io/${IMAGE_NAME}:${CLEAN_VER} \
             --push .
