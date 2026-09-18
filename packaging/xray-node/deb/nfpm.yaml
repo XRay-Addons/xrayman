@@ -62,11 +62,11 @@ contents:
     type: tree
 
   # real xray-node config
-  - src: ./packaging/xray-node/config-example
-    dst: /etc/xray-nodeman/config/
+  - src: ./packaging/xray-node/config-example/**/*
+    dst: /etc/xray-node/config/
     file_info:
-      owner: xray-nodeman
-      group: xray-nodeman
+      owner: xray-node
+      group: xray-node
       mode: 0550
     type: config|noreplace
 
