@@ -32,14 +32,14 @@ license: MIT
 contents:
   # xray-node binaries
   - src: ./build/${ARCH}/xray-node/xray-node
-    dst: /usr/bin/xray-node/xray-node
+    dst: /usr/bin/xray-node
     file_info:
       mode: 0755
     expand: true
 
   # xray binaries
   - src: ./build/${ARCH}/xray-node/xray
-    dst: /usr/bin/xray-node/xray
+    dst: /usr/bin/xray
     file_info:
       mode: 0755
     expand: true
@@ -63,12 +63,12 @@ contents:
 
   # real xray-node config
   - src: ./packaging/xray-node/config-example
-    dst: /etc/xray-node/config
+    dst: /etc/xray-nodeman/config/
     file_info:
-      owner: xray-node
-      group: xray-node
+      owner: xray-nodeman
+      group: xray-nodeman
       mode: 0550
-    type: tree|config|noreplace
+    type: config|noreplace
 
   # systemclt .service file
   - src: ./packaging/xray-node/deb/xray-node.service
