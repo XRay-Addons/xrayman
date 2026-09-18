@@ -1,21 +1,26 @@
-#env:
-#  VERSION: dev
-#  ARCH: amd64
-#  GITHUB_REPOSITORY: "non-github-repository"
-
 name: xray-nodeman
 arch: ${ARCH}
 platform: linux
 version: ${VERSION}
-section: default
-priority: extra
-maintainer: "X Ray Man"
+section: utils
+priority: optional
+maintainer: "XRayMan"
 description: |
-  XRay Nodeman service.
-  Help         : xray-nodeman --help
-  Logs         : journalctl -u xray-nodeman
-  Env Location : /etc/xray-nodeman/xray-nodeman.env
-  Env Example  : /etc/xray-nodeman/xray-nodeman.example.env
+  XRayMan Node Manager service.
+  .
+  App files locations:
+  systemd service file                 : /lib/systemd/system/xray-nodeman.service
+  xray-nodeman binary file             : /usr/bin/xray-nodeman
+  Configuration file                   : /etc/xray-nodeman/xray-nodeman.env
+  Configuration file example           : /etc/xray-nodeman/xray-nodeman.env.example
+  .
+  Configuration file example might be outdated.
+  .
+  View actual config via application help : xray-nodeman -h
+  After setup, reload systemctl           : sudo systemctl daemon-reload
+  Start service                           : sudo systemctl enable --now xray-nodeman
+  Or restart service                      : sudo systemctl restart xray-nodeman
+  View logs                               : sudo journalctl -u xray-nodeman -n 50 -f
 homepage: https://github.com/${GITHUB_REPOSITORY}
 license: MIT
 
@@ -48,5 +53,5 @@ contents:
 
 scripts:
   postinstall: ./packaging/xray-nodeman/deb/postinstall.sh
-  preremove: ./packaging/xray-nodeman/deb/prerm.sh
-  postremove: ./packaging/xray-nodeman/deb/postrm.sh
+  preremove: ./packaging/xray-nodeman/deb/preremove.sh
+  # postremove: ./packaging/xray-nodeman/deb/postremove.sh
