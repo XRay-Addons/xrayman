@@ -58,6 +58,7 @@ contents:
       mode: 0400
 
 scripts:
+  preinstall: ./packaging/xray-nodeman/deb/preinstall.sh
   postinstall: ./packaging/xray-nodeman/deb/postinstall.sh
   preremove: ./packaging/xray-nodeman/deb/preremove.sh
   postremove: ./packaging/xray-nodeman/deb/postremove.sh
