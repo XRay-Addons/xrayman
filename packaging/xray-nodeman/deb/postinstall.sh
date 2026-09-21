@@ -19,7 +19,6 @@ systemctl daemon-reload
 echo "Enable $SERVICE service."
 systemctl enable $SERVICE
 
-
 printf '\n'
 printf '╔════════════════════════════════════════════════════════════════╗\n'
 printf '║     XRayMan service successfully installed: %-16s   ║\n' "$SERVICE"

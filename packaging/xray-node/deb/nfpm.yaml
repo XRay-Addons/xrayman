@@ -90,6 +90,7 @@ contents:
       mode: 0400
 
 scripts:
+  preinstall: ./packaging/xray-node/deb/preinstall.sh
   postinstall: ./packaging/xray-node/deb/postinstall.sh
   preremove: ./packaging/xray-node/deb/preremove.sh
   postremove: ./packaging/xray-node/deb/postremove.sh
