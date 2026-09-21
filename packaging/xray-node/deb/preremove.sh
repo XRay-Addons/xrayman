@@ -25,7 +25,7 @@ removeNonPackageData() {
     local SERVICE="$1"
     local PERSISTENT="/var/lib/$SERVICE/persistent"
 
-    if [ -d "$DIR" ]; then
+    if [ -d "$PERSISTENT" ]; then
         echo "Removing $SERVICE persistent data from '$PERSISTENT'"
         find "$PERSISTENT" -mindepth 1 -delete # only content, not dir itself
     else
