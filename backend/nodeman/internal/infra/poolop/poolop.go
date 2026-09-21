@@ -101,17 +101,17 @@ func (o *PoolOp) exec(ctx context.Context, items []execItem) {
 	execs := make([]nodeExec, 0, len(items))
 	o.mu.Lock()
 	for _, item := range items {
-		var nodeExec nodeExec
+		var ne nodeExec
 		var exists bool
-		if nodeExec, exists = o.nodeExecs[item.node.ID]; !exists {
+		if ne, exists = o.nodeExecs[item.node.ID]; !exists {
 			nodeOp := func(ctx context.Context) (*empty, error) {
 				err := o.nodeOp.Exec(ctx, item.node, o.log)
 				return nil, err
 			}
-			nodeExec = waveexec.New(nodeOp)
-			o.nodeExecs[item.node.ID] = nodeExec
+			ne = waveexec.New(nodeOp)
+			o.nodeExecs[item.node.ID] = ne
 		}
-		execs = append(execs, nodeExec)
+		execs = append(execs, ne)
 	}
 	o.mu.Unlock()
 
@@ -119,13 +119,14 @@ func (o *PoolOp) exec(ctx context.Context, items []execItem) {
 	var wg sync.WaitGroup
 	for idx, exec := range execs {
 		wg.Add(1)
-		items[idx].err = safego.Invoke(func() error {
-			defer func() {
-				wg.Done()
-			}()
-			_, err := exec.Invoke(ctx)
-			return err
-		})
+		go func() {
+			defer wg.Done()
+			items[idx].err = safego.Invoke(func() error {
+				_, err := exec.Invoke(ctx)
+				return err
+			})
+		}()
 	}
+	// and wait for all
 	wg.Wait()
 }
