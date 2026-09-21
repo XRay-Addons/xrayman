@@ -44,30 +44,41 @@ contents:
       mode: 0755
     expand: true
 
+  # here and below: 755 for directories and trees
+  # to be able to open it. normally, 755 for dirs
+  # and 644 for files is enough, but ugly nfpm can't.
   # geodata dir
   - src: ./build/${ARCH}/xray-node/data
     dst: /var/lib/xray-node/data
     file_info:
-      owner: xray-node
-      group: xray-node
-      mode: 0550
+      mode: 0755
     expand: true
     type: tree
 
-  # xray-node config example
+  # persistent dir, empty by default, but xray-node add something there
+  - dst: /var/lib/xray-node/persistent
+    type: dir
+    file_info:
+      owner: xray-node
+      group: xray-node
+      mode: 0750
+
+  # xray-node config example. replace every time.
   - src: ./packaging/xray-node/config-example/
     dst: /etc/xray-node/config-example
     file_info:
       mode: 0755
     type: tree
 
-  # real xray-node config
+  # real xray-node config. install if not exists,
+  # access only for root and xray-node (contains secrets).
+  # mark as config to not override.
   - src: ./packaging/xray-node/config-example/
     dst: /etc/xray-node/config
     file_info:
-      owner: xray-node
+      owner: root
       group: xray-node
-      mode: 0550
+      mode: 0750
     type: config|tree
 
   # systemclt .service file
@@ -82,12 +93,12 @@ contents:
     file_info:
       mode: 0644
 
-  # real env config, do not replace, access only with sudo
+  # real env config, do not replace, access only by root
   - src: ./packaging/xray-node/deb/xray-node.example.env
     dst: /etc/xray-node/xray-node.env
     type: config|noreplace
     file_info:
-      mode: 0400
+      mode: 0600
 
 scripts:
   preinstall: ./packaging/xray-node/deb/preinstall.sh
