@@ -3,8 +3,8 @@ set -e
 
 SERVICE="xray-nodeman"
 
-if [ "$1" = "remove" ]; then
-    echo "Run $SERVICE package preremove.sh script..."
+removeSystemdService() {
+    local SERVICE="$1"
 
     if systemctl is-active --quiet $SERVICE.service; then
         echo "Stopping $SERVICE service"
@@ -19,6 +19,10 @@ if [ "$1" = "remove" ]; then
     else
         echo "$SERVICE service is already disabled, skipping"
     fi
-fi
+}
 
+if [ "$1" = "remove" ]; then
+    echo "Run $SERVICE package preremove.sh script..."
+    removeSystemdService $SERVICE
+fi
 exit 0
