@@ -35,7 +35,7 @@ func (g *Group) Wait() error {
 			return nil
 		})
 	}
-	err := g.g.Wait()
+	err := g.g.Wait() // err is nil almost always, all errors in errs
 	errs = append(errs, xerr.WrapWithStack(err))
 	return xerr.Join(errs...)
 }
