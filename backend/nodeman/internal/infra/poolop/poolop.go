@@ -97,36 +97,37 @@ func (o *PoolOp) ExecNode(ctx context.Context, id models.NodeID) error {
 }
 
 func (o *PoolOp) exec(ctx context.Context, items []execItem) {
-	// create execs
+	// create execs or use existed, each node has its own exec.
+	// guard by lock to protect map o.nodeExecs
 	execs := make([]nodeExec, 0, len(items))
 	o.mu.Lock()
 	for _, item := range items {
-		var ne nodeExec
-		var exists bool
-		if ne, exists = o.nodeExecs[item.node.ID]; !exists {
-			nodeOp := func(ctx context.Context) (*empty, error) {
-				err := o.nodeOp.Exec(ctx, item.node, o.log)
-				return nil, err
-			}
-			ne = waveexec.New(nodeOp)
-			o.nodeExecs[item.node.ID] = ne
+		if ne, exists := o.nodeExecs[item.node.ID]; exists {
+			execs = append(execs, ne)
+			continue
 		}
+
+		op := func(ctx context.Context) (*empty, error) {
+			err := o.nodeOp.Exec(ctx, item.node, o.log)
+			return nil, err
+		}
+		ne := waveexec.New(op)
+		o.nodeExecs[item.node.ID] = ne
 		execs = append(execs, ne)
 	}
 	o.mu.Unlock()
 
 	// run execs
 	var wg sync.WaitGroup
-	for idx, exec := range execs {
-		wg.Add(1)
+	wg.Add(len(execs))
+	for i, exec := range execs {
 		go func() {
 			defer wg.Done()
-			items[idx].err = safego.Invoke(func() error {
+			items[i].err = safego.Invoke(func() error {
 				_, err := exec.Invoke(ctx)
 				return err
 			})
 		}()
 	}
-	// and wait for all
 	wg.Wait()
 }
