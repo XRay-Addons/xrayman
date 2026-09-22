@@ -69,6 +69,7 @@ jobs:
       - name: Node Build Project
         env:
           CGO_ENABLED: 0
+          STRIP_BINARIES: 1
         run: |
           GOOS=linux GOARCH=amd64 make build_node
           GOOS=linux GOARCH=arm64 make build_node
@@ -101,6 +102,7 @@ jobs:
       - name: Nodeman Build Project
         env:
           CGO_ENABLED: 0
+          STRIP_BINARIES: 1
         run: |
           GOOS=linux GOARCH=amd64 make build_nodeman
           GOOS=linux GOARCH=arm64 make build_nodeman

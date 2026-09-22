@@ -27,6 +27,13 @@ CGO_ENABLED ?= 0
 NODE_DST := $(DST)/$(GOARCH)/xray-node
 NODEMAN_DST := $(DST)/$(GOARCH)/xray-nodeman
 
+# Strip Binaries делаем только в github actions
+STRIP_BINARIES ?= 0
+ifeq ($(STRIP_BINARIES),1)
+BUILD_LDFLAGS += -s -w
+endif
+
+
 # -----------------------------
 # DEFAULT
 # -----------------------------
@@ -122,6 +129,7 @@ tools:
 
 NODE_VERSION_PKG := github.com/XRay-Addons/xrayman/node/internal/version
 NODE_LDFLAGS := \
+	$(BUILD_LDFLAGS) \
 	-X $(NODE_VERSION_PKG).Version=$(VERSION) \
 	-X $(NODE_VERSION_PKG).Commit=$(COMMIT) \
 	-X $(NODE_VERSION_PKG).BuildTime=$(BUILD_TIME)
@@ -150,6 +158,7 @@ build_node: gen_node download_xray
 
 NODEMAN_VERSION_PKG := github.com/XRay-Addons/xrayman/nodeman/internal/version
 NODEMAN_LDFLAGS := \
+	$(BUILD_LDFLAGS) \
 	-X $(NODEMAN_VERSION_PKG).Version=$(VERSION) \
 	-X $(NODEMAN_VERSION_PKG).Commit=$(COMMIT) \
 	-X $(NODEMAN_VERSION_PKG).BuildTime=$(BUILD_TIME)
