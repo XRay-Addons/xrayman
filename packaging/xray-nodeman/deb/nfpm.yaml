@@ -1,0 +1,64 @@
+#env:
+#  VERSION: dev
+#  ARCH: amd64
+#  BUILD_ROOT: ./build
+#  GITHUB_REPOSITORY: "non-github-repository"
+
+name: xray-nodeman
+arch: ${ARCH}
+platform: linux
+version: ${VERSION}
+section: utils
+priority: optional
+maintainer: "XRayMan"
+description: |
+  XRayMan Node Manager service.
+  .
+  App files locations:
+  systemd service file                 : /lib/systemd/system/xray-nodeman.service
+  xray-nodeman binary file             : /usr/bin/xray-nodeman
+  Configuration file                   : /etc/xray-nodeman/xray-nodeman.env
+  Configuration file example           : /etc/xray-nodeman/xray-nodeman.example.env
+  .
+  Configuration file example might be outdated.
+  .
+  View actual config via application help : xray-nodeman -h
+  After setup, reload systemctl           : sudo systemctl daemon-reload
+  Start service                           : sudo systemctl enable --now xray-nodeman
+  Or restart service                      : sudo systemctl restart xray-nodeman
+  View logs                               : sudo journalctl -u xray-nodeman -n 50 -f
+homepage: https://github.com/${GITHUB_REPOSITORY}
+license: MIT
+
+contents:
+  # binaries
+  - src: ./build/${ARCH}/xray-nodeman/xray-nodeman
+    dst: /usr/bin/xray-nodeman
+    file_info:
+      mode: 0755
+    expand: true
+
+  # systemclt .service file
+  - src: ./packaging/xray-nodeman/deb/xray-nodeman.service
+    dst: /lib/systemd/system/xray-nodeman.service
+    file_info:
+      mode: 0644
+
+  # env config example (replace every time, view/edit only with sudo)
+  - src: ./packaging/xray-nodeman/deb/xray-nodeman.example.env
+    dst: /etc/xray-nodeman/xray-nodeman.example.env
+    file_info:
+      mode: 0666
+
+  # real env config, do not replace, access only with sudo
+  - src: ./packaging/xray-nodeman/deb/xray-nodeman.example.env
+    dst: /etc/xray-nodeman/xray-nodeman.env
+    type: config|noreplace
+    file_info:
+      mode: 0644
+
+scripts:
+  preinstall: ./packaging/xray-nodeman/deb/preinstall.sh
+  postinstall: ./packaging/xray-nodeman/deb/postinstall.sh
+  preremove: ./packaging/xray-nodeman/deb/preremove.sh
+  postremove: ./packaging/xray-nodeman/deb/postremove.sh

@@ -1,75 +1,43 @@
 package xerrgroup
 
 import (
-	"context"
 	"fmt"
 	"testing"
 	"time"
 
 	"github.com/XRay-Addons/xrayman/common/xerr"
+	"github.com/stretchr/testify/require"
 )
 
-func TestGroup_DemonstrateRaceCondition(t *testing.T) {
-	g, ctx := WithContext(context.Background())
-	_ = ctx
-
+func TestGroup(t *testing.T) {
+	g := Group{}
 	for i := 0; i < 10; i++ {
-
-		taskNum := i
-
 		g.Go(func() error {
 			time.Sleep(10 * time.Millisecond)
-			return xerr.Newf("error task #%d", taskNum)
+			return xerr.Newf("error task #%d", i)
 		})
 	}
 
-	err := g.Wait()
-	if err != nil {
-		fmt.Printf("%+v\n", err)
+	err, errs := g.Wait()
+	require.Error(t, err)
+	require.Equal(t, 10, len(errs))
+	for i := range 10 {
+		require.Error(t, errs[i])
 	}
 }
+func TestGroup_Panic(t *testing.T) {
+	g := Group{}
+	for i := 0; i < 10; i++ {
+		g.Go(func() error {
+			time.Sleep(10 * time.Millisecond)
+			panic(fmt.Sprintf("error task #%d", i))
+		})
+	}
 
-/*func TestGroup_GoroutinePanic(t *testing.T) {
-	done := make(chan struct{})
-
-	go func() {
-		defer close(done)
-
-		var wg sync.WaitGroup
-
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for i := 0; i < 5; i++ {
-				fmt.Println("[worker-1] tick", i)
-				time.Sleep(300 * time.Millisecond)
-			}
-		}()
-
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-
-			for i := 0; i < 3; i++ {
-				fmt.Println("[worker-2] tick", i)
-				time.Sleep(200 * time.Millisecond)
-			}
-
-			panic("boom in worker-2")
-		}()
-
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for i := 0; i < 5; i++ {
-				fmt.Println("[worker-3] tick", i)
-				time.Sleep(250 * time.Millisecond)
-			}
-		}()
-
-		wg.Wait()
-		fmt.Println("goroutines finished normally")
-	}()
-
-	<-done
-}*/
+	err, errs := g.Wait()
+	require.Error(t, err)
+	require.Equal(t, 10, len(errs))
+	for i := range 10 {
+		require.Error(t, errs[i])
+	}
+}

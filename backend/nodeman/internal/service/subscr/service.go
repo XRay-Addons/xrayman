@@ -49,7 +49,7 @@ func (s *Service) GetUserSub(ctx context.Context,
 		return nil, errdefs.NilCall()
 	}
 
-	g, ctx := xerrgroup.WithContext(ctx)
+	g := xerrgroup.Group{}
 	// find user
 	var user *models.UserView
 	g.Go(func() (err error) {
@@ -71,7 +71,7 @@ func (s *Service) GetUserSub(ctx context.Context,
 		return
 	})
 
-	if err := g.Wait(); err != nil {
+	if err, _ := g.Wait(); err != nil {
 		return nil, err
 	}
 
