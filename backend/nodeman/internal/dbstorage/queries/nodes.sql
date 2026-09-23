@@ -83,7 +83,7 @@ LEFT JOIN (
         download
     FROM daily_nodes_traffic
     CROSS JOIN from_day
-    WHERE daily_nodes_traffic.day < from_day.value
+    WHERE daily_nodes_traffic.day <= from_day.value
     ORDER BY node_id, day DESC
 ) ds ON ds.node_id = n.node_id
 

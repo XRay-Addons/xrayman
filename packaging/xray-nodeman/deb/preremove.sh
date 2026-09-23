@@ -21,8 +21,6 @@ removeSystemdService() {
     fi
 }
 
-if [ "$1" = "remove" ]; then
-    echo "Run $SERVICE package preremove.sh script..."
-    removeSystemdService $SERVICE
-fi
+echo "Run $SERVICE package preremove.sh script..."
+removeSystemdService $SERVICE
 exit 0

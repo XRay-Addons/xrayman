@@ -21,21 +21,6 @@ removeSystemdService() {
     fi
 }
 
-removeNonPackageData() {
-    local SERVICE="$1"
-    local PERSISTENT="/var/lib/$SERVICE/persistent"
-
-    if [ -d "$PERSISTENT" ]; then
-        echo "Removing $SERVICE persistent data from '$PERSISTENT'"
-        find "$PERSISTENT" -mindepth 1 -delete # only content, not dir itself
-    else
-        echo "No persistent data dir '$PERSISTENT', nothing to remove"
-    fi
-}
-
-if [ "$1" = "remove" ]; then
-    echo "Run $SERVICE package preremove.sh script..."
-    removeSystemdService $SERVICE
-    removeNonPackageData $SERVICE
-fi
+echo "Run $SERVICE package preremove.sh script..."
+removeSystemdService "$SERVICE"
 exit 0

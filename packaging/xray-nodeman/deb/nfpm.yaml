@@ -27,6 +27,9 @@ description: |
   Start service                           : sudo systemctl enable --now xray-nodeman
   Or restart service                      : sudo systemctl restart xray-nodeman
   View logs                               : sudo journalctl -u xray-nodeman -n 50 -f
+  .
+  Remove but keep configs                 : sudo apt remove xray-nodeman
+  Remove completely                       : sudo apt purge xray-nodeman
 homepage: https://github.com/${GITHUB_REPOSITORY}
 license: MIT
 
@@ -44,18 +47,11 @@ contents:
     file_info:
       mode: 0644
 
-  # env config example (replace every time, view/edit only with sudo)
+  # env config example (replace every time)
   - src: ./packaging/xray-nodeman/deb/xray-nodeman.example.env
     dst: /etc/xray-nodeman/xray-nodeman.example.env
     file_info:
       mode: 0666
-
-  # real env config, do not replace, access only with sudo
-  - src: ./packaging/xray-nodeman/deb/xray-nodeman.example.env
-    dst: /etc/xray-nodeman/xray-nodeman.env
-    type: config|noreplace
-    file_info:
-      mode: 0644
 
 scripts:
   preinstall: ./packaging/xray-nodeman/deb/preinstall.sh
