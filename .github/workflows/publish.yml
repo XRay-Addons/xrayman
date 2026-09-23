@@ -143,20 +143,10 @@ jobs:
           tar -czf xrayman.amd64.tar.gz -C ./build/amd64 .
 
       # publish docker-compose archives
-      - name: Publish XRay-Node docker compose
+      - name: Publish docker composes
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          ./packaging/xray-node/docker/publish.sh "$CLEAN_VER"
-
-      - name: Publish XRay-NodeMan docker compose
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          ./packaging/xray-nodeman/docker/publish.sh "$CLEAN_VER"
-
-      - name: Publish All-in-One docker compose
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          ./packaging/all-in-one/docker/publish.sh "$CLEAN_VER"
+          ./packaging/docker-compose/publish.sh "$CLEAN_VER"
 
       - name: Upload Artifacts to GitHub Release
         uses: softprops/action-gh-release@v2
@@ -167,9 +157,9 @@ jobs:
             xrayman.amd64.tar.gz
             xray-nodeman-*.deb
             xray-node-*.deb
-            docker-compose.xray-nodeman.tar.gz
             docker-compose.xray-node.tar.gz
-            docker-compose.all-in-one.tar.gz
+            docker-compose.xray-nodeman.tar.gz
+            docker-compose.xray-nodeman-standalone.tar.gz
           name: Release ${{ github.ref_name }}
           generate_release_notes: true
         env:
