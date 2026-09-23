@@ -27,6 +27,9 @@ description: |
   Start service                           : sudo systemctl enable --now xray-nodeman
   Or restart service                      : sudo systemctl restart xray-nodeman
   View logs                               : sudo journalctl -u xray-nodeman -n 50 -f
+  .
+  Remove but keep configs                 : sudo apt remove xray-nodeman
+  Remove completely                       : sudo apt purge xray-nodeman
 homepage: https://github.com/${GITHUB_REPOSITORY}
 license: MIT
 

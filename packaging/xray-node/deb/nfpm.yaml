@@ -14,7 +14,7 @@ description: |
   Configuration file                   : /etc/xray-node/xray-node.env
   Configuration file example           : /etc/xray-node/xray-node.example.env
   Client and Server configs dir        : /etc/xray-node/config
-  .............(example inside)
+  Clisne and Server configs example    : /etc/xray-node/config-example
   Persistent app data dir (incl. keys) : /var/lib/xray-node/persistent
   XRay geodata dir.                    : /var/lib/xray-node/data
   XRay binary file                     : /usr/bin/xray
@@ -26,6 +26,9 @@ description: |
   Start service                           : sudo systemctl enable --now xray-node
   Or restart service                      : sudo systemctl restart xray-node
   View logs                               : sudo journalctl -u xray-node -n 50 -f
+  .
+  Remove but keep configs                 : sudo apt remove xray-node
+  Remove completely                       : sudo apt purge xray-node
 homepage: https://github.com/${GITHUB_REPOSITORY}
 license: MIT
 
