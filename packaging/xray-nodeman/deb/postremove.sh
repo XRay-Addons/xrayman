@@ -25,8 +25,19 @@ removeServiceUser() {
     fi
 }
 
+
+removeServiceEnvFile() {
+    local SERVICE="$1"
+    local ENV_FILE="/etc/$SERVICE/$SERVICE.env"
+    if [ -e "$ENV_FILE" ]; then
+        rm "$ENV_FILE"
+        echo "$SERVICE env file '$ENV_FILE' removed"
+    fi
+}
+
 if [ "$1" = "purge" ]; then
     echo "Run $SERVICE package postremove.sh script..."
+    removeServiceEnvFile "$SERVICE"
     removeServiceUser "$SERVICE_USER" "$SERVICE_GROUP"
 fi
 

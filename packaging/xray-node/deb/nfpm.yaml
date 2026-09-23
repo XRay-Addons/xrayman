@@ -59,6 +59,7 @@ contents:
     type: tree
 
   # persistent dir, empty by default, but xray-node add something there
+  # (including node access key)
   - dst: /var/lib/xray-node/persistent
     type: dir
     file_info:
@@ -66,23 +67,21 @@ contents:
       group: xray-node
       mode: 0750
 
-  # xray-node config example. replace every time.
-  - src: ./packaging/xray-node/config-example/
-    dst: /etc/xray-node/config-example
-    file_info:
-      mode: 0755
-    type: tree
-
-  # real xray-node config. install if not exists,
+  # xray-node config, empty by default, but user add configs there
   # access only for root and xray-node (contains secrets).
-  # mark as config to not override.
-  - src: ./packaging/xray-node/config-example/
-    dst: /etc/xray-node/config
+  - dst: /etc/xray-node/config
     file_info:
       owner: root
       group: xray-node
       mode: 0750
-    type: config|tree
+    type: dir
+
+  # xray-node config example. replace every time.
+  - src: ./packaging/xray-node/config-example/
+    dst: /etc/xray-node/config/example
+    file_info:
+      mode: 0755
+    type: tree
 
   # systemclt .service file
   - src: ./packaging/xray-node/deb/xray-node.service
@@ -95,13 +94,6 @@ contents:
     dst: /etc/xray-node/xray-node.example.env
     file_info:
       mode: 0644
-
-  # real env config, do not replace, access only by root
-  - src: ./packaging/xray-node/deb/xray-node.example.env
-    dst: /etc/xray-node/xray-node.env
-    type: config|noreplace
-    file_info:
-      mode: 0600
 
 scripts:
   preinstall: ./packaging/xray-node/deb/preinstall.sh
