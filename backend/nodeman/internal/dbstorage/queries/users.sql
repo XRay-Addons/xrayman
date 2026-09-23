@@ -52,7 +52,7 @@ LEFT JOIN (
     FROM daily_users_traffic
     CROSS JOIN from_day
     WHERE user_id = sqlc.arg(user_id)::bigint
-      AND daily_users_traffic.day < from_day.value
+      AND daily_users_traffic.day <= from_day.value
     ORDER BY day DESC
     LIMIT 1
 ) ds ON TRUE
@@ -109,7 +109,7 @@ LEFT JOIN (
         download
     FROM daily_users_traffic
     CROSS JOIN from_day
-    WHERE daily_users_traffic.day < from_day.value
+    WHERE daily_users_traffic.day <= from_day.value
     ORDER BY user_id, day DESC
 ) ds ON ds.user_id = u.user_id
 
