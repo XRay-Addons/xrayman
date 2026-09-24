@@ -10,35 +10,41 @@ import (
 )
 
 var kongVars = kong.Vars{
-	"endpointHelp": "server endpoint tcp address, like :8080, 127.0.0.1:80, localhost:22",
+	"endpointHelp": "Nodeman server endpoint tcp address, like :8080, 127.0.0.1:80, localhost:22",
 
-	"dbHelp": "postgress connection string, like postgresql://user:password@127.0.0.1:4321/dbname",
+	"dbHelp": "Postgress connection string, like postgresql://user:password@127.0.0.1:4321/dbname",
 
-	"jwtHelp": "jwt secret",
+	"jwtHelp": "JWT secret",
 
-	"stateHelp": "state sync interval, s",
+	"stateHelp": "Nodes state check and sync interval, every N s",
 
-	"statsHelp": "stats sync interval, s",
+	"statsHelp": "Nodes statistics refresh interval, eveny N s",
 
-	"apisrvHelp": `public base URL of the API as seen by browsers (used for CORS and SPAs config).
-If empty or relative, the internal API base path is used.
-should be like /internal/api or https://api.example.com/api (optional)`,
+	"apisrvHelp": `Public-facing base URL of nodeman API, as seen by clients
+(e.g. behind a reverse proxy / TLS termination).
+Used when the server needs to build a full external
+URL to itself (e.g. https://api.example.com/api),
+as opposed to --endpoint, which is the internal
+address the process actually listens on. 
+Should be short like /api or full https://api.example.com/apipath (optional)`,
 
-	"userspaHelp": `public base URL of the User SPA as seen by browsers (used for CORS and SPAs config).
-If empty or relative, the internal User SPA base path is used.
-should be like /user or https://u.example.com (optional)`,
+	"userspaHelp": `Public-facing base URL of user page, as seen by clients
+(e.g. behind a reverse proxy / TLS termination).
+Used when the server needs to build a full external
+URL to itself (e.g. https://u.example.com/user),
+Should be short like /u or full https://u.example.com/user (optional)`,
 
-	"adminspaHelp": `public base URL of the Admin SPA as seen by browsers (used for CORS and SPAs config).
-If empty or relative, the internal Admin SPA base path is used.
-should be like /admin or https://adm.example.com (optional)`,
+	"adminspaHelp": `Public-facing base URL of admin page, as seen by clients
+(e.g. behind a reverse proxy / TLS termination).
+Used when the server needs to build a full external
+URL to itself (e.g. https://a.example.com/adm),
+Should be short like /adm or full https://adm.example.com/admin (optional)`,
 
-	"admpassHelp": `admin password to change (optional, empty for keep prev pwd)`,
+	"storageTimeoutHelp": `Storage call timeout, s (optional)`,
 
-	"storageTimeoutHelp": `storage call timeout, s (optional)`,
+	"nodeTimeoutHelp": `Node call timeout, s (optional)`,
 
-	"nodeTimeoutHelp": `node call timeout, s (optional)`,
-
-	"metricsHelp": `prometheus metrics endpoint (optional)`,
+	"metricsHelp": `Prometheus metrics endpoint (optional)`,
 }
 
 type CLI struct {
@@ -59,7 +65,7 @@ type CLI struct {
 	StorageCallTimeout int `name:"storage-call-timeout" default:"5" help:"${storageTimeoutHelp}"`
 
 	MetricsEndpoint string        `name:"metrics-endpoint" default:"" help:"${metricsHelp}"`
-	LogLevel        zapcore.Level `name:"log-level" default:"info" help:"zap log level"`
+	LogLevel        zapcore.Level `name:"log-level" default:"info" help:"Zap log level"`
 
 	Version bool `short:"v" help:"Show version and exit."`
 }
