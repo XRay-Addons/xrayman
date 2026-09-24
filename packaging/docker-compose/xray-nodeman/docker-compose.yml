@@ -25,9 +25,9 @@ services:
     ports:
       - "${XRAY_NODEMAN_PORT:?Set XRAY_NODEMAN_PORT in .env file}:80"
     environment:
-      - XRAY_NODEMAN_ENDPOINT="0.0.0.0:80"
-      - XRAY_NODEMAN_METRICS_ENDPOINT="0.0.0.0:9090"
-      - XRAY_NODEMAN_DB="postgresql://xrayman-user:${POSTGRES_PASSWORD}@xrayman-db:5432/xrayman-db?sslmode=disable"
+      - XRAY_NODEMAN_ENDPOINT=0.0.0.0:80
+      - XRAY_NODEMAN_METRICS_ENDPOINT=0.0.0.0:9090
+      - XRAY_NODEMAN_DB=postgresql://xrayman-user:${POSTGRES_PASSWORD}@xrayman-db:5432/xrayman-db?sslmode=disable
       - XRAY_NODEMAN_JWT=${XRAY_NODEMAN_JWT:?Set XRAY_NODEMAN_JWT in .env file}
       - XRAY_NODEMAN_ADM_PASS=${XRAY_NODEMAN_ADM_PASS:?Set XRAY_NODEMAN_ADM_PASS in .env file}
       - XRAY_NODEMAN_API_SERVICE_URL
@@ -37,7 +37,7 @@ services:
       - XRAY_NODEMAN_STATS_SYNC_INTERVAL
       - XRAY_NODEMAN_NODE_CALL_TIMEOUT
       - XRAY_NODEMAN_STORAGE_CALL_TIMEOUT
-      - XRAY_NODE_LOG_LEVEL
+      - XRAY_NODEMAN_LOG_LEVEL
     <<: *default-logging
 
   vmetrics:
