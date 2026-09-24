@@ -12,12 +12,13 @@ services:
     restart: unless-stopped
     ports:
       - "${XRAY_NODE_ADMIN_PORT:?Set XRAY_NODE_ADMIN_PORT in .env file}:5001"
-      - ${XRAY_NODE_PROXY_PORTS:?Set XRAY_NODE_PROXY_PORTS in .env file like "443:443,8443:8443"}
+      - "${XRAY_NODE_PROXY_PORTS:?Set XRAY_NODE_PROXY_PORTS in .env file like '443:443,8443:8443'}"
     environment:
-      XRAY_NODE_ENDPOINT: "0.0.0.0:5001"
-      XRAY_NODE_DATA_DIR: "/usr/bin/xray-node/data"
-      XRAY_NODE_CONFIG_DIR: "/xray-node-config"
-      XRAY_NODE_PERSISTENT_DIR: "/xray-node-persistent"
+      - XRAY_NODE_ENDPOINT=0.0.0.0:5001
+      - XRAY_NODE_DATA_DIR=/usr/bin/xray-node/data
+      - XRAY_NODE_CONFIG_DIR=/xray-node-config"
+      - XRAY_NODE_PERSISTENT_DIR=/xray-node-persistent
+      - XRAY_NODE_LOG_LEVEL
     volumes:
       - ./xray-node-config:/xray-node-config:ro
       - ./xray-node-persistent:/xray-node-persistent

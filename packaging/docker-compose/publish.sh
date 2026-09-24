@@ -36,6 +36,9 @@ replace \
     ./build/docker/xray-node/docker-compose.yml \
     VERSION_PLACEHOLDER "$CLEAN_VER"
 
+# env file
+copy ./packaging/docker-compose/xray-node/example.env ./build/docker/xray-node/example.env
+
 # config example folder
 copy ./packaging/xray-node/config-example ./build/docker/xray-node/xray-node-config/example
 
@@ -51,6 +54,10 @@ replace \
     ./packaging/docker-compose/xray-nodeman/docker-compose.yml \
     ./build/docker/xray-nodeman/docker-compose.yml \
     VERSION_PLACEHOLDER "$CLEAN_VER"
+
+# env file
+copy ./packaging/docker-compose/xray-nodeman/example.env ./build/docker/xray-nodeman/example.env
+
 
 # copy prometheus config
 copy ./packaging/docker-compose/xray-nodeman/datasource.yml ./build/docker/xray-nodeman/datasource.yml
