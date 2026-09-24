@@ -40,6 +40,8 @@ Used when the server needs to build a full external
 URL to itself (e.g. https://a.example.com/adm),
 Should be short like /adm or full https://adm.example.com/admin (optional)`,
 
+	"admpassHelp": `admin password to change (optional, empty for keep prev pwd)`,
+
 	"storageTimeoutHelp": `Storage call timeout, s (optional)`,
 
 	"nodeTimeoutHelp": `Node call timeout, s (optional)`,
